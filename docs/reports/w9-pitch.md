@@ -38,3 +38,10 @@ STATUS: done. Not committed.
 - Left as is: SAFETY.md and DECK-OUTLINE.md (older text, outline note points to deck.html) are stale on the new features; cover-v2 untouched. The doctor-note image and the ops/pharmacy screenshots come from seeded mock data. I could not delete old files with glob rm (blocked); pitch/deck/png only has slide-1..10 now.
 - Risks: the ops dashboard screenshot was cropped from a live run on the mock model; the "Mock model" tile should be visible when the video is recorded. Slide 4 shows speech-service text in the consult screen ("processed by your browser's speech service") deliberately.
 - Correction: the ops screenshot could not be captured headlessly (board showed an error), so no ops image is used in the deck or README; ops is described in text only.
+
+## MF-11 (w14 safety review) copy fixes
+STATUS: done; not committed. Updated SUBMISSION.md, SAFETY.md, README.md, VIDEO-SCRIPT.md, deck.html (slides 1, 3, 7, 10), regenerated MedX-deck.pdf and PNGs; viewed slides 1, 7, 10.
+- Ambiguity fixed: "The AI never diagnoses, orders, prescribes or confirms triage; clinicians do these in MedX, with deterministic checks and an audit trail" (SUBMISSION, README, deck, video). The reviewer's 119-word Limitations & safety paragraph is in SUBMISSION and README; the deck slide 7 footnote carries a shortened version.
+- SAFETY.md now covers consult "consider" items (fixed rule list, doctor-only, dropped from signed note unless kept), NEWS2 suggestion the nurse confirms, no AI drugs or doses, orders with override reasons and pharmacist verify/return, clinic-side cloud speech.
+- "Hears what others miss" replaced by "listens closely" (slide 1, slide 10).
+- CAVEAT: the paragraph and the SAFETY.md statements about consider items, the signed note and consent assume the reviewer's MF-1, MF-2 and MF-10 code fixes are applied. They were not verified by me. If any is not done, remove that sentence from SUBMISSION, README, deck slide 7 and SAFETY.md before submitting. Video-script line about listening starting after patient agreement is also conditional on MF-10.

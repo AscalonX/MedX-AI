@@ -78,11 +78,11 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
  <div class="brand"><div class="logo">M</div>MedX</div><div class="pg">AMD Developer Hackathon ACT III · Track 2</div>
  <h1>MedX</h1>
  <div class="tag">One patient journey, from the first words to the pharmacy. Every field points back to the patient's own words.</div>
- <div class="meta">Research prototype. Supports clinicians; does not diagnose, order, prescribe or decide triage.<br>Synthetic data only. github.com/KingPhuripol/medx-bridge</div>
+ <div class="meta">Research prototype. Supports clinicians; the AI never diagnoses, orders, prescribes or confirms triage.<br>Synthetic data only. github.com/KingPhuripol/medx-bridge</div>
  <img class="shot" src="img/consult-nurse.png" style="position:absolute;right:110px;top:150px;width:800px;border:0;box-shadow:0 24px 60px rgba(0,0,0,.28)">
  <div style="position:absolute;left:110px;top:600px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.18)"></div>
  <img class="fin" src="img/fin-wave.svg" style="left:118px;top:595px;width:224px">
- <div style="position:absolute;left:390px;top:660px;font-size:26px;line-height:1.35;max-width:560px;opacity:.95">Meet Fin. Like a dolphin's echolocation, MedX hears what others miss, and stays a helper, never the decider.</div>
+ <div style="position:absolute;left:390px;top:660px;font-size:26px;line-height:1.35;max-width:560px;opacity:.95">Meet Fin, the MedX dolphin. Fin listens closely and stays a helper; the people decide.</div>
 </section>
 <section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">2 / 10</div>
  <h2>A language gap and a wrong medicine list are both safety events</h2>
@@ -100,7 +100,7 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
   <div class="row"><div class="q">2 Nurse</div>History-taking with a consult assistant, vitals, and a triage suggestion the nurse confirms.</div>
   <div class="row"><div class="q">3 Doctor</div>Considerations for clinical judgement, a draft note to sign, and orders with automatic checks.</div>
   <div class="row"><div class="q">4 Pharmacist</div>Verifies or returns each prescription, and reconciles the medicines the patient named.</div>
-  <div class="cap2" style="margin-top:6px">A clinic manager sees the queue, escalations and abstain rate. At every step a human decides; the AI never diagnoses, orders, prescribes or decides triage.</div>
+  <div class="cap2" style="margin-top:6px">A clinic manager sees the queue, escalations and abstain rate. At every step a human decides; the AI never diagnoses, orders, prescribes or confirms triage.</div>
  </div>
  <img class="phone" src="img/m-voice.jpg" style="position:absolute;left:1090px;top:200px;width:310px">
  <img class="phone" src="img/m-status.jpg" style="position:absolute;left:1470px;top:200px;width:310px">
@@ -133,12 +133,12 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
   <div class="row"><div class="q">Wrong or unsupported answers</div>No verified quote means "needs check". Quotes must match the patient's words. Injection handling is not yet evaluated end to end.</div>
   <div class="row"><div class="q">Sensitive information</div>Pattern-based redaction before storage or any model call; imperfect. Synthetic data only. Keys stay server-side.</div>
   <div class="row"><div class="q">Uncertain results</div>Confidence on every field. Low confidence or provider failure: abstain, "needs human review".</div>
-  <div class="row r"><div class="q">High-risk decisions</div>Red-flag rules run before any model. The Gemma screen is add-only: "model-suggested, confirm". Triage and orders are confirmed by people.</div>
+  <div class="row r"><div class="q">High-risk decisions</div>Red-flag rules run before any model. The Gemma screen is add-only: "model-suggested, confirm". Triage is confirmed by the nurse; orders are entered by the doctor.</div>
   <div class="row"><div class="q">Human review</div>Nothing is final until a clinician approves. Overrides need a reason. Every action is in the audit log.</div>
  </div>
  <img class="shot" src="img/redflag.png" style="position:absolute;left:1230px;top:210px;width:580px">
  <div class="cap2" style="position:absolute;left:1230px;top:670px;width:580px">Thai patient, chest pain and sweating in the first message: the nurse screen is interrupted and the patient's sentence is highlighted. The patient's phone shows a calm "go to the desk now" screen.</div>
-<div class=foot>Code paths: pitch/SAFETY.md. Limits: voice uses Apple or Google speech services; the demo has no clinician login. Cross-vendor review: Claude reviewed the Codex engine, Codex reviewed UI work, plus QA and a clinical safety review (docs/reports); findings fixed with regression tests. LIMITATIONS MARKER: replace with the safety reviewer's paragraph.</div></section>
+<div class=foot>Limits: doctor-only "consider" items come from a fixed 12-presentation list, not a differential. NEWS2 triage is an adult suggestion the nurse confirms. Prescribing checks use a small rule set (59 drugs, 18 interactions). Speech goes to a cloud speech service. Redaction is imperfect; reviewer identity is self-declared; Gemma-on-AMD is unmeasured (mock model). Paths: pitch/SAFETY.md.</div></section>
 <section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">8 / 10</div>
  <h2 style="font-size:54px;max-width:1700px">Evidence we can show, and the gap that motivated the screen</h2>
  <div style="display:flex;gap:40px;margin-top:30px">
@@ -188,13 +188,13 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
     <li>Run the pre-declared evaluation on Gemma via AMD Token Factory and publish every result, including misses.</li>
     <li>Native-speaker review of Thai and Italian text.</li>
     <li>A timed pilot with nurses, doctors and pharmacists, then ethics approval before any real data.</li>
-    <li>Not a medical device. Supports clinicians; never diagnoses, orders, prescribes or decides triage.</li>
+    <li>Not a medical device. Supports clinicians; the AI never diagnoses, orders, prescribes or confirms triage.</li>
    </ul>
    <div class="card hero" style="margin-top:34px;padding:30px 40px;font-size:28px;line-height:1.4;position:relative;overflow:hidden">Open source, MIT.<br>github.com/KingPhuripol/medx-bridge<br><span style="font-size:22px;opacity:.9">Team MedX. Built by a human lead orchestrating Claude (Opus/Sonnet) and OpenAI Codex agents in role-based lanes.</span></div>
   </div>
   <div style="flex:0 0 520px;text-align:center;position:relative">
    <div style="width:420px;height:420px;border-radius:50%;background:var(--grad);margin:20px auto 0;position:relative"><img src="img/fin-happy.svg" style="position:absolute;left:30px;top:20px;width:360px"></div>
-   <div style="font-size:28px;margin-top:26px;line-height:1.35">Fin hears what others miss.<br>The people decide.</div>
+   <div style="font-size:28px;margin-top:26px;line-height:1.35">Fin listens closely.<br>The people decide.</div>
   </div>
  </div>
 </section>

@@ -10,13 +10,14 @@ One patient journey in one product: **patient, nurse, doctor, pharmacist**. Ever
 - **Doctor**: consult assistant with "considerations" for clinician judgement (labelled "AI suggestion for clinician judgement, not a diagnosis", with workup ideas and guideline links); an evidence-linked draft note the doctor signs; orders (investigations and prescriptions) with deterministic checks (allergy, interaction, duplicate, pregnancy, dose range) and a written reason to override a high alert.
 - **Pharmacist**: verifies or returns each prescription with a note, and reconciles the medicines the patient named (brand to generic).
 - **Safety**: deterministic red-flag rules run before any model; an add-only Gemma safety screen; unsupported fields shown as "needs check"; abstain and "needs human review"; nothing final until a clinician approves; append-only audit log.
+- **Limitations & safety.** Research prototype that supports clinicians; the AI never diagnoses, orders, prescribes or confirms triage. Synthetic data only; not clinically validated, not a medical device. Red-flag rules run before any model and cannot be cleared by it, but miss paraphrases (7/10 emergencies on an 18-case synthetic holdout). The consult assistant's doctor-only "consider" items come from a fixed 12-presentation list, not a complete differential. The NEWS2 triage level is a suggestion for adults (not pregnancy); the nurse confirms. Prescribing checks use a small rule set (59 drugs, 18 interactions, adult dose ceilings for 31) and miss what it lacks. Speech goes to the browser's or phone's cloud speech service. Redaction is imperfect; reviewer identity is self-declared; Gemma-on-AMD is unmeasured (mock model).
 - **Ops dashboard**: queue by urgency, escalations, abstain rate, model labels (honest "mock model" label until the AMD endpoint is connected).
 
 Designed to run Gemma on AMD via the hackathon's AMD Token Factory (OpenAI-compatible); current results use a mock model until the endpoint is connected.
 
 AMD Developer Hackathon ACT III, Track 2 (Health and Wellbeing).
 
-> **Claim boundary.** Research prototype and clinical decision support. It *supports* clinicians and *flags for review*; it never diagnoses, orders, prescribes or decides triage on its own; people confirm every step. **Synthetic data only**, not clinically validated, not a medical device.
+> **Claim boundary.** Research prototype and clinical decision support. It *supports* clinicians and *flags for review*; the AI never diagnoses, orders, prescribes or confirms triage; clinicians do these in MedX, with deterministic checks and an audit trail. **Synthetic data only**, not clinically validated, not a medical device.
 
 ## Screenshots
 
