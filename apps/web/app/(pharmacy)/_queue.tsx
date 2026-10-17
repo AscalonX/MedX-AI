@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Badge, LangMorph } from "@/components/ui";
-import { LANG_NAME, PHARM_STATUS_LABEL, alertsOf, medsOf, openHigh, pharmStatus, waited } from "./_lib";
+import { LANG_NAME, PHARM_STATUS_LABEL, U, alertsOf, isAbstained, medsOf, openFlags, openHigh, pharmStatus, waited } from "./_lib";
 import { usePharmacy } from "./_shell";
 
 export function Queue() {
@@ -23,13 +23,15 @@ export function Queue() {
           </p>
           <ul className="min-h-0 flex-1 overflow-y-auto">
             {entries.map(({ session: s, fixture }) => {
-              const high = openHigh(s).length;
-              const open = alertsOf(s).filter((a) => !a.review);
+              const abst = isAbstained(s);
+              const high = abst ? 0 : openHigh(s).length;
+              const flags = openFlags(s).length;
+              const open = abst ? [] : alertsOf(s).filter((a) => !a.review);
               const mod = open.length - high;
               const cc = s.summary?.fields.find((f) => f.key === "chief_complaint");
               const st = pharmStatus(s);
               return (
-                <li key={s.id} className={`border-b border-rule ${high ? "border-l-2 border-l-signal bg-signal-tint" : "bg-sheet hover:bg-paper"}`}>
+                <li key={s.id} className={`border-b border-rule ${high || flags ? "border-l-2 border-l-signal bg-signal-tint" : "bg-sheet hover:bg-paper"}`}>
                   <Link
                     href={`/pharmacy/${s.id}`}
                     className="grid min-h-14 grid-cols-[88px_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-6 py-2 min-[900px]:grid-cols-[88px_120px_minmax(0,1fr)_200px_120px_90px]"
@@ -40,13 +42,18 @@ export function Queue() {
                     </span>
                     <span lang={s.patientLang} className="hidden text-small text-ink-soft min-[900px]:inline">{LANG_NAME[s.patientLang]}</span>
                     <span className="truncate text-small text-ink-soft">
-                      {cc?.value ? <LangMorph text={cc.value} lang={lang} /> : <span className="text-graphite">No complaint yet</span>}
-                      <span className="ml-2 text-micro text-graphite">{medsOf(s).length} medicines</span>
+                      {abst ? (
+                        <span className="text-graphite"><LangMorph text={U.needsHuman} lang={lang} /></span>
+                      ) : cc?.value && cc.status !== "missing" ? (
+                        cc.status === "unsupported" ? <span className="mx-pencil"><LangMorph text={cc.value} lang={lang} /></span> : <LangMorph text={cc.value} lang={lang} />
+                      ) : <span className="text-graphite">No complaint yet</span>}
+                      {!abst && <span className="ml-2 text-micro text-graphite">{medsOf(s).length} medicines</span>}
                     </span>
                     <span className="flex flex-wrap gap-1.5">
+                      {flags > 0 && <Badge tone="signal">{flags} red {flags === 1 ? "flag" : "flags"}</Badge>}
                       {high > 0 && <Badge tone="signalOutline">{high} high</Badge>}
                       {mod > 0 && <Badge tone="outline">{mod} to check</Badge>}
-                      {open.length === 0 && <span className="text-small text-ink-soft">{alertsOf(s).length ? "All handled" : "None"}</span>}
+                      {abst ? <Badge tone="pencil">Needs human review</Badge> : open.length === 0 && flags === 0 && <span className="text-small text-ink-soft">{alertsOf(s).length ? "All handled" : "No rule alerts"}</span>}
                     </span>
                     <span><Badge tone={st === "reconciled" ? "ink" : st === "in_review" ? "outline" : "pencil"}>{PHARM_STATUS_LABEL[st]}</Badge></span>
                     <span className="whitespace-nowrap text-small text-ink-soft">{st === "reconciled" ? "" : now ? waited(s.createdAt, now) : ""}</span>

@@ -39,6 +39,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const [live, setLive] = useState<IntakeSession[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fixtures, setFixtures] = useState<IntakeSession[]>([]);
+  const [forceFix, setForceFix] = useState(false); // ?fixtures=1 shows fixtures next to live data's absence for demos/tests
   const [fixtureAudit, setFixtureAudit] = useState<Record<string, AuditEvent[]>>({});
   const fixturesRef = useRef(fixtures);
   fixturesRef.current = fixtures;
@@ -48,13 +49,19 @@ export function Shell({ children }: { children: ReactNode }) {
     if (l === "th" || l === "it" || l === "en") setLangState(l);
     const r = store.get("medx.pharmacist");
     if (r && PHARMACISTS.includes(r)) setReviewerState(r);
-    setFixtures(FIXTURES); // after mount: fixture timestamps are computed per page load
+    setFixtures(FIXTURES);
+    setForceFix(new URLSearchParams(window.location.search).has("fixtures")); // after mount: fixture timestamps are computed per page load
   }, []);
   const setLang = (l: Lang) => { setLangState(l); store.set("medx.lang", l); };
   const setReviewer = (r: string) => { setReviewerState(r); store.set("medx.pharmacist", r); };
 
+  // Generation counter: a GET that started before a newer GET or a POST must not overwrite fresher data.
+  const gen = useRef(0);
   const refresh = useCallback(() => {
-    fetchQueue().then((q) => { setLive(q); setError(null); }).catch((e: Error) => { setLive((cur) => cur ?? []); setError(e.message); });
+    const g = ++gen.current;
+    fetchQueue()
+      .then((q) => { if (g === gen.current) { setLive(q); setError(null); } })
+      .catch((e: Error) => { if (g === gen.current) { setLive((cur) => cur ?? []); setError(e.message); } });
   }, []);
   useEffect(() => {
     refresh();
@@ -67,9 +74,9 @@ export function Shell({ children }: { children: ReactNode }) {
   const entries = useMemo<Entry[] | null>(() => {
     if (live === null) return null;
     const real = live.filter(hasMedData).map((session) => ({ session, fixture: false }));
-    if (real.length) return sortQueue(real.map((e) => e.session)).map((s) => ({ session: s, fixture: false }));
+    if (real.length && !forceFix) return sortQueue(real.map((e) => e.session)).map((s) => ({ session: s, fixture: false }));
     return sortQueue(fixtures).map((session) => ({ session, fixture: true }));
-  }, [live, fixtures]);
+  }, [live, fixtures, forceFix]);
 
   const submit = useCallback<Submit>(async (id, body) => {
     const req: PharmacyReviewReq = { reviewerId: reviewer, ...body };
@@ -83,8 +90,14 @@ export function Shell({ children }: { children: ReactNode }) {
       }));
       return;
     }
-    await post(`/api/sessions/${id}/pharmacy-review`, req);
-    refresh();
+    gen.current++; // drop any poll already in flight
+    try {
+      const updated = await post<IntakeSession>(`/api/sessions/${id}/pharmacy-review`, req);
+      setLive((cur) => (cur ? cur.map((s) => (s.id === id ? updated : s)) : cur));
+    } catch (e) {
+      refresh(); // reload the real state before the controls unlock
+      throw e;
+    }
   }, [reviewer, refresh]);
 
   const usingFixtures = entries?.some((e) => e.fixture) ?? false;
