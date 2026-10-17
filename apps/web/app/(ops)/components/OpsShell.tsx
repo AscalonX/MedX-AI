@@ -37,7 +37,7 @@ export function OpsShell({ lang, onLangChange, onRoleChange, children }: {
   return <div className={styles.shell}>
     <a className={styles.skip} href="#ops-content">{copy.skip[lang]}</a>
     <aside className={styles.sidebar}>
-      <div className="flex items-center gap-2.5"><span aria-hidden="true" className="grid size-9 place-items-center rounded-xl bg-primary-gradient font-extrabold text-on-primary">M</span><span className="text-lead font-extrabold text-ink">MedX Bridge</span></div>
+      <div className="flex items-center gap-2.5"><span aria-hidden="true" className="grid size-9 place-items-center rounded-xl bg-primary-gradient font-extrabold text-on-primary">M</span><span className="text-lead font-extrabold text-ink">MedX</span></div>
       <Switch label={copy.role[lang]} grid value="ops" onChange={onRoleChange} options={(["nurse", "doctor", "pharmacist", "ops"] as ShellRole[]).map(value => ({ value, label: copy[value][lang] }))} />
       <nav aria-label={copy.mainNav[lang]} className={styles.nav}>{nav.map(item => <Link key={item.href} href={item.href} aria-current={item.href === "/ops" ? "page" : undefined}><Icon name={item.icon} size={18} />{item.label[lang]}</Link>)}</nav>
       <p className={styles.sidebarNote}>{copy.disclaimer[lang]}</p>

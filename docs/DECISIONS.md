@@ -1,6 +1,6 @@
 # Decisions log
 
-- 2026-10-17 12:30 — Fresh build "MedX Bridge" in a new repo; old Senior Project untouched. Owner: user.
+- 2026-10-17 12:30 — Fresh build "MedX" in a new repo; old Senior Project untouched. Owner: user.
 - 2026-10-17 12:40 — Model: Gemma on AMD (Token Factory). Public GitHub repo approved (cleaned, MIT). Owner: user.
 - 2026-10-17 12:45 — Patient app native (Expo). Full TH/IT/EN. Owner: user.
 - 2026-10-17 14:55 — Full standalone pharmacist screen added. Owner: user.
@@ -11,3 +11,4 @@
 - 2026-10-17 17:05 — Medication alerts: revert to PHARMACY-SPEC fail-safe — patient-reported "stopped" medicines are still checked by all med rules (alert text notes "patient says stopped — confirm"); no automatic discontinued status. Only a pharmacist marks a medicine discontinued. Owner: orchestrator (owner delegated autonomous fixing), per clinical safety review MF-2.
 - 2026-10-17 17:05 — Patient "I'm at the desk" button: wording only (no false promise a nurse is coming), per clinical safety review MF-1. Owner: orchestrator.
 - 2026-10-17 18:50 — Scope added by owner: nurse vitals + triage suggestion (nurse confirms), doctor investigation orders + medication orders with deterministic prescribing checks and a pharmacist verify/return loop, and doctor-facing "treatment" support limited to guideline links per consideration (no drug names or doses from AI). AI never orders, prescribes or decides triage. Owner: user; framing: orchestrator.
+- 2026-10-17 20:40 — Product renamed to "MedX" (dropped "Bridge"). GitHub repo/URL slugs (medx-bridge) unchanged for now. Owner: user.

@@ -1,4 +1,4 @@
-// MedX Bridge design tokens, v2 "Calm clinical banking" (owner decision 17 Oct 2026, 15:00).
+// MedX design tokens, v2 "Calm clinical banking" (owner decision 17 Oct 2026, 15:00).
 // Spec: docs/design/DIRECTION.md. Owner: Design lead.
 // Plain numbers and strings only, so web (CSS vars in apps/web/app/globals.css) and React Native read the same values.
 // v1 export names are kept so existing screens re-skin without edits; v1 role names are mapped onto v2 roles

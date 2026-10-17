@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * MedX Bridge v2, "Calm clinical banking". Source of truth: packages/shared/src/tokens.ts.
+ * MedX v2, "Calm clinical banking". Source of truth: packages/shared/src/tokens.ts.
  * Spec: docs/design/DIRECTION.md. Light theme. v1 utility names are kept and remapped
  * (bg-sheet = white card, bg-desk = app background, text-ink, text-graphite, bg-signal = urgency red ...),
  * so screens built on v1 re-skin without edits.
@@ -277,6 +277,54 @@
   border-radius: 12px;
   background: linear-gradient(90deg, var(--color-muted) 30%, #F6F9FB 50%, var(--color-muted) 70%) 0 0 / 200% 100%;
   animation: mx-shimmer 1.4s linear infinite;
+}
+
+/* Mali mascot idle motion (DIRECTION.md 11). Subtle; removed under reduced motion by the rule below. */
+@keyframes mali-bob {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes mali-blink {
+  0%, 92%, 100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes mali-wave {
+  0%, 60%, 100% {
+    transform: rotate(0deg);
+  }
+  15%, 45% {
+    transform: rotate(-14deg);
+  }
+  30% {
+    transform: rotate(8deg);
+  }
+}
+@keyframes mali-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.mali g {
+  transform-box: view-box;
+}
+.mali-animate .mali-body {
+  animation: mali-bob 3.2s ease-in-out infinite;
+}
+.mali-animate .mali-eyes {
+  transform-origin: 100px 80px;
+  animation: mali-blink 4.8s ease-in-out infinite;
+}
+.mali-animate .mali-wave {
+  transform-origin: 138px 124px;
+  animation: mali-wave 2.6s var(--ease-pen) infinite;
+}
+.mali-animate .mali-signal {
+  animation: mali-pulse 1.8s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

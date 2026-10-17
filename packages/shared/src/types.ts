@@ -1,4 +1,4 @@
-// MedX Bridge shared contracts. Owned by the orchestrator: other roles read, never edit.
+// MedX shared contracts. Owned by the orchestrator: other roles read, never edit.
 // Change requests go in docs/reports/<wave>-<role>.md under "open questions".
 
 export type Lang = "th" | "it" | "en";

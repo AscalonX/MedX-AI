@@ -1,4 +1,4 @@
-// MedX Bridge eval harness: computes docs/ai/METRICS.md (M1–M11) by importing the pipeline directly.
+// MedX eval harness: computes docs/ai/METRICS.md (M1–M11) by importing the pipeline directly.
 // Run:  cd apps/web && MODEL_PROVIDER=mock npx vite-node ../../eval/run.ts -- [--split all|dev|test] [--limit N]
 //       cd apps/web && npx vite-node ../../eval/run.ts -- --rescore ../../eval/runs/<ts>   (no model calls)
 import { createHash } from 'node:crypto';
@@ -246,7 +246,7 @@ function report(m: any, cfg: any, runDir: string) {
   const perCase = (set: any) => ['| Case | Lang | Gold | v1.0 fired | v1.1 fired | Model fired |', '|---|---|---|---|---|---|', ...set.perCase.map((r: any) => `| ${r.id} | ${r.lang} | ${r.gold} | ${r['v1.0']} | ${r['v1.1']} | ${r.model} |`)].join('\n');
   const history = readdirSync(path.join(ROOT, 'eval/runs')).sort().map(d => { try { const c = JSON.parse(readFileSync(path.join(ROOT, 'eval/runs', d, 'config.json'), 'utf8')); return `| ${d} | ${c.provider.name} | ${c.provider.model} | ${c.split} | ${c.gitSha}${c.dirty ? ' (dirty)' : ''} |`; } catch { return `| ${d} | ? | ? | ? | ? |`; } });
   const lines = [
-    `# MedX Bridge — evaluation report`, '', hdr,
+    `# MedX — evaluation report`, '', hdr,
     `Run \`${path.basename(runDir)}\` · ${cfg.startedAt} · split **${cfg.split}** · git ${cfg.gitSha}${cfg.dirty ? ' (uncommitted changes)' : ''} · METRICS.md sha256 ${cfg.metricsSha.slice(0, 12)} · prompts sha256 ${cfg.promptSha.slice(0, 12)} · rules v1.1 sha256 ${cfg.rulesSha.slice(0, 12)}`,
     `Cases: ${m.counts.cases} (excluded from field metrics because escalated: ${m.counts.excludedEscalated}; errors: ${m.counts.errors.length}) · holdout: ${m.counts.holdout}. Synthetic data, research prototype. Metrics pre-declared in docs/ai/METRICS.md.`, '',
     '## Headline', '', '| Metric | Result | Threshold | Status |', '|---|---|---|---|', ...rows, '',

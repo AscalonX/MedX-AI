@@ -1,13 +1,13 @@
-# MedX Bridge: 8-slide deck outline
+# MedX: 8-slide deck outline
 
-> Updated for wave 9: the built deck is `pitch/deck/deck.html` (PDF `MedX-Bridge-deck.pdf`, previews `png/`). It follows the app's v2 look and now also covers the voice agent with patient confirmation, live status on the patient phone, pharmacist reconciliation, the ops dashboard, and the Claude-reviews-Codex plus QA process. Slide order: 1 title, 2 problem (cited), 3 three users and the phone, 4 pipeline, 5 safety by design, 6 evidence (52 cases, 18 blind holdout, 1,041 tests, 7/10 keyword recall), 7 Gemma on AMD (latency [pending AMD run]), 8 next steps, pharmacist screen, team. The text below is the original outline; `deck.html` is the source of truth.
+> Updated for wave 9: the built deck is `pitch/deck/deck.html` (PDF `MedX-deck.pdf`, previews `png/`). It follows the app's v2 look and now also covers the voice agent with patient confirmation, live status on the patient phone, pharmacist reconciliation, the ops dashboard, and the Claude-reviews-Codex plus QA process. Slide order: 1 title, 2 problem (cited), 3 three users and the phone, 4 pipeline, 5 safety by design, 6 evidence (52 cases, 18 blind holdout, 1,041 tests, 7/10 keyword recall), 7 Gemma on AMD (latency [pending AMD run]), 8 next steps, pharmacist screen, team. The text below is the original outline; `deck.html` is the source of truth.
 
 
 Visual language: "Clinical paper" (`docs/design/DIRECTION.md`): warm off-white, ink-black type, serif display, red only for urgency, no gradients, no card grids. Every number must be cited or marked [TBD-METRIC].
 
-## 1. MedX Bridge
+## 1. MedX
 - **Message:** Every field points back to the patient's own words.
-- **On slide:** MedX Bridge. Multilingual pre-visit intake that supports clinicians. Research prototype, synthetic data. AMD Developer Hackathon ACT III, Track 2.
+- **On slide:** MedX. Multilingual pre-visit intake that supports clinicians. Research prototype, synthetic data. AMD Developer Hackathon ACT III, Track 2.
 - **Visual:** Large serif title on paper; below it one intake sheet with a single yellow highlighter stroke across a patient sentence.
 - **Notes:** We built a pre-visit intake for clinics where patient and staff do not share a language. It supports the nurse; it never diagnoses. Everything you see runs on synthetic data.
 

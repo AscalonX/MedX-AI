@@ -1,4 +1,4 @@
-# MedX Bridge: AI pipeline design (AI researcher, wave 1)
+# MedX: AI pipeline design (AI researcher, wave 1)
 
 Status: draft for the spec wave. Owner: AI researcher. Implementer: AI engineer (`apps/web/lib/pipeline/`).
 Contracts: `packages/shared/src/types.ts` (`ExtractedField`, `Evidence`, `IntakeSummary`, `ModelCall`). This document does not change them; requests are listed in `docs/reports/w1-ai-researcher.md`.

@@ -1,4 +1,4 @@
-# AMD Hackathon ACT III — Track 2 — fresh build: "MedX Bridge"
+# AMD Hackathon ACT III — Track 2 — fresh build: "MedX"
 
 ## Context
 - **Deadline: Sun 18 Oct 2026, 17:00 ICT.** Now Sat ~12:30 ICT → ~28 h. Internal submit target: **Sun 15:00 ICT**.
@@ -7,7 +7,7 @@
 - Judges: Application of Technology (AMD/model use), Business Value, Originality, Presentation. Track 2 wants one journey step, first input → final result, visible uncertainty, human takeover, a measurable gain, safety story.
 
 ## What we build (one sharp slice, not a whole hospital)
-**MedX Bridge — multilingual pre-visit intake that a clinician can trust in 30 seconds.**
+**MedX — multilingual pre-visit intake that a clinician can trust in 30 seconds.**
 A patient (any language: Thai, Italian, English…) describes their problem in a short guided chat. The clinician gets a one-screen structured summary in *their* language where **every field links to the exact patient sentence it came from**, uncertain fields are flagged, missing info triggers one follow-up question, and red flags interrupt everything.
 
 Why this wins:

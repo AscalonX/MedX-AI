@@ -1,4 +1,4 @@
-# MedX Bridge: consult assistant spec (Doctor, consultrules v1.1, vitalrules v1.0, investigations v1.0)
+# MedX: consult assistant spec (Doctor, consultrules v1.1, vitalrules v1.0, investigations v1.0)
 
 Ambient assistant for the nurse's history-taking and the doctor's consult: speech-to-text of the conversation → pop-up questions, don't-miss "rule out" questions, doctor-only "consider" items, and an evidence-linked draft note the doctor edits and signs.
 Contracts: `ConsultMode`, `ConsultSuggestion`, `ConsultNote`, `ConsultNoteLine`, `ConsultState`, `ConsultRuleFile` (`packages/shared/src/types.ts`). Rules: `packages/shared/src/consultrules.json`. Check: `node docs/clinical/check-consultrules.mjs` (cases in §8).
@@ -158,7 +158,7 @@ Sections, in order: **presenting_complaint · history · medications · allergie
   - No level 5: "routine admin" is not a clinical triage output.
 - **Incomplete vitals never yield level 4**. With vitals missing, the result is level 3 plus the engine constant reason "Vitals incomplete — complete NEWS2 before confirming" (th "สัญญาณชีพยังไม่ครบ — วัดให้ครบก่อนยืนยัน", it "Parametri incompleti — completare il NEWS2 prima di confermare") (CR-12).
 - Band alerts: every 3-point band raises a **high** alert, every 2-point band a **moderate** one.
-- The level mapping is MedX Bridge's own, not an RCP or ESI scale.
+- The level mapping is MedX's own, not an RCP or ESI scale.
 
 ## 10. Investigations (`investigations.json`, `InvestigationCatalog`)
 

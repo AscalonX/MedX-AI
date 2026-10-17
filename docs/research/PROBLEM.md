@@ -1,4 +1,4 @@
-# MedX Bridge: the problem, with evidence
+# MedX: the problem, with evidence
 
 Research prototype, synthetic data only. Every number below was read from the cited abstract or page on 17 Oct 2026. Items we could not verify are listed at the end and are NOT used.
 
@@ -33,7 +33,7 @@ Research prototype, synthetic data only. Every number below was read from the ci
 - In a framework study of LLM clinical note generation (18 configurations, 12,999 clinician-annotated sentences), the hallucination rate was 1.47% and the omission rate 3.45%; prompt and workflow refinement reduced major errors. [L1]
 - GPT-4o summaries of 30 synthetic Dutch discharge letters, rated by 31 clinicians: content judged correct 78% of the time; the medication section had the highest hallucination rate; missing information was the most common error. The authors conclude human oversight and targeted automated checks for omissions and hallucinations are essential. [L2]
 - In a prospective pilot of LLM hospital-course summaries, among 100 summaries with feedback, 25% had omissions, 20% inaccuracies, 2% hallucinations; physicians rated 88% of unedited summaries as no harm potential and one as likely moderate harm. [L3]
-- Why this matters for MedX Bridge: even low per-sentence error rates are unacceptable when a nurse may trust a field at a glance. Our design answers this directly: every field must carry a verified patient quote, otherwise it is shown as unsupported; red flags are deterministic and cannot be cleared by the model; a clinician approves everything.
+- Why this matters for MedX: even low per-sentence error rates are unacceptable when a nurse may trust a field at a glance. Our design answers this directly: every field must carry a verified patient quote, otherwise it is shown as unsupported; red flags are deterministic and cannot be cleared by the model; a clinician approves everything.
 
 ## 5. Three one-sentence problem statements (slide-ready)
 

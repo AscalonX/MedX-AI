@@ -1,4 +1,4 @@
-# MedX Bridge design direction v2: "Calm clinical banking"
+# MedX design direction v2: "Calm clinical banking"
 
 Owner: Design lead. Status: v2, binding from wave 4.
 Tokens: `packages/shared/src/tokens.ts`. Web mapping: `apps/web/app/globals.css`. Web primitives: `apps/web/components/ui/`.
@@ -247,7 +247,7 @@ Banned: emoji, sparkles, robot or brain icons, stethoscope illustrations, icons 
 Home and welcome:
 ```
 +--------------------------------------+
-| [M] MedX Bridge              ( TH )  |  brand mark + language pill
+| [M] MedX              ( TH )  |  brand mark + language pill
 |                                      |
 | Good morning                         |  small inkSoft
 | Welcome                              |  title 22, Bold
@@ -330,7 +330,7 @@ Status ("a nurse will review this"):
 ### 8.2 Web app shell (`AppShell`)
 ```
 +------------------+-------------------------------------------------------------+
-| [M] MedX Bridge  |  Good afternoon                    (TH|IT|EN)  (AR)         |
+| [M] MedX  |  Good afternoon                    (TH|IT|EN)  (AR)         |
 |                  |  Nurse A. Rossi                    language pill  avatar    |
 | (Nurse|Doctor|   |                                                             |
 |  Pharm|Ops)      |  +--------------------------------------------------------+ |

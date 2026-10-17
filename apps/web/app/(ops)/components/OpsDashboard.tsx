@@ -59,7 +59,7 @@ export function OpsDashboard() {
             <div className={styles.charts}><StatusChart sessions={snapshot.sessions} lang={lang} /><LatencyChart sessions={snapshot.sessions} metrics={snapshot.metrics} health={snapshot.health} lang={lang} /></div>
             <ProviderPlate health={snapshot.health} lang={lang} />
           </> : !error && <Card className={styles.loading} aria-busy="true" aria-label={copy.loading[lang]}><p role="status"><LangMorph text={copy.loading} lang={lang} /></p><div aria-hidden="true" className={styles.loadingLines}>{Array.from({ length: 6 }, (_, i) => <div key={i} className="mx-skeleton" />)}</div></Card>}
-          <footer className={styles.footer}><p><LangMorph text={copy.footer} lang={lang} /></p><span lang="en">MedX Bridge · ACT III</span></footer>
+          <footer className={styles.footer}><p><LangMorph text={copy.footer} lang={lang} /></p><span lang="en">MedX · ACT III</span></footer>
         </div>
       </OpsShell>
     </div>

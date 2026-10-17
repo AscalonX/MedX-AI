@@ -1,4 +1,4 @@
-// "Mali", the MedX Bridge mascot: a baby elephant (Thailand's national animal; elephants hear well,
+// "Mali", the MedX mascot: a baby elephant (Thailand's national animal; elephants hear well,
 // like Mali listens to patients in their own language). A helper, never a clinician.
 // Single source of truth for web (apps/web/components/ui/Mascot.tsx) and React Native (react-native-svg).
 // Plain data: SVG path strings, colours and gradient stops in a 200x200 viewBox. No platform code.
@@ -294,5 +294,5 @@ export function mascotSvg(pose: MascotPose, size = 200, idPrefix = "m"): string 
       return `<path d="${l.d}" fill="${fill}"${stroke}${op}/>`;
     })
     .join("");
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${MASCOT_VIEWBOX}" width="${size}" height="${size}" role="img" aria-label="Mali, the MedX Bridge elephant"><defs>${defs}</defs>${body}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${MASCOT_VIEWBOX}" width="${size}" height="${size}" role="img" aria-label="Mali, the MedX elephant"><defs>${defs}</defs>${body}</svg>`;
 }

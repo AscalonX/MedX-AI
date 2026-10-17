@@ -1,4 +1,4 @@
-# MedX Bridge: lablab submission copy
+# MedX: lablab submission copy
 
 Live demo: [URL pending]
 
@@ -8,8 +8,8 @@ Track 2, Health and Wellbeing. Research prototype, synthetic data only. Items ma
 
 ## Title options
 
-1. **MedX Bridge** (recommended)
-2. MedX Bridge: every field points back to the patient's own words
+1. **MedX** (recommended)
+2. MedX: every field points back to the patient's own words
 3. Bridge Intake
 
 ## Tagline

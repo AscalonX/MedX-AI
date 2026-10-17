@@ -1,4 +1,4 @@
-# MedX Bridge: pre-declared evaluation metrics
+# MedX: pre-declared evaluation metrics
 
 **Frozen before any run.** Record this file's commit hash at the top of every `eval/REPORT.md`. Changing a metric, definition or threshold after a test run requires a dated entry in the change log below, and REPORT.md must show both the old and new definitions. Adding a metric after seeing results is allowed only under a "post-hoc, exploratory" heading.
 

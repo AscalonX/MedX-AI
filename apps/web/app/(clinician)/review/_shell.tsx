@@ -45,7 +45,7 @@ export function Shell({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => {
     const unacked = sorted?.filter((s) => fresh.has(s.id) && (s.summary?.redFlags ?? []).some((h) => !h.review)).length ?? 0;
-    document.title = unacked ? `(${unacked}) New emergency · MedX Bridge` : "Clinician review | MedX Bridge";
+    document.title = unacked ? `(${unacked}) New emergency · MedX` : "Clinician review | MedX";
   });
   useEffect(() => {
     refreshQueue();

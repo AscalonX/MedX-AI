@@ -22,7 +22,7 @@ export const T = {
   filterEscalated: L("Escalated", "เร่งด่วน", "Urgenti"),
   filterReview: L("To review", "รอตรวจ", "Da rivedere"),
   queueHint: L("Escalated intakes are pinned first. Open one to review it.", "รายการเร่งด่วนอยู่บนสุด เปิดเพื่อตรวจสอบ", "I casi urgenti sono in cima. Ne apra uno per rivederlo."),
-  landTitle: L("MedX Bridge: multilingual intake where every field points to the patient's own words", "MedX Bridge: รับข้อมูลหลายภาษา ทุกช่องชี้ไปยังคำพูดของผู้ป่วยเอง", "MedX Bridge: accettazione multilingue in cui ogni campo rimanda alle parole del paziente"),
+  landTitle: L("MedX: multilingual intake where every field points to the patient's own words", "MedX: รับข้อมูลหลายภาษา ทุกช่องชี้ไปยังคำพูดของผู้ป่วยเอง", "MedX: accettazione multilingue in cui ogni campo rimanda alle parole del paziente"),
   landSub: L("Patients describe symptoms in their own language. Clinicians see one summary where every field links to the patient's own words.", "ผู้ป่วยเล่าอาการด้วยภาษาของตนเอง บุคลากรเห็นสรุปเดียวที่ทุกช่องเชื่อมกับคำพูดของผู้ป่วย", "I pazienti descrivono i sintomi nella propria lingua. Il clinico vede un riepilogo in cui ogni campo rimanda alle parole del paziente."),
   roleClinician: L("Clinician", "บุคลากรทางการแพทย์", "Clinico"),
   rolePharmacist: L("Pharmacist", "เภสัชกร", "Farmacista"),

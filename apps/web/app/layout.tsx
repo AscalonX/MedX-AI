@@ -16,7 +16,7 @@ const scbx = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "MedX Bridge",
+  title: "MedX",
   description: "Multilingual pre-visit intake that supports clinician review. Research prototype.",
 };
 

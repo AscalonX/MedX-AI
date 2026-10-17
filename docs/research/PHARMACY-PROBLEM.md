@@ -1,4 +1,4 @@
-# MedX Bridge pharmacist view: the problem, with evidence
+# MedX pharmacist view: the problem, with evidence
 
 Research prototype, synthetic data only. Numbers were read from the cited PubMed abstracts or pages on 17 Oct 2026. Study settings differ a lot, so ranges are shown, not one headline average.
 
@@ -27,13 +27,13 @@ Reading: depending on population and method, roughly 13% to 59% of patients have
 
 - ISMP Canada's safe-medication newsletter (Aug 2014) describes a cruise passenger who took a 1000 mg paracetamol cold product without knowing that paracetamol is another name for acetaminophen (Tylenol), risking an unnoticed overdose and liver damage. It also states that brand names abroad may refer to different medicines or strengths, with an example of a Reactine bought in Italy that also contained pseudoephedrine. [T1] (case-level report, not a prevalence study.)
 - No PubMed study quantifying brand-name confusion among travellers was found; we do not give a rate.
-- Design implication: the same ingredient appears under different brands per country (Tachipirina, Efferalgan, Sara, Tiffy, Tylenol), which is why MedX Bridge maps names to generics and flags duplicate paracetamol.
+- Design implication: the same ingredient appears under different brands per country (Tachipirina, Efferalgan, Sara, Tiffy, Tylenol), which is why MedX maps names to generics and flags duplicate paracetamol.
 
 ## 4. Allergy records are often inaccurate
 
 - In 145 maternity patients with a beta-lactam allergy in the record (Australia, 2021), the documentation needed amending in 52 patients (36%), and 56% of the allergies were judged low risk and potentially suitable for de-labelling. [A1]
 - In a Hong Kong cohort of 141 adults referred for suspected penicillin allergy, 83% (117) were delabelled after structured testing; among 88 delabelled patients followed for 12 months, 17% (15) were incorrectly relabelled, despite a territory-wide shared electronic record. [A2]
-- Meaning for MedX Bridge: the pharmacist sees the allergy the patient states, quoted in their own words, with the reaction if given, and nothing is marked "verified" until the pharmacist confirms. We do not claim to remove false allergy labels.
+- Meaning for MedX: the pharmacist sees the allergy the patient states, quoted in their own words, with the reaction if given, and nothing is marked "verified" until the pharmacist confirms. We do not claim to remove false allergy labels.
 
 ## 5. Slide-ready statements
 

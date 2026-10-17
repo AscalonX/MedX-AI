@@ -1,4 +1,4 @@
-# MedX Bridge: pharmacist view spec (Doctor, medrules v1.0, Sat 17 Oct 2026)
+# MedX: pharmacist view spec (Doctor, medrules v1.0, Sat 17 Oct 2026)
 
 Medication reconciliation at intake. Contracts: `MedicationEntry`, `AllergyEntry`, `MedAlert`, `MedReviewAction`, `MedAlertReviewAction`, `MedRuleFile` (`packages/shared/src/types.ts`), `PharmacyReviewReq` (`api.ts`). Rules: `packages/shared/src/medrules.json`. Tests: `docs/clinical/MEDRULES-TESTS.md` (`node docs/clinical/check-medrules.mjs`).
 
@@ -40,7 +40,7 @@ Medication reconciliation at intake. Contracts: `MedicationEntry`, `AllergyEntry
 | pregnancy_caution | MR-PREG-02 | moderate | `pregnancy: "caution"` and pregnancy is pregnant/possible |
 | unknown_medication | MR-UNKNOWN-01 | moderate | Med not in the dictionary, or matched to a lay "(unspecified)" entry |
 
-Engine `source` strings for the kinds that have no per-rule source in `MedRuleFile` (see CR-7): DUP → "BNF: Medicines, duplication of therapy"; PREG → "BNF: Pregnancy sections of the named drug"; MAXDOSE → "BNF: Paracetamol, adult maximum 4 g in 24 hours"; UNKNOWN → "MedX Bridge pharmacy spec §3 (unidentified medicine)".
+Engine `source` strings for the kinds that have no per-rule source in `MedRuleFile` (see CR-7): DUP → "BNF: Medicines, duplication of therapy"; PREG → "BNF: Pregnancy sections of the named drug"; MAXDOSE → "BNF: Paracetamol, adult maximum 4 g in 24 hours"; UNKNOWN → "MedX pharmacy spec §3 (unidentified medicine)".
 
 Severity ≠ urgency. A med alert never changes the triage queue. Only red-flag rules do that.
 

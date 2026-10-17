@@ -12,7 +12,7 @@ const partClass: Record<string, string> = {
 };
 
 /**
- * Mali, the MedX Bridge elephant (DIRECTION.md section 11). Same path data as mobile (`@medx/shared/src/mascot`).
+ * Mali, the MedX elephant (DIRECTION.md section 11). Same path data as mobile (`@medx/shared/src/mascot`).
  * Decorative by default (aria-hidden). Subtle idle bob, blink and wave; static under reduced motion.
  * Never render on red-flag / emergency screens or next to alerts.
  */

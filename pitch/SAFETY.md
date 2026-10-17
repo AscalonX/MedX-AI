@@ -1,4 +1,4 @@
-# How MedX Bridge handles the five Track 2 questions
+# How MedX handles the five Track 2 questions
 
 Research prototype. Synthetic data only. It supports clinicians; it does not diagnose, treat, prescribe or decide urgency.
 

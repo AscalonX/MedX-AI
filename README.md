@@ -1,4 +1,4 @@
-# MedX Bridge
+# MedX
 
 Live demo: [URL pending]
 

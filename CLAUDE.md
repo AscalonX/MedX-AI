@@ -1,4 +1,4 @@
-# MedX Bridge — team rules (read before any work)
+# MedX — team rules (read before any work)
 
 Product: multilingual pre-visit intake for AMD Developer Hackathon ACT III, Track 2 (Health & Wellbeing).
 Plan of record: `docs/PLAN.md`. Spec of record (after spec wave): `docs/SPEC.md`.

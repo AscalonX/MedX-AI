@@ -1,4 +1,4 @@
-# MedX Bridge: clinical spec (Doctor, v1.1.1 rules, Sat 17 Oct 2026)
+# MedX: clinical spec (Doctor, v1.1.1 rules, Sat 17 Oct 2026)
 
 Scope: what the intake must capture, when it escalates, what the nurse sees, and when it must abstain.
 Contracts: `packages/shared/src/types.ts` (not edited). Rules: `packages/shared/src/redflags.json`. Tests: `docs/clinical/REDFLAG-TESTS.md`.
@@ -88,7 +88,7 @@ Abstaining never hides or delays a red flag. Red-flag evaluation does not depend
 ## 6. Claim boundary (pitch wording)
 
 Say:
-- "MedX Bridge **supports** triage nurses: it structures what the patient said, in the nurse's language, with every field linked to the patient's own sentence."
+- "MedX **supports** triage nurses: it structures what the patient said, in the nurse's language, with every field linked to the patient's own sentence."
 - "Red flags are **deterministic, guideline-based rules** that run before the AI and that the AI cannot switch off. They **flag for the clinician**; the clinician decides."
 - "When the system is unsure, it **says so** and hands over to a human."
 - "**Research prototype**, evaluated on **synthetic** cases only. Not a medical device. Not validated for clinical use."

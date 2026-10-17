@@ -1,4 +1,4 @@
-# MedX Bridge — evaluation report
+# MedX — evaluation report
 
 > **MOCK PROVIDER — NOT EVIDENCE.** Deterministic regex mock (`deterministic-mock`), not Gemma and not AMD. These numbers only prove the harness runs end to end; they say nothing about model quality.
 
