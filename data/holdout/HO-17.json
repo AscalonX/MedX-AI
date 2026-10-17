@@ -1,0 +1,16 @@
+{
+  "id": "HO-17",
+  "lang": "en",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "had a seizure once when i was 12 from a high fever, nothing since. need a form filled for my new job"
+    }
+  ],
+  "gold": {
+    "escalate": false,
+    "category": "none",
+    "why": "Remote single febrile seizure history, administrative request"
+  }
+}

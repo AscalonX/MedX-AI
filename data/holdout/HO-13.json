@@ -1,0 +1,16 @@
+{
+  "id": "HO-13",
+  "lang": "it",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Tre anni fa ho avuto un infarto e mi hanno messo uno stent. Oggi sto bene, volevo solo prenotare il controllo annuale e rinnovare la ricetta."
+    }
+  ],
+  "gold": {
+    "escalate": false,
+    "category": "none",
+    "why": "Past cardiac history only, currently asymptomatic, routine follow-up"
+  }
+}

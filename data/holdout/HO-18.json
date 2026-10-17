@@ -1,0 +1,16 @@
+{
+  "id": "HO-18",
+  "lang": "en",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "felt a bit dizzy standing up too quick this morning, gone in a few secs, haven't been drinking much water lately. should i book a visit?"
+    }
+  ],
+  "gold": {
+    "escalate": false,
+    "category": "none",
+    "why": "Brief orthostatic lightheadedness, no loss of consciousness, likely dehydration"
+  }
+}

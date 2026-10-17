@@ -87,7 +87,9 @@ export interface ExtractedField {
 export type RedFlagSeverity = "emergency" | "urgent";
 
 export interface RedFlagHit {
-  ruleId: string; // e.g. "RF-CHEST-01"
+  ruleId: string; // e.g. "RF-CHEST-01"; model-screen hits use "MODEL-<category>"
+  /** "rule" = deterministic keyword rule; "model" = add-only Gemma safety screen (needs clinician confirmation). Default "rule". */
+  source?: "rule" | "model";
   label: Localized;
   severity: RedFlagSeverity;
   /** What the clinician should do now. */

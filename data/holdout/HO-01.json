@@ -1,0 +1,16 @@
+{
+  "id": "HO-01",
+  "lang": "th",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "แน่นหน้าอกเหมือนมีของหนักทับ ร้าวไปกรามซ้าย เหงื่อแตกท่วมตัวมาครึ่งชั่วโมงแล้วค่ะ"
+    }
+  ],
+  "gold": {
+    "escalate": true,
+    "category": "chest",
+    "why": "Pressure-type chest pain radiating to jaw with diaphoresis: possible ACS"
+  }
+}

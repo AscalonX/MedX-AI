@@ -1,0 +1,16 @@
+{
+  "id": "HO-05",
+  "lang": "it",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Stamattina ho vomitato una roba scura tipo fondi di caffè e le feci sono nere come catrame, mi gira tutto"
+    }
+  ],
+  "gold": {
+    "escalate": true,
+    "category": "bleeding",
+    "why": "Coffee-ground emesis plus melena with dizziness: upper GI bleed"
+  }
+}

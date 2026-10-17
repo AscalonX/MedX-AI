@@ -1,0 +1,20 @@
+{
+  "id": "HO-02",
+  "lang": "th",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "พ่อพูดไม่ชัดอยู่ดีๆ ปากเบี้ยวไปข้างนึง"
+    },
+    {
+      "role": "patient",
+      "text": "แขนขวายกไม่ขึ้นเลย เมื่อกี้ยังปกติอยู่เลย"
+    }
+  ],
+  "gold": {
+    "escalate": true,
+    "category": "stroke",
+    "why": "Acute dysarthria, facial droop, unilateral arm weakness: stroke (FAST positive), relative's report still needs emergency"
+  }
+}

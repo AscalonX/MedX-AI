@@ -1,0 +1,20 @@
+{
+  "id": "HO-08",
+  "lang": "en",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "i've been burning up all night and my neck is so stiff i cant get my chin down, light is killing my eyes"
+    },
+    {
+      "role": "patient",
+      "text": "also got these purple spots spreading on my legs"
+    }
+  ],
+  "gold": {
+    "escalate": true,
+    "category": "meningitis",
+    "why": "Fever, neck stiffness, photophobia, non-blanching spreading rash: meningococcal meningitis/sepsis"
+  }
+}

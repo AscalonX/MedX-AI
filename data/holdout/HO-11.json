@@ -1,0 +1,20 @@
+{
+  "id": "HO-11",
+  "lang": "th",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "เจ็บหน้าอกนิดๆ เวลากดตรงซี่โครงค่ะ เป็นหลังยกของเมื่อวาน"
+    },
+    {
+      "role": "patient",
+      "text": "ไม่เหนื่อย ไม่เหงื่อออก หายใจปกติดี"
+    }
+  ],
+  "gold": {
+    "escalate": false,
+    "category": "none",
+    "why": "Reproducible musculoskeletal chest wall pain after lifting, explicit denial of cardiac features"
+  }
+}

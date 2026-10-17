@@ -1,0 +1,20 @@
+{
+  "id": "HO-14",
+  "lang": "it",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Mia mamma ha 80 anni e ieri le bruciava un po' lo stomaco dopo cena, adesso sta benissimo e ha mangiato."
+    },
+    {
+      "role": "patient",
+      "text": "Posso prenotarle una visita dal medico di base?"
+    }
+  ],
+  "gold": {
+    "escalate": false,
+    "category": "none",
+    "why": "Relative's mild resolved dyspepsia, no alarm features"
+  }
+}

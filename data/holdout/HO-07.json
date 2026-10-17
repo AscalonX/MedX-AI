@@ -1,0 +1,16 @@
+{
+  "id": "HO-07",
+  "lang": "it",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Mi è esploso un mal di testa all'improvviso, mai provato niente di simile, come una bastonata dietro la nuca"
+    }
+  ],
+  "gold": {
+    "escalate": true,
+    "category": "headache",
+    "why": "Thunderclap worst-ever headache: subarachnoid haemorrhage until excluded"
+  }
+}

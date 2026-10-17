@@ -1,0 +1,16 @@
+{
+  "id": "HO-16",
+  "lang": "en",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "cough for a week, no shortness of breath, no fever, no chest pain, just annoying at night. can i get checked"
+    }
+  ],
+  "gold": {
+    "escalate": false,
+    "category": "none",
+    "why": "Mild cough with breathing, fever and chest pain denied"
+  }
+}

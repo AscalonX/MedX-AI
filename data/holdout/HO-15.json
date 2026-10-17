@@ -1,0 +1,16 @@
+{
+  "id": "HO-15",
+  "lang": "it",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Ho il naso chiuso e un po' di mal di gola da due giorni, niente febbre. Cosa posso prendere?"
+    }
+  ],
+  "gold": {
+    "escalate": false,
+    "category": "none",
+    "why": "Uncomplicated upper respiratory infection symptoms"
+  }
+}

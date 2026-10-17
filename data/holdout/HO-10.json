@@ -1,0 +1,16 @@
+{
+  "id": "HO-10",
+  "lang": "en",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "blacked out in the shower, woke up on the tiles, heart was pounding before it happened and i still feel like i'm gonna go down again"
+    }
+  ],
+  "gold": {
+    "escalate": true,
+    "category": "syncope",
+    "why": "Syncope preceded by palpitations with ongoing presyncope: arrhythmic cause, cannot be managed routinely"
+  }
+}

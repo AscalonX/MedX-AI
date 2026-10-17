@@ -1,0 +1,16 @@
+{
+  "id": "HO-12",
+  "lang": "th",
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ปวดหัวมา 2 วัน ตึงๆ ที่ขมับ น่าจะเครียดงาน ไม่มีไข้ ไม่คอแข็ง ไม่อาเจียน แขนขาปกติ อยากนัดหมอค่ะ"
+    }
+  ],
+  "gold": {
+    "escalate": false,
+    "category": "none",
+    "why": "Tension-type headache with all red flags explicitly denied"
+  }
+}
