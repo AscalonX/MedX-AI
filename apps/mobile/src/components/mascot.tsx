@@ -4,9 +4,9 @@ import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, w
 import Svg, { Defs, G, LinearGradient, Path, RadialGradient, Stop } from "react-native-svg";
 
 /**
- * Mali (DIRECTION.md section 11), same path data as the web. Decorative: hidden from screen readers.
+ * Fin, the dolphin mascot (DIRECTION.md section 11), same path data as the web. Decorative: hidden from screen readers.
  * NEVER render on the red-flag screen, next to alerts or in error states.
- * Motion: gentle idle bob; `listening` also sways a few degrees (the ears are not separate groups here).
+ * Motion: gentle idle bob; `listening` also sways a few degrees (the echo arcs are not separate groups here).
  * Reduced motion: static.
  */
 export function Mascot({ pose = "wave", size = 120, animate = true }: { pose?: MascotPose; size?: number; animate?: boolean }) {

@@ -5,7 +5,7 @@ import { cx } from "./cx";
 
 /**
  * Says what is empty and how it fills. One optional action.
- * `mascot` shows Mali instead of the icon disc (e.g. "pointing" for "ask the nurse", "happy" for "all done").
+ * `mascot` shows Fin (the mascot) instead of the icon disc (e.g. "pointing" for "ask the nurse", "happy" for "all done").
  * Never use the mascot for an empty state that sits beside an alert or red flag.
  */
 export function EmptyState({

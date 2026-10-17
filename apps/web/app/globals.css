@@ -279,13 +279,13 @@
   animation: mx-shimmer 1.4s linear infinite;
 }
 
-/* Mali mascot idle motion (DIRECTION.md 11). Subtle; removed under reduced motion by the rule below. */
-@keyframes mali-bob {
+/* Fin (mascot) idle motion (DIRECTION.md 11). Subtle; removed under reduced motion by the rule below. */
+@keyframes mascot-bob {
   50% {
     transform: translateY(-3px);
   }
 }
-@keyframes mali-blink {
+@keyframes mascot-blink {
   0%, 92%, 100% {
     transform: scaleY(1);
   }
@@ -293,7 +293,7 @@
     transform: scaleY(0.1);
   }
 }
-@keyframes mali-wave {
+@keyframes mascot-wave {
   0%, 60%, 100% {
     transform: rotate(0deg);
   }
@@ -304,27 +304,27 @@
     transform: rotate(8deg);
   }
 }
-@keyframes mali-pulse {
+@keyframes mascot-pulse {
   50% {
     opacity: 0.35;
   }
 }
-.mali g {
+.mascot g {
   transform-box: view-box;
 }
-.mali-animate .mali-body {
-  animation: mali-bob 3.2s ease-in-out infinite;
+.mascot-animate .mascot-body {
+  animation: mascot-bob 3.2s ease-in-out infinite;
 }
-.mali-animate .mali-eyes {
-  transform-origin: 100px 80px;
-  animation: mali-blink 4.8s ease-in-out infinite;
+.mascot-animate .mascot-eyes {
+  transform-origin: 98px 79px;
+  animation: mascot-blink 4.8s ease-in-out infinite;
 }
-.mali-animate .mali-wave {
-  transform-origin: 138px 124px;
-  animation: mali-wave 2.6s var(--ease-pen) infinite;
+.mascot-animate .mascot-wave {
+  transform-origin: 152px 118px;
+  animation: mascot-wave 2.6s var(--ease-pen) infinite;
 }
-.mali-animate .mali-signal {
-  animation: mali-pulse 1.8s ease-in-out infinite;
+.mascot-animate .mascot-signal {
+  animation: mascot-pulse 1.8s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

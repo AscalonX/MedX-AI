@@ -4,15 +4,15 @@ import { MASCOT_VIEWBOX, mascotGradients, mascotPoses, type MascotLayer, type Ma
 import { cx } from "./cx";
 
 const partClass: Record<string, string> = {
-  eyes: "mali-eyes",
-  waveArm: "mali-wave",
-  signal: "mali-signal",
-  ears: "mali-ears",
+  eyes: "mascot-eyes",
+  waveArm: "mascot-wave",
+  signal: "mascot-signal",
+  ears: "mascot-ears",
   body: "",
 };
 
 /**
- * Mali, the MedX elephant (DIRECTION.md section 11). Same path data as mobile (`@medx/shared/src/mascot`).
+ * Fin, the MedX dolphin (DIRECTION.md section 11). Same path data as mobile (`@medx/shared/src/mascot`).
  * Decorative by default (aria-hidden). Subtle idle bob, blink and wave; static under reduced motion.
  * Never render on red-flag / emergency screens or next to alerts.
  */
@@ -48,7 +48,7 @@ export function Mascot({
       viewBox={MASCOT_VIEWBOX}
       width={size}
       height={size}
-      className={cx("mali", animate && "mali-animate", className)}
+      className={cx("mascot", animate && "mascot-animate", className)}
       style={style}
       {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true, focusable: false })}
     >
@@ -66,7 +66,7 @@ export function Mascot({
           );
         })}
       </defs>
-      <g className="mali-body">
+      <g className="mascot-body">
         {groups.map((g, gi) => (
           <g key={gi} className={g.part ? partClass[g.part] : undefined}>
             {g.layers.map((l, i) => (

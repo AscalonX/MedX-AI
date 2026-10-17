@@ -7,7 +7,7 @@
   Cover v3 source. Render (headless Chrome, from repo root):
     1600x900:  --window-size=1600,900  file://.../pitch/cover/cover-v3.html
     1080x1080: --window-size=1080,1080 file://.../pitch/cover/cover-v3.html#square
-  Mascot: docs/design/mascot/mali-wave.svg (generated from packages/shared/src/mascot.ts).
+  Mascot: docs/design/mascot/fin-wave.svg (generated from packages/shared/src/mascot.ts).
   Screens: real app screenshots from docs/reports/screens/.
 -->
 <style>
@@ -34,7 +34,7 @@ h1{position:absolute;left:80px;top:128px;font-size:104px;line-height:1;font-weig
 .hero p{margin-top:12px;font-size:23px;line-height:1.4;opacity:.94;position:relative}
 .hero .pill{position:relative;margin-top:22px;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 22px;border-radius:999px;background:#fff;color:var(--ocean);font-size:20px;font-weight:700}
 .hero .pill svg{width:20px;height:20px;stroke:var(--ocean);fill:none;stroke-width:2;stroke-linecap:round}
-.mali{position:absolute;right:6px;bottom:-26px;width:260px;filter:drop-shadow(0 14px 18px rgba(8,40,90,.35))}
+.mascot{position:absolute;right:4px;bottom:-26px;width:262px;filter:drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(0 16px 18px rgba(8,40,90,.4))}
 .glow{position:absolute;right:20px;bottom:0;width:230px;height:230px;border-radius:50%;background:rgba(255,255,255,.14)}
 
 .steps{position:absolute;left:80px;top:396px;width:1440px;height:440px;display:grid;grid-template-columns:250px 1fr 1fr 1fr;gap:40px}
@@ -62,8 +62,8 @@ body.sq{width:1080px;height:1080px}
 .sq .badges{left:64px;top:282px}
 .sq .hero{left:64px;top:356px;width:952px;height:236px;padding:40px 330px 0 40px}
 .sq .hero h2{font-size:42px}
-.sq .mali{width:250px;right:40px;bottom:-30px}
-.sq .glow{right:52px;width:220px;height:220px}
+.sq .mascot{width:250px;right:40px;bottom:-28px}
+.sq .glow{right:14px;bottom:-40px;width:300px;height:300px}
 .sq .steps{left:64px;top:628px;width:952px;height:400px;grid-template-columns:130px 1fr 1fr 1fr;gap:22px}
 .sq .head{gap:10px}
 .sq .cap{font-size:18px;min-height:42px}
@@ -90,8 +90,8 @@ body.sq{width:1080px;height:1080px}
 
 <section class="hero">
   <span class="glow"></span>
-  <img class="mali" src="../../docs/design/mascot/mali-wave.svg" alt="">
-  <h2>Hi, I'm Mali.</h2>
+  <img class="mascot" src="../../docs/design/mascot/fin-wave.svg" alt="">
+  <h2>Hi, I'm Fin.</h2>
   <p>Tell us what brings you in, in your own language.</p>
   <span class="pill"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>Start speaking</span>
 </section>
