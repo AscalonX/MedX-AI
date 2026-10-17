@@ -178,9 +178,9 @@ describe('untrusted model suggestions', () => {
     expect(modelSuggestions({ suggestions: [modelItem({ confidence: 'high' })] }, s)).toBeNull();
     expect(modelSuggestions({ suggestions: [modelItem({ quote: 'Headache' })] }, s)?.[0]).toMatchObject({ confidence: 0.9, evidence: [expect.objectContaining({ quote: 'Headache' })] });
   });
-  it('adds verified doctor-only model considerations', async () => {
+  it('rejects even evidenced doctor-only model considerations', async () => {
     const s = await setup(); const items = modelSuggestions({ suggestions: [modelItem({ kind: 'consider', text: loc('Consider: headache causes for clinician review') })] }, s)!;
-    expect(items[0].mode).toEqual(['doctor']); expect(items[0].kind).toBe('consider');
+    expect(items).toEqual([]);
   });
   it('keeps stable ids when a provider changes localized JSON key order', async () => {
     const s = await setup(); const a = modelItem(); const b = modelItem({ text: { th: a.text.th, en: a.text.en, it: a.text.it } });

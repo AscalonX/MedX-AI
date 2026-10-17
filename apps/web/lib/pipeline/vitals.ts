@@ -33,6 +33,7 @@ export function confirmTriage(id: string, req: unknown) {
     const s = sessionFor(id); s.triage = assessTriage(s);
     if (level > s.triage.suggestedLevel && !note) invalid('Note required for less urgent confirmation');
     s.triage.confirmed = { level, by: actor, at: new Date().toISOString(), ...(note ? { note } : {}) };
+    s.triage = assessTriage(s);
     return written(s, 'triage_confirmed', actor, { ...s.triage.confirmed, suggestedLevel: s.triage.suggestedLevel });
   });
 }

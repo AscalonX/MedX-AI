@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { IntakeSession, MedicationEntry, MedicationOrder } from '@medx/shared';
+import type { IntakeSession, Localized, MedAlert, MedicationEntry, MedicationOrder } from '@medx/shared';
 import catalog from '@medx/shared/src/investigations.json';
 import { conflict, invalid, optionalText, properties, sessionFor, text, written } from './clinicalWrites';
 import { checkMedRules, lookupDrug, MEDRULES, stableId } from './medrules';
@@ -27,6 +27,20 @@ export function prescribingChecks(s: IntakeSession, order: MedicationOrder) {
   const pregnancy = /not pregnant|non.*pregnan/.test(p) ? 'no' : /possib|maybe|late period/.test(p) ? 'possible' : /pregnan/.test(p) ? 'pregnant' : undefined;
   const checks = checkMedRules([...current, ...others.map(entry), entry(order)], s.summary?.allergies || [], pregnancy).filter(a => a.medIds.includes(order.id));
   const drug = lookupDrug(order.drugText);
+  const add = (ruleId: string, kind: MedAlert['kind'], severity: MedAlert['severity'], message: Localized) => checks.push({ id: stableId(ruleId, [order.id]), ruleId, kind, severity, message, action: MEDRULES.messages[kind].action, medIds: [order.id], allergyIds: [], evidence: [], source: `medrules ${MEDRULES.version}` });
+  if (!drug?.doseRange || order.doseMg === undefined || order.timesPerDay === undefined) add('MR-DOSE-UNCHECKED', 'dose_range', 'moderate', {
+    en: 'Dose not checked — verify against a full reference', th: 'ยังไม่ได้ตรวจขนาดยา — โปรดตรวจสอบกับเอกสารอ้างอิงฉบับเต็ม', it: 'Dose non verificata — consultare un riferimento completo',
+  });
+  if (drug?.generic === 'methotrexate' && order.timesPerDay !== undefined && order.timesPerDay >= 1) add('MR-METHOTREXATE-DAILY', 'dose_range', 'high', {
+    en: 'Methotrexate daily frequency — verify intended weekly dosing with the prescriber', th: 'สั่งเมโธเทร็กเซตทุกวัน — ยืนยันการให้ยารายสัปดาห์ที่ตั้งใจกับผู้สั่งยา', it: 'Metotrexato con frequenza giornaliera — verificare la prevista somministrazione settimanale con il prescrittore',
+  });
+  const allergyField = s.summary?.fields.find(f => f.key === 'allergies');
+  const recordedAllergy = s.summary?.allergies?.some(a => a.status !== 'unsupported' && (a.evidence.length > 0 || a.status === 'edited' || !!a.review));
+  if ((!allergyField || !['supported', 'approved', 'edited'].includes(allergyField.status)) && !recordedAllergy) {
+    if (!s.summary?.noKnownAllergiesEvidence?.length) add('MR-ALLERGY-UNKNOWN', 'allergy_conflict', 'moderate', {
+      en: 'Allergy status not recorded — ask before prescribing', th: 'ยังไม่ได้บันทึกประวัติแพ้ยา — สอบถามก่อนสั่งยา', it: 'Allergie non registrate — chiedere prima di prescrivere',
+    });
+  }
   if (drug?.doseRange && order.doseMg !== undefined) {
     const { maxSingleMg, maxDailyMg } = drug.doseRange;
     const single = maxSingleMg !== undefined && order.doseMg > maxSingleMg;
@@ -91,6 +105,7 @@ export function medicationAction(id: string, orderId: string, action: 'submit' |
   const seen = new Set<string>();
   const parsed = overrides.map(value => {
     properties(value, ['alertId', 'reason']); const alertId = text(value.alertId, 'alertId', 200), reason = text(value.reason, 'override reason');
+    if ((reason.match(/[\p{L}\p{N}]/gu) || []).length < 5) invalid('Override reason must contain at least five letters or digits');
     if (seen.has(alertId)) invalid('Duplicate override'); seen.add(alertId); return { alertId, reason, by: actor, at: new Date().toISOString() };
   });
   return withSessionLock(id, () => {

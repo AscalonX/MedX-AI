@@ -114,14 +114,17 @@ describe('Wave 14 one dose alert per order', () => {
   });
 
   it.each([
-    { doseMg: 1000, timesPerDay: 4 }, { doseMg: undefined }, { doseMg: 500, timesPerDay: undefined },
-    { drugText: 'unknown synthetic medicine' },
-  ])('does not invent a dose alert for safe or unknown values %j', changes => {
+    { doseMg: 1000, timesPerDay: 4 },
+  ])('does not invent a dose alert for safely checked values %j', changes => {
     expect(prescribingChecks(createSession('en', { persist: false }), { ...order, ...changes }).filter(a => a.kind === 'dose_range')).toEqual([]);
   });
 
+  it.each([{ doseMg: undefined }, { doseMg: 500, timesPerDay: undefined }, { drugText: 'unknown synthetic medicine' }])('reports unchecked values %j without inventing a limit', changes => {
+    expect(prescribingChecks(createSession('en', { persist: false }), { ...order, ...changes })).toContainEqual(expect.objectContaining({ ruleId: 'MR-DOSE-UNCHECKED', severity: 'moderate' }));
+  });
+
   it('reports a single limit even when the daily frequency is unknown', () => {
-    const checks = prescribingChecks(createSession('en', { persist: false }), { ...order, timesPerDay: undefined }).filter(a => a.kind === 'dose_range');
+    const checks = prescribingChecks(createSession('en', { persist: false }), { ...order, timesPerDay: undefined }).filter(a => a.ruleId === 'MR-DOSE-RANGE');
     expect(checks).toHaveLength(1);
     expect(checks[0].message.en).toContain('single dose 1500 mg > 1000 mg');
     expect(checks[0].message.en).not.toContain('daily dose');
@@ -132,9 +135,9 @@ describe('Wave 14 one dose alert per order', () => {
     const created = await medication(request(draft), context(s.id));
     expect(created.status).toBe(200);
     const o: MedicationOrder = (await created.json()).orders.medications[0];
-    expect(o.checks).toHaveLength(1);
+    expect(o.checks.filter(a => a.severity === 'high')).toHaveLength(1);
     expect((await submit(request({ orderedBy: draft.orderedBy, overrides: [] }), context(s.id, o.id))).status).toBe(409);
-    const overrides = [{ alertId: o.checks[0].id, reason: 'Synthetic clinician-reviewed override' }];
+    const overrides = [{ alertId: o.checks.find(a => a.severity === 'high')!.id, reason: 'Synthetic clinician-reviewed override' }];
     expect((await submit(request({ orderedBy: draft.orderedBy, overrides }), context(s.id, o.id))).status).toBe(200);
     expect(getSession(s.id)!.orders!.medications[0]).toMatchObject({ status: 'submitted', overrides });
     expect(getAudit(s.id).at(-1)).toMatchObject({ type: 'order_submitted', payload: { orderId: o.id, overrides } });

@@ -108,7 +108,7 @@ describe('doctor orders and prescribing gates', () => {
     expect(o).toMatchObject({ generic: 'paracetamol', doseMg: 1500, timesPerDay: 4 });
     expect(o.checks.filter((a: { kind: string }) => a.kind === 'dose_range').map((a: { ruleId: string }) => a.ruleId)).toEqual(['MR-DOSE-RANGE']);
     const unknown = await make(id, { drugText: 'mystery pill' }); expect(unknown.checks.some((a: { kind: string }) => a.kind === 'unknown_medication')).toBe(true);
-    const unparsed = await make(createSession('en').id, { dose: 'one tablet' }); expect(unparsed).not.toHaveProperty('doseMg'); expect(unparsed.checks).toEqual([]);
+    const unparsed = await make(createSession('en').id, { dose: 'one tablet' }); expect(unparsed).not.toHaveProperty('doseMg'); expect(unparsed.checks).toContainEqual(expect.objectContaining({ ruleId: 'MR-DOSE-UNCHECKED', severity: 'moderate' }));
   });
   it('uses current meds, allergies, pregnancy, and other active orders; excludes pharmacist-discontinued meds', async () => {
     const s = await addTurn(createSession('en').id, 'I take warfarin. I am allergic to penicillin. I am pregnant.');
@@ -131,7 +131,9 @@ describe('doctor orders and prescribing gates', () => {
     expect((await pharmacy(request({ reviewerId: 'ph', action: 'return' }), context)).status).toBe(400);
     expect((await pharmacy(request({ reviewerId: 'ph', action: 'return', note: 'Please review dose' }), context)).status).toBe(200);
     const edit = await medication(request({ ...draft, orderId: o.id }), ctx(id)); expect(edit.status).toBe(200);
-    expect((await edit.json()).orders.medications[0]).toMatchObject({ status: 'draft', checks: [], overrides: [] });
+    const edited = (await edit.json()).orders.medications[0];
+    expect(edited).toMatchObject({ status: 'draft', overrides: [] });
+    expect(edited.checks).toEqual([expect.objectContaining({ ruleId: 'MR-ALLERGY-UNKNOWN', severity: 'moderate' })]);
     expect((await submit(request({ orderedBy: 'dr', overrides: [] }), context)).status).toBe(200);
     expect((await pharmacy(request({ reviewerId: 'ph', action: 'verify' }), context)).status).toBe(200);
     expect((await cancel(request({ orderedBy: 'dr', reason: 'No longer needed' }), context)).status).toBe(200);

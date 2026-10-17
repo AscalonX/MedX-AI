@@ -5,6 +5,7 @@ import investigations from '@medx/shared/src/investigations.json';
 import { emptyFields, isPresent, QUESTION_PRIORITY } from './config';
 import { loadConsultRules } from './consultRules';
 import { chatJSON, type ModelClient } from './llm';
+import { MEDRULES } from './medrules';
 import { addTurnInLock, PipelineError } from './pipeline';
 import { aliases, CONSULT_SYSTEM, consultPrompt } from './prompts';
 import { checkRedFlags } from './redflags';
@@ -76,14 +77,19 @@ export function ruleSuggestions(s: IntakeSession, rules: ConsultRuleFile): Consu
 }
 // Gate all generated languages, including rationales; normalize obfuscated wording.
 const forbidden = /\b(?:diagnos\w*|prescrib\w*|prescri\w*|you have|you are suffering|treat\w*|take\s+\d|take\s+(?:a|an|the|some)|(?:to|should|must)\s+(?:take|stop|start|increase|decrease|avoid|use|give)|start\s+(?:taking|medication|therapy)|recommend\w*|reassur\w*|rule[ds]? (?:out|in)|likely|probable|confirms|no urgency|not urgent|safe to|hai|ha una|avete)\b|วินิจฉัย|สั่งยา|คุณเป็น|รักษา|ไม่ฉุกเฉิน|ไม่เร่งด่วน|ไม่ต้องกังวล|assum\w*|terapia/iu;
+const drugTerms = MEDRULES.drugs.flatMap(d => [d.generic, ...d.names]).map(t => norm(t).t).filter(Boolean);
+function unsafeModelText(t: string) {
+  const normalized = norm(t).t;
+  return forbidden.test(normalized) || /%|\bpercent\b/iu.test(t) || drugTerms.some(term => normalized.includes(term)) || /\d+(?:[.,]\d+)?\s*(?:mg|mcg|[µμ]g|g|ml|units?|iu)\b|\b(?:mg|mcg|g|ml|units?|iu|iv|im|po|sc|tablets?|puffs?|give|giving|start|administer|prescribe|take|dose)\b|[µμ]g/iu.test(normalized);
+}
 export function modelSuggestions(data: unknown, s: IntakeSession): ConsultSuggestion[] | null {
   if (!object(data) || Object.keys(data).some(k => k !== 'suggestions') || !Array.isArray(data.suggestions) || data.suggestions.length > 3) return null;
   const result: ConsultSuggestion[] = [];
   for (const x of data.suggestions) {
     if (!object(x) || Object.keys(x).some(k => !['kind', 'text', 'why', 'turn', 'quote', 'confidence'].includes(k)) || !['ask_next', 'consider'].includes(String(x.kind)) || !localized(x.text) || !localized(x.why) || !shortString(x.quote, 400) || !shortString(x.turn, 40) || typeof x.confidence !== 'number' || !Number.isFinite(x.confidence) || x.confidence < 0 || x.confidence > 1) return null;
-    if (x.confidence < 0.7 || [...Object.values(x.text), ...Object.values(x.why)].some(t => forbidden.test(norm(t).t) || /%|\bpercent\b/iu.test(t))) continue;
+    if (x.kind === 'consider') continue;
+    if (x.confidence < 0.7 || [...Object.values(x.text), ...Object.values(x.why)].some(unsafeModelText)) continue;
     if (x.kind === 'ask_next' && !/^(?:ask\b|clarify\b|confirm\b)/i.test(x.text.en)) continue;
-    if (x.kind === 'consider' && !/^consider\b.*clinician review/i.test(x.text.en)) continue;
     const turn = aliases(s).find(t => t.alias === x.turn && t.role === 'patient');
     if (!turn || !turn.text.includes(x.quote)) continue;
     const verified = verifyDetailed(x.quote, [turn], turn.id, false, false);
@@ -91,7 +97,7 @@ export function modelSuggestions(data: unknown, s: IntakeSession): ConsultSugges
     const safe = (value: Localized): Localized => ({ en: redact(value.en).text, it: redact(value.it).text, th: redact(value.th).text });
     const text = x.text;
     const key = (['en', 'it', 'th'] as const).map(lang => norm(text[lang]).t);
-    result.push({ id: `${x.kind}:model:${hash([x.kind, key]).slice(0, 20)}`, kind: x.kind as 'ask_next' | 'consider', mode: x.kind === 'consider' ? ['doctor'] : both, text: safe(x.text), why: safe(x.why), evidence: [verified.evidence], source: 'model', confidence: x.confidence, status: 'open' });
+    result.push({ id: `ask_next:model:${hash(['ask_next', key]).slice(0, 20)}`, kind: 'ask_next', mode: both, text: safe(x.text), why: safe(x.why), evidence: [verified.evidence], source: 'model', confidence: x.confidence, status: 'open' });
   }
   return result;
 }
@@ -122,8 +128,11 @@ async function refresh(s: IntakeSession, record: ConsultRecord, options: Consult
       }
     }
   }
+  // Revalidate cached model output too: HMR/persisted pre-fix suggestions cannot bypass the gate.
+  const safeCached = (x: ConsultSuggestion) => x.source !== 'model' || (x.kind === 'ask_next' && ![...Object.values(x.text), ...Object.values(x.why)].some(unsafeModelText));
+  record.modelSuggestions = record.modelSuggestions.filter(safeCached);
   const candidates = [...ruleSuggestions(s, rules), ...(escalated || s.summary?.abstained ? [] : record.modelSuggestions)];
-  const old = new Map(record.suggestions.map(x => [x.id, x]));
+  const old = new Map(record.suggestions.filter(safeCached).map(x => [x.id, x]));
   // Stable statuses survive re-ranking, changed rules, disappearing fields and reloads.
   record.suggestions = candidates.map(x => ({ ...x, status: old.get(x.id)?.status || 'open' }));
   for (const x of old.values()) if (x.status !== 'open' && !record.suggestions.some(c => c.id === x.id)) record.suggestions.push(x);
@@ -132,7 +141,7 @@ async function refresh(s: IntakeSession, record: ConsultRecord, options: Consult
   record.suggestions.sort((a, b) => rank(a) - rank(b));
 }
 function state(s: IntakeSession, record: ConsultRecord, mode: ConsultMode): ConsultState {
-  const candidates = record.suggestions.filter(x => x.mode.includes(mode));
+  const candidates = record.suggestions.filter(x => x.mode.includes(mode) && (x.source !== 'model' || (x.kind === 'ask_next' && ![...Object.values(x.text), ...Object.values(x.why)].some(unsafeModelText))));
   // Reserve room for doctor considerations; missing-field prompts must not starve them.
   const considers = mode === 'doctor' ? candidates.filter(x => x.kind === 'consider' && x.status === 'open').slice(0, 3) : [];
   const rest = candidates.filter(x => x.status === 'open' && !considers.includes(x)).slice(0, 8 - considers.length);
@@ -235,8 +244,11 @@ export function draftConsultNote(s: IntakeSession, suggestions: ConsultSuggestio
   }
   for (const f of s.summary?.redFlags || []) add(`flag:${f.ruleId}`, 'red_flags', { en: `Flag for clinician review: ${f.label.en}`, it: `Segnalazione per revisione clinica: ${f.label.it}`, th: `ข้อเตือนให้บุคลากรทบทวน: ${f.label.th}` }, f.evidence);
   for (const x of suggestions.filter(x => x.mode.includes(mode))) {
-    if (x.kind === 'consider' && mode === 'doctor') add(`suggestion:${x.id}`, 'considerations', x.text, x.evidence);
-    else if (x.kind !== 'consider' && x.status === 'open' && !x.field && !x.id.startsWith('rule_out:flag:')) add(`suggestion:${x.id}`, 'open_questions', x.text, x.evidence);
+    if (x.kind === 'consider' && x.source === 'rule' && mode === 'doctor' && x.status !== 'dismissed') add(`suggestion:${x.id}`, 'considerations', x.text, x.evidence);
+    else if (x.kind !== 'consider' && !x.field && !x.id.startsWith('rule_out:flag:')) {
+      const prefix = x.status === 'dismissed' ? localizedText('Not asked (dismissed): ', 'Non chiesto (scartato): ', 'ไม่ได้ถาม (ยกเลิก): ') : x.status === 'asked' ? localizedText('Asked, no answer recorded: ', 'Chiesto, nessuna risposta registrata: ', 'ถามแล้ว ยังไม่บันทึกคำตอบ: ') : localizedText('');
+      add(`suggestion:${x.id}`, 'open_questions', { en: prefix.en + x.text.en, it: prefix.it + x.text.it, th: prefix.th + x.text.th }, x.evidence);
+    }
   }
   if (missing.length) add('missing:fields', 'open_questions', { en: `Not yet asked: ${missing.map(x => x.en.toLowerCase()).join(', ')}`, it: `Da chiedere: ${missing.map(x => x.it.toLowerCase()).join(', ')}`, th: `ยังไม่ได้สอบถาม: ${missing.map(x => x.th).join(', ')}` }, [], false);
   const sections: ConsultNoteLine['section'][] = ['presenting_complaint', 'history', 'medications', 'allergies', 'red_flags', 'considerations', 'open_questions'];
@@ -261,10 +273,13 @@ export async function consultNote(id: string, req: ConsultNoteReq, options: Cons
       for (const edit of req.edits || []) {
         const line = note.lines.find(l => l.id === edit.lineId);
         if (!line || ids.has(edit.lineId)) throw new PipelineError('Unknown or duplicate note line', 'bad_request');
+        if (line.section === 'red_flags') throw new PipelineError('Red-flag note lines cannot be edited', 'bad_request');
         ids.add(edit.lineId); line.text = localizedText(redact(edit.text.trim()).text); line.status = 'edited';
       }
+      note.lines = note.lines.filter(l => l.section !== 'considerations' || (ids.has(l.id) && record.suggestions.some(x => l.id === `suggestion:${x.id}` && x.kind === 'consider' && x.source === 'rule' && x.status !== 'dismissed')));
+      const keptConsiderationIds = note.lines.filter(l => l.section === 'considerations').map(l => l.id);
       const at = new Date().toISOString(); note.signed = { reviewerId: actor, at };
-      appendAudit(id, 'consult_note_signed', 'clinician', { mode: req.mode, editedLineIds: [...ids], lineCount: note.lines.length }, actor, at);
+      appendAudit(id, 'consult_note_signed', 'clinician', { mode: req.mode, editedLineIds: [...ids], keptConsiderationIds, lineCount: note.lines.length }, actor, at);
     }
     saveConsultRecord(id, record); return state(s, record, req.mode);
   });

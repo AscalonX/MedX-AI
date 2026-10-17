@@ -2,7 +2,7 @@ import type { ApiError } from '@medx/shared';
 import { PipelineError } from '../../lib/pipeline/pipeline';
 import { object } from '../../lib/pipeline/schema';
 export function cors(request?: Request): Record<string, string> {
-  const headers: Record<string, string> = { Vary: 'Origin', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-demo-token', 'Access-Control-Max-Age': '86400' };
+  const headers: Record<string, string> = { Vary: 'Origin', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-demo-token, x-medx-client', 'Access-Control-Max-Age': '86400' };
   const origin = request?.headers.get('Origin');
   const allowed = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:3000,http://localhost:8081').split(',').map(s => s.trim()).filter(Boolean);
   if (request) allowed.push(new URL(request.url).origin);
