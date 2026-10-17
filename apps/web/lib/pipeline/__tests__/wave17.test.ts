@@ -132,3 +132,42 @@ describe('W17 overlapping name triggers', () => {
     expect(redact('hello Mr. Smith, I have a headache').text).toBe('[NAME_1], I have a headache');
   });
 });
+
+describe('W18 kept considerations', () => {
+  it('a kept consideration appears in the draft immediately and persists in the signed note; unkept are dropped', async () => {
+    const s = await fresh('I have a fever after a trip with mosquito bites and a cough for three weeks.');
+    const st = await getConsult(s.id, 'doctor');
+    const [keep, other] = st.suggestions.filter(x => x.kind === 'consider' && x.status === 'open');
+    expect(other).toBeDefined();
+    const before = await consultNote(s.id, { mode: 'doctor', reviewerId: doctor, action: 'draft' });
+    expect(before.note!.lines.some(l => l.id === `suggestion:${keep.id}`)).toBe(true);
+    const { reviewConsultSuggestion } = await import('../consult');
+    await reviewConsultSuggestion(s.id, keep.id, doctor, 'asked');
+    expect(getConsultRecord(s.id).notes.doctor).toBeUndefined(); // stale draft invalidated
+    const kept = await getConsult(s.id, 'doctor');
+    expect(kept.suggestions.find(x => x.id === keep.id)!.status).toBe('asked');
+    const draft = await consultNote(s.id, { mode: 'doctor', reviewerId: doctor, action: 'draft' });
+    const line = draft.note!.lines.find(l => l.id === `suggestion:${keep.id}`)!;
+    expect(line.section).toBe('considerations'); expect(line.text.en).toMatch(/^Consider for clinician review/);
+    // UI sends the kept line as an unchanged-text edit; sending nothing must still keep it
+    const unsupported = draft.note!.lines.filter(l => l.status === 'unsupported' && l.id !== 'missing:fields').map(l => ({ lineId: l.id, text: 'Not assessed' }));
+    const signed = await consultNote(s.id, { mode: 'doctor', reviewerId: doctor, action: 'sign', edits: unsupported });
+    const ids = signed.note!.lines.filter(l => l.section === 'considerations').map(l => l.id);
+    expect(ids).toEqual([`suggestion:${keep.id}`]);
+  });
+});
+
+describe('W18 consult inputMode', () => {
+  it('honours text, defaults to voice, rejects junk', async () => {
+    const s = await fresh('Headache since today.');
+    await addConsultTurn(s.id, { mode: 'doctor', speaker: 'clinician', text: 'How long?', inputMode: 'text' });
+    await addConsultTurn(s.id, { mode: 'doctor', speaker: 'clinician', text: 'Any fever?' });
+    await addConsultTurn(s.id, { mode: 'doctor', speaker: 'patient', text: 'Two days, no fever.', inputMode: 'text' });
+    const t = getSession(s.id)!.turns;
+    expect(t.find(x => x.text === 'How long?')!.inputMode).toBe('text');
+    expect(t.find(x => x.text === 'Any fever?')!.inputMode).toBe('voice');
+    expect(t.find(x => x.text === 'Two days, no fever.')!.inputMode).toBe('text');
+    expect(getAudit(s.id).filter(a => a.type === 'consult_turn').map(a => a.payload.inputMode)).toEqual(['text', 'voice', 'text']);
+    await expect(addConsultTurn(s.id, { mode: 'doctor', speaker: 'clinician', text: 'x', inputMode: 'telepathy' as never })).rejects.toMatchObject({ code: 'bad_request' });
+  });
+});

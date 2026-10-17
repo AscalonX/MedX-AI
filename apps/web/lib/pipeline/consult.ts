@@ -206,15 +206,17 @@ export async function addConsultTurn(id: string, req: ConsultTurnReq, options: C
   consultMode(req.mode);
   if (!['patient', 'clinician'].includes(req.speaker) || !shortString(req.text, 4000) || !req.text.replace(/[\u200B-\u200D\uFEFF]/g, '').trim()) throw new PipelineError('Invalid consult utterance', 'bad_request');
   if (req.clientTurnId !== undefined && !shortString(req.clientTurnId, 200)) throw new PipelineError('Invalid clientTurnId', 'bad_request');
+  if (req.inputMode !== undefined && req.inputMode !== 'text' && req.inputMode !== 'voice') throw new PipelineError('Invalid inputMode', 'bad_request');
+  const inputMode = req.inputMode ?? 'voice'; // back-compat default
   return withSessionLock(id, async () => {
     let s = sessionFor(id); const record = getConsultRecord(id);
     const duplicate = req.clientTurnId && hasClientTurnId(id, req.clientTurnId);
     if (duplicate) return state(s, record, req.mode);
     if (!['collecting', 'awaiting_review', 'needs_human', 'escalated'].includes(s.status)) throw new PipelineError('Session no longer accepts consult turns', 'bad_request', 409);
-    if (req.speaker === 'patient') s = await addTurnInLock(id, req.text, 'voice', req.clientTurnId);
+    if (req.speaker === 'patient') s = await addTurnInLock(id, req.text, inputMode, req.clientTurnId);
     else {
       await refresh(s, record, options);
-      const turn = { id: randomUUID(), role: 'clinician' as const, lang: s.patientLang, text: redactKeepStaff(req.text), at: new Date().toISOString(), inputMode: 'voice' as const };
+      const turn = { id: randomUUID(), role: 'clinician' as const, lang: s.patientLang, text: redactKeepStaff(req.text), at: new Date().toISOString(), inputMode };
       s.turns.push(turn); s.updatedAt = turn.at; saveSession(s, req.clientTurnId);
       for (const x of record.suggestions) if (x.status === 'open' && x.kind !== 'consider' && askedMatch(turn.text, x)) {
         x.status = 'asked'; (record.askedAfterTurn ||= {})[x.id] = s.turns.length;
@@ -222,7 +224,7 @@ export async function addConsultTurn(id: string, req: ConsultTurnReq, options: C
       }
     }
     const turn = s.turns.filter(t => t.role === req.speaker).at(-1)!;
-    appendAudit(id, 'consult_turn', req.speaker, { turnId: turn.id, speaker: req.speaker, mode: req.mode, inputMode: 'voice' });
+    appendAudit(id, 'consult_turn', req.speaker, { turnId: turn.id, speaker: req.speaker, mode: req.mode, inputMode });
     // New speech invalidates drafts; signed notes remain immutable historical records.
     for (const mode of both) if (!record.notes[mode]?.signed) delete record.notes[mode];
     await refresh(s, record, options); saveConsultRecord(id, record); return state(s, record, req.mode);
@@ -237,6 +239,8 @@ export async function reviewConsultSuggestion(id: string, suggestionId: string, 
     if (x.status !== status) {
       x.status = status;
       if (status === 'asked') (record.askedAfterTurn ||= {})[x.id] = s.turns.length;
+      // A kept/dismissed consideration changes the note: stale unsigned drafts are regenerated on the next request.
+      if (x.kind === 'consider') for (const m of both) if (!record.notes[m]?.signed) delete record.notes[m];
       saveConsultRecord(id, record); appendAudit(id, 'consult_suggestion', 'clinician', { suggestionId, status }, actor);
     }
     return state(s, record, x.mode.includes('nurse') ? 'nurse' : 'doctor');
@@ -288,7 +292,7 @@ export function draftConsultNote(s: IntakeSession, suggestions: ConsultSuggestio
     }
   }
   for (const f of s.summary?.redFlags || []) add(`flag:${f.ruleId}`, 'red_flags', { en: `Flag for clinician review: ${f.label.en}`, it: `Segnalazione per revisione clinica: ${f.label.it}`, th: `ข้อเตือนให้บุคลากรทบทวน: ${f.label.th}` }, f.evidence);
-  const shown = new Set(shownConsiderations(suggestions.filter(x => x.mode.includes(mode))));
+  const shown = new Set([...shownConsiderations(suggestions.filter(x => x.mode.includes(mode))), ...suggestions.filter(x => x.kind === 'consider' && x.status === 'asked')]); // 'asked' = doctor kept it in the note
   for (const x of suggestions.filter(x => x.mode.includes(mode))) {
     if (x.kind === 'consider' && x.source === 'rule' && mode === 'doctor' && shown.has(x)) add(`suggestion:${x.id}`, 'considerations', x.text, x.evidence);
     else if (x.kind !== 'consider' && x.status !== 'answered' && !x.field && !x.id.startsWith('rule_out:flag:')) {
@@ -326,7 +330,8 @@ export async function consultNote(id: string, req: ConsultNoteReq, options: Cons
       // Only the missing-fields summary is informational. Every other unsupported
       // line needs an explicit doctor edit, including a resolution like "Not assessed".
       if (note.lines.some(l => l.status === 'unsupported' && !(l.id === 'missing:fields' && l.section === 'open_questions'))) throw new PipelineError('Resolve every unsupported note line with an edit before signing', 'bad_request', 409);
-      note.lines = note.lines.filter(l => l.section !== 'considerations' || (ids.has(l.id) && record.suggestions.some(x => l.id === `suggestion:${x.id}` && x.kind === 'consider' && x.source === 'rule' && x.status !== 'dismissed')));
+      // Kept = explicitly edited/confirmed at sign, or marked "Keep in note" (status asked). Everything else is dropped.
+      note.lines = note.lines.filter(l => l.section !== 'considerations' || record.suggestions.some(x => l.id === `suggestion:${x.id}` && x.kind === 'consider' && x.source === 'rule' && x.status !== 'dismissed' && (ids.has(l.id) || x.status === 'asked')));
       const keptConsiderationIds = note.lines.filter(l => l.section === 'considerations').map(l => l.id);
       const at = new Date().toISOString(); note.signed = { reviewerId: actor, at };
       record.notes[req.mode] = note;
