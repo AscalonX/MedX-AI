@@ -30,6 +30,8 @@ const fires = (rule, text) => rule.match.every((g) => g.some((t) => termCounts(t
 let fail = 0, pass = 0;
 const ids = new Set();
 for (const r of C.rules) {
+  // v1.2: considerations other than ACS-on-chest-pain need a feature AND-group beyond the presenting complaint.
+  if (r.considerations?.length && r.match.length < 2 && r.id !== "CR-CHEST-01") { fail++; console.log("FAIL consideration without feature group", r.id); }
   for (const x of [r, ...r.questions, ...(r.considerations ?? [])]) { if (ids.has(x.id)) { fail++; console.log("FAIL duplicate id", x.id); } ids.add(x.id); }
   for (const q of r.questions) for (const l of ["th", "it", "en"]) if (!q.text[l] || !q.why[l]) { fail++; console.log("FAIL missing text", q.id, l); }
   for (const c of r.considerations ?? []) if (!c.text.en.startsWith("Consider ")) { fail++; console.log("FAIL consider wording", c.id); }
@@ -43,8 +45,15 @@ for (const r of C.rules) for (const c of r.considerations ?? []) {
 }
 const byId = Object.fromEntries(C.rules.map((r) => [r.id, r]));
 for (const line of md.split("\n")) {
+  // v1.2: "| NO-CONSIDER | lang | text |" = no rule that carries considerations may fire (UX audit w16 case).
+  const nc = line.match(/^\| NO-CONSIDER \| (en|it|th) \| (.+) \|$/);
+  if (nc) {
+    const hit = C.rules.filter((r) => r.considerations?.length && fires(r, norm(nc[2]))).map((r) => r.id);
+    if (hit.length) { fail++; console.log(`FAIL no-consider ${nc[1]} fired ${hit.join(", ")} :: ${nc[2]}`); } else pass++;
+    continue;
+  }
   const m = line.match(/^\| (CR-[A-Z]+-\d+) \| (en|it|th) \| (fire|no) \| (.+) \|$/);
-  if (!m) continue;
+  if (!m) { if (/^\| (CR-|NO-CONSIDER)/.test(line)) { fail++; console.log("FAIL unparsed test row:", line); } continue; }
   const [, id, lang, expect, text] = m;
   if (!byId[id]) { fail++; console.log("FAIL unknown rule", id); continue; }
   const got = fires(byId[id], norm(text)) ? "fire" : "no";

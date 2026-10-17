@@ -34,7 +34,7 @@ const byId = Object.fromEntries(rules.rules.map((r) => [r.id, r]));
 let pass = 0, fail = 0;
 for (const line of md.split("\n")) {
   const m = line.match(/^\| (RF-[A-Z0-9-]+) \| (en|it|th) \| (fire|no) \| (.+) \|$/);
-  if (!m) continue;
+  if (!m) { if (/^\| RF-[A-Z0-9-]+ \| (en|it|th) \|/.test(line)) { fail++; console.log("FAIL unparsed test row:", line); } continue; }
   const [, id, lang, expect, text] = m;
   if (!byId[id]) { console.log(`FAIL unknown rule ${id}`); fail++; continue; }
   const got = fires(byId[id], norm(text)) ? "fire" : "no";

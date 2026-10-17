@@ -175,3 +175,62 @@ Sections, in order: **presenting_complaint · history · medications · allergie
 - High alerts need a documented doctor override reason. The pharmacist then verifies or returns the order.
 - The AI never proposes a drug, dose, route or frequency. Considerations carry guideline links only.
 
+## 12. v1.2: considerations need specific features (after UX audit w16)
+
+- In v1.1 single words such as "fever", "cough" and "rash" fired 12 considerations for a 34-year-old with a one-day sore throat (lung cancer, TB, SJS…), and Orders then listed lumbar puncture.
+- In v1.2, each of the 12 **base rules** (first match group = the presenting complaint) keeps its questions. Only CR-CHEST-01 keeps a consideration (ACS on chest pain).
+- Every other consideration moved to its own **feature rule** (`questions: []`). Its first group is the same presenting complaint, plus one or two AND-groups of the specific features, for example:
+
+| Consideration | Rule | Required features, beyond the presenting complaint |
+|---|---|---|
+| TB | CR-COUGH-03 | ≥ 2–3 weeks / months, weight loss, night sweats, haemoptysis, or TB contact |
+| Lung cancer | CR-COUGH-04 | chronic (weeks/months) **and** smoking, weight loss or haemoptysis |
+| SJS/TEN | CR-RASH-03 | blisters, peeling, mouth or eye involvement, or a new medicine |
+| Meningitis (fever rule) | CR-FEVER-03 | neck stiffness, photophobia, non-blanching rash, or confusion |
+| Meningitis (headache rule) | CR-HEAD-03 | neck stiffness, photophobia, non-blanching rash, or confusion |
+| Meningococcal (rash rule) | CR-RASH-02 | fever **and** non-blanching rash |
+| SAH | CR-HEAD-02 | sudden, worst, thunderclap |
+| PE | CR-CHEST-03, CR-SOB-02 | haemoptysis, swollen leg or calf, long travel or recent surgery, pleuritic pain |
+| Ectopic | CR-ABD-02 | pregnancy, late or missed period, vaginal bleeding |
+| AAA | CR-ABD-05, CR-BACK-04 | radiation to the back (or abdominal pain with back pain), pulsing, known aneurysm |
+| Sepsis | CR-FEVER-02 | confusion, drowsiness, fast breathing, very unwell, low urine, mottled skin |
+| Epiglottitis (doctor only) | CR-THROAT-02 | stridor or noisy breathing, drooling, muffled voice, cannot swallow saliva |
+| Peritonsillar abscess (doctor only) | CR-THROAT-03 | one-sided, trismus, muffled voice, drooling |
+
+- The checker enforces that every rule with considerations has ≥ 2 match groups, except CR-CHEST-01.
+- `NO-CONSIDER` rows assert that the audit case fires no consideration at all.
+- This is a tightening after seeing an audit case, not independent evidence of specificity.
+
+| rule | lang | expect | patient speech |
+|---|---|---|---|
+| NO-CONSIDER | en | I've had a sore throat since yesterday, with a fever and a cough. I'm 34. I'm allergic to penicillin, it gives me a rash. |
+| NO-CONSIDER | it | Ho mal di gola da ieri, con febbre e tosse. Ho 34 anni. Sono allergico alla penicillina, mi dà uno sfogo, un'eruzione. |
+| NO-CONSIDER | th | เจ็บคอมาตั้งแต่เมื่อวาน มีไข้และไอมา อายุ 34 แพ้ยาเพนิซิลลิน ขึ้นผื่น |
+| CR-COUGH-03 | en | no | Cough since yesterday |
+| CR-COUGH-03 | en | fire | I've had a cough for three weeks and night sweats |
+| CR-COUGH-03 | th | fire | ไอมาสามสัปดาห์ น้ำหนักลด |
+| CR-COUGH-04 | en | no | I smoke and have had a cough since Monday |
+| CR-COUGH-04 | en | fire | Cough for two months, I smoke and I'm losing weight |
+| CR-RASH-03 | en | no | I get a rash from penicillin |
+| CR-RASH-03 | en | fire | A rash with blisters and a sore mouth since I started a new medicine |
+| CR-RASH-03 | it | fire | Ho un'eruzione con vescicole e piaghe in bocca |
+| CR-FEVER-03 | en | no | Fever and a sore throat |
+| CR-FEVER-03 | en | fire | Fever and a stiff neck |
+| CR-FEVER-03 | th | fire | ไข้สูง คอแข็ง |
+| CR-HEAD-03 | en | fire | Headache and the light hurts my eyes |
+| CR-HEAD-03 | en | no | Headache with a fever |
+| CR-HEAD-02 | en | fire | Sudden worst headache of my life |
+| CR-HEAD-02 | en | no | Headache on and off for a week |
+| CR-CHEST-03 | en | fire | Chest pain worse when I breathe in, after a long flight |
+| CR-CHEST-03 | en | no | Chest pain when I press on my ribs |
+| CR-ABD-02 | en | fire | Stomach pain and my period is late |
+| CR-ABD-02 | en | no | Stomach pain after a big meal |
+| CR-ABD-05 | en | fire | Belly pain going through to my back |
+| CR-FEVER-02 | en | fire | Fever and now I'm confused |
+| CR-FEVER-02 | en | no | Fever and body aches |
+| CR-THROAT-02 | en | fire | Sore throat, I'm drooling and have noisy breathing |
+| CR-THROAT-03 | en | fire | Sore throat much worse on one side, I can't open my mouth |
+| CR-THROAT-03 | it | fire | Mal di gola molto peggio da un lato, non riesco ad aprire la bocca |
+| CR-THROAT-02 | en | no | I have a sore throat |
+| CR-THROAT-03 | en | no | I have a sore throat |
+

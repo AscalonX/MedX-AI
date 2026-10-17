@@ -45,12 +45,13 @@ export function alerts(medNames, allergyNames, pregnancy) {
   return out;
 }
 
-/** dose_range (MedicationOrder): MR-DOSE-01 single dose > maxSingleMg; MR-DOSE-02 doseMg × timesPerDay > maxDailyMg. Unknown drug or no doseRange → no dose alert. */
+/** dose_range (MedicationOrder), engine ids (apps/web/lib/pipeline/orders.ts):
+ *  MR-DOSE-RANGE (high): single dose > maxSingleMg and/or dose × timesPerDay > maxDailyMg (one alert per order).
+ *  MR-DOSE-UNCHECKED (moderate): drug unknown, no doseRange, or dose/frequency not parsed. */
 export function doseAlerts(drugText, doseMg, timesPerDay) {
   const r = lookup(drugText, R.drugs)?.doseRange, out = new Set();
-  if (!r) return out;
-  if (r.maxSingleMg != null && doseMg > r.maxSingleMg) out.add("MR-DOSE-01");
-  if (r.maxDailyMg != null && timesPerDay != null && doseMg * timesPerDay > r.maxDailyMg) out.add("MR-DOSE-02");
+  if (!r || doseMg == null || timesPerDay == null || Number.isNaN(doseMg) || Number.isNaN(timesPerDay)) { out.add("MR-DOSE-UNCHECKED"); return out; }
+  if ((r.maxSingleMg != null && doseMg > r.maxSingleMg) || (r.maxDailyMg != null && doseMg * timesPerDay > r.maxDailyMg)) out.add("MR-DOSE-RANGE");
   return out;
 }
 
@@ -69,14 +70,14 @@ for (const line of md.split("\n")) {
     if (got === m[3]) pass++; else { fail++; console.log(`FAIL allergen ${m[1]} "${m[2]}" expected=${m[3]} got=${got}`); }
     continue;
   }
-  m = line.match(/^\| D \| (en|it|th) \| (!?MR-DOSE-0[12]) \| (.+?) \| ([\d.]+) \| ([\d.]+) \|$/);
+  m = line.match(/^\| D \| (en|it|th) \| (!?MR-DOSE-(?:RANGE|UNCHECKED)) \| (.+?) \| ([\d.]+) \| ([\d.]+) \|$/);
   if (m) {
     const got = doseAlerts(m[3], Number(m[4]), Number(m[5])), want = !m[2].startsWith("!"), id = m[2].replace("!", "");
     if (got.has(id) === want) pass++; else { fail++; console.log(`FAIL dose ${m[1]} expected ${m[2]} got [${[...got].join(", ")}] :: ${m[3]} ${m[4]} mg x${m[5]}`); }
     continue;
   }
   m = line.match(/^\| A \| (en|it|th) \| (!?MR-[A-Z0-9-]+) \| (.+?) \| (.+?) \| (pregnant|possible|no|-) \|$/);
-  if (!m) continue;
+  if (!m) { if (/^\| (L|AL|D|A) \| (en|it|th) \|/.test(line)) { fail++; console.log("FAIL unparsed test row (silently skipped before):", line); } continue; }
   const [, lang, expect, meds, alls, preg] = m;
   const got = alerts(split(meds), split(alls), preg);
   const want = !expect.startsWith("!"), id = expect.replace("!", "");

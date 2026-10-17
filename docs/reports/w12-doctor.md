@@ -51,3 +51,46 @@ done (nothing committed)
   - dose checks per §11 / MEDRULES-TESTS "Dose range";
   - render `workup` + `guideline` on doctor-mode consider items only.
 - Orchestrator: CR-12 and CR-13.
+
+---
+
+## Addendum: consultrules v1.2 (UX audit w16 P1-5: considerations over-fire)
+
+**STATUS:** done (nothing committed).
+
+**Problem:** for a 34-year-old with a one-day sore throat, the words "fever", "cough" and "rash" fired 12 considerations (lung cancer, TB, SJS/TEN …), and Orders then listed lumbar puncture.
+
+**Fix (contract unchanged; the engine already emits every consideration of a fired rule):**
+- The 12 **base rules** keep their questions. Their first match group is the presenting complaint. Only CR-CHEST-01 keeps a consideration (ACS on chest pain).
+- Every other consideration (38) moved to its own **feature rule** (`questions: []`). Its first group is the same presenting complaint, plus AND-groups for the specific features:
+  - TB: ≥2–3 weeks, weight loss, night sweats, haemoptysis or TB contact;
+  - lung cancer: chronic **and** smoking, weight loss or haemoptysis;
+  - SJS/TEN: blisters, mucosal involvement or a new drug;
+  - meningitis: neck stiffness, photophobia, non-blanching rash or confusion;
+  - meningococcal (rash rule): fever **and** non-blanching rash;
+  - SAH: sudden or worst;
+  - PE: haemoptysis, leg swelling, travel or surgery, pleuritic pain;
+  - ectopic: pregnancy, late period or bleeding;
+  - AAA: pain to the back, pulsing or known aneurysm;
+  - sepsis: confusion, fast breathing, low urine or mottled skin;
+  - epiglottitis: stridor, drooling or muffled voice;
+  - quinsy: one-sided pain, trismus or drooling (doctor-only, with workup).
+- Workup lists and guideline links moved with their considerations.
+- File: 50 rules (12 base + 38 feature), 39 considerations, version `1.2`. CONSULT-SPEC §12 documents it.
+
+**Checker hardening (found while doing this):**
+- MEDRULES-TESTS dose rows had been renamed to the engine's `MR-DOSE-RANGE` / `MR-DOSE-UNCHECKED`. My checker regex only knew `MR-DOSE-0[12]`, so it **silently skipped** them (204 → 194). The checker now uses the engine's ids and semantics (`MR-DOSE-RANGE` high = single or daily over the ceiling; `MR-DOSE-UNCHECKED` moderate = unknown drug, no range, or unparsed).
+- All three table checkers (red flags, meds, consult) now **fail on any test-looking row they cannot parse**.
+- The consult checker also fails if any rule other than CR-CHEST-01 carries considerations with fewer than 2 match groups.
+
+**Tests:**
+- `check-consultrules` **80/80**:
+  - 3 `NO-CONSIDER` rows (en/it/th): the audit case fires no consideration;
+  - feature positives (TB, lung cancer, SJS, meningitis ×2, SAH, PE, ectopic, AAA, sepsis, epiglottitis, quinsy);
+  - negatives such as "cough since yesterday" ≠ TB and "rash from penicillin" ≠ SJS.
+- `check-redflags` 175/175 · `check-medrules` 204/204 · `check-vitalrules` all pass · `tsc --strict` on all rule files OK.
+- Engine suite `apps/web/lib/pipeline/__tests__/wave11.test.ts` (it reads the CONSULT-SPEC table): 130/130 on three runs. One earlier run showed 1 failure in a sign/edit test that uses the synthetic fixture, not my rules. It did not reproduce, so it is flaky; an engineer should look.
+
+**Risks:**
+- Feature-gated considerations will now **miss** atypical presentations that lack the listed words (e.g. a PE described only as "breathless"). That is the trade-off for less noise. The `rule_out` questions still prompt the clinician to ask for those features.
+- This is a tightening made after seeing an audit case, not independent evidence of specificity.

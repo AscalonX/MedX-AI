@@ -1,5 +1,5 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "rules": [
     {
       "id": "CR-CHEST-01",
@@ -147,9 +147,67 @@
             "title": "NICE CG95: Recent-onset chest pain of suspected cardiac origin: assessment and diagnosis",
             "url": "https://www.nice.org.uk/guidance/cg95"
           }
-        },
+        }
+      ],
+      "source": "Gulati M et al. 2021 AHA/ACC Chest Pain Guideline. Circulation 2021;144:e368-e454. doi:10.1161/CIR.0000000000001029 (PMID 34709879); Byrne RA et al. 2023 ESC Guidelines for ACS. Eur Heart J 2023;44:3720-3826. doi:10.1093/eurheartj/ehad191 (PMID 37622654); NICE CG95"
+    },
+    {
+      "id": "CR-CHEST-02",
+      "match": [
+        [
+          "chest pain",
+          "chest tight",
+          "tight chest",
+          "chest pressure",
+          "pressure in my chest",
+          "pain in my chest",
+          "pain in the chest",
+          "chest hurts",
+          "chest is tight",
+          "chest feels tight",
+          "crushing",
+          "dolore al petto",
+          "dolore toracico",
+          "male al petto",
+          "dolori al petto",
+          "dolore forte al petto",
+          "forte dolore al petto",
+          "peso sul petto",
+          "oppressione al petto",
+          "fitta al petto",
+          "mi fa male il petto",
+          "dolore al torace",
+          "เจ็บหน้าอก",
+          "แน่นหน้าอก",
+          "ปวดหน้าอก",
+          "เจ็บอก",
+          "แน่นอก",
+          "จุกอก",
+          "เจ็บกลางอก",
+          "แน่นกลางอก",
+          "หน้าอกเจ็บ",
+          "หน้าอกแน่น",
+          "เจ็บที่หน้าอก"
+        ],
+        [
+          "tearing",
+          "ripping",
+          "to my back",
+          "through to my back",
+          "into my back",
+          "between my shoulder",
+          "lacerante",
+          "alla schiena",
+          "tra le scapole",
+          "ฉีก",
+          "ร้าวไปหลัง",
+          "ทะลุหลัง"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-CHEST-01-C2",
+          "id": "CR-CHEST-02-C1",
           "text": {
             "th": "พิจารณาหลอดเลือดแดงใหญ่ฉีกขาด",
             "it": "Considerare dissezione aortica",
@@ -164,9 +222,82 @@
             "ecg",
             "ct_aorta"
           ]
-        },
+        }
+      ],
+      "source": "Gulati M et al. 2021 AHA/ACC Chest Pain Guideline. Circulation 2021;144:e368-e454. doi:10.1161/CIR.0000000000001029 (PMID 34709879); Byrne RA et al. 2023 ESC Guidelines for ACS. Eur Heart J 2023;44:3720-3826. doi:10.1093/eurheartj/ehad191 (PMID 37622654); NICE CG95"
+    },
+    {
+      "id": "CR-CHEST-03",
+      "match": [
+        [
+          "chest pain",
+          "chest tight",
+          "tight chest",
+          "chest pressure",
+          "pressure in my chest",
+          "pain in my chest",
+          "pain in the chest",
+          "chest hurts",
+          "chest is tight",
+          "chest feels tight",
+          "crushing",
+          "dolore al petto",
+          "dolore toracico",
+          "male al petto",
+          "dolori al petto",
+          "dolore forte al petto",
+          "forte dolore al petto",
+          "peso sul petto",
+          "oppressione al petto",
+          "fitta al petto",
+          "mi fa male il petto",
+          "dolore al torace",
+          "เจ็บหน้าอก",
+          "แน่นหน้าอก",
+          "ปวดหน้าอก",
+          "เจ็บอก",
+          "แน่นอก",
+          "จุกอก",
+          "เจ็บกลางอก",
+          "แน่นกลางอก",
+          "หน้าอกเจ็บ",
+          "หน้าอกแน่น",
+          "เจ็บที่หน้าอก"
+        ],
+        [
+          "coughing blood",
+          "coughing up blood",
+          "cough up blood",
+          "swollen leg",
+          "leg is swollen",
+          "calf",
+          "long flight",
+          "long journey",
+          "recent surgery",
+          "after surgery",
+          "worse when i breathe",
+          "when i breathe in",
+          "tosse con sangue",
+          "sangue con la tosse",
+          "gamba gonfia",
+          "polpaccio",
+          "volo lungo",
+          "viaggio lungo",
+          "dopo l'intervento",
+          "respirando",
+          "ไอเป็นเลือด",
+          "ขาบวม",
+          "น่อง",
+          "นั่งเครื่องบินนาน",
+          "เพิ่งผ่าตัด",
+          "หายใจเข้าแล้วเจ็บ",
+          "หายใจแล้วเจ็บ"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-CHEST-01-C3",
+          "id": "CR-CHEST-03-C1",
           "text": {
             "th": "พิจารณาลิ่มเลือดอุดหลอดเลือดปอด",
             "it": "Considerare embolia polmonare",
@@ -308,9 +439,73 @@
           ]
         }
       ],
+      "source": "Konstantinides SV et al. 2019 ESC Guidelines on acute pulmonary embolism. Eur Heart J 2020;41:543-603. doi:10.1093/eurheartj/ehz405 (PMID 31504429); NICE NG158 Venous thromboembolic diseases; BTS/SIGN British guideline on the management of asthma"
+    },
+    {
+      "id": "CR-SOB-02",
+      "match": [
+        [
+          "short of breath",
+          "shortness of breath",
+          "breathless",
+          "out of breath",
+          "can't breathe",
+          "hard to breathe",
+          "trouble breathing",
+          "difficulty breathing",
+          "wheez",
+          "fiato corto",
+          "senza fiato",
+          "respiro corto",
+          "affann",
+          "fatica a respirare",
+          "difficoltà a respirare",
+          "difficolta a respirare",
+          "non riesco a respirare",
+          "manca l'aria",
+          "หายใจลำบาก",
+          "หายใจเหนื่อย",
+          "เหนื่อยหอบ",
+          "หอบเหนื่อย",
+          "หายใจหอบ",
+          "หายใจไม่อิ่ม",
+          "หายใจไม่ออก",
+          "หายใจไม่ทัน"
+        ],
+        [
+          "coughing blood",
+          "coughing up blood",
+          "cough up blood",
+          "swollen leg",
+          "leg is swollen",
+          "calf",
+          "long flight",
+          "long journey",
+          "recent surgery",
+          "after surgery",
+          "worse when i breathe",
+          "when i breathe in",
+          "tosse con sangue",
+          "sangue con la tosse",
+          "gamba gonfia",
+          "polpaccio",
+          "volo lungo",
+          "viaggio lungo",
+          "dopo l'intervento",
+          "respirando",
+          "ไอเป็นเลือด",
+          "ขาบวม",
+          "น่อง",
+          "นั่งเครื่องบินนาน",
+          "เพิ่งผ่าตัด",
+          "หายใจเข้าแล้วเจ็บ",
+          "หายใจแล้วเจ็บ"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-SOB-01-C1",
+          "id": "CR-SOB-02-C1",
           "text": {
             "th": "พิจารณาลิ่มเลือดอุดหลอดเลือดปอด",
             "it": "Considerare embolia polmonare",
@@ -330,9 +525,61 @@
             "title": "NICE NG158: Venous thromboembolic diseases: diagnosis, management and thrombophilia testing",
             "url": "https://www.nice.org.uk/guidance/ng158"
           }
-        },
+        }
+      ],
+      "source": "Konstantinides SV et al. 2019 ESC Guidelines on acute pulmonary embolism. Eur Heart J 2020;41:543-603. doi:10.1093/eurheartj/ehz405 (PMID 31504429); NICE NG158 Venous thromboembolic diseases; BTS/SIGN British guideline on the management of asthma"
+    },
+    {
+      "id": "CR-SOB-03",
+      "match": [
+        [
+          "short of breath",
+          "shortness of breath",
+          "breathless",
+          "out of breath",
+          "can't breathe",
+          "hard to breathe",
+          "trouble breathing",
+          "difficulty breathing",
+          "wheez",
+          "fiato corto",
+          "senza fiato",
+          "respiro corto",
+          "affann",
+          "fatica a respirare",
+          "difficoltà a respirare",
+          "difficolta a respirare",
+          "non riesco a respirare",
+          "manca l'aria",
+          "หายใจลำบาก",
+          "หายใจเหนื่อย",
+          "เหนื่อยหอบ",
+          "หอบเหนื่อย",
+          "หายใจหอบ",
+          "หายใจไม่อิ่ม",
+          "หายใจไม่ออก",
+          "หายใจไม่ทัน"
+        ],
+        [
+          "lying flat",
+          "lie flat",
+          "pillows",
+          "swollen ankles",
+          "ankles are swollen",
+          "wake up breathless",
+          "sdraiat",
+          "cuscini",
+          "caviglie gonfie",
+          "นอนราบ",
+          "หมอนหลายใบ",
+          "ข้อเท้าบวม",
+          "ตื่นมาหอบ"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-SOB-01-C2",
+          "id": "CR-SOB-03-C1",
           "text": {
             "th": "พิจารณาภาวะหัวใจล้มเหลวเฉียบพลัน",
             "it": "Considerare scompenso cardiaco acuto",
@@ -352,9 +599,62 @@
             "title": "NICE CG187: Acute heart failure: diagnosis and management",
             "url": "https://www.nice.org.uk/guidance/cg187"
           }
-        },
+        }
+      ],
+      "source": "Konstantinides SV et al. 2019 ESC Guidelines on acute pulmonary embolism. Eur Heart J 2020;41:543-603. doi:10.1093/eurheartj/ehz405 (PMID 31504429); NICE NG158 Venous thromboembolic diseases; BTS/SIGN British guideline on the management of asthma"
+    },
+    {
+      "id": "CR-SOB-04",
+      "match": [
+        [
+          "short of breath",
+          "shortness of breath",
+          "breathless",
+          "out of breath",
+          "can't breathe",
+          "hard to breathe",
+          "trouble breathing",
+          "difficulty breathing",
+          "wheez",
+          "fiato corto",
+          "senza fiato",
+          "respiro corto",
+          "affann",
+          "fatica a respirare",
+          "difficoltà a respirare",
+          "difficolta a respirare",
+          "non riesco a respirare",
+          "manca l'aria",
+          "หายใจลำบาก",
+          "หายใจเหนื่อย",
+          "เหนื่อยหอบ",
+          "หอบเหนื่อย",
+          "หายใจหอบ",
+          "หายใจไม่อิ่ม",
+          "หายใจไม่ออก",
+          "หายใจไม่ทัน"
+        ],
+        [
+          "asthma",
+          "copd",
+          "emphysema",
+          "inhaler",
+          "wheez",
+          "asma",
+          "bpco",
+          "enfisema",
+          "inalatore",
+          "sibil",
+          "หอบหืด",
+          "ถุงลมโป่งพอง",
+          "ยาพ่น",
+          "หวีด"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-SOB-01-C3",
+          "id": "CR-SOB-04-C1",
           "text": {
             "th": "พิจารณาหอบหืดหรือถุงลมโป่งพองกำเริบรุนแรง",
             "it": "Considerare riacutizzazione grave di asma o BPCO",
@@ -369,9 +669,56 @@
             "vbg",
             "cxr"
           ]
-        },
+        }
+      ],
+      "source": "Konstantinides SV et al. 2019 ESC Guidelines on acute pulmonary embolism. Eur Heart J 2020;41:543-603. doi:10.1093/eurheartj/ehz405 (PMID 31504429); NICE NG158 Venous thromboembolic diseases; BTS/SIGN British guideline on the management of asthma"
+    },
+    {
+      "id": "CR-SOB-05",
+      "match": [
+        [
+          "short of breath",
+          "shortness of breath",
+          "breathless",
+          "out of breath",
+          "can't breathe",
+          "hard to breathe",
+          "trouble breathing",
+          "difficulty breathing",
+          "wheez",
+          "fiato corto",
+          "senza fiato",
+          "respiro corto",
+          "affann",
+          "fatica a respirare",
+          "difficoltà a respirare",
+          "difficolta a respirare",
+          "non riesco a respirare",
+          "manca l'aria",
+          "หายใจลำบาก",
+          "หายใจเหนื่อย",
+          "เหนื่อยหอบ",
+          "หอบเหนื่อย",
+          "หายใจหอบ",
+          "หายใจไม่อิ่ม",
+          "หายใจไม่ออก",
+          "หายใจไม่ทัน"
+        ],
+        [
+          "fever",
+          "phlegm",
+          "sputum",
+          "febbre",
+          "catarro",
+          "espettorato",
+          "ไข้",
+          "เสมหะ"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-SOB-01-C4",
+          "id": "CR-SOB-05-C1",
           "text": {
             "th": "พิจารณาปอดอักเสบ",
             "it": "Considerare polmonite",
@@ -500,9 +847,51 @@
           ]
         }
       ],
+      "source": "NICE CG150 Headaches in over 12s: diagnosis and management; Godwin SA et al. ACEP Clinical Policy: Acute Headache. Ann Emerg Med 2019;74:e41-e74. doi:10.1016/j.annemergmed.2019.07.009 (PMID 31543134); Perry JJ et al. Ottawa SAH Rule. JAMA 2013;310:1248-55 (PMID 24065011)"
+    },
+    {
+      "id": "CR-HEAD-02",
+      "match": [
+        [
+          "headache",
+          "head hurts",
+          "head pain",
+          "pain in my head",
+          "migraine",
+          "mal di testa",
+          "cefalea",
+          "emicrania",
+          "dolore alla testa",
+          "ปวดหัว",
+          "ปวดศีรษะ",
+          "เจ็บหัว",
+          "ไมเกรน"
+        ],
+        [
+          "worst",
+          "sudden",
+          "thunderclap",
+          "explod",
+          "out of nowhere",
+          "like being hit",
+          "peggior",
+          "improvvis",
+          "esplod",
+          "rombo di tuono",
+          "ที่สุดในชีวิต",
+          "เฉียบพลัน",
+          "ฉับพลัน",
+          "ระเบิด",
+          "จู่ๆ",
+          "อยู่ๆ",
+          "จู่ ๆ",
+          "อยู่ ๆ"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-HEAD-01-C1",
+          "id": "CR-HEAD-02-C1",
           "text": {
             "th": "พิจารณาเลือดออกใต้เยื่อหุ้มสมอง",
             "it": "Considerare emorragia subaracnoidea",
@@ -521,9 +910,59 @@
             "title": "NICE NG228: Subarachnoid haemorrhage caused by a ruptured aneurysm: diagnosis and management",
             "url": "https://www.nice.org.uk/guidance/ng228"
           }
-        },
+        }
+      ],
+      "source": "NICE CG150 Headaches in over 12s: diagnosis and management; Godwin SA et al. ACEP Clinical Policy: Acute Headache. Ann Emerg Med 2019;74:e41-e74. doi:10.1016/j.annemergmed.2019.07.009 (PMID 31543134); Perry JJ et al. Ottawa SAH Rule. JAMA 2013;310:1248-55 (PMID 24065011)"
+    },
+    {
+      "id": "CR-HEAD-03",
+      "match": [
+        [
+          "headache",
+          "head hurts",
+          "head pain",
+          "pain in my head",
+          "migraine",
+          "mal di testa",
+          "cefalea",
+          "emicrania",
+          "dolore alla testa",
+          "ปวดหัว",
+          "ปวดศีรษะ",
+          "เจ็บหัว",
+          "ไมเกรน"
+        ],
+        [
+          "stiff neck",
+          "neck is stiff",
+          "neck stiffness",
+          "can't bend my neck",
+          "light hurts",
+          "hurts my eyes",
+          "photophobia",
+          "purple",
+          "doesn't fade",
+          "don't fade",
+          "confus",
+          "collo rigido",
+          "rigidità nucale",
+          "rigidita nucale",
+          "fotofobia",
+          "fastidio alla luce",
+          "macchie viola",
+          "non scompaiono",
+          "คอแข็ง",
+          "ก้มคอไม่ได้",
+          "แพ้แสง",
+          "จ้ำเลือด",
+          "จุดเลือดออก",
+          "สับสน"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-HEAD-01-C2",
+          "id": "CR-HEAD-03-C1",
           "text": {
             "th": "พิจารณาเยื่อหุ้มสมองอักเสบหรือสมองอักเสบ",
             "it": "Considerare meningite o encefalite",
@@ -544,9 +983,67 @@
             "title": "NICE NG240: Meningitis (bacterial) and meningococcal disease: recognition, diagnosis and management",
             "url": "https://www.nice.org.uk/guidance/ng240"
           }
-        },
+        }
+      ],
+      "source": "NICE CG150 Headaches in over 12s: diagnosis and management; Godwin SA et al. ACEP Clinical Policy: Acute Headache. Ann Emerg Med 2019;74:e41-e74. doi:10.1016/j.annemergmed.2019.07.009 (PMID 31543134); Perry JJ et al. Ottawa SAH Rule. JAMA 2013;310:1248-55 (PMID 24065011)"
+    },
+    {
+      "id": "CR-HEAD-04",
+      "match": [
+        [
+          "headache",
+          "head hurts",
+          "head pain",
+          "pain in my head",
+          "migraine",
+          "mal di testa",
+          "cefalea",
+          "emicrania",
+          "dolore alla testa",
+          "ปวดหัว",
+          "ปวดศีรษะ",
+          "เจ็บหัว",
+          "ไมเกรน"
+        ],
+        [
+          "face droop",
+          "slurred",
+          "weak on one side",
+          "numb on one side",
+          "one side of my body",
+          "arm is weak",
+          "weak arm",
+          "leg is weak",
+          "double vision",
+          "lost vision",
+          "blood thinner",
+          "warfarin",
+          "hit my head",
+          "i fell",
+          "bocca storta",
+          "parola impastata",
+          "debolezza al braccio",
+          "braccio debole",
+          "vista doppia",
+          "anticoagulant",
+          "coumadin",
+          "battuto la testa",
+          "ปากเบี้ยว",
+          "พูดไม่ชัด",
+          "อ่อนแรงครึ่งซีก",
+          "แขนอ่อนแรง",
+          "ชาครึ่งซีก",
+          "เห็นภาพซ้อน",
+          "ยาละลายลิ่มเลือด",
+          "วาร์ฟาริน",
+          "หัวกระแทก",
+          "ศีรษะกระแทก"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-HEAD-01-C3",
+          "id": "CR-HEAD-04-C1",
           "text": {
             "th": "พิจารณาหลอดเลือดสมองหรือเลือดออกในสมอง",
             "it": "Considerare ictus o emorragia intracranica",
@@ -566,9 +1063,44 @@
             "title": "NICE NG128: Stroke and transient ischaemic attack in over 16s: diagnosis and initial management",
             "url": "https://www.nice.org.uk/guidance/ng128"
           }
-        },
+        }
+      ],
+      "source": "NICE CG150 Headaches in over 12s: diagnosis and management; Godwin SA et al. ACEP Clinical Policy: Acute Headache. Ann Emerg Med 2019;74:e41-e74. doi:10.1016/j.annemergmed.2019.07.009 (PMID 31543134); Perry JJ et al. Ottawa SAH Rule. JAMA 2013;310:1248-55 (PMID 24065011)"
+    },
+    {
+      "id": "CR-HEAD-05",
+      "match": [
+        [
+          "headache",
+          "head hurts",
+          "head pain",
+          "pain in my head",
+          "migraine",
+          "mal di testa",
+          "cefalea",
+          "emicrania",
+          "dolore alla testa",
+          "ปวดหัว",
+          "ปวดศีรษะ",
+          "เจ็บหัว",
+          "ไมเกรน"
+        ],
+        [
+          "when i chew",
+          "chewing",
+          "scalp",
+          "lost vision",
+          "mastico",
+          "masticando",
+          "cuoio capelluto",
+          "เคี้ยว",
+          "หนังศีรษะ"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-HEAD-01-C4",
+          "id": "CR-HEAD-05-C1",
           "text": {
             "th": "พิจารณาหลอดเลือดแดงอักเสบชนิดเซลล์ยักษ์ในผู้อายุเกิน 50 ปี",
             "it": "Considerare arterite a cellule giganti in persona oltre i 50 anni",
@@ -699,9 +1231,57 @@
           ]
         }
       ],
+      "source": "NICE NG126 Ectopic pregnancy and miscarriage; NICE CG141 Acute upper GI bleeding; Wanhainen A et al. ESVS 2019 Guidelines on abdominal aorto-iliac aneurysms. Eur J Vasc Endovasc Surg 2019;57:8-93. doi:10.1016/j.ejvs.2018.09.020 (PMID 30528142)"
+    },
+    {
+      "id": "CR-ABD-02",
+      "match": [
+        [
+          "abdominal pain",
+          "stomach pain",
+          "stomach ache",
+          "stomachache",
+          "belly pain",
+          "tummy pain",
+          "stomach hurts",
+          "belly hurts",
+          "pain in my stomach",
+          "pain in my belly",
+          "mal di pancia",
+          "dolore alla pancia",
+          "dolore addominal",
+          "mal di stomaco",
+          "male alla pancia",
+          "ปวดท้อง",
+          "เจ็บท้อง",
+          "ท้องปวด",
+          "ปวดบิด"
+        ],
+        [
+          "pregnan",
+          "missed my period",
+          "missed period",
+          "period is late",
+          "late period",
+          "vaginal bleeding",
+          "spotting",
+          "incinta",
+          "gravidanz",
+          "ciclo in ritardo",
+          "ritardo del ciclo",
+          "ตั้งครรภ์",
+          "ครรภ์",
+          "ตั้งท้อง",
+          "ประจำเดือนขาด",
+          "ประจำเดือนไม่มา",
+          "เมนส์ไม่มา",
+          "เลือดออกทางช่องคลอด"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-ABD-01-C1",
+          "id": "CR-ABD-02-C1",
           "text": {
             "th": "พิจารณาการตั้งครรภ์นอกมดลูกในผู้ที่อาจตั้งครรภ์",
             "it": "Considerare gravidanza ectopica in persona che potrebbe essere in gravidanza",
@@ -722,9 +1302,55 @@
             "title": "NICE NG126: Ectopic pregnancy and miscarriage: diagnosis and initial management",
             "url": "https://www.nice.org.uk/guidance/ng126"
           }
-        },
+        }
+      ],
+      "source": "NICE NG126 Ectopic pregnancy and miscarriage; NICE CG141 Acute upper GI bleeding; Wanhainen A et al. ESVS 2019 Guidelines on abdominal aorto-iliac aneurysms. Eur J Vasc Endovasc Surg 2019;57:8-93. doi:10.1016/j.ejvs.2018.09.020 (PMID 30528142)"
+    },
+    {
+      "id": "CR-ABD-03",
+      "match": [
+        [
+          "abdominal pain",
+          "stomach pain",
+          "stomach ache",
+          "stomachache",
+          "belly pain",
+          "tummy pain",
+          "stomach hurts",
+          "belly hurts",
+          "pain in my stomach",
+          "pain in my belly",
+          "mal di pancia",
+          "dolore alla pancia",
+          "dolore addominal",
+          "mal di stomaco",
+          "male alla pancia",
+          "ปวดท้อง",
+          "เจ็บท้อง",
+          "ท้องปวด",
+          "ปวดบิด"
+        ],
+        [
+          "right side",
+          "lower right",
+          "right lower",
+          "moved to",
+          "worse when i move",
+          "worse when i walk",
+          "fossa iliaca destra",
+          "a destra",
+          "si è spostato",
+          "muovendomi",
+          "ท้องน้อยขวา",
+          "ท้องน้อยด้านขวา",
+          "ขวาล่าง",
+          "ปวดย้าย"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-ABD-01-C2",
+          "id": "CR-ABD-03-C1",
           "text": {
             "th": "พิจารณาไส้ติ่งอักเสบ",
             "it": "Considerare appendicite",
@@ -741,9 +1367,59 @@
             "upt",
             "us_abdomen"
           ]
-        },
+        }
+      ],
+      "source": "NICE NG126 Ectopic pregnancy and miscarriage; NICE CG141 Acute upper GI bleeding; Wanhainen A et al. ESVS 2019 Guidelines on abdominal aorto-iliac aneurysms. Eur J Vasc Endovasc Surg 2019;57:8-93. doi:10.1016/j.ejvs.2018.09.020 (PMID 30528142)"
+    },
+    {
+      "id": "CR-ABD-04",
+      "match": [
+        [
+          "abdominal pain",
+          "stomach pain",
+          "stomach ache",
+          "stomachache",
+          "belly pain",
+          "tummy pain",
+          "stomach hurts",
+          "belly hurts",
+          "pain in my stomach",
+          "pain in my belly",
+          "mal di pancia",
+          "dolore alla pancia",
+          "dolore addominal",
+          "mal di stomaco",
+          "male alla pancia",
+          "ปวดท้อง",
+          "เจ็บท้อง",
+          "ท้องปวด",
+          "ปวดบิด"
+        ],
+        [
+          "can't pass wind",
+          "not passed wind",
+          "no wind",
+          "haven't opened my bowels",
+          "swollen belly",
+          "distended",
+          "rigid",
+          "green vomit",
+          "non riesco a fare aria",
+          "non scarico",
+          "pancia gonfia",
+          "pancia dura",
+          "vomito verde",
+          "ไม่ผายลม",
+          "ไม่ถ่ายเลย",
+          "ท้องโต",
+          "ท้องแข็ง",
+          "อาเจียนสีเขียว"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-ABD-01-C3",
+          "id": "CR-ABD-04-C1",
           "text": {
             "th": "พิจารณาลำไส้อุดตันหรือทะลุ",
             "it": "Considerare occlusione o perforazione intestinale",
@@ -759,9 +1435,54 @@
             "ue",
             "lactate"
           ]
-        },
+        }
+      ],
+      "source": "NICE NG126 Ectopic pregnancy and miscarriage; NICE CG141 Acute upper GI bleeding; Wanhainen A et al. ESVS 2019 Guidelines on abdominal aorto-iliac aneurysms. Eur J Vasc Endovasc Surg 2019;57:8-93. doi:10.1016/j.ejvs.2018.09.020 (PMID 30528142)"
+    },
+    {
+      "id": "CR-ABD-05",
+      "match": [
+        [
+          "abdominal pain",
+          "stomach pain",
+          "stomach ache",
+          "stomachache",
+          "belly pain",
+          "tummy pain",
+          "stomach hurts",
+          "belly hurts",
+          "pain in my stomach",
+          "pain in my belly",
+          "mal di pancia",
+          "dolore alla pancia",
+          "dolore addominal",
+          "mal di stomaco",
+          "male alla pancia",
+          "ปวดท้อง",
+          "เจ็บท้อง",
+          "ท้องปวด",
+          "ปวดบิด"
+        ],
+        [
+          "my back",
+          "to my back",
+          "into my back",
+          "pulsing",
+          "aneurysm",
+          "alla schiena",
+          "pulsante",
+          "aneurisma",
+          "ร้าวไปหลัง",
+          "ทะลุหลัง",
+          "ปวดหลัง",
+          "หลอดเลือดโป่งพอง",
+          "เต้นตุบ"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-ABD-01-C4",
+          "id": "CR-ABD-05-C1",
           "text": {
             "th": "พิจารณาหลอดเลือดแดงใหญ่ช่องท้องโป่งพองแตกหรือรั่วในผู้สูงอายุ",
             "it": "Considerare aneurisma aortico addominale rotto o fissurato in età avanzata",
@@ -889,9 +1610,53 @@
           ]
         }
       ],
+      "source": "NICE NG51 Suspected sepsis: recognition, diagnosis and early management; Singer M et al. Sepsis-3. JAMA 2016;315:801-10. doi:10.1001/jama.2016.0287 (PMID 26903338); NICE NG240 Meningitis (bacterial) and meningococcal disease; WHO Dengue: guidelines for diagnosis, treatment, prevention and control (2009)"
+    },
+    {
+      "id": "CR-FEVER-02",
+      "match": [
+        [
+          "fever",
+          "feverish",
+          "high temperature",
+          "temperature of",
+          "chills",
+          "rigors",
+          "febbre",
+          "febbricitante",
+          "brividi",
+          "temperatura alta",
+          "ไข้",
+          "ตัวร้อน",
+          "หนาวสั่น"
+        ],
+        [
+          "confus",
+          "drowsy",
+          "can't stay awake",
+          "breathing fast",
+          "breathing very fast",
+          "very unwell",
+          "worst i have ever felt",
+          "mottled",
+          "not peeing",
+          "haven't peed",
+          "sonnolent",
+          "respiro veloce",
+          "non urino",
+          "sto malissimo",
+          "สับสน",
+          "ซึมลง",
+          "ง่วงซึม",
+          "หายใจเร็ว",
+          "ไม่ค่อยปัสสาวะ",
+          "ปัสสาวะน้อย"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-FEVER-01-C1",
+          "id": "CR-FEVER-02-C1",
           "text": {
             "th": "พิจารณาภาวะติดเชื้อในกระแสเลือด",
             "it": "Considerare sepsi",
@@ -913,9 +1678,59 @@
             "title": "NICE NG51: Suspected sepsis: recognition, diagnosis and early management",
             "url": "https://www.nice.org.uk/guidance/ng51"
           }
-        },
+        }
+      ],
+      "source": "NICE NG51 Suspected sepsis: recognition, diagnosis and early management; Singer M et al. Sepsis-3. JAMA 2016;315:801-10. doi:10.1001/jama.2016.0287 (PMID 26903338); NICE NG240 Meningitis (bacterial) and meningococcal disease; WHO Dengue: guidelines for diagnosis, treatment, prevention and control (2009)"
+    },
+    {
+      "id": "CR-FEVER-03",
+      "match": [
+        [
+          "fever",
+          "feverish",
+          "high temperature",
+          "temperature of",
+          "chills",
+          "rigors",
+          "febbre",
+          "febbricitante",
+          "brividi",
+          "temperatura alta",
+          "ไข้",
+          "ตัวร้อน",
+          "หนาวสั่น"
+        ],
+        [
+          "stiff neck",
+          "neck is stiff",
+          "neck stiffness",
+          "can't bend my neck",
+          "light hurts",
+          "hurts my eyes",
+          "photophobia",
+          "purple",
+          "doesn't fade",
+          "don't fade",
+          "confus",
+          "collo rigido",
+          "rigidità nucale",
+          "rigidita nucale",
+          "fotofobia",
+          "fastidio alla luce",
+          "macchie viola",
+          "non scompaiono",
+          "คอแข็ง",
+          "ก้มคอไม่ได้",
+          "แพ้แสง",
+          "จ้ำเลือด",
+          "จุดเลือดออก",
+          "สับสน"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-FEVER-01-C2",
+          "id": "CR-FEVER-03-C1",
           "text": {
             "th": "พิจารณาเยื่อหุ้มสมองอักเสบหรือติดเชื้อเมนิงโกคอคคัส",
             "it": "Considerare meningite o malattia meningococcica",
@@ -934,9 +1749,54 @@
             "title": "NICE NG240: Meningitis (bacterial) and meningococcal disease: recognition, diagnosis and management",
             "url": "https://www.nice.org.uk/guidance/ng240"
           }
-        },
+        }
+      ],
+      "source": "NICE NG51 Suspected sepsis: recognition, diagnosis and early management; Singer M et al. Sepsis-3. JAMA 2016;315:801-10. doi:10.1001/jama.2016.0287 (PMID 26903338); NICE NG240 Meningitis (bacterial) and meningococcal disease; WHO Dengue: guidelines for diagnosis, treatment, prevention and control (2009)"
+    },
+    {
+      "id": "CR-FEVER-04",
+      "match": [
+        [
+          "fever",
+          "feverish",
+          "high temperature",
+          "temperature of",
+          "chills",
+          "rigors",
+          "febbre",
+          "febbricitante",
+          "brividi",
+          "temperatura alta",
+          "ไข้",
+          "ตัวร้อน",
+          "หนาวสั่น"
+        ],
+        [
+          "mosquito",
+          "travel",
+          "holiday",
+          "trip",
+          "jungle",
+          "behind my eyes",
+          "behind the eyes",
+          "dengue",
+          "malaria",
+          "zanzar",
+          "viaggi",
+          "vacanza",
+          "dietro gli occhi",
+          "ยุง",
+          "เดินทาง",
+          "ไปเที่ยว",
+          "ปวดกระบอกตา",
+          "ไข้เลือดออก",
+          "มาลาเรีย"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-FEVER-01-C3",
+          "id": "CR-FEVER-04-C1",
           "text": {
             "th": "พิจารณาไข้เลือดออกหรือมาลาเรียหลังโดนยุงกัดหรือเดินทาง",
             "it": "Considerare dengue o malaria dopo esposizione a zanzare o viaggi",
@@ -1077,9 +1937,66 @@
           ]
         }
       ],
+      "source": "Brignole M et al. 2018 ESC Guidelines for the diagnosis and management of syncope. Eur Heart J 2018;39:1883-1948. doi:10.1093/eurheartj/ehy037 (PMID 29562304); NICE CG109 Transient loss of consciousness in over 16s"
+    },
+    {
+      "id": "CR-DIZZY-02",
+      "match": [
+        [
+          "dizzy",
+          "dizziness",
+          "lightheaded",
+          "light-headed",
+          "faint",
+          "passed out",
+          "blacked out",
+          "vertigo",
+          "room spinning",
+          "giramento di testa",
+          "mi gira la testa",
+          "vertigin",
+          "capogiro",
+          "svenut",
+          "svenire",
+          "perso i sensi",
+          "เวียนหัว",
+          "เวียนศีรษะ",
+          "บ้านหมุน",
+          "หน้ามืด",
+          "เป็นลมล้ม",
+          "เป็นลมไป",
+          "จะเป็นลม",
+          "วูบไป",
+          "มึนหัว"
+        ],
+        [
+          "passed out",
+          "fainted",
+          "blacked out",
+          "lost consciousness",
+          "palpitation",
+          "heart racing",
+          "during exercise",
+          "while running",
+          "chest pain",
+          "svenut",
+          "perso i sensi",
+          "palpitazion",
+          "cuore che batte forte",
+          "sotto sforzo",
+          "dolore al petto",
+          "หมดสติ",
+          "วูบไป",
+          "ใจสั่น",
+          "หัวใจเต้นแรง",
+          "ตอนออกกำลัง",
+          "เจ็บหน้าอก"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-DIZZY-01-C1",
+          "id": "CR-DIZZY-02-C1",
           "text": {
             "th": "พิจารณาหมดสติจากหัวใจ (หัวใจเต้นผิดจังหวะหรือโรคโครงสร้างหัวใจ)",
             "it": "Considerare sincope cardiaca (aritmia o cardiopatia strutturale)",
@@ -1098,9 +2015,62 @@
             "title": "NICE CG109: Transient loss of consciousness ('blackouts') in over 16s",
             "url": "https://www.nice.org.uk/guidance/cg109"
           }
-        },
+        }
+      ],
+      "source": "Brignole M et al. 2018 ESC Guidelines for the diagnosis and management of syncope. Eur Heart J 2018;39:1883-1948. doi:10.1093/eurheartj/ehy037 (PMID 29562304); NICE CG109 Transient loss of consciousness in over 16s"
+    },
+    {
+      "id": "CR-DIZZY-03",
+      "match": [
+        [
+          "dizzy",
+          "dizziness",
+          "lightheaded",
+          "light-headed",
+          "faint",
+          "passed out",
+          "blacked out",
+          "vertigo",
+          "room spinning",
+          "giramento di testa",
+          "mi gira la testa",
+          "vertigin",
+          "capogiro",
+          "svenut",
+          "svenire",
+          "perso i sensi",
+          "เวียนหัว",
+          "เวียนศีรษะ",
+          "บ้านหมุน",
+          "หน้ามืด",
+          "เป็นลมล้ม",
+          "เป็นลมไป",
+          "จะเป็นลม",
+          "วูบไป",
+          "มึนหัว"
+        ],
+        [
+          "double vision",
+          "can't walk straight",
+          "can't walk",
+          "unsteady",
+          "slurred",
+          "weak on one side",
+          "vista doppia",
+          "non riesco a camminare",
+          "instabil",
+          "parola impastata",
+          "เห็นภาพซ้อน",
+          "เดินเซ",
+          "เดินไม่ได้",
+          "พูดไม่ชัด",
+          "อ่อนแรงครึ่งซีก"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-DIZZY-01-C2",
+          "id": "CR-DIZZY-03-C1",
           "text": {
             "th": "พิจารณาหลอดเลือดสมองส่วนหลัง",
             "it": "Considerare ictus del circolo posteriore",
@@ -1119,9 +2089,64 @@
             "title": "NICE NG128: Stroke and transient ischaemic attack in over 16s: diagnosis and initial management",
             "url": "https://www.nice.org.uk/guidance/ng128"
           }
-        },
+        }
+      ],
+      "source": "Brignole M et al. 2018 ESC Guidelines for the diagnosis and management of syncope. Eur Heart J 2018;39:1883-1948. doi:10.1093/eurheartj/ehy037 (PMID 29562304); NICE CG109 Transient loss of consciousness in over 16s"
+    },
+    {
+      "id": "CR-DIZZY-04",
+      "match": [
+        [
+          "dizzy",
+          "dizziness",
+          "lightheaded",
+          "light-headed",
+          "faint",
+          "passed out",
+          "blacked out",
+          "vertigo",
+          "room spinning",
+          "giramento di testa",
+          "mi gira la testa",
+          "vertigin",
+          "capogiro",
+          "svenut",
+          "svenire",
+          "perso i sensi",
+          "เวียนหัว",
+          "เวียนศีรษะ",
+          "บ้านหมุน",
+          "หน้ามืด",
+          "เป็นลมล้ม",
+          "เป็นลมไป",
+          "จะเป็นลม",
+          "วูบไป",
+          "มึนหัว"
+        ],
+        [
+          "black stool",
+          "black poo",
+          "blood",
+          "bleeding",
+          "pregnan",
+          "period is late",
+          "missed period",
+          "feci nere",
+          "sangue",
+          "sanguin",
+          "incinta",
+          "ciclo in ritardo",
+          "ถ่ายดำ",
+          "เลือด",
+          "ตั้งครรภ์",
+          "ประจำเดือนไม่มา",
+          "ประจำเดือนขาด"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-DIZZY-01-C3",
+          "id": "CR-DIZZY-04-C1",
           "text": {
             "th": "พิจารณาเลือดออกซ่อนเร้นหรือตั้งครรภ์นอกมดลูก",
             "it": "Considerare sanguinamento occulto o gravidanza ectopica",
@@ -1248,9 +2273,48 @@
           ]
         }
       ],
+      "source": "NICE NG59 Low back pain and sciatica in over 16s; NICE NG234 Spinal metastases and metastatic spinal cord compression; Wanhainen A et al. ESVS 2019 AAA guidelines (PMID 30528142)"
+    },
+    {
+      "id": "CR-BACK-02",
+      "match": [
+        [
+          "back pain",
+          "backache",
+          "my back hurts",
+          "lower back",
+          "mal di schiena",
+          "dolore alla schiena",
+          "lombalgia",
+          "bloccata la schiena",
+          "ปวดหลัง",
+          "เจ็บหลัง",
+          "ปวดเอว"
+        ],
+        [
+          "numb around",
+          "numbness between my legs",
+          "saddle",
+          "can't pee",
+          "can't control",
+          "wet myself",
+          "incontinen",
+          "both legs",
+          "intorpidimento ai genitali",
+          "non riesco a urinare",
+          "entrambe le gambe",
+          "ชารอบก้น",
+          "ชาที่ก้น",
+          "ปัสสาวะไม่ออก",
+          "กลั้นไม่อยู่",
+          "ขาสองข้าง",
+          "ขาทั้งสองข้าง"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-BACK-01-C1",
+          "id": "CR-BACK-02-C1",
           "text": {
             "th": "พิจารณากลุ่มอาการรากประสาทหางม้าถูกกด",
             "it": "Considerare sindrome della cauda equina",
@@ -1268,9 +2332,51 @@
             "title": "NICE NG59: Low back pain and sciatica in over 16s: assessment and management",
             "url": "https://www.nice.org.uk/guidance/ng59"
           }
-        },
+        }
+      ],
+      "source": "NICE NG59 Low back pain and sciatica in over 16s; NICE NG234 Spinal metastases and metastatic spinal cord compression; Wanhainen A et al. ESVS 2019 AAA guidelines (PMID 30528142)"
+    },
+    {
+      "id": "CR-BACK-03",
+      "match": [
+        [
+          "back pain",
+          "backache",
+          "my back hurts",
+          "lower back",
+          "mal di schiena",
+          "dolore alla schiena",
+          "lombalgia",
+          "bloccata la schiena",
+          "ปวดหลัง",
+          "เจ็บหลัง",
+          "ปวดเอว"
+        ],
+        [
+          "cancer",
+          "tumour",
+          "tumor",
+          "weight loss",
+          "losing weight",
+          "pain at night",
+          "worse at night",
+          "fever",
+          "tumore",
+          "cancro",
+          "calo di peso",
+          "dimagrit",
+          "dolore notturno",
+          "febbre",
+          "มะเร็ง",
+          "น้ำหนักลด",
+          "ปวดตอนกลางคืน",
+          "ไข้"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-BACK-01-C2",
+          "id": "CR-BACK-03-C1",
           "text": {
             "th": "พิจารณามะเร็งกระจายกดไขสันหลังหรือติดเชื้อที่กระดูกสันหลัง",
             "it": "Considerare compressione midollare metastatica o infezione vertebrale",
@@ -1290,9 +2396,44 @@
             "title": "NICE NG234: Spinal metastases and metastatic spinal cord compression",
             "url": "https://www.nice.org.uk/guidance/ng234"
           }
-        },
+        }
+      ],
+      "source": "NICE NG59 Low back pain and sciatica in over 16s; NICE NG234 Spinal metastases and metastatic spinal cord compression; Wanhainen A et al. ESVS 2019 AAA guidelines (PMID 30528142)"
+    },
+    {
+      "id": "CR-BACK-04",
+      "match": [
+        [
+          "back pain",
+          "backache",
+          "my back hurts",
+          "lower back",
+          "mal di schiena",
+          "dolore alla schiena",
+          "lombalgia",
+          "bloccata la schiena",
+          "ปวดหลัง",
+          "เจ็บหลัง",
+          "ปวดเอว"
+        ],
+        [
+          "stomach",
+          "belly",
+          "abdom",
+          "pulsing",
+          "aneurysm",
+          "pancia",
+          "addom",
+          "pulsante",
+          "aneurisma",
+          "ปวดท้อง",
+          "หลอดเลือดโป่งพอง"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-BACK-01-C3",
+          "id": "CR-BACK-04-C1",
           "text": {
             "th": "พิจารณาหลอดเลือดแดงใหญ่ช่องท้องโป่งพองในผู้สูงอายุ",
             "it": "Considerare aneurisma dell'aorta addominale in età avanzata",
@@ -1417,9 +2558,62 @@
           ]
         }
       ],
+      "source": "NICE NG109 Urinary tract infection (lower): antimicrobial prescribing; NICE NG111 Pyelonephritis (acute): antimicrobial prescribing; NICE NG51 Suspected sepsis"
+    },
+    {
+      "id": "CR-URINE-02",
+      "match": [
+        [
+          "burning when i pee",
+          "burns when i pee",
+          "burning when i urinate",
+          "burning urine",
+          "pain when i pee",
+          "pain when peeing",
+          "painful urination",
+          "pee all the time",
+          "peeing a lot",
+          "blood in my urine",
+          "blood in urine",
+          "urine infection",
+          "urinary infection",
+          "bladder infection",
+          "bruciore quando urino",
+          "bruciore a urinare",
+          "cistite",
+          "urino spesso",
+          "sangue nelle urine",
+          "ปัสสาวะแสบ",
+          "ฉี่แสบ",
+          "แสบขัด",
+          "ปัสสาวะบ่อย",
+          "ฉี่บ่อย",
+          "ปัสสาวะเป็นเลือด",
+          "ฉี่เป็นเลือด",
+          "กระเพาะปัสสาวะอักเสบ"
+        ],
+        [
+          "fever",
+          "shiver",
+          "my side",
+          "flank",
+          "loin",
+          "back pain",
+          "febbre",
+          "brividi",
+          "fianco",
+          "mal di schiena",
+          "ไข้",
+          "หนาวสั่น",
+          "ปวดเอว",
+          "ปวดหลัง",
+          "สีข้าง"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-URINE-01-C1",
+          "id": "CR-URINE-02-C1",
           "text": {
             "th": "พิจารณากรวยไตอักเสบหรือติดเชื้อในกระแสเลือดจากทางเดินปัสสาวะ",
             "it": "Considerare pielonefrite o urosepsi",
@@ -1442,9 +2636,59 @@
             "title": "NICE NG111: Pyelonephritis (acute): antimicrobial prescribing",
             "url": "https://www.nice.org.uk/guidance/ng111"
           }
-        },
+        }
+      ],
+      "source": "NICE NG109 Urinary tract infection (lower): antimicrobial prescribing; NICE NG111 Pyelonephritis (acute): antimicrobial prescribing; NICE NG51 Suspected sepsis"
+    },
+    {
+      "id": "CR-URINE-03",
+      "match": [
+        [
+          "burning when i pee",
+          "burns when i pee",
+          "burning when i urinate",
+          "burning urine",
+          "pain when i pee",
+          "pain when peeing",
+          "painful urination",
+          "pee all the time",
+          "peeing a lot",
+          "blood in my urine",
+          "blood in urine",
+          "urine infection",
+          "urinary infection",
+          "bladder infection",
+          "bruciore quando urino",
+          "bruciore a urinare",
+          "cistite",
+          "urino spesso",
+          "sangue nelle urine",
+          "ปัสสาวะแสบ",
+          "ฉี่แสบ",
+          "แสบขัด",
+          "ปัสสาวะบ่อย",
+          "ฉี่บ่อย",
+          "ปัสสาวะเป็นเลือด",
+          "ฉี่เป็นเลือด",
+          "กระเพาะปัสสาวะอักเสบ"
+        ],
+        [
+          "discharge",
+          "new partner",
+          "unprotected",
+          "perdite",
+          "nuovo partner",
+          "rapporti non protetti",
+          "ตกขาว",
+          "หนอง",
+          "คู่นอนใหม่",
+          "ไม่ได้ป้องกัน"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-URINE-01-C2",
+          "id": "CR-URINE-03-C1",
           "text": {
             "th": "พิจารณาโรคติดต่อทางเพศสัมพันธ์",
             "it": "Considerare un'infezione sessualmente trasmessa",
@@ -1458,9 +2702,56 @@
           "workup": [
             "urinalysis"
           ]
-        },
+        }
+      ],
+      "source": "NICE NG109 Urinary tract infection (lower): antimicrobial prescribing; NICE NG111 Pyelonephritis (acute): antimicrobial prescribing; NICE NG51 Suspected sepsis"
+    },
+    {
+      "id": "CR-URINE-04",
+      "match": [
+        [
+          "burning when i pee",
+          "burns when i pee",
+          "burning when i urinate",
+          "burning urine",
+          "pain when i pee",
+          "pain when peeing",
+          "painful urination",
+          "pee all the time",
+          "peeing a lot",
+          "blood in my urine",
+          "blood in urine",
+          "urine infection",
+          "urinary infection",
+          "bladder infection",
+          "bruciore quando urino",
+          "bruciore a urinare",
+          "cistite",
+          "urino spesso",
+          "sangue nelle urine",
+          "ปัสสาวะแสบ",
+          "ฉี่แสบ",
+          "แสบขัด",
+          "ปัสสาวะบ่อย",
+          "ฉี่บ่อย",
+          "ปัสสาวะเป็นเลือด",
+          "ฉี่เป็นเลือด",
+          "กระเพาะปัสสาวะอักเสบ"
+        ],
+        [
+          "prostate",
+          "perineum",
+          "between my legs",
+          "prostata",
+          "perineo",
+          "ต่อมลูกหมาก",
+          "ฝีเย็บ"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-URINE-01-C3",
+          "id": "CR-URINE-04-C1",
           "text": {
             "th": "พิจารณาต่อมลูกหมากอักเสบในผู้ชายที่มีไข้",
             "it": "Considerare prostatite in un uomo con febbre",
@@ -1573,9 +2864,51 @@
           ]
         }
       ],
+      "source": "NICE NG120 Cough (acute): antimicrobial prescribing; NICE NG12 Suspected cancer: recognition and referral; NICE NG33 Tuberculosis"
+    },
+    {
+      "id": "CR-COUGH-02",
+      "match": [
+        [
+          "cough",
+          "tosse",
+          "tossisco",
+          "อาการไอ",
+          "ไอมา",
+          "ไอแห้ง",
+          "ไอมีเสมหะ",
+          "ไอมี",
+          "ไอเรื้อรัง",
+          "ไอเป็นเลือด",
+          "ไอทั้ง",
+          "ไอหนัก",
+          "ไอบ่อย",
+          "มีเสมหะ"
+        ],
+        [
+          "short of breath",
+          "breathless",
+          "pain when i breathe",
+          "hurts to breathe",
+          "green phlegm",
+          "yellow phlegm",
+          "rusty",
+          "fiato corto",
+          "affann",
+          "dolore respirando",
+          "catarro verde",
+          "catarro giallo",
+          "หอบ",
+          "หายใจเหนื่อย",
+          "เจ็บเวลาหายใจ",
+          "เสมหะเขียว",
+          "เสมหะเหลือง"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-COUGH-01-C1",
+          "id": "CR-COUGH-02-C1",
           "text": {
             "th": "พิจารณาปอดอักเสบ",
             "it": "Considerare polmonite",
@@ -1595,9 +2928,72 @@
             "title": "NICE CG191: Pneumonia in adults: diagnosis and management",
             "url": "https://www.nice.org.uk/guidance/cg191"
           }
-        },
+        }
+      ],
+      "source": "NICE NG120 Cough (acute): antimicrobial prescribing; NICE NG12 Suspected cancer: recognition and referral; NICE NG33 Tuberculosis"
+    },
+    {
+      "id": "CR-COUGH-03",
+      "match": [
+        [
+          "cough",
+          "tosse",
+          "tossisco",
+          "อาการไอ",
+          "ไอมา",
+          "ไอแห้ง",
+          "ไอมีเสมหะ",
+          "ไอมี",
+          "ไอเรื้อรัง",
+          "ไอเป็นเลือด",
+          "ไอทั้ง",
+          "ไอหนัก",
+          "ไอบ่อย",
+          "มีเสมหะ"
+        ],
+        [
+          "two weeks",
+          "three weeks",
+          "2 weeks",
+          "3 weeks",
+          "several weeks",
+          "a month",
+          "months",
+          "weight loss",
+          "losing weight",
+          "night sweats",
+          "sweating at night",
+          "coughing blood",
+          "coughing up blood",
+          "tb contact",
+          "tuberculosis",
+          "due settimane",
+          "tre settimane",
+          "un mese",
+          "mesi",
+          "calo di peso",
+          "dimagrit",
+          "sudo di notte",
+          "sudorazioni notturne",
+          "tosse con sangue",
+          "tubercolosi",
+          "สองสัปดาห์",
+          "สามสัปดาห์",
+          "2 สัปดาห์",
+          "3 สัปดาห์",
+          "หลายสัปดาห์",
+          "เป็นเดือน",
+          "หลายเดือน",
+          "น้ำหนักลด",
+          "เหงื่อออกกลางคืน",
+          "ไอเป็นเลือด",
+          "วัณโรค"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-COUGH-01-C2",
+          "id": "CR-COUGH-03-C1",
           "text": {
             "th": "พิจารณาวัณโรค",
             "it": "Considerare tubercolosi",
@@ -1616,9 +3012,72 @@
             "title": "NICE NG33: Tuberculosis",
             "url": "https://www.nice.org.uk/guidance/ng33"
           }
-        },
+        }
+      ],
+      "source": "NICE NG120 Cough (acute): antimicrobial prescribing; NICE NG12 Suspected cancer: recognition and referral; NICE NG33 Tuberculosis"
+    },
+    {
+      "id": "CR-COUGH-04",
+      "match": [
+        [
+          "cough",
+          "tosse",
+          "tossisco",
+          "อาการไอ",
+          "ไอมา",
+          "ไอแห้ง",
+          "ไอมีเสมหะ",
+          "ไอมี",
+          "ไอเรื้อรัง",
+          "ไอเป็นเลือด",
+          "ไอทั้ง",
+          "ไอหนัก",
+          "ไอบ่อย",
+          "มีเสมหะ"
+        ],
+        [
+          "two weeks",
+          "three weeks",
+          "2 weeks",
+          "3 weeks",
+          "several weeks",
+          "weeks now",
+          "a month",
+          "months",
+          "due settimane",
+          "tre settimane",
+          "settimane ormai",
+          "un mese",
+          "mesi",
+          "สองสัปดาห์",
+          "สามสัปดาห์",
+          "2 สัปดาห์",
+          "3 สัปดาห์",
+          "หลายสัปดาห์",
+          "เป็นเดือน",
+          "หลายเดือน"
+        ],
+        [
+          "smok",
+          "weight loss",
+          "losing weight",
+          "coughing blood",
+          "coughing up blood",
+          "fumo",
+          "fumatore",
+          "fumatrice",
+          "calo di peso",
+          "dimagrit",
+          "tosse con sangue",
+          "สูบบุหรี่",
+          "น้ำหนักลด",
+          "ไอเป็นเลือด"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-COUGH-01-C3",
+          "id": "CR-COUGH-04-C1",
           "text": {
             "th": "พิจารณามะเร็งปอดในผู้สูบบุหรี่อายุเกิน 40 หรือไอเป็นเลือด",
             "it": "Considerare tumore polmonare in fumatore oltre i 40 anni o con emottisi",
@@ -1729,9 +3188,48 @@
           ]
         }
       ],
+      "source": "NICE NG84 Sore throat (acute): antimicrobial prescribing (FeverPAIN/Centor; red flags for quinsy and epiglottitis)"
+    },
+    {
+      "id": "CR-THROAT-02",
+      "match": [
+        [
+          "sore throat",
+          "throat hurts",
+          "throat pain",
+          "painful to swallow",
+          "hurts to swallow",
+          "mal di gola",
+          "gola infiammata",
+          "fa male la gola",
+          "dolore alla gola",
+          "เจ็บคอ",
+          "คออักเสบ",
+          "กลืนเจ็บ",
+          "กลืนน้ำลายก็เจ็บ",
+          "กลืนน้ำลายเจ็บ"
+        ],
+        [
+          "stridor",
+          "noisy breathing",
+          "drool",
+          "can't swallow my saliva",
+          "muffled",
+          "stridore",
+          "sbav",
+          "non riesco a deglutire la saliva",
+          "voce ovattata",
+          "respiro rumoroso",
+          "หายใจเสียงดัง",
+          "น้ำลายไหล",
+          "กลืนน้ำลายไม่ได้",
+          "เสียงอู้อี้"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-THROAT-01-C1",
+          "id": "CR-THROAT-02-C1",
           "text": {
             "th": "พิจารณาฝาปิดกล่องเสียงอักเสบหรือทางเดินหายใจอุดกั้น",
             "it": "Considerare epiglottite o compromissione delle vie aeree",
@@ -1746,9 +3244,50 @@
             "title": "NICE NG84: Sore throat (acute): antimicrobial prescribing",
             "url": "https://www.nice.org.uk/guidance/ng84"
           }
-        },
+        }
+      ],
+      "source": "NICE NG84 Sore throat (acute): antimicrobial prescribing (FeverPAIN/Centor; red flags for quinsy and epiglottitis)"
+    },
+    {
+      "id": "CR-THROAT-03",
+      "match": [
+        [
+          "sore throat",
+          "throat hurts",
+          "throat pain",
+          "painful to swallow",
+          "hurts to swallow",
+          "mal di gola",
+          "gola infiammata",
+          "fa male la gola",
+          "dolore alla gola",
+          "เจ็บคอ",
+          "คออักเสบ",
+          "กลืนเจ็บ",
+          "กลืนน้ำลายก็เจ็บ",
+          "กลืนน้ำลายเจ็บ"
+        ],
+        [
+          "one side",
+          "can't open my mouth",
+          "trismus",
+          "muffled",
+          "drool",
+          "da un lato",
+          "non riesco ad aprire la bocca",
+          "trisma",
+          "voce ovattata",
+          "ข้างเดียว",
+          "อ้าปากไม่ขึ้น",
+          "อ้าปากไม่ได้",
+          "เสียงอู้อี้",
+          "น้ำลายไหล"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-THROAT-01-C2",
+          "id": "CR-THROAT-03-C1",
           "text": {
             "th": "พิจารณาฝีรอบต่อมทอนซิล",
             "it": "Considerare ascesso peritonsillare",
@@ -1767,9 +3306,46 @@
             "title": "NICE NG84: Sore throat (acute): antimicrobial prescribing",
             "url": "https://www.nice.org.uk/guidance/ng84"
           }
-        },
+        }
+      ],
+      "source": "NICE NG84 Sore throat (acute): antimicrobial prescribing (FeverPAIN/Centor; red flags for quinsy and epiglottitis)"
+    },
+    {
+      "id": "CR-THROAT-04",
+      "match": [
+        [
+          "sore throat",
+          "throat hurts",
+          "throat pain",
+          "painful to swallow",
+          "hurts to swallow",
+          "mal di gola",
+          "gola infiammata",
+          "fa male la gola",
+          "dolore alla gola",
+          "เจ็บคอ",
+          "คออักเสบ",
+          "กลืนเจ็บ",
+          "กลืนน้ำลายก็เจ็บ",
+          "กลืนน้ำลายเจ็บ"
+        ],
+        [
+          "carbimazole",
+          "methimazole",
+          "chemo",
+          "carbimazolo",
+          "metimazolo",
+          "chemioterapia",
+          "คาร์บิมาโซล",
+          "เมทิมาโซล",
+          "เคมีบำบัด",
+          "ยาต้านไทรอยด์"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-THROAT-01-C3",
+          "id": "CR-THROAT-04-C1",
           "text": {
             "th": "พิจารณาเม็ดเลือดขาวต่ำรุนแรงในผู้ที่ได้คาร์บิมาโซลหรือเคมีบำบัด",
             "it": "Considerare agranulocitosi in persona in terapia con carbimazolo o chemioterapia",
@@ -1892,9 +3468,55 @@
           ]
         }
       ],
+      "source": "NICE NG240 Meningitis (bacterial) and meningococcal disease; Creamer D et al. UK guidelines for the management of SJS/TEN in adults 2016. Br J Dermatol 2016;174:1194-227 (PMID 27317286); WHO Dengue guidelines (2009)"
+    },
+    {
+      "id": "CR-RASH-02",
+      "match": [
+        [
+          "rash",
+          "spots",
+          "hives",
+          "itchy skin",
+          "eruzione",
+          "macchie",
+          "orticaria",
+          "bolle",
+          "prurito",
+          "ผื่น",
+          "ลมพิษ",
+          "ตุ่ม",
+          "คันตามตัว"
+        ],
+        [
+          "fever",
+          "high temperature",
+          "temperature of",
+          "febbre",
+          "temperatura alta",
+          "ไข้",
+          "ตัวร้อน"
+        ],
+        [
+          "purple",
+          "doesn't fade",
+          "don't fade",
+          "glass",
+          "petechia",
+          "macchie viola",
+          "non scompaiono",
+          "bicchiere",
+          "petecchi",
+          "จ้ำเลือด",
+          "จุดเลือดออก",
+          "กดไม่จาง",
+          "ผื่นสีม่วง"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-RASH-01-C1",
+          "id": "CR-RASH-02-C1",
           "text": {
             "th": "พิจารณาติดเชื้อเมนิงโกคอคคัส",
             "it": "Considerare malattia meningococcica",
@@ -1915,9 +3537,60 @@
             "title": "NICE NG240: Meningitis (bacterial) and meningococcal disease: recognition, diagnosis and management",
             "url": "https://www.nice.org.uk/guidance/ng240"
           }
-        },
+        }
+      ],
+      "source": "NICE NG240 Meningitis (bacterial) and meningococcal disease; Creamer D et al. UK guidelines for the management of SJS/TEN in adults 2016. Br J Dermatol 2016;174:1194-227 (PMID 27317286); WHO Dengue guidelines (2009)"
+    },
+    {
+      "id": "CR-RASH-03",
+      "match": [
+        [
+          "rash",
+          "spots",
+          "hives",
+          "itchy skin",
+          "eruzione",
+          "macchie",
+          "orticaria",
+          "bolle",
+          "prurito",
+          "ผื่น",
+          "ลมพิษ",
+          "ตุ่ม",
+          "คันตามตัว"
+        ],
+        [
+          "blister",
+          "peeling",
+          "skin coming off",
+          "mouth sores",
+          "sore mouth",
+          "ulcers in my mouth",
+          "sore eyes",
+          "red eyes",
+          "new medicine",
+          "new tablet",
+          "started taking",
+          "vescicol",
+          "pelle che si stacca",
+          "afte",
+          "piaghe in bocca",
+          "occhi rossi",
+          "nuovo farmaco",
+          "ho iniziato a prendere",
+          "ตุ่มน้ำ",
+          "ผิวลอก",
+          "แผลในปาก",
+          "ปากเปื่อย",
+          "ตาแดง",
+          "ยาใหม่",
+          "เริ่มกินยา"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-RASH-01-C2",
+          "id": "CR-RASH-03-C1",
           "text": {
             "th": "พิจารณากลุ่มอาการสตีเวนส์-จอห์นสัน/ผิวหนังตายเฉียบพลัน หรือแพ้ยารุนแรง",
             "it": "Considerare SJS/TEN o reazione grave da farmaco",
@@ -1937,9 +3610,63 @@
             "title": "UK guidelines for the management of Stevens-Johnson syndrome/toxic epidermal necrolysis in adults 2016 (PubMed)",
             "url": "https://pubmed.ncbi.nlm.nih.gov/27317286/"
           }
-        },
+        }
+      ],
+      "source": "NICE NG240 Meningitis (bacterial) and meningococcal disease; Creamer D et al. UK guidelines for the management of SJS/TEN in adults 2016. Br J Dermatol 2016;174:1194-227 (PMID 27317286); WHO Dengue guidelines (2009)"
+    },
+    {
+      "id": "CR-RASH-04",
+      "match": [
+        [
+          "rash",
+          "spots",
+          "hives",
+          "itchy skin",
+          "eruzione",
+          "macchie",
+          "orticaria",
+          "bolle",
+          "prurito",
+          "ผื่น",
+          "ลมพิษ",
+          "ตุ่ม",
+          "คันตามตัว"
+        ],
+        [
+          "fever",
+          "high temperature",
+          "temperature of",
+          "febbre",
+          "temperatura alta",
+          "ไข้",
+          "ตัวร้อน"
+        ],
+        [
+          "mosquito",
+          "travel",
+          "holiday",
+          "trip",
+          "jungle",
+          "behind my eyes",
+          "behind the eyes",
+          "dengue",
+          "malaria",
+          "zanzar",
+          "viaggi",
+          "vacanza",
+          "dietro gli occhi",
+          "ยุง",
+          "เดินทาง",
+          "ไปเที่ยว",
+          "ปวดกระบอกตา",
+          "ไข้เลือดออก",
+          "มาลาเรีย"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-RASH-01-C3",
+          "id": "CR-RASH-04-C1",
           "text": {
             "th": "พิจารณาไข้เลือดออกในผู้ที่มีไข้",
             "it": "Considerare dengue in persona con febbre",
@@ -2069,9 +3796,54 @@
           ]
         }
       ],
+      "source": "NICE CKS Gastroenteritis; JBDS-IP (Joint British Diabetes Societies) Management of diabetic ketoacidosis in adults; NICE CG141 Acute upper GI bleeding"
+    },
+    {
+      "id": "CR-GI-02",
+      "match": [
+        [
+          "vomit",
+          "throwing up",
+          "diarrh",
+          "loose stool",
+          "watery stool",
+          "vomito",
+          "vomitato",
+          "diarrea",
+          "scariche",
+          "อาเจียน",
+          "อ้วก",
+          "ท้องเสีย",
+          "ถ่ายเหลว",
+          "ถ่ายเป็นน้ำ",
+          "ขี้ไหล"
+        ],
+        [
+          "can't keep",
+          "can't drink",
+          "not peeing",
+          "haven't peed",
+          "dizzy when i stand",
+          "very thirsty",
+          "dry mouth",
+          "non riesco a bere",
+          "non urino",
+          "sete",
+          "bocca secca",
+          "capogiri",
+          "ดื่มน้ำไม่ได้",
+          "อาเจียนทุกครั้ง",
+          "ปัสสาวะน้อย",
+          "ไม่ปัสสาวะ",
+          "กระหายน้ำ",
+          "ปากแห้ง",
+          "หน้ามืด"
+        ]
+      ],
+      "questions": [],
       "considerations": [
         {
-          "id": "CR-GI-01-C1",
+          "id": "CR-GI-02-C1",
           "text": {
             "th": "พิจารณาภาวะขาดน้ำร่วมกับไตบาดเจ็บเฉียบพลัน",
             "it": "Considerare disidratazione con danno renale acuto",
@@ -2090,9 +3862,46 @@
             "title": "NICE NG148: Acute kidney injury: prevention, detection and management",
             "url": "https://www.nice.org.uk/guidance/ng148"
           }
-        },
+        }
+      ],
+      "source": "NICE CKS Gastroenteritis; JBDS-IP (Joint British Diabetes Societies) Management of diabetic ketoacidosis in adults; NICE CG141 Acute upper GI bleeding"
+    },
+    {
+      "id": "CR-GI-03",
+      "match": [
+        [
+          "vomit",
+          "throwing up",
+          "diarrh",
+          "loose stool",
+          "watery stool",
+          "vomito",
+          "vomitato",
+          "diarrea",
+          "scariche",
+          "อาเจียน",
+          "อ้วก",
+          "ท้องเสีย",
+          "ถ่ายเหลว",
+          "ถ่ายเป็นน้ำ",
+          "ขี้ไหล"
+        ],
+        [
+          "diabet",
+          "sugar",
+          "insulin",
+          "diabete",
+          "zucchero",
+          "insulina",
+          "เบาหวาน",
+          "น้ำตาล",
+          "อินซูลิน"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-GI-01-C2",
+          "id": "CR-GI-03-C1",
           "text": {
             "th": "พิจารณาภาวะเลือดเป็นกรดจากเบาหวานในผู้เป็นเบาหวาน",
             "it": "Considerare chetoacidosi diabetica in persona con diabete",
@@ -2113,9 +3922,54 @@
             "title": "NICE NG17: Type 1 diabetes in adults: diagnosis and management",
             "url": "https://www.nice.org.uk/guidance/ng17"
           }
-        },
+        }
+      ],
+      "source": "NICE CKS Gastroenteritis; JBDS-IP (Joint British Diabetes Societies) Management of diabetic ketoacidosis in adults; NICE CG141 Acute upper GI bleeding"
+    },
+    {
+      "id": "CR-GI-04",
+      "match": [
+        [
+          "vomit",
+          "throwing up",
+          "diarrh",
+          "loose stool",
+          "watery stool",
+          "vomito",
+          "vomitato",
+          "diarrea",
+          "scariche",
+          "อาเจียน",
+          "อ้วก",
+          "ท้องเสีย",
+          "ถ่ายเหลว",
+          "ถ่ายเป็นน้ำ",
+          "ขี้ไหล"
+        ],
+        [
+          "can't pass wind",
+          "not passed wind",
+          "swollen belly",
+          "distended",
+          "rigid",
+          "green vomit",
+          "constant pain",
+          "non riesco a fare aria",
+          "pancia gonfia",
+          "pancia dura",
+          "vomito verde",
+          "dolore continuo",
+          "ไม่ผายลม",
+          "ท้องโต",
+          "ท้องแข็ง",
+          "อาเจียนสีเขียว",
+          "ปวดตลอด"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
         {
-          "id": "CR-GI-01-C3",
+          "id": "CR-GI-04-C1",
           "text": {
             "th": "พิจารณาสาเหตุทางศัลยกรรม เช่น ลำไส้อุดตัน",
             "it": "Considerare causa chirurgica come occlusione intestinale",
