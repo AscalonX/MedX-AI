@@ -34,6 +34,9 @@ export interface IntakeSession {
   status: SessionStatus;
   turns: Turn[];
   summary: IntakeSummary | null;
+  /** Pharmacist reconciliation state. */
+  pharmacyStatus?: "pending" | "in_review" | "reconciled";
+  pharmacyReviewerId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -127,6 +130,12 @@ export interface ModelCall {
 export interface IntakeSummary {
   sessionId: string;
   fields: ExtractedField[];
+  /** Medication list for the pharmacist view (one entry per medicine the patient mentioned). */
+  medications?: MedicationEntry[];
+  /** Patient-stated allergens, each with evidence (pharmacist view). */
+  allergies?: AllergyEntry[];
+  /** Deterministic medication-safety alerts (packages/shared/src/medrules.json). Never cleared by a model. */
+  medAlerts?: MedAlert[];
   redFlags: RedFlagHit[];
   nextQuestion: NextQuestion | null;
   /** True when the pipeline refused to produce a summary; UI shows "needs human review". */
@@ -154,6 +163,7 @@ export type AuditType =
   | "abstained"
   | "review"
   | "red_flag_review"
+  | "pharmacy_review"
   | "takeover";
 
 export interface AuditEvent {
@@ -207,4 +217,92 @@ export interface RedFlagRuleFile {
   negationCues: string[];
   negationWindowChars: number;
   rules: RedFlagRule[];
+}
+
+// ---------- Pharmacist view (medication reconciliation) ----------
+
+export type MedStatus =
+  | "supported" // name backed by a verified quote and matched to a generic
+  | "unmatched" // quoted but not in the drug dictionary: pharmacist must identify it
+  | "unsupported" // model produced it, no verified quote: pencil, never fact
+  | "verified" // pharmacist confirmed
+  | "edited" // pharmacist corrected name/dose
+  | "discontinued"; // pharmacist marked not currently taken
+
+export interface MedicationEntry {
+  id: string;
+  /** As the patient said it, in their language/brand ("Tachipirina", "ยาพารา"). */
+  nameOriginal: string;
+  /** International generic name from the dictionary, null when unmatched. */
+  generic: string | null;
+  /** Drug class used by the safety rules, e.g. "nsaid", "penicillin", "ace_inhibitor". */
+  drugClass: string | null;
+  dose: string | null;
+  frequency: string | null;
+  /** e.g. "taking now", "stopped last week", as the patient said it. */
+  timing: string | null;
+  evidence: Evidence[];
+  confidence: number;
+  status: MedStatus;
+}
+
+export interface AllergyEntry {
+  id: string;
+  allergenOriginal: string;
+  /** Generic or class the allergen maps to ("penicillin", "nsaid"), null when unmatched. */
+  allergenClass: string | null;
+  reaction: string | null;
+  evidence: Evidence[];
+  status: "supported" | "unmatched" | "unsupported" | "verified" | "edited";
+}
+
+export type MedAlertKind =
+  | "allergy_conflict" // med class matches a stated allergy class
+  | "duplicate_therapy" // two meds with the same active ingredient/class
+  | "pregnancy_caution" // med flagged for pregnancy and pregnancy_status pregnant/possible
+  | "interaction" // listed pairwise interaction
+  | "max_dose_risk" // e.g. paracetamol from several products
+  | "unknown_medication"; // patient-named medicine not in the dictionary
+
+export interface MedAlert {
+  id: string;
+  ruleId: string; // "MR-ALLERGY-01"
+  kind: MedAlertKind;
+  severity: "high" | "moderate";
+  message: Localized;
+  /** What the pharmacist should check, in clinician language. */
+  action: Localized;
+  medIds: string[];
+  allergyIds: string[];
+  evidence: Evidence[];
+  source: string; // reference for the rule
+  review?: { action: "acknowledge" | "resolved" | "false_alarm"; reviewerId: string; at: string; note?: string };
+}
+
+export interface MedReviewAction {
+  medId: string;
+  action: "verify" | "edit" | "discontinue";
+  /** For edit: corrected generic/brand name, dose, frequency (clinician text). */
+  generic?: string;
+  dose?: string;
+  frequency?: string;
+}
+
+export interface MedAlertReviewAction {
+  alertId: string;
+  action: "acknowledge" | "resolved" | "false_alarm";
+  note?: string;
+}
+
+/** Drug dictionary + rules file (packages/shared/src/medrules.json, written by the Doctor). */
+export interface MedRuleFile {
+  version: string;
+  /** Brand/lay names in th/it/en → generic + class. Matching: lower-case NFC substring, same as red flags. */
+  drugs: { generic: string; drugClass: string; names: string[]; pregnancy?: "avoid" | "caution"; maxDailyMg?: number }[];
+  /** Allergy terms in th/it/en → class. */
+  allergens: { allergenClass: string; names: string[] }[];
+  /** Allergy class → drug classes that conflict (e.g. penicillin → [penicillin, aminopenicillin]). */
+  allergyConflicts: { allergenClass: string; drugClasses: string[]; ruleId: string; severity: "high" | "moderate"; source: string }[];
+  interactions: { a: string; b: string; ruleId: string; severity: "high" | "moderate"; message: Localized; source: string }[];
+  messages: Record<MedAlertKind, { message: Localized; action: Localized }>;
 }
