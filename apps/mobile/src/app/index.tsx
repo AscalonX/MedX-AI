@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
 import { createSession } from "@/api";
+import { Mascot } from "@/components/mascot";
 import { Card, GradientHero, Page, Pill, Segmented, T } from "@/components/ui";
 import { STR } from "@/i18n";
 import { useStore } from "@/store";
@@ -45,9 +46,13 @@ export default function Home() {
       {locked && <T lang={lang} token="small" tone="graphite" style={{ marginTop: space[2] }}>{s.langLocked}</T>}
       <View style={{ height: space[4] }} />
 
-      <GradientHero>
+      <GradientHero style={{ minHeight: 230, overflow: "hidden" }}>
+        <View pointerEvents="none" style={{ position: "absolute", right: -6, bottom: -6, width: 150, height: 150, alignItems: "center", justifyContent: "flex-end" }}>
+          <View style={{ position: "absolute", bottom: 14, width: 118, height: 118, borderRadius: 59, backgroundColor: "rgba(255,255,255,0.16)" }} />
+          <Mascot pose="wave" size={132} />
+        </View>
         <T lang={lang} token="title" weight="bold" tone="onPrimary">{s.heroTitle}</T>
-        <T lang={lang} token="body" tone="onPrimary" style={{ marginTop: space[2], marginBottom: space[5], opacity: 0.92 }}>{s.heroSub}</T>
+        <T lang={lang} token="body" tone="onPrimary" style={{ marginTop: space[2], marginBottom: space[5], opacity: 0.92, maxWidth: "62%" }}>{s.heroSub}</T>
         <View style={{ alignSelf: "flex-start" }}>
           {busy ? <ActivityIndicator color={color.onPrimary} style={{ minHeight: 48 }} /> : <Pill lang={lang} variant="white" label={s.start} onPress={start} disabled={!ready} />}
         </View>

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { View } from "react-native";
 import Animated, { Easing, ZoomIn, useReducedMotion } from "react-native-reanimated";
 import { getSession } from "@/api";
+import { Mascot } from "@/components/mascot";
 import { Check } from "@/components/icons";
 import { Card, GradientHero, Page, T } from "@/components/ui";
 import { STR } from "@/i18n";
@@ -62,10 +63,11 @@ export default function Done() {
 
   return (
     <Page>
-      <GradientHero>
+      <GradientHero style={{ overflow: "hidden" }}>
+        {!human && <View pointerEvents="none" style={{ position: "absolute", right: 4, bottom: 0, width: 110, height: 110, alignItems: "center", justifyContent: "flex-end" }}><View style={{ position: "absolute", bottom: 10, width: 88, height: 88, borderRadius: 44, backgroundColor: "rgba(255,255,255,0.16)" }} /><Mascot pose="happy" size={100} /></View>}
         <T lang={lang} token="body" tone="onPrimary" style={{ opacity: 0.92 }}>{s.doneCode}</T>
         <T lang="en" token="code" weight="bold" tone="onPrimary" accessibilityLabel={`${s.doneCode} ${session.code.split("").join(" ")}`} style={{ marginVertical: space[2] }}>{session.code}</T>
-        <T lang={lang} token="lead" weight="bold" tone="onPrimary" accessibilityRole="header" accessibilityLiveRegion="polite">{title}</T>
+        <T lang={lang} token="lead" weight="bold" tone="onPrimary" accessibilityRole="header" accessibilityLiveRegion="polite" style={human ? undefined : { maxWidth: "66%" }}>{title}</T>
       </GradientHero>
 
       {human && !final && <Card tone="warn" style={{ marginTop: space[4] }}><T lang={lang} tone="ink">{s.humanBody}</T></Card>}

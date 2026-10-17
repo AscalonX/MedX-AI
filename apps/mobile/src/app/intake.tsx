@@ -7,6 +7,7 @@ import { Pressable, TextInput, View } from "react-native";
 import Animated, { Easing, FadeIn, useReducedMotion } from "react-native-reanimated";
 import { addTurn, getSession, isTimeout, uuid } from "@/api";
 import { Speaker } from "@/components/icons";
+import { Mascot } from "@/components/mascot";
 import { LevelBars, MicButton } from "@/components/mic";
 import { LOCALE, useVoice } from "@/voice";
 import { Badge, Card, Chip, Page, Pill, sh, T } from "@/components/ui";
@@ -103,8 +104,9 @@ export default function Intake() {
       <View style={{ height: space[5] }} />
 
       {busy ? (
-        <Card style={{ minHeight: 96, justifyContent: "center" }} >
-          <View accessibilityLabel={s.sending} accessibilityLiveRegion="polite" style={{ height: 6, borderRadius: 3, width: "60%", backgroundColor: color.muted }} />
+        <Card style={{ minHeight: 96, justifyContent: "center", flexDirection: "row", alignItems: "center", gap: space[3] }} >
+          <Mascot pose="thinking" size={72} />
+          <View accessibilityLabel={s.sending} accessibilityLiveRegion="polite" style={{ height: 6, borderRadius: 3, flex: 1, backgroundColor: color.muted }} />
         </Card>
       ) : (
         <Animated.View key={question} entering={fade}>
@@ -155,6 +157,7 @@ export default function Intake() {
               </View>
             ) : (
               <View style={{ alignItems: "center", marginTop: space[3] }}>
+                {v.phase === "listening" && <View style={{ position: "absolute", left: 0, top: 12 }}><Mascot pose="listening" size={72} /></View>}
                 <View style={{ minHeight: 28, justifyContent: "center" }}>{v.phase === "listening" && <LevelBars level={v.level} />}</View>
                 <MicButton listening={v.phase === "listening"} level={v.level} label={v.phase === "listening" ? s.micStop : s.micStart}
                   onPress={() => {
