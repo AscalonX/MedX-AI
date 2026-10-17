@@ -22,7 +22,7 @@ beforeEach(() => {
   vi.stubEnv('MEDX_STORE_PATH', path.join(dir, 'store.json'));
   vi.stubEnv('MODEL_PROVIDER', 'mock');
 });
-afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
+afterEach(() => { if (vi.isFakeTimers()) vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllEnvs(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
 const request = (value: unknown) => new Request('http://localhost/api', { method: 'POST', body: JSON.stringify(value), headers: { Origin: 'http://localhost:8081' } });
 const context = (id: string) => ({ params: Promise.resolve({ id }) });
 const complete = { reviewerId: 'pharmacist', medActions: [], alertActions: [], complete: true };
@@ -134,6 +134,31 @@ describe('MF-5 address shape', () => {
   it.each(['123 Main St', '12 Oak Rd.', '3 Maple Dr', '123 main street', 'via Roma 12', 'viale Giuseppe Verdi 8', 'piazza Dante 2', 'บ้านเลขที่ 123/45', 'ซอย สุขุมวิท 12', 'ถนน สุขุมวิท'])('redacts real address: %s', text => {
     expect(redact(text).text).toBe('[ADDRESS_1]');
   });
+  it.each([
+    ['I live at 12 main st', 'I live at [ADDRESS_1]'],
+    ['25 elm rd.', '[ADDRESS_1]'],
+  ])('redacts lowercase address before storage and every model call: %s', async (text, expected) => {
+    expect(redact(text).text).toBe(expected);
+    const client = vi.fn<ModelClient>(async req => {
+      expect(req.user).toContain(expected);
+      expect(req.user).not.toMatch(/12 main st|25 elm rd/i);
+      return { data: mockJSON(req), call: { step: req.step, provider: 'mock', model: 'privacy-test', latencyMs: 0, ok: true } };
+    });
+    const s = await runTurn(createSession('en'), text, { client });
+    expect(client.mock.calls.map(([req]) => req.step)).toEqual(expect.arrayContaining(['extract', 'red_flags', 'next_question']));
+    saveSession(s);
+    expect(s.turns[0].text).toBe(expected);
+    expect(readFileSync(path.join(dir, 'store.json'), 'utf8')).not.toMatch(/12 main st|25 elm rd/i);
+  });
+  it.each(['st', 'street', 'rd', 'road', 'ave', 'avenue', 'blvd', 'boulevard', 'lane', 'ln', 'dr', 'drive', 'way', 'ct', 'court'])('accepts one to three mixed-case name tokens before %s', suffix => {
+    for (const name of ['main', 'old Main', 'old Main north']) {
+      expect(redact(`12 ${name} ${suffix}, headache`).text).toBe('[ADDRESS_1], headache');
+      expect(redact(`12 ${name.toUpperCase()} ${suffix.toUpperCase()}`).text).toBe('[ADDRESS_1]');
+    }
+  });
+  it.each(['12 old main north west st', '12 main station', '12 main roadwork', '12 main ct2', ...['mg', 'days', 'hours', 'weeks', 'ago'].map(unit => `20 old ${unit} dr`)])('rejects excessive tokens, suffix substrings and clinical units: %s', text => {
+    expect(redact(text).text).toBe(text);
+  });
   it('retains dose and onset through turn processing', async () => {
     const text = '3 days ago I saw the dr. I take ibuprofen 20 mg every day since my dr changed it.';
     const s = await runTurn(createSession('en', { persist: false }), text);
@@ -181,5 +206,6 @@ describe('turn retry and budget contracts', () => {
     await vi.advanceTimersByTimeAsync(TURN_TIMEOUT_MS);
     const result = await promise;
     expect(result.summary!.abstained).toBe(true); expect(result.summary!.abstainReason).toBe('provider_error');
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

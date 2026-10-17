@@ -26,10 +26,10 @@ export function redact(input: string) {
   replace('ID', /(?<!\d)(?:\d{13}|\d-\d{4}-\d{5}-\d{2}-\d)(?!\d)/g);
   replace('ID', /\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b/gi);
   replace('DOB', /(?:date\s+of\s+birth|dob|born(?:\s+on)?|data\s+di\s+nascita|nat[oa]\s+il|วันเกิด|เกิดวันที่|เกิดเมื่อ)\s*(?:is\s*)?[:：]?\s*(?:\d{1,4}[\/.-]\d{1,2}[\/.-]\d{1,4}|\d{1,2}\s+[\p{L}.]+\s+\d{2,4})/giu);
-  replace('ADDRESS', /\b\d+[a-z]?(?:\/\d+)?\s+(?:[\p{Script=Latin}\p{M}'’-]+\s+){1,5}(?:street|road|avenue|lane|drive|boulevard)\b|\b(?:via|viale|piazza)\s+(?:[\p{Script=Latin}\p{M}'’-]+\s+){1,4}\d+[a-z]?(?:\/\d+)?|บ้านเลขที่\s*\d+(?:[\/-]\d+)*|(?:ซอย|ถนน)\s*[\p{Script=Thai}\p{N}]+(?:[ \t]+\d+(?:\/\d+)*)?/giu);
-  // Abbreviated suffixes require a house number and capitalised street name.
-  // Lowercase clinical prose ending in "dr", "st", or "rd" is not an address.
-  replace('ADDRESS', /\b\d+[a-zA-Z]?(?:\/\d+)?\s+(?:(?=\p{Script=Latin})\p{Lu}[\p{Script=Latin}\p{M}'’-]*\s+){1,5}(?:[Ss][Tt]|[Rr][Dd]|[Dd][Rr]|[Aa][Vv][Ee]|[Ll][Nn]|[Bb][Ll][Vv][Dd])\b\.?/gu);
+  // English addresses allow 1–3 name tokens in any case. Dose/time words
+  // cannot be street names, even in short clinical phrases ending in "dr".
+  replace('ADDRESS', /\b\d+[a-z]?(?:\/\d+)?\s+(?:(?!(?:mg|mcg|g|kg|ml|units?|days?|hours?|weeks?|months?|years?|ago)\b)[\p{Script=Latin}\p{M}'’-]+\s+){1,3}?(?:st|street|rd|road|ave|avenue|blvd|boulevard|lane|ln|dr|drive|way|ct|court)(?![\p{L}\p{M}\p{N}_])\.?/giu);
+  replace('ADDRESS', /\b(?:via|viale|piazza)\s+(?:[\p{Script=Latin}\p{M}'’-]+\s+){1,4}\d+[a-z]?(?:\/\d+)?|บ้านเลขที่\s*\d+(?:[\/-]\d+)*|(?:ซอย|ถนน)\s*[\p{Script=Thai}\p{N}]+(?:[ \t]+\d+(?:\/\d+)*)?/giu);
   replace('PHONE', /(?<![\d_])(?:\+\d{1,3}[\s().-]*(?:\d[\s().-]*){7,12}\d|0\d{1,2}[\s.-]*\d{3}[\s.-]*\d{4}|3\d{2}[\s.-]*\d{3}[\s.-]*\d{4})(?!\d)/gu);
   replace('PHONE', /\b(?:phone|telephone|telefono)\s*[:：]?\s*\d{3}[ .-]\d{4}\b/giu);
   replace('ID', /\b(?:passport|passaporto)\s*[:：]?\s*(?=[A-Z0-9]*\d)[A-Z0-9]{6,12}\b/giu);

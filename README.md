@@ -102,7 +102,7 @@ Also: `AMD_JSON_SCHEMA=false` disables `response_format` json_schema if an endpo
 ## Tests
 
 ```bash
-npm --prefix apps/web test      # vitest: 1,093 tests in 14 files (red flags, redaction, verifier, med rules, API, ops metrics)
+npm --prefix apps/web test      # vitest: 1,119 tests in 15 files (red flags, redaction, verifier, med rules, API, ops metrics)
 ```
 
 ## Evaluation

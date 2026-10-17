@@ -21,7 +21,7 @@ beforeEach(() => {
   vi.stubEnv('DEMO_SEED', '1');
   vi.stubEnv('DEMO_TOKEN', 'test-demo-token');
 });
-afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
+afterEach(() => { if (vi.isFakeTimers()) vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
 const post = (body: unknown) => new Request('http://localhost/api/test', { method: 'POST', body: JSON.stringify(body) });
 const context = (id: string) => ({ params: Promise.resolve({ id }) });
 const demographics = (age?: string, sex?: string, status: ExtractedField['status'] = 'supported') => applyRequiredFields(emptyFields().map(f => {
@@ -169,6 +169,7 @@ describe('demo fixture replay', () => {
     const sameJob = await seedRoute(); expect(sameJob.status).toBe(202); expect((await sameJob.json()).id).toBe((await response.json()).id);
     await vi.runAllTimersAsync();
     const progress = demoSeedProgress(); expect(progress.status).toBe('done');
+    expect(vi.getTimerCount()).toBe(0);
     const result = 'result' in progress ? progress.result : undefined; expect(result?.mismatches).toEqual([]); expect(fetcher).toHaveBeenCalled();
     expect(arrivals.slice(1).every((at, i) => at - arrivals[i] >= 2100)).toBe(true);
     const calls = getAudit().flatMap(e => Array.isArray(e.payload.modelCalls) ? e.payload.modelCalls : []);
@@ -179,6 +180,7 @@ describe('demo fixture replay', () => {
     vi.stubEnv('MODEL_PROVIDER', 'amd'); vi.stubEnv('AMD_BASE_URL', 'https://synthetic.invalid/v1'); vi.stubEnv('AMD_API_KEY', 'synthetic-key'); vi.stubEnv('AMD_MODEL', 'seed-failure'); vi.stubEnv('AMD_JSON_SCHEMA', 'false');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Synthetic failure', { status: 500, headers: { 'Retry-After': '3' } })));
     const pending = seedDemo(); await vi.runAllTimersAsync(); const result = await pending;
+    expect(vi.getTimerCount()).toBe(0);
     expect(result.created).toBe(11); expect(result.byStatus.escalated).toBe(2); expect(result.byStatus.needs_human).toBe(9); expect(result.byStatus.approved).toBe(0);
     expect(result.mismatches).toHaveLength(7);
     expect(result.sessions.filter(s => s.status === 'needs_human').every(s => s.summary?.abstainReason === 'provider_error' && s.summary.fields.every(f => f.status !== 'supported'))).toBe(true);

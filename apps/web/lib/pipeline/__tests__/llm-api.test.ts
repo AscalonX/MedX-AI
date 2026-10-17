@@ -21,7 +21,7 @@ beforeEach(() => {
   vi.stubEnv('AMD_BASE_URL', `https://synthetic-${++transportTest}.invalid/v1`); vi.stubEnv('AMD_API_KEY', 'synthetic-key-do-not-log'); vi.stubEnv('AMD_MODEL', 'synthetic-model');
   vi.stubEnv('AMD_JSON_SCHEMA', 'false');
 });
-afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
+afterEach(() => { if (vi.isFakeTimers()) vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
 const req = { step: 'extract' as const, system: 'System instructions', user: 'Redacted patient text', schemaName: 'intake_extraction' };
 const envelope = (content: string) => Response.json({ choices: [{ message: { content } }] });
 describe('AMD client transport', () => {

@@ -24,7 +24,7 @@ beforeEach(() => {
   dir = mkdtempSync(path.join(tmpdir(), 'medx-w7-'));
   vi.stubEnv('MODEL_PROVIDER', 'mock'); vi.stubEnv('MEDX_STORE_PATH', path.join(dir, 'store.json'));
 });
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
+afterEach(() => { if (vi.isFakeTimers()) vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
 const turn = (text: string, id = 'T1'): Turn => ({ id, text, role: 'patient', lang: 'en', at: '' });
 const reset = (request: Request) => (resetRoute as unknown as { POST: (r: Request) => Promise<Response> }).POST(request);
 const request = (token?: string) => new Request('http://localhost:3000/api/demo/reset', { method: 'POST', headers: token ? { 'x-demo-token': token } : {} });

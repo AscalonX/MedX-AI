@@ -74,3 +74,62 @@ QA 07 retains the same four baseline failures: Italian “all'altezza del petto�
 
 ## NEXT ACTION
 Ready for orchestrator review. QA owner can align QA 13; the remaining QA 07 findings require separate triage. No commit was created.
+
+---
+
+## W10 follow-up — lowercase addresses and deterministic test runner
+
+### STATUS
+done — both requested follow-up fixes implemented; three consecutive full Vitest runs, TypeScript and ESLint exit 0.
+
+### SUMMARY
+- Read `docs/reports/w10-codex-verify.md`. Replaced the two English address expressions with one case-insensitive house-number + 1–3 street-name-token expression. Supported terminal suffixes include st/street, rd/road, ave/avenue, blvd/boulevard, lane/ln, dr/drive, way and ct/court; suffixes require a boundary and may consume a trailing period. Italian/Thai expressions remain supported.
+- Excluded dose/time tokens (including mg, days, hours, weeks and ago) from street names. Both reported clinical sentences remain unchanged, including the existing short unit-word probes. Four name tokens and suffix substrings do not match.
+- Configured Vitest 3's forks pool with `singleFork: true`, retained sequential files and default isolation, and raised test/hook timeouts to 30 seconds for seed/reset replays under load. Production request budgets remain unchanged.
+- Fake-timer suites explicitly clear pending fake timers before restoring real timers. Seed success/failure and whole-turn deadline regressions assert zero pending fake timers before cleanup; the background seed test also waits for status `done` before teardown.
+- Lifecycle inspection found a synchronous JSON-file store with no open store handle, and no servers or intervals in the owned pipeline/API paths. Existing invocation/transport deadline timers clear in `finally`; awaited retry/seed delays finish before their enclosing operations return. No production close API was necessary.
+
+### FILES CHANGED
+- `apps/web/lib/pipeline/redact.ts`
+- `apps/web/vitest.config.ts`
+- `apps/web/lib/pipeline/__tests__/wave10.test.ts`
+- `apps/web/lib/pipeline/__tests__/wave2.test.ts`
+- `apps/web/lib/pipeline/__tests__/wave3.test.ts`
+- `apps/web/lib/pipeline/__tests__/wave7.test.ts`
+- `apps/web/lib/pipeline/__tests__/llm-api.test.ts`
+- `docs/reports/w10-ai-engineer.md` — appended this follow-up; earlier results above are historical.
+
+### TESTS RUN + RESULTS
+All commands used the existing `apps/web/node_modules/.bin` binaries from `apps/web`; no installs, commits or server restarts.
+
+| Command | Result | Duration |
+|---|---|---|
+| `vitest run lib/pipeline/__tests__/wave10.test.ts --reporter=dot` | 76/76 passed, exit 0 | 2.04 s |
+| Full `vitest run --reporter=dot`, consecutive run 1 | 1,119/1,119 passed, 14/14 files, exit 0 | 49.10 s |
+| Full `vitest run --reporter=dot`, consecutive run 2 | 1,119/1,119 passed, 14/14 files, exit 0 | 48.90 s |
+| Full `vitest run --reporter=dot`, consecutive run 3 | 1,119/1,119 passed, 14/14 files, exit 0 | 49.23 s |
+| `tsc --noEmit --incremental false` | exit 0, no diagnostics | 1.60 s |
+| `eslint .` | exit 0, no diagnostics | 1.81 s |
+| `git diff --check` | exit 0 | — |
+
+### EVIDENCE
+- 26 additional address regression cases; full-suite count increased from the verification report's 1,093 to 1,119. Existing Italian/Thai address assertions and all four specifically requested sentences pass.
+- Lowercase probes `I live at 12 main st` and `25 elm rd.` assert redaction directly, in the stored patient turn/JSON file, and in every injected model request, with extraction, safety screening and next-question calls all exercised.
+- Each supported suffix is tested with 1, 2 and 3 mixed-case name tokens, uppercase variants, punctuation and end-of-input. Negative cases cover four name tokens, suffix substrings and clinical unit words.
+- All three full runner processes terminated naturally with exit 0; no unhandled worker timeout was reported. Seed and deadline tests observed zero pending fake timers.
+- No screenshots: server-side redaction and runner lifecycle were verified through automated assertions and process exit codes.
+
+### ASSUMPTIONS
+- A bounded English address shape is the requested tradeoff; clinical units between the number and suffix disqualify the candidate.
+- Running the small 14-file suite in one fork is acceptable for this prototype; default test-file isolation remains enabled.
+
+### RISKS
+- Three clean runs demonstrate observed stability; the exact internal cause of the earlier Vitest worker RPC timeout was not independently established.
+- Pattern-based redaction remains limited to recognized address shapes; this change does not establish complete PII detection.
+- Findings outside this follow-up's ownership/scope in `w10-codex-verify.md` remain for their respective owners.
+
+### OPEN QUESTIONS / CONTRACT CHANGE REQUESTS
+None for this follow-up; no shared contracts changed.
+
+### NEXT ACTION
+Orchestrator can review the lowercase-address fix and three clean runner exits. No commit created.

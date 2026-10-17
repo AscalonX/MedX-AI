@@ -17,7 +17,7 @@ const flag = (quote = indirect, category = 'CHEST', certainty = 'high', alias = 
 const clientFor = (screen: (req: ChatRequest) => unknown): ModelClient => async req => ({ data: req.step === 'red_flags' ? screen(req) : mockJSON(req), call: { step: req.step, provider: 'mock', model: 'screen-test', latencyMs: 1, ok: true } });
 const context = (client: ModelClient, deadline = Date.now() + 40000) => ({ client, deadline, modelCalls: [] as ModelCall[], log: vi.fn() });
 beforeEach(() => vi.stubEnv('MODEL_PROVIDER', 'mock'));
-afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); vi.useRealTimers(); });
+afterEach(() => { if (vi.isFakeTimers()) vi.clearAllTimers(); vi.unstubAllEnvs(); vi.restoreAllMocks(); vi.useRealTimers(); });
 
 describe('add-only model safety screen', () => {
   it('escalates a verified hit, preserves extracted fields, suppresses follow-up and stays sticky', async () => {
