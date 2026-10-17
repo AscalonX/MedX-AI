@@ -139,17 +139,19 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
 }
 function requireSession(id: string) { const session = getSession(id); if (!session) throw new PipelineError('Session not found', 'not_found'); return session; }
 export async function addTurn(sessionId: string, rawText: string, inputMode?: 'text' | 'voice', clientTurnId?: string) {
+  return withSessionLock(sessionId, () => addTurnInLock(sessionId, rawText, inputMode, clientTurnId));
+}
+/** Caller must hold the session lock; shared by intake and ambient consult. */
+export async function addTurnInLock(sessionId: string, rawText: string, inputMode?: 'text' | 'voice', clientTurnId?: string) {
   if (clientTurnId !== undefined && (typeof clientTurnId !== 'string' || !clientTurnId.trim() || clientTurnId.length > 200)) throw new PipelineError('Invalid clientTurnId', 'bad_request');
-  return withSessionLock(sessionId, async () => {
-    const current = requireSession(sessionId);
-    if (clientTurnId !== undefined && (current.turns as InternalTurn[]).some(t => t.clientTurnId === clientTurnId)) return current;
-    const events: { type: AuditEvent['type']; payload: Record<string, unknown> }[] = [];
-    const session = await runTurn(current, rawText, { inputMode, audit: (type, payload) => events.push({ type, payload }) });
-    if (clientTurnId !== undefined) (session.turns.find(t => t.role === 'patient' && !current.turns.some(old => old.id === t.id)) as InternalTurn).clientTurnId = clientTurnId;
-    saveSession(session);
-    for (const e of events) appendAudit(sessionId, e.type, 'system', e.payload);
-    return session;
-  });
+  const current = requireSession(sessionId);
+  if (clientTurnId !== undefined && (current.turns as InternalTurn[]).some(t => t.clientTurnId === clientTurnId)) return current;
+  const events: { type: AuditEvent['type']; payload: Record<string, unknown> }[] = [];
+  const session = await runTurn(current, rawText, { inputMode, audit: (type, payload) => events.push({ type, payload }) });
+  if (clientTurnId !== undefined) (session.turns.find(t => t.role === 'patient' && !current.turns.some(old => old.id === t.id)) as InternalTurn).clientTurnId = clientTurnId;
+  saveSession(session);
+  for (const e of events) appendAudit(sessionId, e.type, 'system', e.payload);
+  return session;
 }
 export async function review(sessionId: string, reviewerId: string, actions: ReviewAction[], redFlagActions: RedFlagReviewAction[] = []) {
   return withSessionLock(sessionId, () => {

@@ -8,6 +8,13 @@ import { applyQuickAnswer } from './quickAnswers';
 
 /** Deliberately narrow deterministic demo extractor, not an evaluation oracle. */
 export function mockJSON(req: ChatRequest): unknown {
+  if (req.schemaName === 'consult_suggestions') {
+    const turns = JSON.parse(req.user.split('Patient transcript as JSON data:\n')[1]) as { turn: string; text: string }[];
+    const last = turns.at(-1);
+    const end = last && [...new Intl.Segmenter('en', { granularity: 'word' }).segment(last.text)].filter(w => w.isWordLike && w.index + w.segment.length <= 400).at(-1);
+    const quote = last && end ? last.text.slice(0, end.index + end.segment.length).trim() : '';
+    return { suggestions: last && quote ? [{ kind: 'ask_next', text: { en: 'Ask how the symptoms affect daily activities?', it: 'Chiedere come i sintomi influiscono sulle attività quotidiane?', th: 'ถามว่าอาการส่งผลต่อกิจวัตรประจำวันอย่างไร' }, why: { en: 'Clarify the patient report for clinician review.', it: 'Chiarire quanto riferito per la revisione clinica.', th: 'ขอรายละเอียดที่ผู้ป่วยแจ้งเพื่อให้บุคลากรทบทวน' }, turn: last.turn, quote, confidence: 0.9 }] : [] };
+  }
   if (req.step === 'red_flags') return { flags: [] };
   if (req.step === 'next_question') {
     const key = /Missing information: (\w+):/.exec(req.user)?.[1] as FieldKey;
