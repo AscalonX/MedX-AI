@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Badge, Card, EmptyState, Icon, LangMorph, SegmentedControl, StatTile } from "@/components/ui";
 import { PrescriptionQueue } from "./_orders";
-import { C, LANG_NAME, PHARM_STATUS_LABEL, U, alertsOf, isAbstained, pendingOrders, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, waited } from "./_lib";
+import { L, C, LANG_NAME, PHARM_STATUS_LABEL, U, alertsOf, isAbstained, pendingOrders, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, waited } from "./_lib";
 import { usePharmacy } from "./_shell";
 
 export function Queue() {
@@ -27,7 +27,7 @@ export function Queue() {
       <Card padded={false}>
         <div className="flex flex-wrap items-center gap-3 px-5 pb-2 pt-5">
           <h2 className="text-lead font-bold">{C.queue[lang]}</h2>
-          <SegmentedControl ariaLabel="Queue" value={tab} onChange={setTab} options={[{ value: "recon", label: C.queueTitle[lang] }, { value: "rx", label: `Prescriptions (${rxCount})` }]} />
+          <SegmentedControl ariaLabel="Queue" value={tab} onChange={setTab} options={[{ value: "recon", label: C.queueTitle[lang] }, { value: "rx", label: `${L("ใบสั่งยา", "Prescrizioni", "Prescriptions")[lang]} (${rxCount})` }]} />
         </div>
         {tab === "rx" ? <PrescriptionQueue /> : !entries ? (
           <div aria-busy="true" aria-label="Loading" className="flex flex-col gap-3 p-5">
