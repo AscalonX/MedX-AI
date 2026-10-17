@@ -42,7 +42,7 @@ export type PharmacyReviewRes = IntakeSession;
 /** POST /api/sessions/:id/consult/turns — one transcribed utterance from the consult room.
  * speaker "patient" goes through redaction → red flags → extraction exactly like a patient turn;
  * speaker "clinician" is redacted and stored for context only (marks matching suggestions "asked"). */
-export interface ConsultTurnReq { speaker: "patient" | "clinician"; text: string; mode: ConsultMode; clientTurnId?: string }
+export interface ConsultTurnReq { speaker: "patient" | "clinician"; text: string; mode: ConsultMode; clientTurnId?: string; inputMode?: "text" | "voice" }
 export type ConsultTurnRes = ConsultState;
 
 /** GET /api/sessions/:id/consult?mode=nurse|doctor */
