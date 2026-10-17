@@ -1,0 +1,19 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: medx-bridge
+    ports: ["3000:3000"]
+    environment:
+      MODEL_PROVIDER: ${MODEL_PROVIDER:-mock}
+      DEMO_SEED: ${DEMO_SEED:-1}
+      AMD_BASE_URL: ${AMD_BASE_URL:-}
+      AMD_API_KEY: ${AMD_API_KEY:-}
+      AMD_MODEL: ${AMD_MODEL:-}
+      AMD_MODEL_FALLBACK: ${AMD_MODEL_FALLBACK:-}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-}
+    volumes:
+      - medx-data:/app/apps/web/.data
+volumes:
+  medx-data:

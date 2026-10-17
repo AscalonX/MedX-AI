@@ -19,7 +19,7 @@ export function mockPharmacy(turns: { alias: string; text: string }[]): Pick<Mod
     for (const entry of [...MEDRULES.drugs, ...MEDRULES.allergens]) for (const term of entry.names) {
       const needle = term.trim().normalize('NFC');
       for (let at = lower.indexOf(needle); at >= 0; at = lower.indexOf(needle, at + 1)) {
-        let start = at; let end = at + needle.length;
+        const start = at; let end = at + needle.length;
         // Complete Latin dictionary stems (sertralin -> sertralina); do not
         // expand Thai spans into entire sentences without spaces.
         if (/^[a-z]/.test(needle)) {
