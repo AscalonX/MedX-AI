@@ -30,8 +30,8 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "MedX Bridge uses the microphone so you can speak your answers. You always confirm the text before it is sent.",
-          "speechRecognitionPermission": "MedX Bridge uses speech recognition to turn your voice into text that you check before sending."
+          "microphonePermission": "MedX Bridge uses the microphone so you can speak your answers. Your voice is converted to text by Apple or Google speech recognition on your device's operating system. You always confirm the text before it is sent.",
+          "speechRecognitionPermission": "MedX Bridge uses Apple or Google speech recognition to turn your voice into text. Audio may be processed by that service. You check the text before sending."
         }
       ]
     ],

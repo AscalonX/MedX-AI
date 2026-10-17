@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { getSession } from "@/api";
 
 type S = { lang: Lang; session: IntakeSession | null; speak: boolean };
-type Ctx = S & { ready: boolean; restored: IntakeSession | null; offline: boolean; set: (p: Partial<S>) => void; reset: () => void };
+type Ctx = S & { ready: boolean; restored: IntakeSession | null; offline: boolean; set: (p: Partial<S>) => void; reset: () => void; update: (s: IntakeSession) => void };
 const C = createContext<Ctx>(null as never);
 export const useStore = () => useContext(C);
 
@@ -25,6 +25,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [offline, setOffline] = useState(false);
   const [restored, setRestored] = useState<IntakeSession | null>(null);
   const booted = useRef(false);
+  const touched = useRef(false); // a new intake was started or reset: any pending restore is void
 
   // Restore on start: an escalated session always returns to the red-flag screen, in the right language.
   useEffect(() => {
@@ -53,7 +54,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
                 if (i === 0) await new Promise((r) => setTimeout(r, 1500));
               }
             }
-            if (session) { setS((o) => ({ ...o, session })); setRestored(session); } // routed by the SERVER status
+            if (touched.current) { /* patient already moved on: never resurrect the stored session */ }
+            else if (session) { setS((o) => ({ ...o, session })); setRestored(session); } // routed by the SERVER status
             else if (gone) router.replace("/"); // only a definitive 404 clears it
             else { setOffline(true); setS((o) => ({ ...o, session: saved.session })); setRestored(saved.session); } // offline: keep the stored screen
           }
@@ -70,8 +72,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const value: Ctx = {
     ...s, ready, restored, offline,
-    set: (p) => setS((o) => ({ ...o, ...p })),
-    reset: () => setS((o) => ({ ...o, session: null })),
+    set: (p) => { if ("session" in p) touched.current = true; setS((o) => ({ ...o, ...p })); },
+    reset: () => { touched.current = true; setS((o) => ({ ...o, session: null })); },
+    // Apply a server copy only if it is still the active session (late responses never resurrect an old one).
+    update: (n) => setS((o) => (o.session?.id === n.id ? { ...o, session: n } : o)),
   };
   return <C.Provider value={value}>{children}</C.Provider>;
 }

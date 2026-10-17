@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import * as Speech from "expo-speech";
 import { Pressable, TextInput, View } from "react-native";
 import Animated, { Easing, FadeIn, useReducedMotion } from "react-native-reanimated";
-import { addTurn } from "@/api";
+import { addTurn, getSession, isTimeout, uuid } from "@/api";
 import { Speaker } from "@/components/icons";
 import { LevelBars, MicButton } from "@/components/mic";
 import { LOCALE, useVoice } from "@/voice";
@@ -16,7 +16,7 @@ import { screenFor, useStore } from "@/store";
 const MAX = 3;
 
 export default function Intake() {
-  const { lang, session, speak, set, offline } = useStore();
+  const { lang, session, speak, set, update, offline } = useStore();
   const s = STR[lang];
   const reduced = useReducedMotion();
   const [busy, setBusy] = useState(false);
@@ -27,6 +27,10 @@ export default function Intake() {
   const v = useVoice(lang, (t) => { setText(t); setFromVoice(true); });
   const [speakTouched, setSpeakTouched] = useState(false);
   const input = useRef<React.ComponentRef<typeof TextInput>>(null);
+  const gen = useRef(0); // request generation: only the newest request may apply its response
+  const mounted = useRef(true);
+  const turn = useRef<{ text: string; id: string } | null>(null); // same text => same clientTurnId on Retry
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const answered = session?.turns.filter((t) => t.role === "patient").length ?? 0;
   useEffect(() => { if (!busy && !failed) input.current?.focus(); }, [busy, failed, answered]);
   useEffect(() => { if (!session) router.replace("/"); }, [session]);
@@ -54,16 +58,32 @@ export default function Intake() {
     const mode = override === undefined && fromVoice ? "voice" : "text";
     const t = (override ?? text).trim();
     if (!t || busy || !session) return;
+    const sid = session.id;
+    const before = session.turns.filter((x) => x.role === "patient").length;
+    if (turn.current?.text !== t) turn.current = { text: t, id: uuid() };
+    const myGen = ++gen.current;
+    const live = () => mounted.current && gen.current === myGen;
     setFailed(false); setBusy(true);
+    const apply = (nx: typeof session) => {
+      update(nx!); // no-op unless this is still the active session
+      turn.current = null; setText(""); setFromVoice(false); v.reset();
+      router.replace(screenFor(nx!));
+    };
     try {
-      const nx = await addTurn(session.id, t, mode);
-      set({ session: nx });
-      setText(""); setFromVoice(false); v.reset();
-      router.replace(screenFor(nx));
-    } catch {
-      setFailed(true);
+      const nx = await addTurn(sid, t, mode, turn.current.id);
+      if (live()) apply(nx);
+    } catch (e) {
+      if (!live()) return;
+      if (isTimeout(e)) {
+        // The server may have finished after we gave up: reconcile before offering Retry.
+        try {
+          const r = (await getSession(sid)).session;
+          if (live() && r.turns.filter((x) => x.role === "patient").length > before) { apply(r); return; }
+        } catch { /* fall through to Retry */ }
+      }
+      if (live()) setFailed(true);
     } finally {
-      setBusy(false);
+      if (live()) setBusy(false);
     }
   }
 

@@ -19,6 +19,7 @@ export function useVoice(lang: Lang, onDone: (text: string) => void) {
   const [level, setLevel] = useState(0); // 0..1
   const [issue, setIssue] = useState<VoiceIssue>(null);
   const heard = useRef("");
+  const gen = useRef(0); // invalidates any pending permission/start when the screen goes away or a new start begins
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useSpeechRecognitionEvent("result", (e) => {
@@ -39,9 +40,10 @@ export function useVoice(lang: Lang, onDone: (text: string) => void) {
     else { setIssue("unavailable"); setPhase("idle"); }
   });
 
-  const reset = useCallback(() => { timers.current.forEach(clearTimeout); timers.current = []; heard.current = ""; setTranscript(""); setPhase("idle"); setIssue(null); setLevel(0); }, []);
+  const reset = useCallback(() => { gen.current++; timers.current.forEach(clearTimeout); timers.current = []; heard.current = ""; setTranscript(""); setPhase("idle"); setIssue(null); setLevel(0); }, []);
 
   const start = useCallback(async () => {
+    const g = ++gen.current;
     setIssue(null); heard.current = ""; setTranscript("");
     if (FAKE) {
       setPhase("listening");
@@ -52,6 +54,7 @@ export function useVoice(lang: Lang, onDone: (text: string) => void) {
     }
     try {
       const p = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (g !== gen.current) return; // screen left or restarted while the permission prompt was open
       if (!p.granted) { setIssue("denied"); return; }
       setPhase("listening");
       ExpoSpeechRecognitionModule.start({ lang: LOCALE[lang], interimResults: true, continuous: false, volumeChangeEventOptions: { enabled: true, intervalMillis: 120 } });
@@ -71,6 +74,13 @@ export function useVoice(lang: Lang, onDone: (text: string) => void) {
       if (!heard.current.trim()) setIssue((i) => i ?? "nospeech");
       else done.current(heard.current);
     }, 2000));
+  }, []);
+
+  // Leaving the screen (unmount): stop the microphone, drop timers, void any pending start.
+  useEffect(() => () => {
+    gen.current++;
+    timers.current.forEach(clearTimeout); timers.current = [];
+    if (!FAKE) { try { ExpoSpeechRecognitionModule.abort(); } catch { /* not running */ } }
   }, []);
 
   return { phase, transcript, setTranscript, level, issue, start, stop, reset };

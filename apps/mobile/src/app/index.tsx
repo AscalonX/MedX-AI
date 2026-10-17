@@ -9,10 +9,12 @@ import { STR } from "@/i18n";
 import { useStore } from "@/store";
 
 export default function Home() {
-  const { lang, set, reset } = useStore();
+  const { lang, session, ready, set, reset } = useStore();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const s = STR[lang];
+  // The visit language is fixed while a session is active; a finished visit unlocks it.
+  const locked = !!session && session.status !== "approved" && session.status !== "taken_over";
 
   async function start() {
     setFailed(false); setBusy(true); reset();
@@ -39,14 +41,15 @@ export default function Home() {
       <T lang={lang} token="body" tone="inkSoft">{s.hello}</T>
       <T lang={lang} token="title" weight="bold" accessibilityRole="header">{s.greetSub}</T>
       <View style={{ height: space[4] }} />
-      <Segmented value={lang} onChange={(l) => set({ lang: l })} disabled={busy} />
+      <Segmented value={lang} onChange={(l) => set({ lang: l })} disabled={busy || locked || !ready} />
+      {locked && <T lang={lang} token="small" tone="graphite" style={{ marginTop: space[2] }}>{s.langLocked}</T>}
       <View style={{ height: space[4] }} />
 
       <GradientHero>
         <T lang={lang} token="title" weight="bold" tone="onPrimary">{s.heroTitle}</T>
         <T lang={lang} token="body" tone="onPrimary" style={{ marginTop: space[2], marginBottom: space[5], opacity: 0.92 }}>{s.heroSub}</T>
         <View style={{ alignSelf: "flex-start" }}>
-          {busy ? <ActivityIndicator color={color.onPrimary} style={{ minHeight: 48 }} /> : <Pill lang={lang} variant="white" label={s.start} onPress={start} />}
+          {busy ? <ActivityIndicator color={color.onPrimary} style={{ minHeight: 48 }} /> : <Pill lang={lang} variant="white" label={s.start} onPress={start} disabled={!ready} />}
         </View>
       </GradientHero>
 

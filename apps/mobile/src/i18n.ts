@@ -9,7 +9,7 @@ type S = {
   doneTitle: string; doneCode: string; doneNext1: string; doneNext2: string; doneNext3: string; newIntake: string;
   humanTitle: string; humanBody: string;
   deskTitle: (code: string) => string; deskBody: string; retry: string; deskNoCode: string;
-  tabHome: string; tabVisit: string; tabHelp: string; tabNew: string; offlineRed: string; offlineNote: string; chipYes: string; chipNo: string; chipUnknown: string; reviewedTitle: string; reviewedNext: string; reviewingNote: string; stepAt: (t: string) => string; micStart: string; micStop: string; listening: string; confirmTitle: string; confirmSub: string; send: string; tryAgain: string; speakToggle: string; micDenied: string; micUnavailable: string; noSpeech: string; tabLang: string; hello: string; greetSub: string; heroTitle: string; heroSub: string; start: string;
+  tabHome: string; tabVisit: string; tabHelp: string; tabNew: string; langLocked: string; offlineRed: string; offlineNote: string; chipYes: string; chipNo: string; chipUnknown: string; reviewedTitle: string; reviewedNext: string; reviewingNote: string; stepAt: (t: string) => string; micStart: string; micStop: string; listening: string; confirmTitle: string; confirmSub: string; send: string; tryAgain: string; speakToggle: string; micDenied: string; micUnavailable: string; noSpeech: string; tabLang: string; hello: string; greetSub: string; heroTitle: string; heroSub: string; start: string;
   howTitle: string; how: [string, string][]; privacyTitle: string; pill: (n: number) => string;
   chipNone: string; chipToday: string; chipYesterday: string; chipWeek: string; chipSeverityA11y: (n: number) => string;
   helpTitle: string; helpBody: string; helpEmergency: string; stepSent: string; stepReview: string; stepReviewed: string; nextTitle: string; sentTitle: string;
@@ -22,6 +22,7 @@ export const STR: Record<Lang, S> = {
     micDenied: "The microphone is off. You can type your answer instead.", micUnavailable: "Voice is not available here. You can type your answer instead.", noSpeech: "We did not hear anything. Try again, or type your answer.",
     chipYes: "Yes", chipNo: "No", chipUnknown: "Not sure", reviewedTitle: "A nurse has reviewed your answers.", reviewedNext: "A nurse will call you.", reviewingNote: "Your answers are waiting for a nurse.", stepAt: (t) => `at ${t}`,
     offlineRed: "Offline: showing your last instruction.", offlineNote: "Offline: showing your last saved screen.",
+    langLocked: "Language is set for this visit.",
     tabHome: "Home", tabVisit: "My visit", tabHelp: "Help", tabNew: "New intake", tabLang: "Language", hello: "Hello", greetSub: "Welcome to MedX Bridge",
     heroTitle: "Tell us what brings you in today", heroSub: "A nurse will read it before your visit.", start: "Start",
     howTitle: "How it works", how: [["Describe", "Write in your own words."], ["A nurse reviews", "Before your visit."], ["You're called", "At the desk."]],
@@ -31,7 +32,7 @@ export const STR: Record<Lang, S> = {
     stepSent: "Sent", stepReview: "Waiting for a nurse", stepReviewed: "Reviewed", nextTitle: "What happens next", sentTitle: "Your answers are in",
     pickTitle: "Tell us why you came in today.",
     pickSub: "A nurse will read it before your visit.",
-    privacy: "Demo with made-up cases. Please do not type real names, phone numbers or ID numbers. A nurse reads what you write.",
+    privacy: "Demo with made-up cases. Please do not type real names, phone numbers or ID numbers. A nurse reads what you write. If you use the microphone, your voice is processed by your phone's speech service (Apple or Google).",
     disclaimer: "This does not replace a doctor. In an emergency, go to the desk now.",
     pickA11y: (l) => `Continue in ${l}`,
     q1: "What brings you in today?", hint: "Write in your own words. Short is fine.", hintFollow: "A few words are enough.",
@@ -47,13 +48,14 @@ export const STR: Record<Lang, S> = {
     deskBody: "We could not send your answers. Nothing is lost: the staff will help you in person.",
     deskNoCode: "Please go to the desk and tell the staff you started this form.",
     retry: "Try again",
-    rfShow: "Show this screen to the staff at the desk.", atDesk: "I'm at the desk", atDeskDone: "A nurse is coming to you. Please keep this screen open.", rfCode: "Your code",
+    rfShow: "Show this screen to the staff at the desk.", atDesk: "I'm at the desk", atDeskDone: "Show this screen to the staff now. If no one is helping you, tell any member of staff straight away.", rfCode: "Your code",
   },
   it: {
     micStart: "Tocchi per parlare", micStop: "Smetti di ascoltare", listening: "In ascolto", confirmTitle: "È questo che ha detto?", confirmSub: "Controlli le parole e corregga eventuali errori prima di inviare.", send: "Invia", tryAgain: "Riprova", speakToggle: "Leggi le domande ad alta voce",
     micDenied: "Il microfono è spento. Può scrivere la risposta.", micUnavailable: "La voce non è disponibile qui. Può scrivere la risposta.", noSpeech: "Non abbiamo sentito nulla. Riprovi o scriva la risposta.",
     chipYes: "Sì", chipNo: "No", chipUnknown: "Non so", reviewedTitle: "Un infermiere ha letto le sue risposte.", reviewedNext: "Un infermiere la chiamerà.", reviewingNote: "Le sue risposte sono in attesa di un infermiere.", stepAt: (t) => `alle ${t}`,
     offlineRed: "Senza connessione: la sua ultima indicazione.", offlineNote: "Senza connessione: l'ultima schermata salvata.",
+    langLocked: "La lingua è impostata per questa visita.",
     tabHome: "Home", tabVisit: "Visita", tabHelp: "Aiuto", tabNew: "Nuova scheda", tabLang: "Lingua", hello: "Ciao", greetSub: "Benvenuto in MedX Bridge",
     heroTitle: "Ci dica perché è venuto oggi", heroSub: "Un infermiere lo leggerà prima della visita.", start: "Inizia",
     howTitle: "Come funziona", how: [["Descriva", "Scriva con parole sue."], ["Lo legge un infermiere", "Prima della visita."], ["La chiamano", "Al banco."]],
@@ -63,7 +65,7 @@ export const STR: Record<Lang, S> = {
     stepSent: "Inviato", stepReview: "In attesa di un infermiere", stepReviewed: "Letto", nextTitle: "Cosa succede ora", sentTitle: "Le sue risposte sono arrivate",
     pickTitle: "Ci dica perché è venuto oggi.",
     pickSub: "Un infermiere lo leggerà prima della visita.",
-    privacy: "Demo con casi inventati. Non scriva nomi, numeri di telefono o documenti reali. Un infermiere legge ciò che scrive.",
+    privacy: "Demo con casi inventati. Non scriva nomi, numeri di telefono o documenti reali. Un infermiere legge ciò che scrive. Se usa il microfono, la sua voce viene elaborata dal servizio vocale del telefono (Apple o Google).",
     disclaimer: "Non sostituisce un medico. In caso di emergenza, vada subito al banco.",
     pickA11y: (l) => `Continua in ${l}`,
     q1: "Che cosa la porta qui oggi?", hint: "Scriva con parole sue. Basta poco.", hintFollow: "Bastano poche parole.",
@@ -79,13 +81,14 @@ export const STR: Record<Lang, S> = {
     deskBody: "Non siamo riusciti a inviare le sue risposte. Non si perde nulla: il personale la aiuterà di persona.",
     deskNoCode: "Vada al banco e dica al personale che ha iniziato questo modulo.",
     retry: "Riprova",
-    rfShow: "Mostri questa schermata al personale al banco.", atDesk: "Sono al banco", atDeskDone: "Un infermiere sta venendo da lei. Tenga aperta questa schermata.", rfCode: "Il suo codice",
+    rfShow: "Mostri questa schermata al personale al banco.", atDesk: "Sono al banco", atDeskDone: "Mostri questa schermata al personale adesso. Se nessuno la sta aiutando, lo dica subito a qualsiasi membro del personale.", rfCode: "Il suo codice",
   },
   th: {
     micStart: "แตะเพื่อพูด", micStop: "หยุดฟัง", listening: "กำลังฟัง", confirmTitle: "คุณพูดแบบนี้ใช่ไหม", confirmSub: "ตรวจดูคำและแก้ไขที่ผิดก่อนส่ง", send: "ส่ง", tryAgain: "ลองอีกครั้ง", speakToggle: "อ่านคำถามออกเสียง",
     micDenied: "ไมโครโฟนปิดอยู่ คุณพิมพ์คำตอบแทนได้", micUnavailable: "ใช้เสียงไม่ได้ในที่นี้ คุณพิมพ์คำตอบแทนได้", noSpeech: "ไม่ได้ยินเสียง ลองอีกครั้ง หรือพิมพ์คำตอบ",
     chipYes: "ใช่", chipNo: "ไม่ใช่", chipUnknown: "ไม่แน่ใจ", reviewedTitle: "พยาบาลตรวจดูคำตอบของคุณแล้ว", reviewedNext: "พยาบาลจะเรียกคุณ", reviewingNote: "คำตอบของคุณรอพยาบาลอยู่", stepAt: (t) => `เวลา ${t}`,
     offlineRed: "ออฟไลน์: แสดงคำแนะนำล่าสุดของคุณ", offlineNote: "ออฟไลน์: แสดงหน้าจอที่บันทึกไว้ล่าสุด",
+    langLocked: "ภาษาถูกกำหนดไว้สำหรับการมาครั้งนี้",
     tabHome: "หน้าแรก", tabVisit: "การมาพบ", tabHelp: "ช่วยเหลือ", tabNew: "เริ่มแบบฟอร์มใหม่", tabLang: "ภาษา", hello: "สวัสดี", greetSub: "ยินดีต้อนรับสู่ MedX Bridge",
     heroTitle: "บอกเราว่าวันนี้คุณมาด้วยเรื่องอะไร", heroSub: "พยาบาลจะอ่านคำตอบของคุณก่อนเรียกตรวจ", start: "เริ่ม",
     howTitle: "ทำงานอย่างไร", how: [["เล่าอาการ", "เขียนด้วยคำพูดของคุณเอง"], ["พยาบาลตรวจดู", "ก่อนเรียกตรวจ"], ["เรียกชื่อคุณ", "ที่เคาน์เตอร์"]],
@@ -95,7 +98,7 @@ export const STR: Record<Lang, S> = {
     stepSent: "ส่งแล้ว", stepReview: "รอพยาบาล", stepReviewed: "ตรวจดูแล้ว", nextTitle: "ขั้นตอนต่อไป", sentTitle: "ได้รับคำตอบของคุณแล้ว",
     pickTitle: "บอกเราว่าวันนี้คุณมาด้วยเรื่องอะไร",
     pickSub: "พยาบาลจะอ่านคำตอบของคุณก่อนเรียกตรวจ",
-    privacy: "นี่คือเดโมที่ใช้กรณีสมมติ กรุณาอย่าพิมพ์ชื่อ เบอร์โทร หรือเลขบัตรจริง พยาบาลจะอ่านสิ่งที่คุณเขียน",
+    privacy: "นี่คือเดโมที่ใช้กรณีสมมติ กรุณาอย่าพิมพ์ชื่อ เบอร์โทร หรือเลขบัตรจริง พยาบาลจะอ่านสิ่งที่คุณเขียน หากคุณใช้ไมโครโฟน เสียงของคุณจะถูกประมวลผลโดยบริการเสียงของโทรศัพท์ (Apple หรือ Google)",
     disclaimer: "ไม่ได้ใช้แทนแพทย์ หากฉุกเฉิน กรุณาไปที่เคาน์เตอร์ทันที",
     pickA11y: (l) => `ใช้ภาษา ${l} ต่อ`,
     q1: "วันนี้คุณมาด้วยเรื่องอะไร", hint: "เขียนด้วยคำพูดของคุณเอง สั้น ๆ ก็ได้", hintFollow: "ตอบสั้น ๆ ก็พอ",
@@ -111,7 +114,7 @@ export const STR: Record<Lang, S> = {
     deskBody: "ส่งคำตอบของคุณไม่สำเร็จ ไม่มีอะไรหาย เจ้าหน้าที่จะช่วยคุณโดยตรง",
     deskNoCode: "กรุณาไปที่เคาน์เตอร์และแจ้งเจ้าหน้าที่ว่าคุณเริ่มกรอกแบบฟอร์มนี้แล้ว",
     retry: "ลองอีกครั้ง",
-    rfShow: "แสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดู", atDesk: "ฉันอยู่ที่เคาน์เตอร์แล้ว", atDeskDone: "พยาบาลกำลังมาหาคุณ กรุณาเปิดหน้าจอนี้ไว้", rfCode: "รหัสของคุณ",
+    rfShow: "แสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดู", atDesk: "ฉันอยู่ที่เคาน์เตอร์แล้ว", atDeskDone: "แสดงหน้าจอนี้ให้เจ้าหน้าที่ดูทันที หากยังไม่มีใครช่วยคุณ กรุณาแจ้งเจ้าหน้าที่คนใดก็ได้ทันที", rfCode: "รหัสของคุณ",
   },
 };
 

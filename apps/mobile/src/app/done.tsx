@@ -15,7 +15,7 @@ const POLL_MS = 4000;
 const hhmm = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) : "");
 
 export default function Done() {
-  const { lang, session, set, offline } = useStore();
+  const { lang, session, update, offline } = useStore();
   const s = STR[lang];
   const reduced = useReducedMotion();
   const [reviewedAt, setReviewedAt] = useState<string | null>(null);
@@ -28,18 +28,20 @@ export default function Done() {
   useEffect(() => {
     if (!id || final) return;
     let alive = true;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    // Single-flight: the next poll is scheduled only after the previous one settles; nothing runs after unmount.
     const tick = async () => {
       try {
         const r = await getSession(id);
         if (!alive) return;
         setReviewedAt(r.reviewedAt);
-        set({ session: r.session });
+        update(r.session);
         if (r.session.status === "escalated") router.replace("/redflag"); // a red flag can never be missed
       } catch { /* offline: keep what we show, try again */ }
+      if (alive) timer = setTimeout(tick, POLL_MS);
     };
-    const t = setInterval(tick, POLL_MS);
     tick();
-    return () => { alive = false; clearInterval(t); };
+    return () => { alive = false; if (timer) clearTimeout(timer); };
   }, [id, final]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const status = session?.status;
