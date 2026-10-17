@@ -11,24 +11,44 @@ import med01 from '../../../../data/cases/MED-01.json';
 import med03 from '../../../../data/cases/MED-03.json';
 import med05 from '../../../../data/cases/MED-05.json';
 import { addTurn, createSession, PipelineError, review } from './pipeline';
+import { dispenseOrder, medicationAction, medicationOrder, pickupAction } from './orders';
 import { getAudit, getSession, getSessions, resetDemoStore, withSessionLock } from './store';
 import { paceSeedCalls } from './llm';
 
 interface Fixture { id: string; lang: string; synthetic: boolean; turns: { role: string; text: string }[] }
-interface SeedPlan { fixture: Fixture; expectedStatus: SessionStatus; repeatLast?: boolean }
+/** Synthetic doctor + pharmacist steps so the demo queue shows every pharmacy stage. */
+interface PharmacySeed { doctor: string; order: { drugText: string; dose: string; route: string; frequency: string; duration: string }; stage: 'to_verify' | 'to_dispense' | 'ready_for_pickup' }
+interface SeedPlan { fixture: Fixture; expectedStatus: SessionStatus; repeatLast?: boolean; pharmacy?: PharmacySeed }
+// Demo staff directory (packages/shared/src/staff.ts): two different pharmacists for the two-person check.
+const PHARMACIST_1 = 'Pharmacist Laura Conti', PHARMACIST_2 = 'Pharmacist Nattaya Wong';
 const plans: SeedPlan[] = [
   { fixture: en05, expectedStatus: 'escalated' },
   { fixture: th05, expectedStatus: 'escalated' },
-  { fixture: en01, expectedStatus: 'awaiting_review' },
-  { fixture: it01, expectedStatus: 'awaiting_review' },
+  { fixture: en01, expectedStatus: 'awaiting_review', pharmacy: { doctor: 'Dr. Marco Bianchi', stage: 'ready_for_pickup', order: { drugText: 'paracetamol', dose: '500 mg', route: 'oral', frequency: 'every 6 hours', duration: '3 days' } } },
+  { fixture: it01, expectedStatus: 'awaiting_review', pharmacy: { doctor: 'Dr. Marco Bianchi', stage: 'to_dispense', order: { drugText: 'ibuprofen', dose: '400 mg', route: 'oral', frequency: 'three times daily', duration: '3 days' } } },
   { fixture: en04, expectedStatus: 'needs_human', repeatLast: true },
   { fixture: en03, expectedStatus: 'collecting' },
   { fixture: it03, expectedStatus: 'collecting' },
   { fixture: en02, expectedStatus: 'approved' },
-  { fixture: med01, expectedStatus: 'collecting' },
+  // Penicillin-allergic patient: the order raises a high allergy alert for pharmacist 1 (with curated alternatives when medrules lists them).
+  { fixture: med01, expectedStatus: 'collecting', pharmacy: { doctor: 'Dr. Somchai Chaiyo', stage: 'to_verify', order: { drugText: 'amoxicillin', dose: '500 mg', route: 'oral', frequency: 'three times daily', duration: '7 days' } } },
   { fixture: med05, expectedStatus: 'collecting' },
   { fixture: med03, expectedStatus: 'needs_human' },
 ];
+const ALL_CHECKED = { rightPatient: true, rightDrug: true, rightDose: true, rightRoute: true, allergyRechecked: true, labelled: true };
+/** Runs the real order engine (checks, overrides, two-person dispense, pickup) on a synthetic case. */
+async function seedPharmacy(sessionId: string, p: PharmacySeed) {
+  let s = await medicationOrder(sessionId, { orderedBy: p.doctor, ...p.order });
+  const order = s.orders!.medications.at(-1)!;
+  // Explicit synthetic override text: high alerts still reach pharmacist 1, who decides.
+  const overrides = order.checks.filter(a => a.severity === 'high').map(a => ({ alertId: a.id, reason: 'Synthetic demo case: prescriber asks pharmacy to review this alert' }));
+  s = await medicationAction(sessionId, order.id, 'submit', { orderedBy: p.doctor, overrides });
+  if (p.stage === 'to_verify') return s;
+  s = await medicationAction(sessionId, order.id, 'pharmacy', { reviewerId: PHARMACIST_1, action: 'verify' });
+  if (p.stage === 'to_dispense') return s;
+  await dispenseOrder(sessionId, order.id, { reviewerId: PHARMACIST_2, checklist: ALL_CHECKED });
+  return pickupAction(sessionId, { reviewerId: PHARMACIST_2, action: 'call', counter: '2' });
+}
 type SeedJob = { id: string; status: 'running' | 'done' | 'failed'; completed: number; total: number; result?: Awaited<ReturnType<typeof seedDemo>>; error?: string };
 let job: SeedJob | undefined;
 export function demoSeedProgress() { return job || { status: 'idle', completed: 0, total: plans.length }; }
@@ -52,7 +72,7 @@ export async function seedDemo(options: { reset?: boolean } = {}) {
     const sessions: IntakeSession[] = [];
     const mismatches: { caseId: string; expected: SessionStatus; actual: SessionStatus }[] = [];
     let created = 0;
-    for (const { fixture, expectedStatus, repeatLast } of plans) {
+    for (const { fixture, expectedStatus, repeatLast, pharmacy } of plans) {
       if (!fixture.synthetic || !['en', 'it', 'th'].includes(fixture.lang)) throw new Error('Invalid synthetic demo fixture');
       const existing = getAudit().find(e => e.type === 'session_created' && e.payload.demoCaseId === fixture.id);
       let session = existing ? getSession(existing.sessionId) : undefined;
@@ -71,6 +91,8 @@ export async function seedDemo(options: { reset?: boolean } = {}) {
         if (expectedStatus === 'approved' && session.status === 'awaiting_review' && session.summary?.fields.filter(f => f.required).every(f => f.status === 'supported')) {
           session = await review(session.id, 'Dr. Marco Bianchi', session.summary.fields.filter(f => f.required).map(f => ({ fieldKey: f.key, action: 'approve' })));
         }
+        // Like the approval above: only on a replay that reached its expected state, never after a provider failure.
+        if (pharmacy && session.status === expectedStatus) session = await seedPharmacy(session.id, pharmacy);
       }
       sessions.push(session);
       if (job?.status === 'running') job.completed = sessions.length;

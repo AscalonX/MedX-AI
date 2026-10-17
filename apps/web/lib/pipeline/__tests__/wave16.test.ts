@@ -7,6 +7,7 @@ import { addTurn, createSession, runTurn } from '../pipeline';
 import { getAudit, getConsultRecord, getSession, getSessions, saveConsultRecord, saveSession } from '../store';
 import { redact } from '../redact';
 import { consultRules } from './fixtures/consultRules';
+import { readLines, readText } from './fixtures/text';
 import { POST as postNote } from '../../../app/api/sessions/[id]/consult/note/route';
 import { POST as postInvestigation } from '../../../app/api/sessions/[id]/orders/investigations/route';
 import { POST as postCancel } from '../../../app/api/sessions/[id]/orders/medications/[orderId]/cancel/route';
@@ -177,10 +178,11 @@ describe('W16 P2-3 private persistent retry IDs', () => {
 describe('W16 P2-6 current clinical markdown dose identities', () => {
   const docs = path.resolve(process.cwd(), '../../docs/clinical');
   it.each(['CONSULT-SPEC.md', 'MEDRULES-TESTS.md', 'PHARMACY-SPEC.md'])('removes stale dose identities from %s', file => {
-    const text = readFileSync(path.join(docs, file), 'utf8');
+    const text = readText(path.join(docs, file));
     expect(text).not.toMatch(/MR-DOSE-0[12]/); expect(text).toContain('MR-DOSE-RANGE'); expect(text).toContain('MR-DOSE-UNCHECKED');
   });
-  const rows = readFileSync(path.join(docs, 'MEDRULES-TESTS.md'), 'utf8').split('\n').flatMap(line => {
+  // readLines normalises CRLF/BOM: the `$`-anchored selector parsed 0 rows on Windows checkouts.
+  const rows = readLines(path.join(docs, 'MEDRULES-TESTS.md')).flatMap(line => {
     const m = line.match(/^\| D \| (en|it|th) \| (!?MR-DOSE-(?:RANGE|UNCHECKED)) \| (.+?) \| ([\d.]+) \| ([\d.]+) \|$/);
     return m ? [{ lang: m[1], expected: m[2], drugText: m[3], doseMg: Number(m[4]), timesPerDay: Number(m[5]) }] : [];
   });

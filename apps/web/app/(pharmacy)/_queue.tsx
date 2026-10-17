@@ -1,16 +1,24 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Badge, Card, EmptyState, Icon, LangMorph, SegmentedControl, StatTile } from "@/components/ui";
-import { PrescriptionQueue } from "./_orders";
-import { L, C, LANG_NAME, PHARM_STATUS_LABEL, U, alertsOf, isAbstained, pendingOrders, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, waited } from "./_lib";
+import { PrescriptionQueue, stageCounts } from "./_orders";
+import { L, C, LANG_NAME, PHARM_STATUS_LABEL, U, alertsOf, isAbstained, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, waited } from "./_lib";
 import { usePharmacy } from "./_shell";
+
+type Tab = "recon" | "rx";
+const TAB_KEY = "medx.pharmacy.tab"; // per-viewer convenience only
+const readTab = (): Tab | null => { try { const v = localStorage.getItem(TAB_KEY); return v === "recon" || v === "rx" ? v : null; } catch { return null; } };
 
 export function Queue() {
   const { entries, error, lang, now } = usePharmacy();
   const list = entries ?? [];
-  const [tab, setTab] = useState<"recon" | "rx">("recon");
-  const rxCount = list.reduce((n, e) => n + pendingOrders(e.session).length, 0);
+  // Prescriptions first: the two-stage check (verify, dispense, call) is the pharmacist's main queue.
+  const [tab, setTabState] = useState<Tab>("rx");
+  useEffect(() => { const t = readTab(); if (t) setTabState(t); }, []);
+  const setTab = (t: Tab) => { setTabState(t); try { localStorage.setItem(TAB_KEY, t); } catch { /* storage blocked */ } };
+  const sc = stageCounts(list, now);
+  const rxCount = sc.verify + sc.dispense + sc.call + sc.ready;
   const pending = list.filter((e) => pharmStatus(e.session) !== "reconciled").length;
   const high = list.reduce((n, e) => n + openHigh(e.session).length, 0);
   const flags = list.reduce((n, e) => n + openFlags(e.session).length, 0);
@@ -18,16 +26,24 @@ export function Queue() {
   return (
     <div lang={lang} className="flex flex-col gap-6">
       <h1 className="sr-only">{C.queueTitle[lang]}</h1>
-      <section aria-label={C.queue[lang]} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatTile label={C.pendingStat[lang]} value={entries ? pending : null} icon={<Icon name="clipboard-list" />} />
-        <StatTile label={C.urgentStat[lang]} value={entries ? high + flags : null} tone={high + flags > 0 ? "signal" : "default"} icon={<Icon name="triangle-alert" />} />
-        <StatTile label={C.doneStat[lang]} value={entries ? done : null} tone="teal" icon={<Icon name="circle-check" />} />
-      </section>
+      {tab === "rx" ? (
+        <section aria-label={L("ขั้นตอนห้องยา", "Fasi della farmacia", "Pharmacy stages")[lang]} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatTile label={L("รอตรวจใบสั่งยา (เภสัชกรคนแรก)", "Da verificare (primo farmacista)", "To verify (first pharmacist)")[lang]} value={entries ? sc.verify : null} tone="ocean" icon={<Icon name="clipboard-list" />} />
+          <StatTile label={L("รอจัดและจ่ายยา (เภสัชกรคนที่สอง)", "Da dispensare (secondo farmacista)", "To dispense (second pharmacist)")[lang]} value={entries ? sc.dispense : null} icon={<Icon name="pill" />} />
+          <StatTile label={L("รอเรียกและพร้อมให้รับยา", "Da chiamare e pronti per il ritiro", "To call and ready for pickup")[lang]} value={entries ? sc.call + sc.ready : null} tone="teal" icon={<Icon name="bell" />} />
+        </section>
+      ) : (
+        <section aria-label={C.queue[lang]} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatTile label={C.pendingStat[lang]} value={entries ? pending : null} icon={<Icon name="clipboard-list" />} />
+          <StatTile label={C.urgentStat[lang]} value={entries ? high + flags : null} tone={high + flags > 0 ? "signal" : "default"} icon={<Icon name="triangle-alert" />} />
+          <StatTile label={C.doneStat[lang]} value={entries ? done : null} tone="teal" icon={<Icon name="circle-check" />} />
+        </section>
+      )}
       {error && <p role="status" className="text-small text-ink-soft">{C.notRefreshed[lang]}: {error}.</p>}
       <Card padded={false}>
         <div className="flex flex-wrap items-center gap-3 px-5 pb-2 pt-5">
           <h2 className="text-lead font-bold">{C.queue[lang]}</h2>
-          <SegmentedControl ariaLabel="Queue" value={tab} onChange={setTab} options={[{ value: "recon", label: C.queueTitle[lang] }, { value: "rx", label: `${L("ใบสั่งยา", "Prescrizioni", "Prescriptions")[lang]} (${rxCount})` }]} />
+          <SegmentedControl ariaLabel={C.queue[lang]} value={tab} onChange={setTab} options={[{ value: "rx", label: `${L("ใบสั่งยา", "Prescrizioni", "Prescriptions")[lang]} (${rxCount})` }, { value: "recon", label: C.queueTitle[lang] }]} />
         </div>
         {tab === "rx" ? <PrescriptionQueue /> : !entries ? (
           <div aria-busy="true" aria-label="Loading" className="flex flex-col gap-3 p-5">

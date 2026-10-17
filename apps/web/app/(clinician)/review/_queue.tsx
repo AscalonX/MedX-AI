@@ -2,10 +2,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { IntakeSession, Lang, SessionStatus } from "@medx/shared";
-import { Badge, Card, EmptyState, Icon, LangMorph, Pill, StatTile } from "@/components/ui";
+import { Badge, Card, EmptyState, Icon, LangMorph, Pill, StatTile, type IconName } from "@/components/ui";
 import { cap, clock, topSeverity, waited } from "./_lib";
 import { fmt, tr, type TKey } from "./_i18n";
 import { useClinician } from "./_shell";
+import { pharmacyStage, type PharmacyStage } from "./_stage";
 
 export const STATUS_KEY: Record<SessionStatus, TKey> = {
   collecting: "stCollecting", escalated: "urgent", awaiting_review: "stReview", needs_human: "needsHuman", approved: "stApproved", taken_over: "stTakenOver",
@@ -45,6 +46,21 @@ export function FlagChip({ s, lang }: { s: IntakeSession; lang: Lang }) {
   if (!hits.length || s.status === "escalated") return null;
   const open = hits.some((h) => !h.review);
   return <Badge tone="signalOutline" icon={<Icon name="triangle-alert" size={12} />}>{tr(open ? "flagOpen" : "flagAck", lang)}</Badge>;
+}
+
+const STAGE_KEY: Record<PharmacyStage, TKey> = { toVerify: "phToVerify", toDispense: "phToDispense", toCall: "phToCall", ready: "phReady", collected: "phCollected" };
+const STAGE_ICON: Record<PharmacyStage, IconName> = { toVerify: "pill", toDispense: "pill", toCall: "pill", ready: "bell", collected: "check" };
+
+/** Pharmacy stage of the case's medication orders. Neutral outline chip: never red, never the approved teal. */
+export function PharmacyChip({ s, lang }: { s: IntakeSession; lang: Lang }) {
+  const stage = pharmacyStage(s);
+  if (!stage) return null;
+  const label = stage === "ready" && s.pickup?.counter ? fmt(tr("phReadyCounter", lang), { n: s.pickup.counter }) : tr(STAGE_KEY[stage], lang);
+  return (
+    <Badge tone="outline" className="min-w-0 max-w-full" icon={<Icon name={STAGE_ICON[stage]} size={12} className="shrink-0" />}>
+      <span className="min-w-0 truncate" data-pharmacy-stage={stage}>{label}</span>
+    </Badge>
+  );
 }
 
 export const returnedOrders = (s: IntakeSession) => (s.orders?.medications ?? []).filter((o) => o.status === "returned");
@@ -115,11 +131,12 @@ export function QueueCard({ activeId, compact = false }: { activeId?: string; co
                 >
                   <LangBadge lang={s.patientLang} />
                   <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                    <span className="flex items-center gap-2">
+                    <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       <span className="font-bold tabular-nums text-ink">{s.code}</span>
                       <StatusChip s={s} lang={lang} />
                       <FlagChip s={s} lang={lang} />
                       {returnedOrders(s).length > 0 && <Badge tone="pencil" icon={<Icon name="clipboard-list" size={12} />}>{tr("returnedChip", lang)}</Badge>}
+                      <PharmacyChip s={s} lang={lang} />
                     </span>
                     <span className="truncate text-small text-ink-soft">
                       {s.status === "escalated" && pending && <span className="font-semibold text-signal">{tr("notAcked", lang)} </span>}

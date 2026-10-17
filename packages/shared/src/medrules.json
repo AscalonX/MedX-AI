@@ -1,5 +1,5 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "drugs": [
     {
       "generic": "paracetamol",
@@ -1391,5 +1391,102 @@
       }
     }
   },
-  "doseRangeSource": "Adult oral maximum single and daily doses from BNF (British National Formulary, current edition) dose sections; metformin 2550 mg/day and naproxen 1250 mg/day from FDA prescribing information. Usual adult ceilings for a deterministic 'check' alert only: not dosing advice, no renal/hepatic/weight/paediatric adjustment, some indications legitimately exceed them (doctor documents the reason)."
+  "doseRangeSource": "Adult oral maximum single and daily doses from BNF (British National Formulary, current edition) dose sections; metformin 2550 mg/day and naproxen 1250 mg/day from FDA prescribing information. Usual adult ceilings for a deterministic 'check' alert only: not dosing advice, no renal/hepatic/weight/paediatric adjustment, some indications legitimately exceed them (doctor documents the reason).",
+  "alternatives": [
+    {
+      "id": "ALT-NSAID-ALLERGY",
+      "kinds": [
+        "allergy_conflict"
+      ],
+      "drugClasses": [
+        "nsaid",
+        "cox2_inhibitor"
+      ],
+      "consider": [
+        "paracetamol"
+      ],
+      "note": {
+        "th": "ทางเลือกให้แพทย์ผู้สั่งยาพิจารณาตามข้อบ่งใช้และแนวทางของสถานพยาบาล ไม่ใช่คำสั่งใช้ยา: พาราเซตามอลเป็นยาแก้ปวดที่ไม่ใช่ NSAID ที่ใช้ทั่วไป ผู้ที่แพ้ NSAID ส่วนใหญ่ใช้ได้ แต่ส่วนน้อยแพ้พาราเซตามอลด้วย จึงควรทบทวนประวัติอาการแพ้ก่อน",
+        "it": "Opzione da valutare da parte del prescrittore in base all'indicazione e alle linee guida locali, non una prescrizione: il paracetamolo è l'analgesico non FANS abituale. La maggior parte delle persone con ipersensibilità ai FANS lo tollera, ma una minoranza reagisce anche al paracetamolo: verificare prima la storia della reazione.",
+        "en": "Option for the prescriber to review against the indication and local guidance, not a prescription: paracetamol is the usual non-NSAID analgesic. Most people with NSAID hypersensitivity tolerate it, but a minority also react to paracetamol, so check the reaction history first."
+      },
+      "source": "BNF (British National Formulary), current edition, Non-steroidal anti-inflammatory drugs: contra-indications (history of hypersensitivity to aspirin or any other NSAID); Kowalski ML et al. Classification and practical approach to the diagnosis and management of hypersensitivity to nonsteroidal anti-inflammatory drugs (EAACI position paper). Allergy 2013;68(10):1219-32. doi:10.1111/all.12260"
+    },
+    {
+      "id": "ALT-NSAID-INTERACTION",
+      "kinds": [
+        "interaction"
+      ],
+      "drugClasses": [
+        "nsaid",
+        "cox2_inhibitor"
+      ],
+      "consider": [
+        "paracetamol"
+      ],
+      "note": {
+        "th": "ทางเลือกให้แพทย์ผู้สั่งยาพิจารณาตามข้อบ่งใช้และแนวทางของสถานพยาบาล ไม่ใช่คำสั่งใช้ยา: พาราเซตามอลไม่มีปฏิกิริยาระหว่างยาเรื่องเลือดออกและไตแบบ NSAID แต่ถ้าใช้ร่วมกับวาร์ฟารินเป็นประจำอาจทำให้ค่า INR สูงขึ้น จึงอาจยังต้องติดตามค่า INR",
+        "it": "Opzione da valutare da parte del prescrittore in base all'indicazione e alle linee guida locali, non una prescrizione: il paracetamolo non ha le interazioni dei FANS su sanguinamento e rene. Con warfarin, il paracetamolo assunto regolarmente può aumentare l'INR: può servire comunque il controllo dell'INR.",
+        "en": "Option for the prescriber to review against the indication and local guidance, not a prescription: paracetamol does not carry the NSAID bleeding and kidney interactions. With warfarin, regular paracetamol can raise the INR, so INR monitoring may still be needed."
+      },
+      "source": "NICE CKS: NSAIDs - prescribing issues (drug interactions; alternative analgesics); BNF (British National Formulary), current edition, Interactions: NSAIDs with anticoagulants, SSRIs, methotrexate, ACE inhibitors / angiotensin-II receptor antagonists and aspirin; paracetamol with warfarin (prolonged regular use may enhance the anticoagulant effect)"
+    },
+    {
+      "id": "ALT-NSAID-PREGNANCY",
+      "kinds": [
+        "pregnancy_caution"
+      ],
+      "drugClasses": [
+        "nsaid",
+        "cox2_inhibitor"
+      ],
+      "consider": [
+        "paracetamol"
+      ],
+      "note": {
+        "th": "ทางเลือกให้แพทย์ผู้สั่งยาพิจารณาตามข้อบ่งใช้ อายุครรภ์ และแนวทางของสถานพยาบาล ไม่ใช่คำสั่งใช้ยา: พาราเซตามอลในขนาดต่ำสุดที่ได้ผลและระยะเวลาสั้นที่สุดเป็นยาแก้ปวดที่ใช้ทั่วไปในหญิงตั้งครรภ์ FDA แนะนำให้หลีกเลี่ยง NSAID ตั้งแต่อายุครรภ์ 20 สัปดาห์",
+        "it": "Opzione da valutare da parte del prescrittore in base all'indicazione, all'epoca gestazionale e alle linee guida locali, non una prescrizione: il paracetamolo alla dose minima efficace per il tempo più breve è l'analgesico abituale in gravidanza. La FDA raccomanda di evitare i FANS dalla 20ª settimana.",
+        "en": "Option for the prescriber to review against the indication, gestation and local guidance, not a prescription: paracetamol at the lowest effective dose for the shortest time is the usual analgesic in pregnancy. The FDA advises avoiding NSAIDs from 20 weeks."
+      },
+      "source": "FDA Drug Safety Communication, 15 Oct 2020: avoid use of NSAIDs in pregnancy at 20 weeks or later (rare fetal kidney problems, low amniotic fluid); BNF (British National Formulary), current edition, Paracetamol: pregnancy; Non-steroidal anti-inflammatory drugs: pregnancy"
+    },
+    {
+      "id": "ALT-BETALACTAM-ALLERGY",
+      "kinds": [
+        "allergy_conflict"
+      ],
+      "drugClasses": [
+        "penicillin",
+        "cephalosporin"
+      ],
+      "consider": [
+        "clarithromycin",
+        "doxycycline"
+      ],
+      "note": {
+        "th": "ทางเลือกให้แพทย์ผู้สั่งยาพิจารณาตามชนิดการติดเชื้อ ประวัติอาการแพ้ และแนวทางการใช้ยาปฏิชีวนะของสถานพยาบาล ไม่ใช่คำสั่งใช้ยา: ยาที่ไม่ใช่เบต้าแลคแทม เช่น คลาริโธรมัยซินหรือด็อกซีไซคลิน (NICE ระบุยาเหล่านี้สำหรับผู้แพ้เพนิซิลลินในการติดเชื้อที่พบบ่อยหลายชนิด การเลือกขึ้นกับชนิดการติดเชื้อ) ในหญิงตั้งครรภ์ NICE ระบุอีริโธรมัยซินแทนคลาริโธรมัยซิน (อีริโธรมัยซินไม่อยู่ในพจนานุกรมนี้) ควรหลีกเลี่ยงด็อกซีไซคลินในหญิงตั้งครรภ์และเด็กอายุต่ำกว่า 12 ปี",
+        "it": "Opzioni da valutare da parte del prescrittore in base all'infezione, alla storia della reazione e alle linee guida antibiotiche locali, non una prescrizione: un antibiotico non beta-lattamico come claritromicina o doxiciclina (NICE li indica nell'allergia alla penicillina per diverse infezioni comuni; la scelta dipende dall'infezione). In gravidanza NICE indica l'eritromicina invece della claritromicina (l'eritromicina non è in questo dizionario). La doxiciclina va evitata in gravidanza e sotto i 12 anni.",
+        "en": "Options for the prescriber to review against the infection, the reaction history and local antibiotic guidance, not a prescription: a non-beta-lactam antibiotic such as clarithromycin or doxycycline (NICE names these in penicillin allergy for several common infections; the right one depends on the infection). In pregnancy NICE names erythromycin rather than clarithromycin (erythromycin is not in this dictionary). Doxycycline is avoided in pregnancy and in children under 12."
+      },
+      "source": "NICE NG84 Sore throat (acute): antimicrobial prescribing (2018): penicillin allergy or intolerance, clarithromycin if not pregnant, erythromycin in pregnancy; NICE NG138 Pneumonia (community-acquired): antimicrobial prescribing (2019): penicillin allergy, clarithromycin or doxycycline, erythromycin in pregnancy; NICE CG183 Drug allergy: diagnosis and management (2014); BNF (British National Formulary), current edition, Penicillins: cross-sensitivity with cephalosporins; Doxycycline: contra-indications (children under 12 years) and pregnancy"
+    },
+    {
+      "id": "ALT-OPIOID-INTERACTION",
+      "kinds": [
+        "interaction"
+      ],
+      "drugClasses": [
+        "opioid"
+      ],
+      "consider": [
+        "paracetamol"
+      ],
+      "note": {
+        "th": "ทางเลือกให้แพทย์ผู้สั่งยาพิจารณาตามระดับความปวดและแนวทางของสถานพยาบาล ไม่ใช่คำสั่งใช้ยา: พาราเซตามอลเป็นยาแก้ปวดที่ไม่ใช่โอปิออยด์และไม่เพิ่มฤทธิ์เซโรโทนิน แต่อาจไม่เพียงพอสำหรับอาการปวดปานกลางถึงรุนแรง",
+        "it": "Opzione da valutare da parte del prescrittore in base all'intensità del dolore e alle linee guida locali, non una prescrizione: il paracetamolo è un analgesico non oppioide e non serotoninergico, ma può non bastare per il dolore moderato o grave.",
+        "en": "Option for the prescriber to review against the pain severity and local guidance, not a prescription: paracetamol is a non-opioid, non-serotonergic analgesic, but it may not be enough for moderate to severe pain."
+      },
+      "source": "BNF (British National Formulary), current edition, Tramadol: interactions (SSRIs: increased risk of serotonin syndrome and seizures); Boyer EW, Shannon M. The serotonin syndrome. N Engl J Med 2005;352(11):1112-20. doi:10.1056/NEJMra041867 (PMID 15784664); WHO Model List of Essential Medicines: paracetamol (non-opioid analgesic)"
+    }
+  ]
 }

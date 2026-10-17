@@ -2,11 +2,13 @@ import rules from '@medx/shared/src/redflags.json';
 import type { ExtractedField, RedFlagHit, RedFlagRuleFile, Turn } from '@medx/shared';
 import { isPresent } from './config';
 
+// Segmenters are stateless between segment() calls; building one per call dominated turn latency.
+const graphemes = new Intl.Segmenter('en', { granularity: 'grapheme' });
 function normalise(text: string, compactThai = false) {
   // Same text as the clinical reference's norm(), with UTF-16 source offsets.
   let t = ' '; const map: number[] = [0]; const ends: number[] = [0]; let offset = 0;
   const lower = text.normalize('NFKC').toLowerCase(); let normalisedOffset = 0;
-  for (const segment of new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(text)) {
+  for (const segment of graphemes.segment(text)) {
     const cp = segment.segment;
     const length = cp.normalize('NFKC').toLowerCase().length;
     // Lower-case the whole text first, including context-sensitive Unicode casing.
@@ -29,6 +31,18 @@ function normalise(text: string, compactThai = false) {
     return { t: indices.map(i => t[i]).join(''), map: indices.map(i => map[i]), ends: indices.map(i => ends[i]) };
   }
   return { t, map, ends };
+}
+// Rule terms come only from rule files, never patient text, and a needle is a pure function of
+// (term, compactThai), so memoising it cannot change a match. Bounded in case of many custom rule files.
+const needles = new Map<string, string>();
+function needleFor(term: string, compactThai: boolean) {
+  const key = `${compactThai ? 'T' : 'F'}${term}`;
+  let needle = needles.get(key);
+  if (needle === undefined) {
+    if (needles.size >= 20000) needles.clear();
+    needle = normalise(term, compactThai).t.slice(1); needles.set(key, needle);
+  }
+  return needle;
 }
 export function clause(before: string) {
   let cut = 0;
@@ -59,7 +73,7 @@ export function checkRedFlags(input: string | Turn[], fields?: ExtractedField[],
       for (const group of rule.match) {
       let found: { start: number; end: number } | undefined;
       for (const term of group) {
-        const needle = normalise(term, domain.compactThai).t.slice(1); if (!needle) continue;
+        const needle = needleFor(term, domain.compactThai); if (!needle) continue;
         let from = 0;
         while (from <= n.t.length) {
           const at = n.t.indexOf(needle, from); if (at < 0) break;

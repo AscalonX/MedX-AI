@@ -1,0 +1,63 @@
+# Line endings: store and check out text as LF on every OS (overrides core.autocrlf=true on Windows).
+# Data-driven tests and docs/clinical/check-*.mjs parse markdown tables and prompt blocks; CRLF made them parse 0 rows.
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF if any are added.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Images
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.avif binary
+*.bmp binary
+*.ico binary
+*.icns binary
+*.tif binary
+*.tiff binary
+*.heic binary
+
+# Fonts
+*.otf binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+
+# Documents
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
+*.key binary
+
+# Video and audio
+*.mp4 binary
+*.mov binary
+*.m4v binary
+*.mkv binary
+*.webm binary
+*.avi binary
+*.mp3 binary
+*.m4a binary
+*.wav binary
+*.ogg binary
+*.flac binary
+*.aac binary
+
+# Archives and compiled artefacts
+*.zip binary
+*.gz binary
+*.tgz binary
+*.7z binary
+*.tar binary
+*.jar binary
+*.apk binary
+*.aab binary
+*.ipa binary
+*.wasm binary
+*.onnx binary
+*.bin binary

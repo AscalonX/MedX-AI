@@ -14,6 +14,10 @@ type S = {
   chipNone: string; chipToday: string; chipYesterday: string; chipWeek: string; chipSeverityA11y: (n: number) => string;
   helpTitle: string; helpBody: string; helpEmergency: string; stepSent: string; stepReview: string; stepReviewed: string; nextTitle: string; sentTitle: string;
   rfShow: string; atDesk: string; atDeskDone: string; rfCode: string;
+  // Medicine pickup (status only: never drug names, staff ids or notes).
+  pickupEyebrow: string; pickupPreparingTitle: string; pickupPreparingBody: string;
+  pickupReadyTitle: string; pickupReadyBody: (code: string, counter?: string) => string; pickupCounter: string;
+  pickupCollectedTitle: string; pickupCollectedBody: string; stepPreparing: string; stepReady: string; stepCollected: string;
 };
 
 export const STR: Record<Lang, S> = {
@@ -49,6 +53,15 @@ export const STR: Record<Lang, S> = {
     deskNoCode: "Please go to the desk and tell the staff you started this form.",
     retry: "Try again",
     rfShow: "Show this screen to the staff at the desk.", atDesk: "I'm at the desk", atDeskDone: "Show this screen to the staff now. If no one is helping you, tell any member of staff straight away.", rfCode: "Your code",
+    pickupEyebrow: "Pharmacy",
+    pickupPreparingTitle: "Your prescription is being prepared.",
+    pickupPreparingBody: "The pharmacy team is checking and preparing your medicine. This screen will tell you when it is ready.",
+    pickupReadyTitle: "Your medicine is ready.",
+    pickupReadyBody: (code, counter) => (counter ? `Please go to pharmacy counter ${counter} and show code ${code}.` : `Please go to the pharmacy counter and show code ${code}.`),
+    pickupCounter: "Counter",
+    pickupCollectedTitle: "You have collected your medicine.",
+    pickupCollectedBody: "If you have a question about your medicine, ask the pharmacist before you leave.",
+    stepPreparing: "Preparing your medicine", stepReady: "Ready to collect", stepCollected: "Medicine collected",
   },
   it: {
     micStart: "Tocchi per parlare", micStop: "Smetti di ascoltare", listening: "In ascolto", confirmTitle: "È questo che ha detto?", confirmSub: "Controlli le parole e corregga eventuali errori prima di inviare.", send: "Invia", tryAgain: "Riprova", speakToggle: "Leggi le domande ad alta voce",
@@ -82,6 +95,15 @@ export const STR: Record<Lang, S> = {
     deskNoCode: "Vada al banco e dica al personale che ha iniziato questo modulo.",
     retry: "Riprova",
     rfShow: "Mostri questa schermata al personale al banco.", atDesk: "Sono al banco", atDeskDone: "Mostri questa schermata al personale adesso. Se nessuno la sta aiutando, lo dica subito a qualsiasi membro del personale.", rfCode: "Il suo codice",
+    pickupEyebrow: "Farmacia",
+    pickupPreparingTitle: "La sua prescrizione è in preparazione.",
+    pickupPreparingBody: "La farmacia sta controllando e preparando i suoi medicinali. Questa schermata le dirà quando sono pronti.",
+    pickupReadyTitle: "I suoi medicinali sono pronti.",
+    pickupReadyBody: (code, counter) => (counter ? `Vada allo sportello ${counter} della farmacia e mostri il codice ${code}.` : `Vada allo sportello della farmacia e mostri il codice ${code}.`),
+    pickupCounter: "Sportello",
+    pickupCollectedTitle: "Ha ritirato i suoi medicinali.",
+    pickupCollectedBody: "Se ha domande sui medicinali, chieda al farmacista prima di andare via.",
+    stepPreparing: "Preparazione dei medicinali", stepReady: "Pronti da ritirare", stepCollected: "Medicinali ritirati",
   },
   th: {
     micStart: "แตะเพื่อพูด", micStop: "หยุดฟัง", listening: "กำลังฟัง", confirmTitle: "คุณพูดแบบนี้ใช่ไหม", confirmSub: "ตรวจดูคำและแก้ไขที่ผิดก่อนส่ง", send: "ส่ง", tryAgain: "ลองอีกครั้ง", speakToggle: "อ่านคำถามออกเสียง",
@@ -115,6 +137,15 @@ export const STR: Record<Lang, S> = {
     deskNoCode: "กรุณาไปที่เคาน์เตอร์และแจ้งเจ้าหน้าที่ว่าคุณเริ่มกรอกแบบฟอร์มนี้แล้ว",
     retry: "ลองอีกครั้ง",
     rfShow: "แสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดู", atDesk: "ฉันอยู่ที่เคาน์เตอร์แล้ว", atDeskDone: "แสดงหน้าจอนี้ให้เจ้าหน้าที่ดูทันที หากยังไม่มีใครช่วยคุณ กรุณาแจ้งเจ้าหน้าที่คนใดก็ได้ทันที", rfCode: "รหัสของคุณ",
+    pickupEyebrow: "ห้องยา",
+    pickupPreparingTitle: "กำลังจัดเตรียมยาตามใบสั่งของคุณ",
+    pickupPreparingBody: "เภสัชกรกำลังตรวจสอบและจัดเตรียมยาของคุณ หน้าจอนี้จะแจ้งเมื่อยาพร้อมให้รับ",
+    pickupReadyTitle: "ยาของคุณพร้อมแล้ว",
+    pickupReadyBody: (code, counter) => (counter ? `กรุณาไปที่ช่องรับยาหมายเลข ${counter} และแสดงรหัส ${code}` : `กรุณาไปที่ช่องรับยาและแสดงรหัส ${code}`),
+    pickupCounter: "ช่องรับยา",
+    pickupCollectedTitle: "คุณรับยาเรียบร้อยแล้ว",
+    pickupCollectedBody: "หากมีคำถามเกี่ยวกับยา กรุณาสอบถามเภสัชกรก่อนกลับ",
+    stepPreparing: "กำลังจัดยา", stepReady: "พร้อมรับยา", stepCollected: "รับยาแล้ว",
   },
 };
 

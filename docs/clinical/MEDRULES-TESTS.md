@@ -1,4 +1,4 @@
-# Medication-rule test cases (medrules v1.1)
+# Medication-rule test cases (medrules v1.2)
 
 For: AI engineer (unit tests for the pharmacist-view engine). Rules: `packages/shared/src/medrules.json`. Semantics: `docs/clinical/PHARMACY-SPEC.md` §5.
 Run the reference check: `node docs/clinical/check-medrules.mjs` (exit 0 = all rows pass).
@@ -7,6 +7,8 @@ Row types:
 - `| L | lang | medicine name as the patient said it | expected generic or (none) |`: drug dictionary lookup on `MedicationEntry.nameOriginal`.
 - `| AL | lang | allergy as the patient said it | expected allergenClass or (none) |`: allergen lookup on `AllergyEntry.allergenOriginal`.
 - `| A | lang | expect | medicines (; separated) | allergies (; separated, - = none) | pregnancy |`: alert engine. `expect` = `MR-…` (alert must be raised) or `!MR-…` (must NOT be raised). Pregnancy: `pregnant`, `possible`, `no`, `-` (unknown).
+- `| D | … |`: dose range on a doctor order (section "Dose range").
+- `| ALT | … |`: alternatives listed on a prescribing alert (section "Alternatives", PHARMACY-SPEC §10).
 
 Medicines and allergies are given **already split** (one entry per medicine/allergen, as the extractor produces them). Matching never runs on the whole transcript: "allergic to ibuprofen" must not be read as "takes ibuprofen".
 
@@ -235,3 +237,50 @@ Medicines and allergies are given **already split** (one entry per medicine/alle
 | D | en | MR-DOSE-RANGE | tramadol | 100 | 6 |
 | D | th | !MR-DOSE-RANGE | วาร์ฟาริน | 5 | 1 |
 | D | en | MR-DOSE-UNCHECKED | vitamin D | 5000 | 1 |
+
+## Alternatives on prescribing alerts (v1.2)
+
+`| ALT | lang | rule | ordered medicine | other current medicines (; or -) | allergies (; or -) | pregnancy | expected alternatives (; or -) |`. Semantics: PHARMACY-SPEC §10. The row's `rule` alert must be raised **on the ordered medicine**, in the context of the other medicines. Its `alternatives` must equal the expected set exactly. `-` means none, so `MedAlert.alternatives` is omitted. A candidate comes from a `medrules.alternatives` entry whose `kinds` contain the alert kind and whose `drugClasses` contain the ordered drug's class. It is then dropped if, **replacing** the order, it would itself raise allergy_conflict, interaction, duplicate_therapy, pregnancy_caution or max_dose_risk for this patient.
+
+In these rows, allergies `-` means "no known allergies **recorded**". In the engine, when allergy status is not recorded at all, MR-ALLERGY-UNKNOWN also fires on every hypothetical candidate, so no alternative is listed. These are options for prescriber review, never a prescription.
+
+| ALT | lang | rule | ordered | other medicines | allergies | pregnancy | alternatives |
+|---|---|---|---|---|---|---|---|
+| ALT | en | MR-ALLERGY-NSAID | Ibuprofen 400 mg | - | NSAID (wheeze) | - | paracetamol |
+| ALT | th | MR-ALLERGY-NSAID | ไอบูโพรเฟน | - | แพ้ยาไอบูโพรเฟน | - | paracetamol |
+| ALT | en | MR-ALLERGY-NSAID | Ibuprofen | - | aspirin; paracetamol | - | - |
+| ALT | it | MR-ALLERGY-NSAID-COX2 | Celebrex | - | allergia ai FANS | - | paracetamol |
+| ALT | en | MR-INT-01 | Ibuprofen 400 mg | warfarin | - | - | paracetamol |
+| ALT | it | MR-INT-01 | Brufen | Coumadin | - | - | paracetamol |
+| ALT | en | MR-INT-01 | Ibuprofen 400 mg | warfarin; Tylenol | - | - | - |
+| ALT | en | MR-INT-02 | celecoxib | apixaban | - | - | paracetamol |
+| ALT | th | MR-INT-18 | ไอบูโพรเฟน | เซอร์ทราลีน | - | - | paracetamol |
+| ALT | en | MR-INT-08 | naproxen | methotrexate | - | - | paracetamol |
+| ALT | en | MR-INT-14 | diclofenac | enalapril | - | - | paracetamol |
+| ALT | it | MR-INT-17 | Brufen | Cardioaspirina | - | - | paracetamol |
+| ALT | en | MR-PREG-02 | ibuprofen | - | - | pregnant | paracetamol |
+| ALT | it | MR-PREG-02 | Voltaren | - | - | possible | paracetamol |
+| ALT | th | MR-PREG-02 | ไอบูโพรเฟน | - | แพ้พาราเซตามอล | pregnant | - |
+| ALT | en | MR-ALLERGY-PEN | Amoxicillin 500 mg | - | penicillin (rash) | - | clarithromycin; doxycycline |
+| ALT | th | MR-ALLERGY-PEN | ออกเมนติน | - | แพ้ยาเพนิซิลลิน | - | clarithromycin; doxycycline |
+| ALT | en | MR-ALLERGY-PEN | amoxicillin | simvastatin | penicillin | - | doxycycline |
+| ALT | en | MR-ALLERGY-PEN | amoxicillin | - | penicillin; azithromycin | - | doxycycline |
+| ALT | it | MR-ALLERGY-PEN | Zimox | - | penicillina | pregnant | clarithromycin |
+| ALT | en | MR-ALLERGY-PEN | amoxicillin | atorvastatin | penicillin | pregnant | - |
+| ALT | en | MR-ALLERGY-PEN-CEPH | cefalexin | - | penicillin | - | clarithromycin; doxycycline |
+| ALT | en | MR-ALLERGY-CEPH-PEN | amoxicillin | - | cephalexin | - | clarithromycin; doxycycline |
+| ALT | en | MR-INT-06 | tramadol 50 mg | sertraline | - | - | paracetamol |
+| ALT | it | MR-INT-06 | Contramal | Prozac | allergia al paracetamolo | - | - |
+| ALT | en | MR-INT-09 | clarithromycin | simvastatin | - | - | - |
+| ALT | en | MR-ALLERGY-SULFA | co-trimoxazole | - | sulfa | - | - |
+| ALT | en | MR-INT-03 | aspirin | warfarin | - | - | - |
+| ALT | it | MR-DUP-01 | Brufen | Moment | - | - | - |
+| ALT | it | MR-ALLERGY-PARA | Tachipirina | - | paracetamolo | - | - |
+
+How to read the less obvious rows:
+- Ibuprofen + "aspirin; paracetamol": paracetamol is dropped (MR-ALLERGY-PARA).
+- Warfarin + Tylenol: the patient already takes paracetamol, so a second paracetamol product is dropped (MR-MAXDOSE-01).
+- Pregnancy + penicillin allergy: doxycycline is dropped (MR-PREG-01). Clarithromycin stays, because the dictionary has no pregnancy flag for it, although NICE NG84 names erythromycin in pregnancy. The entry note says so, and CR-14 asks for a clarithromycin pregnancy flag.
+- Simvastatin: clarithromycin is dropped (MR-INT-09). Atorvastatin + pregnancy: both candidates are dropped (MR-INT-10, MR-PREG-01).
+- Aspirin, macrolide, sulfa, duplicate and paracetamol orders have no entry on purpose: there is no safe single swap without knowing the indication.
+- No row ever lists a cephalosporin for a penicillin allergy. The checker rejects such an entry ("conflicts with the triggering allergy class").

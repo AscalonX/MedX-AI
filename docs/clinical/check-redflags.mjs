@@ -4,8 +4,10 @@
 import { readFileSync } from "node:fs";
 
 const root = new URL("../../", import.meta.url);
-const rules = JSON.parse(readFileSync(new URL("packages/shared/src/redflags.json", root), "utf8"));
-const md = readFileSync(new URL("docs/clinical/REDFLAG-TESTS.md", root), "utf8");
+// Windows checkouts (core.autocrlf=true) hold CRLF: strip a BOM and CR so the `$`-anchored row selector matches on every OS.
+const readText = (rel) => readFileSync(new URL(rel, root), "utf8").replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
+const rules = JSON.parse(readText("packages/shared/src/redflags.json"));
+const md = readText("docs/clinical/REDFLAG-TESTS.md");
 
 const norm = (t) => " " + t.normalize("NFKC").toLowerCase().replace(/[’‘]/g, "'").replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/[\p{Dash_Punctuation}\u2212]/gu, " ").replace(/\s+/g, " ").trim().replace(/(?<=\p{Script=Thai}) (?=\p{Script=Thai})/gu, "");
 
@@ -31,15 +33,17 @@ function termCounts(text, term) {
 const fires = (rule, text) => rule.match.every((group) => group.some((term) => termCounts(text, term)));
 
 const byId = Object.fromEntries(rules.rules.map((r) => [r.id, r]));
-let pass = 0, fail = 0;
+let pass = 0, fail = 0, rows = 0;
 for (const line of md.split("\n")) {
   const m = line.match(/^\| (RF-[A-Z0-9-]+) \| (en|it|th) \| (fire|no) \| (.+) \|$/);
-  if (!m) { if (/^\| RF-[A-Z0-9-]+ \| (en|it|th) \|/.test(line)) { fail++; console.log("FAIL unparsed test row:", line); } continue; }
+  if (!m) { if (/^\| RF-[A-Z0-9-]+ \| (en|it|th) \|/.test(line)) { rows++; fail++; console.log("FAIL unparsed test row:", line); } continue; }
+  rows++;
   const [, id, lang, expect, text] = m;
   if (!byId[id]) { console.log(`FAIL unknown rule ${id}`); fail++; continue; }
   const got = fires(byId[id], norm(text)) ? "fire" : "no";
   if (got === expect) pass++;
   else { fail++; console.log(`FAIL ${id} ${lang} expected=${expect} got=${got} :: ${text}`); }
 }
+if (!rows) { fail++; console.log("FAIL 0 test rows found in REDFLAG-TESTS.md (table missing or unparseable)"); }
 console.log(`${pass} passed, ${fail} failed, ${rules.rules.length} rules`);
 process.exit(fail ? 1 : 0);

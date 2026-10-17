@@ -64,9 +64,22 @@ export interface TriageConfirmReq { reviewerId: string; level: 1 | 2 | 3 | 4 | 5
 export interface MedicationOrderReq { orderedBy: string; orderId?: string; drugText: string; dose: string; route: string; frequency: string; duration?: string }
 /** POST /api/sessions/:id/orders/medications/:orderId/submit — 409 unless every high alert has an override reason. */
 export interface SubmitOrderReq { orderedBy: string; overrides: { alertId: string; reason: string }[] }
-/** POST /api/sessions/:id/orders/medications/:orderId/pharmacy — pharmacist verifies or returns to the doctor with a note. */
-export interface PharmacyOrderActionReq { reviewerId: string; action: "verify" | "return"; note?: string }
-/** POST /api/sessions/:id/orders/medications/:orderId/cancel */
+/** POST /api/sessions/:id/orders/medications/:orderId/pharmacy — pharmacist 1 verifies, or returns to the doctor with a note + report.
+ * "return" requires note. alertIds must be ids of this order's checks; suggestedGenerics must be dictionary generics
+ * (max 5, deduped, not the ordered generic). The report { alertIds, suggestedGenerics } is stored only on "return";
+ * suggested generics are options for the prescriber's review, never auto-applied. */
+export interface PharmacyOrderActionReq { reviewerId: string; action: "verify" | "return"; note?: string; alertIds?: string[]; suggestedGenerics?: string[] }
+/** POST /api/sessions/:id/orders/medications/:orderId/dispense — pharmacist 2 picks the medicine and does the final double check.
+ * 409 unless the order is "verified"; 409 when reviewerId is the pharmacist who verified it (a second pharmacist is required);
+ * 400 unless every checklist value is true. Sets status "dispensed" + dispense record; audit "order_dispensed". */
+export interface DispenseOrderReq { reviewerId: string; checklist: import("./types").DispenseChecklist; note?: string }
+/** POST /api/sessions/:id/pickup — call the patient to collect, then record collection.
+ * "call": 409 unless at least one non-cancelled medication order exists and every non-cancelled one is "dispensed";
+ * may be repeated while "ready" (re-call, audited); not allowed after "collected". Audit "pickup_called".
+ * "collected": 409 unless pickup.status is "ready". Audit "pickup_collected".
+ * Submitting a medication order while pickup is "ready" removes pickup (patient sees "preparing" again). */
+export interface PickupReq { reviewerId: string; action: "call" | "collected"; counter?: string }
+/** POST /api/sessions/:id/orders/medications/:orderId/cancel — 409 for verified or dispensed orders. */
 export interface CancelOrderReq { orderedBy: string; reason?: string }
 /** POST /api/sessions/:id/orders/investigations */
 export interface InvestigationOrderReq { orderedBy: string; code: string; reason?: string; fromSuggestionId?: string }

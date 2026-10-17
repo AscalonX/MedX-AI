@@ -121,6 +121,17 @@ export function auditLine(e: AuditEvent, lang: Lang): string {
     case "pii_redacted": return tr("au_pii", lang);
     case "session_created": return tr("au_created", lang);
     case "turn_added": return tr("au_turn", lang);
+    // Pharmacy chain: status words only. Drug names, notes and report contents stay on the orders page.
+    case "order_submitted":
+      if (p.kind === "investigation") return tr("au_investigation", lang);
+      return `${tr("au_order_submitted", lang)}${p.pickupReset === true ? `, ${tr("au_pickup_reset", lang)}` : ""}`;
+    case "order_pharmacy_action": return p.action === "return" ? tr("au_returned", lang) : p.action === "verify" ? tr("au_verified", lang) : "";
+    case "order_dispensed": return tr("au_dispensed", lang);
+    case "order_cancelled": return tr("au_order_cancelled", lang);
+    // The engine records a cancellation as order_drafted with action "cancel"; plain drafts are not shown.
+    case "order_drafted": return p.action === "cancel" ? tr("au_order_cancelled", lang) : "";
+    case "pickup_called": return tr(p.recall === true ? "au_pickup_recalled" : "au_pickup_called", lang);
+    case "pickup_collected": return tr("au_pickup_collected", lang);
     default: return "";
   }
 }

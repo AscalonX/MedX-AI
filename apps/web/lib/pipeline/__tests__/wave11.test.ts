@@ -11,6 +11,7 @@ import { extractionPrompt, screenPrompt } from '../prompts';
 import type { ModelClient } from '../llm';
 import { chatJSON } from '../llm';
 import { consultRules } from './fixtures/consultRules';
+import { readLines } from './fixtures/text';
 import { GET } from '../../../app/api/sessions/[id]/consult/route';
 import { POST as postTurn } from '../../../app/api/sessions/[id]/consult/turns/route';
 import { POST as postSuggestion } from '../../../app/api/sessions/[id]/consult/suggestions/[suggestionId]/route';
@@ -90,9 +91,15 @@ describe('suggestion rules, ranking, modes, and status memory', () => {
     expect(validateConsultRules(loadConsultRules())).toBe(true);
   });
   const spec = path.resolve(process.cwd(), '../../docs/clinical/CONSULT-SPEC.md');
-  const cases = readFileSync(spec, 'utf8').split('\n').flatMap(line => {
+  // readLines normalises CRLF/BOM: on Windows checkouts the `$`-anchored selector silently matched 0 rows.
+  const specLines = readLines(spec);
+  const cases = specLines.flatMap(line => {
     const match = line.match(/^\| (CR-[A-Z]+-\d+) \| (en|it|th) \| (fire|no) \| (.+) \|$/);
     return match ? [{ ruleId: match[1], lang: match[2] as Lang, fires: match[3] === 'fire', text: match[4] }] : [];
+  });
+  it('parses every Doctor reference row in CONSULT-SPEC.md', () => {
+    expect(cases.length).toBeGreaterThan(0);
+    expect(cases).toHaveLength(specLines.filter(line => /^\| CR-/.test(line)).length);
   });
   it.each(cases)('Doctor reference $ruleId $lang $fires: $text', ({ ruleId, lang, fires, text }) => {
     const s = createSession(lang, { persist: false }); s.turns = [{ id: 'p', role: 'patient', text, lang, at: '' }];

@@ -1,4 +1,4 @@
-import type { IntakeSession, Lang, Localized } from "@medx/shared";
+import type { IntakeSession, Lang, Localized, MedAlert, MedRuleFile } from "@medx/shared";
 import medrules from "@medx/shared/src/medrules.json";
 
 export const RULE_COUNTS = { drugs: medrules.drugs.length, interactions: medrules.interactions.length };
@@ -104,6 +104,7 @@ export const T = {
   stSubmitted: L("Submitted, waiting for pharmacist", "ส่งแล้ว รอเภสัชกร", "Inviato, in attesa del farmacista"),
   stVerified: L("Verified by pharmacist", "เภสัชกรยืนยันแล้ว", "Verificato dal farmacista"),
   stReturned: L("Returned by pharmacist", "เภสัชกรส่งกลับ", "Restituito dal farmacista"),
+  stDispensed: L("Dispensed, second pharmacist checked", "จ่ายยาแล้ว เภสัชกรคนที่สองตรวจซ้ำ", "Dispensato, controllato dal secondo farmacista"),
   stCancelled: L("Cancelled", "ยกเลิกแล้ว", "Annullato"),
   pharmacistNote: L("Pharmacist note", "บันทึกจากเภสัชกร", "Nota del farmacista"),
   editResubmit: L("Edit prescription", "แก้ไขใบสั่งยา", "Modifica prescrizione"),
@@ -130,6 +131,50 @@ export const T = {
   tlVerified: L("Verified by", "ยืนยันโดย", "Verificato da"),
   tlCancelled: L("Cancelled by", "ยกเลิกโดย", "Annullato da"),
   failed: L("Request failed", "ดำเนินการไม่สำเร็จ", "Richiesta non riuscita"),
+  // pharmacist report, alternatives, dispense, pickup
+  pharmacistReport: L("Pharmacist report", "รายงานจากเภสัชกร", "Rapporto del farmacista"),
+  reportBy: L("Returned by {who}, {time}", "{who} ส่งกลับ เวลา {time}", "Restituito da {who}, {time}"),
+  flaggedChecks: L("Checks the pharmacist flagged", "ผลตรวจที่เภสัชกรระบุ", "Controlli segnalati dal farmacista"),
+  flaggedBadge: L("Flagged by pharmacist", "เภสัชกรระบุ", "Segnalato dal farmacista"),
+  flaggedGone: L("{n} flagged check no longer fires after the latest re-check.", "ผลตรวจที่เภสัชกรระบุ {n} รายการไม่ปรากฏแล้วหลังการตรวจซ้ำล่าสุด", "{n} controllo segnalato non si attiva più dopo l'ultimo ricontrollo."),
+  suggestedAlts: L("Suggested alternatives (for your review)", "ยาทางเลือกที่เสนอ (ให้แพทย์พิจารณา)", "Alternative suggerite (da valutare)"),
+  suggestedAltsNote: L(
+    "Options from the pharmacist for the prescriber to review, not a prescription. Choosing one opens the edit form: you set dose, route and frequency, the checks run again, and you submit again.",
+    "ตัวเลือกจากเภสัชกรให้แพทย์ผู้สั่งยาพิจารณา ไม่ใช่คำสั่งใช้ยา เมื่อเลือกจะเปิดแบบฟอร์มแก้ไข แพทย์กำหนดขนาดยา ทางให้ยา และความถี่เอง ระบบตรวจสอบซ้ำ แล้วแพทย์ส่งใหม่อีกครั้ง",
+    "Opzioni del farmacista da valutare dal prescrittore, non una prescrizione. Sceglierne una apre il modulo di modifica: imposti dose, via e frequenza, i controlli vengono rifatti e invii di nuovo.",
+  ),
+  optionsToReview: L("Options to review", "ตัวเลือกให้พิจารณา", "Opzioni da valutare"),
+  optionsNote: L(
+    "From the MedX rule set, already run through this patient's allergy, medicine and pregnancy checks. For prescriber review, not a prescription. Nothing changes until you edit and re-check.",
+    "จากชุดกฎ MedX และผ่านการตรวจแพ้ยา ยาที่ใช้อยู่ และการตั้งครรภ์ของผู้ป่วยรายนี้แล้ว สำหรับแพทย์ผู้สั่งยาพิจารณา ไม่ใช่คำสั่งใช้ยา ไม่มีอะไรเปลี่ยนจนกว่าแพทย์จะแก้ไขและตรวจซ้ำ",
+    "Dal set di regole MedX, già passate nei controlli di allergie, farmaci e gravidanza di questo paziente. Da valutare dal prescrittore, non una prescrizione. Nulla cambia finché non modifichi e ricontrolli.",
+  ),
+  useAlt: L("Edit with {drug}", "แก้ไขเป็น {drug}", "Modifica con {drug}"),
+  altSource: L("Source", "แหล่งอ้างอิง", "Fonte"),
+  switchHint: L(
+    "Option under review: {drug}. Dose and frequency are cleared: set them for {drug}, press Update and re-check, then submit again.",
+    "ตัวเลือกที่กำลังพิจารณา: {drug} ล้างขนาดยาและความถี่แล้ว กำหนดใหม่สำหรับ {drug} กดแก้ไขและตรวจอีกครั้ง แล้วส่งใหม่",
+    "Opzione in valutazione: {drug}. Dose e frequenza sono state svuotate: impostale per {drug}, premi Aggiorna e ricontrolla, poi invia di nuovo.",
+  ),
+  previousRx: L("Previous", "เดิม", "Precedente"),
+  verifiedLine: L("Verified by {who}, {time}", "{who} ตรวจสอบใบสั่งยาแล้ว เวลา {time}", "Verificato da {who}, {time}"),
+  dispensedLine: L("Dispensed by {who}, {time}", "{who} จ่ายยา เวลา {time}", "Dispensato da {who}, {time}"),
+  dispenseChecked: L("Final double check: right patient, drug, dose and route; allergy rechecked; labelled.", "ตรวจซ้ำขั้นสุดท้าย: ถูกคน ถูกยา ถูกขนาด ถูกทาง ตรวจแพ้ยาซ้ำ และติดฉลากแล้ว", "Doppio controllo finale: paziente, farmaco, dose e via corretti; allergie ricontrollate; etichettato."),
+  noCancelLocked: L("Verified and dispensed orders cannot be cancelled here. Contact the pharmacy.", "คำสั่งที่เภสัชกรตรวจสอบหรือจ่ายยาแล้วยกเลิกจากหน้านี้ไม่ได้ โปรดติดต่อห้องยา", "Gli ordini verificati o dispensati non si annullano da qui. Contatta la farmacia."),
+  pickupTitle: L("Medicine pickup", "การรับยา", "Ritiro farmaci"),
+  pickupReady: L("Ready, patient called to counter {counter}", "พร้อมแล้ว เรียกผู้ป่วยรับยาที่ช่อง {counter}", "Pronto, paziente chiamato allo sportello {counter}"),
+  pickupReadyNoCounter: L("Ready, patient called to collect", "พร้อมแล้ว เรียกผู้ป่วยรับยา", "Pronto, paziente chiamato al ritiro"),
+  pickupCalledBy: L("Called by {who}, {time}", "เรียกโดย {who} เวลา {time}", "Chiamato da {who}, {time}"),
+  pickupCollected: L("Medicines collected", "ผู้ป่วยรับยาแล้ว", "Farmaci ritirati"),
+  pickupHandedBy: L("Handed over by {who}, {time}", "ส่งมอบโดย {who} เวลา {time}", "Consegnati da {who}, {time}"),
+  pickupPreparing: L("Being prepared: {n} of {total} dispensed", "ห้องยากำลังจัดยา จ่ายแล้ว {n} จาก {total} รายการ", "In preparazione: {n} di {total} dispensati"),
+  tlDispensed: L("Dispensed by", "จ่ายยาโดย", "Dispensato da"),
+  tlPickupCalled: L("Patient called to collect by", "เรียกผู้ป่วยรับยาโดย", "Paziente chiamato al ritiro da"),
+  tlPickupRecalled: L("Patient called again by", "เรียกผู้ป่วยรับยาซ้ำโดย", "Paziente richiamato da"),
+  tlPickupCollected: L("Collected, handed over by", "รับยาแล้ว ส่งมอบโดย", "Ritirato, consegnato da"),
+  tlPickupReset: L("pickup reset, medicines being prepared again", "ยกเลิกการเรียกรับยา กำลังจัดยาใหม่", "ritiro annullato, farmaci di nuovo in preparazione"),
+  tlCounter: L("counter {counter}", "ช่อง {counter}", "sportello {counter}"),
+  tlSuggested: L("suggested for review: {drugs}", "เสนอให้พิจารณา: {drugs}", "suggeriti da valutare: {drugs}"),
 } satisfies Record<string, Localized>;
 export type TKey = keyof typeof T;
 export const tr = (k: TKey, lang: Lang, vars?: Record<string, string | number>) =>
@@ -155,6 +200,25 @@ export async function call<T>(url: string, body: unknown | undefined, fixture: (
   }
   return { data: json as T, fixture: false };
 }
+
+const RULES = medrules as unknown as MedRuleFile;
+// Same matching as the engine's lookup (lower-case NFC substring, longest name wins). UI convenience only:
+// the server re-resolves drugText and reruns every check on "Update and re-check".
+const medNorm = (t: string) => " " + t.normalize("NFC").toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, " ").trim() + " ";
+function genericOf(text: string): string | null {
+  const t = medNorm(text); let best: string | null = null; let len = 0;
+  for (const d of RULES.drugs) for (const n of d.names) if (n.length > len && t.includes(n.normalize("NFC"))) { best = d.generic; len = n.length; }
+  return best;
+}
+/** Text to pre-fill the drug field with so the dictionary resolves it to `generic` (combinations resolve by product name). */
+export function drugTextFor(generic: string): string {
+  if (genericOf(generic) === generic) return generic;
+  const d = RULES.drugs.find((x) => x.generic === generic);
+  return d?.names.map((n) => n.trim()).find((n) => /[a-z]/i.test(n) && genericOf(n) === generic) ?? generic;
+}
+/** Curated notes behind an alert's alternatives (same table the engine reads), for prescriber context. */
+export const alternativeNotes = (kind: MedAlert["kind"], drugClass: string | null) =>
+  drugClass ? (RULES.alternatives ?? []).filter((e) => e.kinds.includes(kind) && e.drugClasses.includes(drugClass)) : [];
 
 /** Routes return either the session or { session }. */
 export const asSession = (b: unknown): IntakeSession => ((b as { session?: IntakeSession }).session ?? b) as IntakeSession;

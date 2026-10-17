@@ -1,11 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { AuditEvent, IntakeSession, Lang, PharmacyReviewReq } from "@medx/shared";
+import type { AuditEvent, AuditType, DispenseChecklist, DispenseOrderReq, IntakeSession, Lang, PharmacistReport, PharmacyOrderActionReq, PharmacyReviewReq, PickupReq } from "@medx/shared";
 import { AppShell, Badge, Icon, type ShellRole } from "@/components/ui";
 import { FIXTURES } from "./_fixtures";
 import { ROLE_STORAGE_KEY, reviewerStorageKey } from "@medx/shared";
-import { C as CH, L, PHARMACISTS, setDisplayLang, applyReview, fetchQueue, hasMedData, hasOrders, openFlags, openHigh, post, sortQueue } from "./_lib";
+import { C as CH, L, PHARMACISTS, setDisplayLang, applyDispense, applyOrderAction, applyPickup, applyReview, fetchQueue, hasMedData, hasOrders, openFlags, openHigh, post, sortQueue } from "./_lib";
 
 export interface Entry { session: IntakeSession; fixture: boolean }
 type Submit = (id: string, body: Omit<PharmacyReviewReq, "reviewerId">) => Promise<void>;
@@ -18,11 +18,19 @@ interface Ctx {
   error: string | null;
   refresh: () => void;
   submit: Submit;
-  submitOrder: (sessionId: string, orderId: string, action: "verify" | "return", note?: string) => Promise<void>;
+  /** Pharmacist 1: verify, or return to the prescriber with a note and an optional report. */
+  submitOrder: (sessionId: string, orderId: string, action: "verify" | "return", note?: string, report?: PharmacistReport) => Promise<void>;
+  /** Pharmacist 2: final check and dispense. The server refuses the pharmacist who verified the order. */
+  dispense: (sessionId: string, orderId: string, checklist: DispenseChecklist, note?: string) => Promise<void>;
+  /** Call the patient to a counter, or record that the medicines were collected. */
+  pickup: (sessionId: string, action: PickupReq["action"], counter?: string) => Promise<void>;
   /** Locally recorded audit events for fixture sessions. */
   fixtureAudit: Record<string, AuditEvent[]>;
 }
 const C = createContext<Ctx | null>(null);
+/** Exposed for render harnesses that provide the context without the Next router. */
+export const PharmacyContext = C;
+export type PharmacyCtx = Ctx;
 export const usePharmacy = () => {
   const c = useContext(C);
   if (!c) throw new Error("usePharmacy outside Shell");
@@ -115,22 +123,52 @@ export function Shell({ children }: { children: ReactNode }) {
 
   setDisplayLang(lang);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
-  const submitOrder = useCallback<Ctx["submitOrder"]>(async (sessionId, orderId, action, note) => {
-    const at = new Date().toISOString();
-    if (fixturesRef.current.some((x) => x.id === sessionId)) {
-      setFixtures((cur) => cur.map((x) => x.id !== sessionId || !x.orders ? x : { ...x, orders: { ...x.orders, medications: x.orders.medications.map((o) => o.id !== orderId ? o : { ...o, status: action === "verify" ? "verified" as const : "returned" as const, pharmacist: { action, by: reviewer, at, ...(note ? { note } : {}) } }) } }));
+  /**
+   * One write path for every order and pickup action. Fixture sessions apply the same rules locally (throwing the
+   * server's message on refusal) and record a local audit event; live sessions POST and take the returned session.
+   */
+  const mutate = useCallback(async (
+    sessionId: string, url: string, body: unknown, local: (s: IntakeSession, at: string) => IntakeSession, audit: { type: AuditType; payload: Record<string, unknown> },
+  ) => {
+    const fx = fixturesRef.current.find((x) => x.id === sessionId);
+    if (fx) {
+      const at = new Date().toISOString();
+      const next = local(fx, at); // throws with the server's wording when the rule refuses
+      fixturesRef.current = fixturesRef.current.map((x) => (x.id === sessionId ? next : x));
+      setFixtures(fixturesRef.current);
+      setFixtureAudit((cur) => ({ ...cur, [sessionId]: [...(cur[sessionId] ?? []), { id: `${sessionId}-${audit.type}-${at}`, sessionId, at, actor: "clinician", actorId: reviewer, type: audit.type, payload: audit.payload }] }));
       return;
     }
     mutating.current++; gen.current++;
     let failed = false;
     try {
-      const res = await post<IntakeSession | unknown>(`/api/sessions/${sessionId}/orders/medications/${orderId}/pharmacy`, { reviewerId: reviewer, action, ...(note ? { note } : {}) });
-      const updated = res as IntakeSession;
-      if (updated && updated.id === sessionId) setLive((cur) => (cur ? cur.map((x) => (x.id === sessionId ? updated : x)) : cur));
+      const res = await post<unknown>(url, body);
+      const updated = res as IntakeSession | null;
+      if (updated && typeof updated === "object" && updated.id === sessionId) setLive((cur) => (cur ? cur.map((x) => (x.id === sessionId ? updated : x)) : cur));
       else failed = true; // unknown response shape: reload
     } catch (e) { failed = true; throw e; }
     finally { mutating.current--; gen.current++; if (failed) refresh(); }
   }, [reviewer, refresh]);
+
+  const submitOrder = useCallback<Ctx["submitOrder"]>((sessionId, orderId, action, note, report) => {
+    // The report travels only with a return; verify sends no alert ids or suggestions.
+    const req: PharmacyOrderActionReq = { reviewerId: reviewer, action, ...(note ? { note } : {}), ...(action === "return" && report ? { alertIds: report.alertIds, suggestedGenerics: report.suggestedGenerics } : {}) };
+    return mutate(sessionId, `/api/sessions/${sessionId}/orders/medications/${orderId}/pharmacy`, req,
+      (s, at) => applyOrderAction(s, orderId, req, at), { type: "order_pharmacy_action", payload: { orderId, ...req } });
+  }, [reviewer, mutate]);
+
+  const dispense = useCallback<Ctx["dispense"]>((sessionId, orderId, checklist, note) => {
+    const req: DispenseOrderReq = { reviewerId: reviewer, checklist, ...(note ? { note } : {}) };
+    return mutate(sessionId, `/api/sessions/${sessionId}/orders/medications/${orderId}/dispense`, req,
+      (s, at) => applyDispense(s, orderId, req, at), { type: "order_dispensed", payload: { orderId, ...req } });
+  }, [reviewer, mutate]);
+
+  const pickup = useCallback<Ctx["pickup"]>((sessionId, action, counter) => {
+    const req: PickupReq = { reviewerId: reviewer, action, ...(action === "call" && counter ? { counter } : {}) };
+    const recall = fixturesRef.current.find((x) => x.id === sessionId)?.pickup?.status === "ready";
+    return mutate(sessionId, `/api/sessions/${sessionId}/pickup`, req,
+      (s, at) => applyPickup(s, req, at), { type: action === "call" ? "pickup_called" : "pickup_collected", payload: { ...req, ...(action === "call" ? { recall } : {}) } });
+  }, [reviewer, mutate]);
 
   const usingFixtures = entries?.some((e) => e.fixture) ?? false;
   const urgent = (entries ?? []).reduce((n, e) => n + openHigh(e.session).length + openFlags(e.session).length, 0);
@@ -140,7 +178,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const switchRole = (r: ShellRole) => { store.set(ROLE_STORAGE_KEY, r); if (r === "ops") router.push("/ops"); else if (r !== "pharmacist") router.push("/review"); };
 
   return (
-    <C.Provider value={{ lang, setLang, reviewer, setReviewer, now, entries, error, refresh, submit, submitOrder, fixtureAudit }}>
+    <C.Provider value={{ lang, setLang, reviewer, setReviewer, now, entries, error, refresh, submit, submitOrder, dispense, pickup, fixtureAudit }}>
       <AppShell
         role="pharmacist"
         onRoleChange={switchRole}

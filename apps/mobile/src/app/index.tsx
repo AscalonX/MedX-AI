@@ -2,7 +2,7 @@ import { color, space } from "@medx/shared";
 import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
-import { createSession } from "@/api";
+import { createSession, pickupPending } from "@/api";
 import { LogoLockup } from "@/components/logo";
 import { Mascot } from "@/components/mascot";
 import { Card, GradientHero, Page, Pill, Segmented, T } from "@/components/ui";
@@ -14,8 +14,8 @@ export default function Home() {
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const s = STR[lang];
-  // The visit language is fixed while a session is active; a finished visit unlocks it.
-  const locked = !!session && session.status !== "approved" && session.status !== "taken_over";
+  // The visit language is fixed while a session is active; a finished visit unlocks it (not while medicine is still on its way).
+  const locked = !!session && (pickupPending(session) || (session.status !== "approved" && session.status !== "taken_over"));
 
   async function start() {
     setFailed(false); setBusy(true); reset();

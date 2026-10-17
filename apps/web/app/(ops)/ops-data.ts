@@ -67,6 +67,20 @@ export function waitingSeconds(session: IntakeSession, now: number): number | nu
   return Math.max(0, Math.floor((now - Date.parse(session.createdAt)) / 1000));
 }
 
+export const pharmacyStages = ["toVerify", "toDispense", "readyForPickup", "collectedToday"] as const;
+export type PharmacyStage = typeof pharmacyStages[number];
+
+export interface PickupRow { id: string; code: string; calledAt: string; counter?: string }
+/** Patients called to the pharmacy counter and not yet collected, longest wait first. Status only: no drug names, staff ids or notes. */
+export function readyForPickup(sessions: IntakeSession[]): PickupRow[] {
+  return sessions.flatMap(s => {
+    const p: unknown = s.pickup;
+    if (!object(p) || p.status !== "ready" || !timestamp(p.calledAt)) return [];
+    const counter = text(p.counter) && p.counter.trim() ? p.counter.trim() : undefined;
+    return [{ id: s.id, code: s.code, calledAt: p.calledAt as string, ...(counter ? { counter } : {}) }];
+  }).sort((a, b) => Date.parse(a.calledAt) - Date.parse(b.calledAt) || a.code.localeCompare(b.code));
+}
+
 export type RecordedCall = ModelCall & { sessionId: string; code: string; index: number };
 export function recordedCalls(sessions: IntakeSession[]): RecordedCall[] {
   return sessions.flatMap(s => (s.summary?.modelCalls ?? []).map((call, index) => ({ ...call, sessionId: s.id, code: s.code, index })));
@@ -104,5 +118,7 @@ export function isMetrics(value: unknown): value is OpsMetrics {
     && object(value.byStatus) && statusOrder.every(k => integer((value.byStatus as Record<string, unknown>)[k]))
     && nullableNumber(value.medianReviewSeconds) && object(value.modelLatencyMs)
     && nullableNumber(value.modelLatencyMs.p50) && nullableNumber(value.modelLatencyMs.p95)
-    && object(value.provider) && ["name", "model", "hardware"].every(k => text((value.provider as Record<string, unknown>)[k]));
+    && object(value.provider) && ["name", "model", "hardware"].every(k => text((value.provider as Record<string, unknown>)[k]))
+    // Optional block: absent means "not reported" (shown as no measurement), never a row of zeros.
+    && (value.pharmacy === undefined || (object(value.pharmacy) && pharmacyStages.every(k => integer((value.pharmacy as Record<string, unknown>)[k]))));
 }

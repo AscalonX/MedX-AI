@@ -1,7 +1,8 @@
-import { staffFor } from "@medx/shared";
+import { STAFF, staffFor } from "@medx/shared";
+import medrules from "@medx/shared/src/medrules.json";
 import type {
   MedicationOrder, AllergyEntry, AuditEvent, Evidence, RedFlagHit, GetSessionRes, IntakeSession, Lang, Localized, MedAlert, MedAlertKind, MedicationEntry,
-  PharmacyReviewReq,
+  PharmacyReviewReq, PharmacyOrderActionReq, DispenseChecklist, DispenseOrderReq, PickupReq,
 } from "@medx/shared";
 
 export const LANG_OPTIONS: { lang: Lang; label: string }[] = [
@@ -236,10 +237,25 @@ const AUD = {
     abstained: L("ระบบไม่สามารถสรุปได้ ต้องให้บุคลากรตรวจ", "Il sistema si è astenuto: serve revisione umana", "System abstained: needs human review"),
     red_flag_review: L("แพทย์/พยาบาลทบทวนสัญญาณอันตราย", "Revisione clinica del segnale d'allarme", "Clinician reviewed red flag"),
     takeover: L("แพทย์/พยาบาลรับช่วงต่อการรับข้อมูล", "Un clinico ha preso in carico l'accesso", "Clinician took over the intake"),
+    order_drafted: L("แพทย์บันทึกร่างใบสั่งยา", "Il prescrittore ha salvato una bozza", "Prescriber saved a draft order"),
+    order_submitted: L("แพทย์ส่งใบสั่งยาไปห้องยา", "Il prescrittore ha inviato l'ordine alla farmacia", "Prescriber sent the order to pharmacy"),
+    order_cancelled: L("ยกเลิกใบสั่งยา", "Ordine annullato", "Order cancelled"),
+    order_dispensed: L("เภสัชกรคนที่สองตรวจขั้นสุดท้ายและจ่ายยาแล้ว", "Il secondo farmacista ha fatto il controllo finale e dispensato", "Second pharmacist did the final check and dispensed"),
+    pickup_collected: L("ผู้ป่วยรับยาแล้ว", "Farmaci ritirati dal paziente", "Patient collected the medicines"),
   } as Record<string, Localized>,
+  verifiedOrder: L("เภสัชกรคนแรกตรวจสอบใบสั่งยาแล้ว", "Il primo farmacista ha verificato l'ordine", "First pharmacist verified the order"),
+  returnedOrder: L("เภสัชกรคนแรกส่งใบสั่งยากลับแพทย์พร้อมรายงาน", "Il primo farmacista ha restituito l'ordine con un rapporto", "First pharmacist returned the order with a report"),
+  called: (counter?: string, recall?: boolean) => L(
+    `${recall ? "เรียกผู้ป่วยซ้ำ" : "เรียกผู้ป่วยรับยา"}${counter ? ` ที่ช่อง ${counter}` : ""}`,
+    `${recall ? "Paziente richiamato" : "Paziente chiamato al ritiro"}${counter ? `, sportello ${counter}` : ""}`,
+    `${recall ? "Patient called again" : "Patient called to collect"}${counter ? `, counter ${counter}` : ""}`,
+  ),
 };
 export function auditLine(e: AuditEvent, lang: Lang): string {
-  const p = e.payload as { allergyActions?: { action: string }[]; medActions?: { action: string }[]; alertActions?: { action: string }[]; complete?: boolean };
+  const p = e.payload as { allergyActions?: { action: string }[]; medActions?: { action: string }[]; alertActions?: { action: string }[]; complete?: boolean; action?: string; counter?: string; recall?: boolean };
+  if (e.type === "order_pharmacy_action") return (p.action === "return" ? AUD.returnedOrder : AUD.verifiedOrder)[lang];
+  if (e.type === "pickup_called") return AUD.called(typeof p.counter === "string" ? p.counter : undefined, p.recall === true)[lang];
+  if (e.type === "order_drafted" && p.action === "cancel") return AUD.events.order_cancelled[lang]; // the engine records a cancel as order_drafted + action
   if (e.type === "pharmacy_review") {
     const parts = [
       ...(p.medActions ?? []).map((a) => (AUD.med as Record<string, Localized>)[a.action]?.[lang] ?? a.action),
@@ -396,3 +412,106 @@ export function orderBlock(o: MedicationOrder): string | null {
   return n ? `${n} high ${n === 1 ? "alert has" : "alerts have"} no prescriber override. Return the order to the prescriber with a note.` : null;
 }
 export const orderTitle = (o: MedicationOrder) => `${o.generic ?? o.drugText} ${o.dose}`;
+
+// ---------- two-stage pharmacy: verify (pharmacist 1), dispense (pharmacist 2), pickup ----------
+/** Non-cancelled orders. Drafts and returned orders count: the engine calls the patient only when every one is dispensed. */
+export const activeOrders = (s: IntakeSession) => ordersOf(s).filter((o) => o.status !== "cancelled");
+export const verifiedOrders = (s: IntakeSession) => ordersOf(s).filter((o) => o.status === "verified");
+/** Mirrors the engine's call rule: at least one active order, every one dispensed, never after collection. */
+export function canCall(s: IntakeSession) {
+  const a = activeOrders(s);
+  return a.length > 0 && a.every((o) => o.status === "dispensed") && s.pickup?.status !== "collected";
+}
+
+export type Stage = "verify" | "dispense" | "call" | "ready" | "collected";
+export const STAGES: Stage[] = ["verify", "dispense", "call", "ready", "collected"];
+export const STAGE_LABEL: Record<Stage, Localized> = {
+  verify: L("รอตรวจใบสั่งยา", "Da verificare", "To verify"),
+  dispense: L("รอจัดและจ่ายยา", "Da dispensare", "To dispense"),
+  call: L("รอเรียกผู้ป่วย", "Da chiamare", "To call"),
+  ready: L("พร้อมให้รับยา", "Pronti per il ritiro", "Ready for pickup"),
+  collected: L("รับยาแล้ววันนี้", "Ritirati oggi", "Collected today"),
+};
+const sameDay = (iso: string | undefined, now: number) => !!iso && now > 0 && new Date(iso).toDateString() === new Date(now).toDateString();
+/** Queue rows per stage. Verify and dispense are per order (one patient can have both); the pickup stages are per patient. */
+export function stageRows<E extends { session: IntakeSession }>(entries: E[], now: number) {
+  const orderRows = (pick: (s: IntakeSession) => MedicationOrder[]) => entries.flatMap((e) => pick(e.session).map((o) => ({ ...e, o })));
+  const highFirst = (a: { o: MedicationOrder }, b: { o: MedicationOrder }) =>
+    Number(b.o.checks.some((c) => c.severity === "high")) - Number(a.o.checks.some((c) => c.severity === "high")) || a.o.at.localeCompare(b.o.at);
+  return {
+    verify: orderRows(pendingOrders).sort(highFirst),
+    dispense: orderRows(verifiedOrders).sort((a, b) => (a.o.pharmacist?.at ?? a.o.at).localeCompare(b.o.pharmacist?.at ?? b.o.at)),
+    call: entries.filter((e) => canCall(e.session) && !e.session.pickup),
+    ready: entries.filter((e) => e.session.pickup?.status === "ready").sort((a, b) => a.session.pickup!.calledAt.localeCompare(b.session.pickup!.calledAt)),
+    collected: entries.filter((e) => e.session.pickup?.status === "collected" && sameDay(e.session.pickup.collectedAt, now)),
+  };
+}
+
+// Same person: the engine compares staff id and display name as one identity (case-insensitive).
+const norm = (v: string) => v.normalize("NFC").trim().toLowerCase().replace(/\s+/g, " ");
+const personKey = (v: string) => { const n = norm(v); return STAFF.find((m) => norm(m.id) === n || norm(m.name) === n)?.id ?? n; };
+export const samePerson = (a?: string | null, b?: string | null) => !!a && !!b && personKey(a) === personKey(b);
+
+export const CHECKLIST_KEYS: (keyof DispenseChecklist)[] = ["rightPatient", "rightDrug", "rightDose", "rightRoute", "allergyRechecked", "labelled"];
+
+// ---------- curated alternatives (medrules.alternatives): options for prescriber review, never a prescription ----------
+interface AltEntry { id: string; kinds: string[]; drugClasses: string[]; consider: string[]; note: Localized; source: string }
+const ALT_TABLE: AltEntry[] = ((medrules as { alternatives?: AltEntry[] }).alternatives ?? []);
+/** The curated entries behind an alert's options (same match as the engine), so the UI can show their note and source. */
+export function alternativeEntries(o: MedicationOrder, a: MedAlert): AltEntry[] {
+  const options = a.alternatives ?? [];
+  if (!options.length || !o.drugClass) return [];
+  return ALT_TABLE.filter((e) => e.kinds.includes(a.kind) && e.drugClasses.includes(o.drugClass!) && e.consider.some((g) => options.includes(g)));
+}
+/** Specific dictionary generics a pharmacist may name in a report (no "(unspecified)" placeholders). */
+export const DICTIONARY_GENERICS: string[] = [...new Set(medrules.drugs.map((d) => d.generic))].filter((g) => !g.endsWith("(unspecified)")).sort();
+export const toDictionaryGeneric = (v: string) => { const n = v.normalize("NFC").trim().toLowerCase(); return DICTIONARY_GENERICS.includes(n) ? n : null; };
+export const sameGeneric = (a?: string | null, b?: string | null) => !!a && !!b && a.trim().toLowerCase() === b.trim().toLowerCase();
+
+// ---------- local application of order actions (fixture sessions only; live sessions use the server) ----------
+// Each mirrors the engine rule and message (lib/pipeline/orders.ts), so the demo refuses what the server refuses.
+const refuse = (msg: string): never => { throw new Error(msg); };
+function withOrder(s: IntakeSession, orderId: string, change: (o: MedicationOrder) => MedicationOrder, at: string): IntakeSession {
+  const meds = s.orders?.medications ?? [];
+  if (!meds.some((o) => o.id === orderId)) refuse("Order not found");
+  return { ...s, orders: { investigations: s.orders?.investigations ?? [], medications: meds.map((o) => (o.id === orderId ? change(o) : o)) }, updatedAt: at };
+}
+export function applyOrderAction(s: IntakeSession, orderId: string, req: PharmacyOrderActionReq, at: string): IntakeSession {
+  const note = req.note?.trim();
+  if (req.action === "return" && !note) refuse("Return requires a note");
+  const generics = [...new Set((req.suggestedGenerics ?? []).map((g) => toDictionaryGeneric(g) ?? refuse("Suggested generic is not in the drug dictionary")))];
+  if (generics.length > 5) refuse("At most five suggested generics");
+  const alertIds = [...new Set(req.alertIds ?? [])];
+  return withOrder(s, orderId, (o) => {
+    if (o.status !== "submitted") refuse("Only submitted orders can be reviewed by pharmacy");
+    if (alertIds.some((a) => !o.checks.some((c) => c.id === a))) refuse("Unknown alert for this order");
+    if (generics.some((g) => sameGeneric(g, o.generic))) refuse("Suggested generic is the ordered drug");
+    if (req.action === "verify" && openHighChecks(o).length) refuse("Every high alert requires an override reason");
+    return {
+      ...o,
+      status: req.action === "verify" ? "verified" : "returned",
+      pharmacist: { action: req.action, by: req.reviewerId, at, ...(note ? { note } : {}), ...(req.action === "return" ? { report: { alertIds, suggestedGenerics: generics } } : {}) },
+    };
+  }, at);
+}
+export function applyDispense(s: IntakeSession, orderId: string, req: DispenseOrderReq, at: string): IntakeSession {
+  if (CHECKLIST_KEYS.some((k) => req.checklist[k] !== true)) refuse("Every dispense checklist item must be confirmed");
+  const note = req.note?.trim();
+  return withOrder(s, orderId, (o) => {
+    if (o.status !== "verified") refuse("Only verified orders can be dispensed");
+    if (!o.pharmacist || samePerson(o.pharmacist.by, req.reviewerId)) refuse("A second pharmacist must dispense: the pharmacist who verified this order cannot also dispense it");
+    return { ...o, status: "dispensed", dispense: { by: req.reviewerId, at, checklist: { ...req.checklist }, ...(note ? { note } : {}) } };
+  }, at);
+}
+export function applyPickup(s: IntakeSession, req: PickupReq, at: string): IntakeSession {
+  if (req.action === "call") {
+    if (s.pickup?.status === "collected") refuse("Medicines already collected");
+    const active = activeOrders(s);
+    if (!active.length) refuse("No medication orders to collect");
+    if (active.some((o) => o.status !== "dispensed")) refuse("Every active medication order must be dispensed before calling the patient");
+    const where = req.counter?.trim() || (s.pickup?.status === "ready" ? s.pickup.counter : undefined);
+    return { ...s, pickup: { status: "ready", ...(where ? { counter: where } : {}), calledBy: req.reviewerId, calledAt: at }, updatedAt: at };
+  }
+  if (s.pickup?.status !== "ready") refuse("Patient has not been called for pickup");
+  return { ...s, pickup: { ...s.pickup!, status: "collected", collectedBy: req.reviewerId, collectedAt: at }, updatedAt: at };
+}

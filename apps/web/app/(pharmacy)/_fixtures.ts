@@ -154,23 +154,64 @@ const fx5 = session({
   }],
 });
 
-// ---- doctor medication orders (submitted, with deterministic checks) ----
+// ---- doctor medication orders (with deterministic checks). Generic and class use the dictionary spelling, as the engine does. ----
 const ord = (id: string, drugText: string, generic: string, drugClass: string, dose: string, frequency: string, duration: string, checks: MedAlert[], overrides: MedicationOrder["overrides"], minAgo: number): MedicationOrder =>
   ({ id, drugText, generic, drugClass, dose, route: "oral", frequency, duration, orderedBy: DOCTOR, at: iso(minAgo), status: "submitted", checks, overrides });
-const chk = (id: string, kind: MedAlert["kind"], severity: MedAlert["severity"], en: string, act: string, src: string): MedAlert =>
-  ({ id, ruleId: `MR-${kind.toUpperCase().slice(0, 6)}-O`, kind, severity, medIds: [], allergyIds: [], evidence: [], source: src, message: L(en, en, en), action: L(act, act, act) });
+const chk = (id: string, kind: MedAlert["kind"], severity: MedAlert["severity"], en: string, act: string, src: string, alternatives?: string[]): MedAlert =>
+  ({ id, ruleId: `MR-${kind.toUpperCase().slice(0, 6)}-O`, kind, severity, medIds: [], allergyIds: [], evidence: [], source: src, message: L(en, en, en), action: L(act, act, act), ...(alternatives ? { alternatives } : {}) });
 fx1.orders = { investigations: [], medications: [
-  ord("fx1-o1", "Paracetamol 1000 mg", "Paracetamol", "analgesic_antipyretic", "1000 mg", "every 6 hours", "3 days",
+  ord("fx1-o1", "Paracetamol 1000 mg", "paracetamol", "paracetamol", "1000 mg", "every 6 hours", "3 days",
     [chk("fx1-o1-c1", "max_dose_risk", "moderate", "With the 1500 mg already taken today, the daily paracetamol total would reach 5500 mg.", "Confirm the time of the last dose and the daily total before dispensing.", "Paracetamol labelling, adult maximum 4 g per day")], [], 4)] };
+// Penicillin allergy: the curated table (ALT-BETALACTAM-ALLERGY) lists clarithromycin and doxycycline; both pass this patient's checks.
 fx2.orders = { investigations: [], medications: [
-  ord("fx2-o1", "Amoxicillin 500 mg", "Amoxicillin", "aminopenicillin", "500 mg", "every 8 hours", "5 days",
-    [chk("fx2-o1-c1", "allergy_conflict", "high", "The patient states a penicillin allergy; amoxicillin is a penicillin.", "Return to the prescriber to confirm the plan.", "Aminopenicillins are contraindicated in penicillin allergy")], [], 6)] };
+  ord("fx2-o1", "Amoxicillin 500 mg", "amoxicillin", "penicillin", "500 mg", "every 8 hours", "5 days",
+    [chk("fx2-o1-c1", "allergy_conflict", "high", "The patient states a penicillin allergy; amoxicillin is a penicillin.", "Return to the prescriber to confirm the plan.", "Aminopenicillins are contraindicated in penicillin allergy", ["clarithromycin", "doxycycline"])], [], 6)] };
+// Allergy status is unsupported here, so the engine lists no alternatives (fail-safe): none are shown.
 fx3.orders = { investigations: [], medications: [
-  ord("fx3-o1", "Diclofenac 50 mg", "Diclofenac", "nsaid", "50 mg", "every 8 hours", "5 days",
+  ord("fx3-o1", "Diclofenac 50 mg", "diclofenac", "nsaid", "50 mg", "every 8 hours", "5 days",
     [chk("fx3-o1-c1", "interaction", "high", "Diclofenac with warfarin raises the risk of bleeding.", "Check the plan with the prescriber.", "NSAID with warfarin: increased bleeding risk"),
      chk("fx3-o1-c2", "dose_range", "moderate", "150 mg per day is at the upper end of the usual range.", "Confirm the duration.", "Dictionary daily range")],
     [{ alertId: "fx3-o1-c1", reason: "INR checked this morning (2.4); short course with gastric protection; patient counselled.", by: DOCTOR, at: iso(5) }], 5),
-  ord("fx3-o2", "Naproxen 500 mg", "Naproxen", "nsaid", "500 mg", "twice daily", "7 days",
+  ord("fx3-o2", "Naproxen 500 mg", "naproxen", "nsaid", "500 mg", "twice daily", "7 days",
     [chk("fx3-o2-c1", "interaction", "high", "Naproxen with warfarin raises the risk of bleeding.", "Return to the prescriber to confirm the plan.", "NSAID with warfarin: increased bleeding risk")], [], 3)] };
 
-export const FIXTURES: IntakeSession[] = [fx1, fx2, fx3, fx4, fx5];
+// ---- 6. Verified by pharmacist 1, waiting for a second pharmacist to pick and check ----
+const [P1, P2] = staffFor("pharmacist").map((m) => m.name);
+const t6 = turns("fx6", "th", [
+  ["patient", "จามและคันจมูกมา 5 วันแล้วค่ะ น้ำมูกใสๆ"],
+  ["assistant", "แพ้ยาหรืออาหารอะไรไหมคะ"],
+  ["patient", "ไม่แพ้ยาอะไรค่ะ"],
+], 30);
+const fx6 = session({
+  id: "fixture-th-verified", code: "F-206", lang: "th", minAgo: 30, ts: t6,
+  complaint: L("จามและคันจมูก 5 วัน", "Starnuti e prurito al naso da 5 giorni", "Sneezing and itchy nose for 5 days"),
+  complaintQuote: ev(t6, 1, "จามและคันจมูกมา 5 วันแล้ว"),
+  allergyField: field("allergies", L("ไม่มีประวัติแพ้ยา", "Nessuna allergia nota", "No known allergies"), "ไม่แพ้ยาอะไรค่ะ", [ev(t6, 3, "ไม่แพ้ยาอะไรค่ะ")], "supported", true),
+  nka: [ev(t6, 3, "ไม่แพ้ยาอะไรค่ะ")], meds: [], allergies: [], alerts: [],
+});
+fx6.orders = { investigations: [], medications: [
+  { ...ord("fx6-o1", "Cetirizine 10 mg", "cetirizine", "antihistamine", "10 mg", "once daily", "7 days", [], [], 12), status: "verified", pharmacist: { action: "verify", by: P1, at: iso(7) } },
+] };
+
+// ---- 7. Dispensed by a second pharmacist and called to the counter ----
+const t7 = turns("fx7", "en", [
+  ["patient", "I get a burning feeling in my chest after meals, for about two weeks now."],
+  ["assistant", "Do you have any allergies to medicines?"],
+  ["patient", "No allergies that I know of."],
+], 50);
+const fx7 = session({
+  id: "fixture-en-pickup", code: "F-207", lang: "en", minAgo: 50, ts: t7,
+  complaint: L("แสบร้อนกลางอกหลังอาหาร 2 สัปดาห์", "Bruciore al petto dopo i pasti da due settimane", "Burning in the chest after meals for two weeks"),
+  complaintQuote: ev(t7, 1, "burning feeling in my chest after meals"),
+  allergyField: field("allergies", L("ไม่มีประวัติแพ้ยา", "Nessuna allergia nota", "No known allergies"), "No allergies that I know of", [ev(t7, 3, "No allergies that I know of")], "supported", true),
+  nka: [ev(t7, 3, "No allergies that I know of")], meds: [], allergies: [], alerts: [],
+});
+const checked = { rightPatient: true, rightDrug: true, rightDose: true, rightRoute: true, allergyRechecked: true, labelled: true };
+fx7.orders = { investigations: [], medications: [
+  { ...ord("fx7-o1", "Omeprazole 20 mg", "omeprazole", "ppi", "20 mg", "once daily", "14 days", [], [], 25), status: "dispensed", pharmacist: { action: "verify", by: P1, at: iso(18) }, dispense: { by: P2, at: iso(9), checklist: checked } },
+] };
+fx7.pickup = { status: "ready", counter: "2", calledBy: P2, calledAt: iso(4) };
+fx7.pharmacyStatus = "reconciled";
+fx7.pharmacyReviewerId = P1;
+
+export const FIXTURES: IntakeSession[] = [fx1, fx2, fx3, fx4, fx5, fx6, fx7];

@@ -46,6 +46,8 @@ export interface IntakeSession {
   /** Doctor orders (medications + investigations). */
   orders?: { medications: MedicationOrder[]; investigations: InvestigationOrder[] };
   pharmacyReviewerId?: string;
+  /** Medicine pickup: set when a pharmacist calls the patient after every active medication order is dispensed. */
+  pickup?: PickupState;
   createdAt: string;
   updatedAt: string;
 }
@@ -184,6 +186,9 @@ export type AuditType =
   | "order_submitted"
   | "order_pharmacy_action"
   | "order_cancelled"
+  | "order_dispensed"
+  | "pickup_called"
+  | "pickup_collected"
   | "takeover";
 
 export interface AuditEvent {
@@ -209,6 +214,8 @@ export interface OpsMetrics {
   medianReviewSeconds: number | null;
   modelLatencyMs: { p50: number | null; p95: number | null };
   provider: { name: string; model: string; hardware: string };
+  /** Pharmacy queue: medication orders to verify (submitted) / dispense (verified); patients ready for pickup / collected today. */
+  pharmacy?: { toVerify: number; toDispense: number; readyForPickup: number; collectedToday: number };
 }
 
 // ---------- Red-flag rule file (packages/shared/src/redflags.json, written by the Doctor) ----------
@@ -308,6 +315,12 @@ export interface MedAlert {
   evidence: Evidence[];
   source: string; // reference for the rule
   review?: { action: "acknowledge" | "resolved" | "false_alarm"; reviewerId: string; at: string; note?: string };
+  /**
+   * Generics from the curated medrules "alternatives" table that ALSO pass this patient's deterministic
+   * checks (allergy, interaction, duplicate therapy, pregnancy). Options for prescriber review, never
+   * auto-applied and never a prescription. Omitted when none.
+   */
+  alternatives?: string[];
 }
 
 export interface MedReviewAction {
@@ -337,6 +350,12 @@ export interface MedRuleFile {
   interactions: { a: string; b: string; ruleId: string; severity: "high" | "moderate"; message: Localized; source: string }[];
   messages: Record<MedAlertKind, { message: Localized; action: Localized }>;
   doseRangeSource?: string;
+  /**
+   * Curated options a prescriber may review when an alert fires. When an alert whose kind is in `kinds`
+   * fires for an ordered drug whose drugClass is in `drugClasses`, `consider` lists generics (each must
+   * exist in drugs[]). The engine drops any option that fails this patient's own checks.
+   */
+  alternatives?: { id: string; kinds: MedAlertKind[]; drugClasses: string[]; consider: string[]; note: Localized; source: string }[];
 }
 
 // ---------- Consult assistant (ambient listening for nurse / doctor) ----------
@@ -455,7 +474,37 @@ export interface VitalRuleFile {
 
 // ---------- Orders (doctor) + prescription checks (pharmacy) ----------
 
-export type OrderStatus = "draft" | "submitted" | "verified" | "returned" | "cancelled";
+/** draft → submitted → verified (pharmacist 1) → dispensed (pharmacist 2); "returned" goes back to the prescriber. */
+export type OrderStatus = "draft" | "submitted" | "verified" | "returned" | "dispensed" | "cancelled";
+
+/** Sent back to the prescriber with a "return". Alternatives are options for the prescriber's review, never auto-applied. */
+export interface PharmacistReport {
+  /** Ids of this order's checks the pharmacist is flagging. */
+  alertIds: string[];
+  /** Dictionary generics the prescriber may consider instead (max 5). */
+  suggestedGenerics: string[];
+}
+
+/** Second-pharmacist final check before handing medicine to the patient. Every item must be true. */
+export interface DispenseChecklist {
+  rightPatient: boolean;
+  rightDrug: boolean;
+  rightDose: boolean;
+  rightRoute: boolean;
+  allergyRechecked: boolean;
+  labelled: boolean;
+}
+
+/** Patient is called to the pharmacy counter once every active medication order is dispensed. */
+export interface PickupState {
+  status: "ready" | "collected";
+  /** Counter / window the patient is called to, e.g. "2". */
+  counter?: string;
+  calledBy: string;
+  calledAt: string;
+  collectedBy?: string;
+  collectedAt?: string;
+}
 
 export interface MedicationOrder {
   id: string;
@@ -476,7 +525,10 @@ export interface MedicationOrder {
   checks: MedAlert[];
   /** Doctor's documented reason for proceeding despite an alert (required for high alerts). */
   overrides: { alertId: string; reason: string; by: string; at: string }[];
-  pharmacist?: { action: "verify" | "return"; by: string; at: string; note?: string };
+  /** Pharmacist 1 (prescription check). `report` is stored only on "return". */
+  pharmacist?: { action: "verify" | "return"; by: string; at: string; note?: string; report?: PharmacistReport };
+  /** Pharmacist 2 (pick + final double check); must be a different person from `pharmacist.by`. */
+  dispense?: { by: string; at: string; checklist: DispenseChecklist; note?: string };
 }
 
 export interface InvestigationOrder {

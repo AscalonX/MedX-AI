@@ -4,9 +4,11 @@
 import { readFileSync } from "node:fs";
 
 const root = new URL("../../", import.meta.url);
-const C = JSON.parse(readFileSync(new URL("packages/shared/src/consultrules.json", root), "utf8"));
-const RF = JSON.parse(readFileSync(new URL("packages/shared/src/redflags.json", root), "utf8"));
-const md = readFileSync(new URL("docs/clinical/CONSULT-SPEC.md", root), "utf8");
+// Windows checkouts (core.autocrlf=true) hold CRLF: strip a BOM and CR so the `$`-anchored row selectors match on every OS.
+const readText = (rel) => readFileSync(new URL(rel, root), "utf8").replace(/^\uFEFF/, "").replace(/\r\n?/g, "\n");
+const C = JSON.parse(readText("packages/shared/src/consultrules.json"));
+const RF = JSON.parse(readText("packages/shared/src/redflags.json"));
+const md = readText("docs/clinical/CONSULT-SPEC.md");
 
 const norm = (t) => " " + t.normalize("NFC").toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, " ").trim();
 const PUNCT = [",", ".", ";", ":", "!", "?", "\n"], WORDS = [" but ", " ma ", " però ", " pero ", "แต่"];
@@ -37,14 +39,16 @@ for (const r of C.rules) {
   for (const c of r.considerations ?? []) if (!c.text.en.startsWith("Consider ")) { fail++; console.log("FAIL consider wording", c.id); }
 }
 // v1.1: workup ids must exist in investigations.json; guideline needs a title and an https URL; no drug/dose text in considerations.
-const INV = new Set(JSON.parse(readFileSync(new URL("packages/shared/src/investigations.json", root), "utf8")).items.map((i) => i.id));
+const INV = new Set(JSON.parse(readText("packages/shared/src/investigations.json")).items.map((i) => i.id));
 for (const r of C.rules) for (const c of r.considerations ?? []) {
   for (const w of c.workup ?? []) if (!INV.has(w)) { fail++; console.log("FAIL unknown workup id", c.id, w); }
   if (c.guideline && !(c.guideline.title && /^https:\/\//.test(c.guideline.url))) { fail++; console.log("FAIL guideline", c.id); }
   if (/\b\d+\s?mg\b|\bdose\b|\bgive\b|\bstart\b|\bprescribe/i.test(JSON.stringify([c.text, c.why]))) { fail++; console.log("FAIL treatment wording", c.id); }
 }
 const byId = Object.fromEntries(C.rules.map((r) => [r.id, r]));
+let rows = 0;
 for (const line of md.split("\n")) {
+  if (/^\| (CR-|NO-CONSIDER)/.test(line)) rows++;
   // v1.2: "| NO-CONSIDER | lang | text |" = no rule that carries considerations may fire (UX audit w16 case).
   const nc = line.match(/^\| NO-CONSIDER \| (en|it|th) \| (.+) \|$/);
   if (nc) {
@@ -59,5 +63,6 @@ for (const line of md.split("\n")) {
   const got = fires(byId[id], norm(text)) ? "fire" : "no";
   if (got === expect) pass++; else { fail++; console.log(`FAIL ${id} ${lang} expected=${expect} got=${got} :: ${text}`); }
 }
+if (!rows) { fail++; console.log("FAIL 0 test rows found in CONSULT-SPEC.md (table missing or unparseable)"); }
 console.log(`${pass} passed, ${fail} failed, ${C.rules.length} rules`);
 process.exit(fail ? 1 : 0);

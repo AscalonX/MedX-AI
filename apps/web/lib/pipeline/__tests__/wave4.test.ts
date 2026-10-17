@@ -13,9 +13,10 @@ import { EXTRACTION_SCHEMA, validateExtraction } from '../schema';
 import type { ModelClient } from '../llm';
 import { POST, OPTIONS } from '../../../app/api/sessions/[id]/pharmacy-review/route';
 import { seedDemo } from '../seed';
+import { readText } from './fixtures/text';
 
 const root = new URL('../../../../../', import.meta.url);
-const md = readFileSync(new URL('docs/clinical/MEDRULES-TESTS.md', root), 'utf8');
+const md = readText(new URL('docs/clinical/MEDRULES-TESTS.md', root)); // BOM/CRLF-normalised for Windows checkouts
 const rows = md.split('\n').filter(s => /^\| (L|AL|A) \| (en|it|th) \|/.test(s)).map(s => s.split('|').slice(1, -1).map(s => s.trim()));
 const split = (s: string) => s === '-' ? [] : s.split(';').map(s => s.trim()).filter(Boolean);
 const med = (name: string, id = name): MedicationEntry => { const d = lookupDrug(name); return { id, nameOriginal: name, generic: d?.generic ?? null, drugClass: d?.drugClass ?? null, dose: null, frequency: null, timing: null, evidence: [], confidence: 1, status: d ? 'supported' : 'unmatched' }; };
@@ -28,6 +29,7 @@ const request = (value: unknown) => new Request('http://localhost/api/test', { m
 const context = (id: string) => ({ params: Promise.resolve({ id }) });
 
 describe(`Doctor medrules reference: ${rows.length} rows`, () => {
+  it('parses the Doctor medrules table (a 0-row parse must fail, not skip)', () => { expect(rows.length).toBeGreaterThan(0); });
   it.each(rows)('%s %s %s', (kind, _lang, input, expected, alls, pregnancy) => {
     if (kind === 'L') expect(lookupDrug(input)?.generic ?? '(none)').toBe(expected);
     else if (kind === 'AL') expect(lookupAllergen(input)?.allergenClass ?? '(none)').toBe(expected);

@@ -213,5 +213,13 @@ export function metrics(): OpsMetrics {
   const latencies = calls.map(c => c.latencyMs).sort((a, b) => a - b);
   const quantile = (xs: number[], p: number) => xs.length ? xs[Math.max(0, Math.ceil(xs.length * p) - 1)] : null;
   const reviews = sessions.flatMap(s => { const start = audit.find(e => e.sessionId === s.id && e.type === 'summary_generated' && !e.payload.event && e.payload.status === 'awaiting_review'); const end = start && audit.find(e => e.sessionId === s.id && ['review', 'red_flag_review', 'pharmacy_review'].includes(e.type) && Date.parse(e.at) >= Date.parse(start.at)); return start && end ? [Math.max(0, (Date.parse(end.at) - Date.parse(start.at)) / 1000)] : []; }).sort((a, b) => a - b);
-  return { sessionsToday: sessions.filter(s => s.createdAt.startsWith(today)).length, byStatus, escalations: sessions.filter(s => s.summary?.redFlags.length).length, autoCapturedRate: required ? generated.reduce((n, e) => n + Number(e.payload.autoCaptured), 0) / required : 0, abstainRate: summaries.length ? summaries.filter(s => s.abstained).length / summaries.length : 0, medianReviewSeconds: quantile(reviews, 0.5), modelLatencyMs: { p50: quantile(latencies, 0.5), p95: quantile(latencies, 0.95) }, provider: providerInfo() };
+  // Pharmacy queue: orders waiting for pharmacist 1 (verify) / pharmacist 2 (dispense); patients at the pickup stage.
+  const medOrders = sessions.flatMap(s => s.orders?.medications || []);
+  const pharmacy = {
+    toVerify: medOrders.filter(o => o.status === 'submitted').length,
+    toDispense: medOrders.filter(o => o.status === 'verified').length,
+    readyForPickup: sessions.filter(s => s.pickup?.status === 'ready').length,
+    collectedToday: sessions.filter(s => s.pickup?.status === 'collected' && s.pickup.collectedAt?.startsWith(today)).length,
+  };
+  return { sessionsToday: sessions.filter(s => s.createdAt.startsWith(today)).length, byStatus, escalations: sessions.filter(s => s.summary?.redFlags.length).length, autoCapturedRate: required ? generated.reduce((n, e) => n + Number(e.payload.autoCaptured), 0) / required : 0, abstainRate: summaries.length ? summaries.filter(s => s.abstained).length / summaries.length : 0, medianReviewSeconds: quantile(reviews, 0.5), modelLatencyMs: { p50: quantile(latencies, 0.5), p95: quantile(latencies, 0.95) }, provider: providerInfo(), pharmacy };
 }

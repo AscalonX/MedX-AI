@@ -25,9 +25,9 @@ export function deriveTrace(session: IntakeSession, audit: AuditEvent[], consult
   const events = audit.filter(e => e.sessionId === session.id);
   const nodes: TraceNode[] = []; const edges: TraceEdge[] = [];
   let seq = 0;
-  const add = (kind: TraceNodeKind, p: { at: string; actor: TraceNode['actor']; status?: TraceNode['status']; detail: string; ids?: AuditEvent[]; evidence?: Evidence[]; latencyMs?: number; parents?: (string | undefined)[]; edge?: string }) => {
+  const add = (kind: TraceNodeKind, p: { at: string; actor: TraceNode['actor']; status?: TraceNode['status']; detail: string | Localized; label?: Localized; ids?: AuditEvent[]; evidence?: Evidence[]; latencyMs?: number; parents?: (string | undefined)[]; edge?: string }) => {
     const id = `n${++seq}`;
-    nodes.push({ id, kind, label: { en: LABEL[kind][0], it: LABEL[kind][1], th: LABEL[kind][2] }, at: p.at, actor: p.actor, status: p.status || 'ok', detail: loc(p.detail), evidence: p.evidence || [], ...(p.latencyMs !== undefined ? { latencyMs: p.latencyMs } : {}), auditIds: (p.ids || []).map(e => e.id) });
+    nodes.push({ id, kind, label: p.label || { en: LABEL[kind][0], it: LABEL[kind][1], th: LABEL[kind][2] }, at: p.at, actor: p.actor, status: p.status || 'ok', detail: typeof p.detail === 'string' ? loc(p.detail) : p.detail, evidence: p.evidence || [], ...(p.latencyMs !== undefined ? { latencyMs: p.latencyMs } : {}), auditIds: (p.ids || []).map(e => e.id) });
     for (const from of p.parents || []) if (from) edges.push({ from, to: id, ...(p.edge ? { label: p.edge } : {}) });
     return id;
   };
@@ -95,12 +95,59 @@ export function deriveTrace(session: IntakeSession, audit: AuditEvent[], consult
   }
   // Humans, in audit order, each hanging off the branch it acts on.
   let humanTail: string | undefined;
+  // Pharmacy chain per order (verify/return → dispense) and per patient (call → collected). Counts only, no names or notes.
+  const byOrder = new Map<string, string>(); let pickupNode: string | undefined;
   for (const e of events) {
     const parent = humanTail || undefined;
+    const orderId = String(e.payload.orderId ?? '');
+    if (e.type === 'order_pharmacy_action') {
+      const report = e.payload.report && typeof e.payload.report === 'object' ? e.payload.report as Record<string, unknown> : undefined;
+      const flagged = strs(report?.alertIds).length, options = strs(report?.suggestedGenerics).length;
+      const returned = e.payload.action === 'return';
+      humanTail = add('pharmacist_action', { at: e.at, actor: 'human', status: 'ok', ids: [e], parents: [orderNode || parent || root], label: returned
+        ? { en: 'Pharmacist 1: returned to prescriber', it: 'Farmacista 1: restituito al prescrittore', th: 'เภสัชกรคนที่ 1: ส่งคืนแพทย์ผู้สั่ง' }
+        : { en: 'Pharmacist 1: prescription verified', it: 'Farmacista 1: prescrizione verificata', th: 'เภสัชกรคนที่ 1: ตรวจสอบใบสั่งยาแล้ว' },
+      detail: {
+        en: `Order ${String(e.payload.action)}${report ? `; report: ${flagged} alert(s) flagged, ${options} option(s) for prescriber review` : ''}`,
+        it: `${returned ? 'Ordine restituito' : 'Ordine verificato'}${report ? `; rapporto: ${flagged} avviso/i segnalato/i, ${options} opzione/i per la revisione del prescrittore` : ''}`,
+        th: `${returned ? 'ส่งคืนคำสั่งยา' : 'ตรวจสอบคำสั่งยาแล้ว'}${report ? `; รายงาน: แจ้งเตือน ${flagged} รายการ, ทางเลือกให้แพทย์พิจารณา ${options} รายการ` : ''}`,
+      } });
+      if (orderId) byOrder.set(orderId, humanTail);
+      continue;
+    }
+    if (e.type === 'order_dispensed') {
+      const list = e.payload.checklist && typeof e.payload.checklist === 'object' ? Object.values(e.payload.checklist as Record<string, unknown>) : [];
+      const ok = list.filter(v => v === true).length;
+      humanTail = add('pharmacist_action', { at: e.at, actor: 'human', ids: [e], parents: [byOrder.get(orderId) || orderNode || parent || root], edge: 'second check',
+        label: { en: 'Pharmacist 2: dispensed', it: 'Farmacista 2: dispensato', th: 'เภสัชกรคนที่ 2: จ่ายยาแล้ว' },
+        detail: {
+          en: `Final double check ${ok} of ${list.length} items confirmed by a second pharmacist`,
+          it: `Doppio controllo finale: ${ok} su ${list.length} voci confermate da un secondo farmacista`,
+          th: `ตรวจซ้ำขั้นสุดท้ายครบ ${ok} จาก ${list.length} รายการ โดยเภสัชกรคนที่สอง`,
+        } });
+      if (orderId) byOrder.set(orderId, humanTail);
+      continue;
+    }
+    if (e.type === 'pickup_called') {
+      const orderIds = strs(e.payload.orderIds); const recall = e.payload.recall === true;
+      const parents = recall && pickupNode ? [pickupNode] : orderIds.map(id => byOrder.get(id)).filter(Boolean);
+      humanTail = pickupNode = add('pharmacist_action', { at: e.at, actor: 'human', ids: [e], parents: parents.length ? parents : [parent || orderNode || root],
+        label: { en: 'Patient called to collect', it: 'Paziente chiamato al ritiro', th: 'เรียกผู้ป่วยรับยา' },
+        detail: recall
+          ? { en: 'Patient called again', it: 'Paziente chiamato di nuovo', th: 'เรียกผู้ป่วยอีกครั้ง' }
+          : { en: `Medicines ready: ${orderIds.length} order(s) dispensed`, it: `Farmaci pronti: ${orderIds.length} ordine/i dispensato/i`, th: `ยาพร้อมรับ: จ่ายแล้ว ${orderIds.length} รายการ` } });
+      continue;
+    }
+    if (e.type === 'pickup_collected') {
+      humanTail = add('pharmacist_action', { at: e.at, actor: 'human', ids: [e], parents: [pickupNode || parent || root],
+        label: { en: 'Medicines collected', it: 'Farmaci ritirati', th: 'ผู้ป่วยรับยาแล้ว' },
+        detail: { en: 'Patient collected the medicines', it: 'Il paziente ha ritirato i farmaci', th: 'ผู้ป่วยรับยาเรียบร้อย' } });
+      pickupNode = undefined;
+      continue;
+    }
     if (e.type === 'review' || e.type === 'red_flag_review' || e.type === 'takeover') humanTail = add('clinician_action', { at: e.at, actor: 'human', detail: `${e.type}${Array.isArray(e.payload.actions) ? ` (${e.payload.actions.length} action(s))` : ''}`, ids: [e], parents: [parent || root] });
     else if (e.type === 'consult_note_signed') humanTail = add('clinician_action', { at: e.at, actor: 'human', detail: `Consult note signed (${num(e.payload.lineCount)} lines, ${strs(e.payload.keptConsiderationIds).length} consideration(s) kept)`, ids: [e], parents: [consultNode || parent || root] });
     else if (e.type === 'pharmacy_review') humanTail = add('pharmacist_action', { at: e.at, actor: 'human', detail: `Pharmacy review${e.payload.complete ? ' (reconciled)' : ''}`, ids: [e], parents: [medNode || parent || root] });
-    else if (e.type === 'order_pharmacy_action') humanTail = add('pharmacist_action', { at: e.at, actor: 'human', detail: `Order ${String(e.payload.action)}`, ids: [e], parents: [orderNode || parent || root] });
   }
   void lastOutput;
   const last = events.at(-1);

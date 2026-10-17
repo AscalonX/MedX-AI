@@ -1,4 +1,17 @@
-import type { TraceEdge, TraceNode } from "@medx/shared";
+import type { Lang, Localized, TraceEdge, TraceNode } from "@medx/shared";
+
+/** Edge labels arrive as short English tokens from the trace route; known ones are shown in the UI language. */
+const EDGE_LABEL: Record<string, Localized> = {
+  escalated: { en: "escalated", th: "ส่งต่อเร่งด่วน", it: "escalation" },
+  medications: { en: "medications", th: "ยา", it: "farmaci" },
+  orders: { en: "orders", th: "คำสั่ง", it: "ordini" },
+  "second check": { en: "second check", th: "ตรวจซ้ำโดยคนที่สอง", it: "secondo controllo" },
+  "no clearing": { en: "no clearing", th: "โมเดลล้างไม่ได้", it: "non annullabile" },
+};
+export function edgeLabel(label: string | undefined, lang: Lang): string | undefined {
+  if (!label) return undefined;
+  return EDGE_LABEL[label]?.[lang] ?? label;
+}
 
 export const NODE_W = 160;
 export const NODE_H = 72;

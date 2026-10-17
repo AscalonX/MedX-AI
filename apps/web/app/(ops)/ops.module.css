@@ -85,6 +85,16 @@
 .noFlags { color: var(--color-graphite); font-size: var(--text-micro); }
 .queueAction { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .waiting { display: inline-flex; align-items: center; gap: 6px; color: var(--color-graphite); font-size: var(--text-small); white-space: nowrap; }
+.pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: 16px; list-style: none; }
+.pipeline > li { display: flex; min-width: 0; }
+.pipeline > li > * { flex: 1; min-width: 0; }
+.stageLabel { display: inline-flex; align-items: center; gap: 8px; }
+.stageIndex { display: inline-grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 999px; background: var(--color-muted); color: var(--color-ink-soft); font-size: var(--text-micro); font-weight: 700; }
+.pickup { margin-top: 16px; }
+.pickup h3 { font-size: var(--text-body); font-weight: 700; }
+.pickupList { display: flex; flex-direction: column; list-style: none; }
+.pickupRow { display: grid; grid-template-columns: 124px minmax(0, 1fr) auto; gap: 8px 24px; align-items: center; padding: 12px 0; border-top: 1px solid var(--color-rule); }
+.pickupMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-width: 0; }
 .blank { display: inline-flex; vertical-align: baseline; }
 .blank > span:first-child { width: 48px; height: 1em; display: inline-block; border-radius: 999px; background: var(--color-muted); }
 .charts { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 24px; }
@@ -145,6 +155,8 @@
   .queueDetail { grid-column: 1 / -1; grid-row: 2; }
   .queueAction { grid-column: 2; grid-row: 1; }
   .queueAction .openLink { max-width: 144px; padding-inline: 10px; }
+  .pickupRow { grid-template-columns: minmax(0, 1fr) auto; }
+  .pickupMeta { grid-column: 1 / -1; grid-row: 2; }
   .providerValues { grid-template-columns: 1fr; gap: 12px; }
   .loadingLines { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .error { flex-direction: column; align-items: flex-start; }

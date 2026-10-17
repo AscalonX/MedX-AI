@@ -6,7 +6,7 @@ import { Badge, Button, Card, CardHeader, EvidenceHighlight, Icon, SegmentedCont
 import { fixtureSession } from "../../../../(orders)/_fixture";
 import { call, clockOf } from "../../../../(orders)/_lib";
 import { useIdentity } from "../../../../(orders)/_bits";
-import { NODE_H, NODE_W, layoutTrace, summarize } from "../../../_graph";
+import { NODE_H, NODE_W, edgeLabel, layoutTrace, summarize } from "../../../_graph";
 import { fixtureTrace } from "../../../_fixture";
 
 const L = (en: string, th: string, it: string): Localized => ({ en, th, it });
@@ -31,6 +31,7 @@ const S = {
   notEscalated: L("not escalated", "ไม่ส่งต่อเร่งด่วน", "nessuna escalation"),
   legend: L("Legend", "คำอธิบายสัญลักษณ์", "Legenda"),
   rule: L("Rule", "กฎ", "Regola"), model: L("Model", "โมเดล", "Modello"), human: L("Human", "บุคลากร", "Umano"), system: L("System", "ระบบ", "Sistema"),
+  pharmacist: L("Pharmacist", "เภสัชกร", "Farmacista"),
   ok: L("Done", "เสร็จ", "Fatto"), skipped: L("Skipped", "ข้าม", "Saltato"), failed: L("Failed", "ล้มเหลว", "Fallito"), abstained: L("Abstained", "งดตัดสิน", "Astenuto"), escal: L("Escalated", "ส่งต่อเร่งด่วน", "Escalation"),
   panel: L("Step details", "รายละเอียดขั้นตอน", "Dettagli del passaggio"),
   pick: L("Select a step to see what happened, when, and which evidence it used.", "เลือกขั้นตอนเพื่อดูว่าเกิดอะไร เมื่อไร และใช้หลักฐานใด", "Seleziona un passaggio per vedere cosa è successo e quali prove ha usato."),
@@ -67,6 +68,10 @@ const STATUS: Record<TraceNode["status"], { cls: string; icon: IconName; key: K 
   abstained: { cls: "!border-warn bg-warn-tint", icon: "triangle-alert", key: "abstained" },
   escalated: { cls: "!border-l-[6px] !border-l-signal", icon: "triangle-alert", key: "escal" },
 };
+/** Pharmacist steps (verify, return, dispense, call, collected) keep the human styling but carry a pill icon and role name. */
+const isPharmacist = (n: TraceNode) => n.kind === "pharmacist_action";
+const iconOf = (n: TraceNode): IconName => (isPharmacist(n) ? "pill" : ACTOR[n.actor].icon);
+const actorText = (n: TraceNode, lang: Lang) => (isPharmacist(n) ? `${tr(ACTOR[n.actor].key, lang)} · ${tr("pharmacist", lang)}` : tr(ACTOR[n.actor].key, lang));
 const statusColor = (s: TraceNode["status"]) => (s === "escalated" ? "text-signal" : s === "failed" || s === "abstained" ? "text-warn" : "text-ink-soft");
 
 export function Trace({ id }: { id: string }) {
@@ -112,7 +117,9 @@ export function Trace({ id }: { id: string }) {
     const url = URL.createObjectURL(new Blob([JSON.stringify(trace, null, 2)], { type: "application/json" }));
     const a = document.createElement("a");
     a.href = url; a.download = `medx-trace-${session?.code ?? id}.json`;
-    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    document.body.appendChild(a); a.click(); a.remove();
+    // Revoke after the click has been handled; revoking synchronously can cancel the download in some browsers.
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   async function rederive() {
     if (!trace) return;
@@ -171,7 +178,7 @@ export function Trace({ id }: { id: string }) {
                       {layout.curves.map((c) => (
                         <g key={`${c.from}-${c.to}`}>
                           <path d={c.d} fill="none" stroke="var(--color-rule-strong)" strokeWidth={1.75} markerEnd="url(#tr-arrow)" />
-                          {c.label && <text x={c.lx} y={c.ly} textAnchor="middle" fontSize={11} fill="var(--color-ink-soft)">{c.label}</text>}
+                          {c.label && <text x={c.lx} y={c.ly} textAnchor="middle" fontSize={11} fill="var(--color-ink-soft)">{edgeLabel(c.label, lang)}</text>}
                         </g>
                       ))}
                     </svg>
@@ -190,7 +197,7 @@ export function Trace({ id }: { id: string }) {
                         <span className="w-16 shrink-0 text-small font-semibold text-ink-soft">{tr("stepN", lang, { n: sum.stepOf(n.id) })}</span>
                         <span className="min-w-0 flex-1">
                           <span className="block text-body font-bold text-ink">{pick(n.label, lang)}</span>
-                          <span className="block text-small text-ink-soft">{tr(ACTOR[n.actor].key, lang)} · <span className={statusColor(n.status)}>{tr(STATUS[n.status].key, lang)}</span> · {pick(n.detail, lang)}</span>
+                          <span className="block text-small text-ink-soft">{actorText(n, lang)} · <span className={statusColor(n.status)}>{tr(STATUS[n.status].key, lang)}</span> · {pick(n.detail, lang)}</span>
                         </span>
                       </button>
                     </li>
@@ -247,12 +254,12 @@ function NodeCard({ n, step, lang, selected, onPick, style }: { n: TraceNode; st
   const a = ACTOR[n.actor], s = STATUS[n.status];
   return (
     <>
-      <span id={`tr-d-${n.id}`} className="sr-only">{tr("actor", lang)}: {tr(a.key, lang)}. {tr("status", lang)}: {tr(s.key, lang)}. {pick(n.detail, lang)}</span>
+      <span id={`tr-d-${n.id}`} className="sr-only">{tr("actor", lang)}: {actorText(n, lang)}. {tr("status", lang)}: {tr(s.key, lang)}. {pick(n.detail, lang)}</span>
       <button type="button" onClick={() => onPick(n)} aria-pressed={selected} aria-describedby={`tr-d-${n.id}`} data-node={n.id} data-status={n.status}
         style={{ ...style, width: NODE_W, height: NODE_H }}
         className={`absolute flex flex-col justify-center gap-0.5 rounded-2xl border-2 px-3 text-left shadow-sheet transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean ${a.cls} ${s.cls} ${selected ? "ring-2 ring-ocean ring-offset-2" : ""}`}>
         <span className="flex items-center gap-1.5 text-micro font-semibold text-ink-soft">
-          <Icon name={a.icon} size={13} />{step}. {tr(a.key, lang)}
+          <Icon name={iconOf(n)} size={13} />{step}. {isPharmacist(n) ? tr("pharmacist", lang) : tr(a.key, lang)}
         </span>
         <span className="line-clamp-2 text-small font-bold leading-tight text-ink">{pick(n.label, lang)}</span>
         <span className={`flex items-center gap-1 text-micro font-semibold ${statusColor(n.status)}`}><Icon name={s.icon} size={12} />{tr(s.key, lang)}</span>
@@ -269,7 +276,7 @@ function Panel({ n, step, lang, session }: { n: TraceNode; step: number; lang: L
     <div className="md:grid md:grid-cols-2 md:gap-x-8">
       <h3 className="text-body font-bold text-ink md:col-span-2">{tr("stepN", lang, { n: step })}: {pick(n.label, lang)}</h3>
       <dl className="mt-3 flex flex-col gap-2">
-        {row("actor", tr(ACTOR[n.actor].key, lang))}
+        {row("actor", actorText(n, lang))}
         {row("status", <span className={`font-semibold ${statusColor(n.status)}`}>{tr(STATUS[n.status].key, lang)}</span>)}
         {row("detail", pick(n.detail, lang))}
         {n.latencyMs !== undefined && row("latency", `${n.latencyMs} ms`)}

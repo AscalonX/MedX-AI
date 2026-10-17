@@ -7,9 +7,8 @@ import {
   C, kindTitle, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, signOffEvent, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
   medsOf, openHigh, pharmStatus, redFlagsOf, selEvidence, selKey, waited, type Sel,
 } from "./_lib";
-import { ABSTAIN } from "./_lib";
-import { PrescriptionsCard } from "./_orders";
-import { ordersOf } from "./_lib";
+import { ABSTAIN, STAGE_LABEL } from "./_lib";
+import { PickupCard, PrescriptionsCard } from "./_orders";
 import { usePharmacy } from "./_shell";
 
 const T = {
@@ -81,10 +80,11 @@ export function Workspace({ id }: { id: string }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const run = useCallback(async (fn: () => Promise<unknown>) => {
+  // A card that shows its own refusal passes onError; otherwise the refusal goes to the sticky sign-off bar.
+  const run = useCallback(async (fn: () => Promise<unknown>, onError?: (message: string) => void) => {
     setBusy(true); setActionError(null);
     try { await fn(); return true; }
-    catch (e) { setActionError(`${(e as Error).message}`); return false; }
+    catch (e) { const msg = `${(e as Error).message}`; if (onError) onError(msg); else setActionError(msg); return false; }
     finally { setBusy(false); setAuditTick((t) => t + 1); }
   }, []);
 
@@ -97,10 +97,13 @@ export function Workspace({ id }: { id: string }) {
   }
   if (!session) {
     return (
-      <section className="flex flex-1 flex-col gap-3 bg-sheet p-6 shadow-sheet">
-        <h1 className="text-title">This intake has no medication data.</h1>
-        <p className="text-body text-ink-soft">{queueError ? `The queue could not be refreshed: ${queueError}. ` : ""}It may have been removed, or the summary has not been produced yet.</p>
-        <Link href="/pharmacy" className="text-body underline underline-offset-4">Back to the queue</Link>
+      <section lang={lang} className="flex flex-1 flex-col gap-3 bg-sheet p-6 shadow-sheet">
+        <h1 className="text-title">{L("รายการนี้ไม่มีข้อมูลยา", "Questo accesso non ha dati sui farmaci.", "This intake has no medication data.")[lang]}</h1>
+        <p className="text-body text-ink-soft">
+          {queueError ? `${C.notRefreshed[lang]}: ${queueError}. ` : ""}
+          {L("อาจถูกลบไปแล้ว หรือยังไม่มีสรุปหรือใบสั่งยา", "Potrebbe essere stato rimosso, oppure il riepilogo o gli ordini non ci sono ancora.", "It may have been removed, or there is no summary or prescription yet.")[lang]}
+        </p>
+        <Link href="/pharmacy" className="text-body underline underline-offset-4">{C.back[lang]}</Link>
       </section>
     );
   }
@@ -175,6 +178,11 @@ export function Workspace({ id }: { id: string }) {
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone={st === "reconciled" ? "teal" : "outline"}>{PHARM_STATUS_LABEL[st][lang]}</Badge>
+            {session.pickup && (
+              <Badge tone={session.pickup.status === "collected" ? "teal" : "ocean"} icon={<Icon name={session.pickup.status === "collected" ? "check" : "bell"} size={14} />}>
+                {session.pickup.status === "collected" ? L("รับยาแล้ว", "Ritirato", "Collected")[lang] : `${STAGE_LABEL.ready[lang]}${session.pickup.counter ? `, ${L("ช่อง", "sportello", "counter")[lang]} ${session.pickup.counter}` : ""}`}
+              </Badge>
+            )}
             {fixture && <Badge tone="pencil">{C.fixture[lang]}</Badge>}
           </div>
           <dl className="flex gap-8">
@@ -188,7 +196,8 @@ export function Workspace({ id }: { id: string }) {
         </div>
       </GradientHero>
 
-      <PrescriptionsCard sessionId={session.id} orders={ordersOf(session)} lang={lang} busy={busy} fixture={fixture} run={run} />
+      <PrescriptionsCard session={session} lang={lang} busy={busy} fixture={fixture} run={run} />
+      <PickupCard key={session.id} session={session} lang={lang} busy={busy} run={run} />
 
       {locked && <Receipt session={session} lang={lang} audit={audit} />}
 

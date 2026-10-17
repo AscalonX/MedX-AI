@@ -12,6 +12,7 @@ import { Blank, Escalations, Queue } from "./Queue";
 import { highAlertsOpen, pendingEscalations } from "../ops-data";
 import { CountUp } from "./CountUp";
 import { OpsShell } from "./OpsShell";
+import { PharmacyPipeline } from "./PharmacyPipeline";
 import { MetricStrip, ProviderPill, ProviderPlate } from "./SystemLedger";
 import { useOpsSnapshot } from "./useOpsSnapshot";
 import styles from "../ops.module.css";
@@ -62,6 +63,7 @@ export function OpsDashboard() {
             <MetricStrip metrics={snapshot.metrics} health={snapshot.health} lang={lang} />
             <Escalations sessions={snapshot.sessions} lang={lang} />
             <Queue sessions={snapshot.sessions} now={snapshot.fetchedAt} lang={lang} />
+            <PharmacyPipeline metrics={snapshot.metrics} sessions={snapshot.sessions} now={snapshot.fetchedAt} lang={lang} />
             <div className={styles.charts}><StatusChart sessions={snapshot.sessions} lang={lang} /><LatencyChart sessions={snapshot.sessions} metrics={snapshot.metrics} health={snapshot.health} lang={lang} /></div>
             <ProviderPlate health={snapshot.health} lang={lang} />
           </> : !error && <Card className={styles.loading} aria-busy="true" aria-label={copy.loading[lang]}><p role="status"><LangMorph text={copy.loading} lang={lang} /></p><div aria-hidden="true" className={styles.loadingLines}>{Array.from({ length: 6 }, (_, i) => <div key={i} className="mx-skeleton" />)}</div></Card>}

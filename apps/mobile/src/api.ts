@@ -1,12 +1,29 @@
 import { Platform } from "react-native";
 import type { AddTurnReq, CreateSessionReq, Lang, Localized, RedFlagSeverity, SessionStatus } from "@medx/shared";
 
+/** Medicine pickup as the patient sees it: a status and the counter only. Never drug names, pharmacist ids, notes or times. */
+export type PickupStatus = "preparing" | "ready" | "collected";
+export type PatientPickup = { status: PickupStatus; counter?: string } | null;
+
 /** The server projection for patients (GET ?view=patient / POST with x-medx-client: patient). The app never needs, and never keeps, clinician data. */
 export interface PatientView {
   id: string; code: string; patientLang: Lang; status: SessionStatus;
   turns: { id: string; role: "patient" | "assistant"; text: string; at?: string; inputMode?: "text" | "voice" }[];
   summary: null | { nextQuestion: { field: string; text: Localized } | null; redFlags: { patientMessage: Localized; severity: RedFlagSeverity }[]; abstained: boolean };
+  /** null until a prescription is sent to the pharmacy (older servers and stored copies: missing, read as null). */
+  pickup: PatientPickup;
 }
+
+const PICKUP: readonly PickupStatus[] = ["preparing", "ready", "collected"];
+/** Whitelist the pickup object: a known status and a short counter label, nothing else. */
+function toPickup(p: unknown): PatientPickup {
+  if (!p || typeof p !== "object") return null;
+  const { status, counter } = p as { status?: unknown; counter?: unknown };
+  if (!PICKUP.includes(status as PickupStatus)) return null;
+  const c = typeof counter === "string" ? counter.trim().slice(0, 40) : "";
+  return { status: status as PickupStatus, ...(c ? { counter: c } : {}) };
+}
+
 /** Whitelist: drop anything else the server (or an old stored copy) might carry. */
 export function toPatient(x: PatientView): PatientView {
   const sm = x.summary;
@@ -14,8 +31,12 @@ export function toPatient(x: PatientView): PatientView {
     id: x.id, code: x.code, patientLang: x.patientLang, status: x.status,
     turns: (x.turns ?? []).filter((t) => t.role === "patient").map((t) => ({ id: t.id, role: "patient", text: t.text, at: t.at, inputMode: t.inputMode })),
     summary: sm ? { nextQuestion: sm.nextQuestion ? { field: sm.nextQuestion.field, text: sm.nextQuestion.text } : null, redFlags: (sm.redFlags ?? []).map((r) => ({ patientMessage: r.patientMessage, severity: r.severity })), abstained: !!sm.abstained } : null,
+    pickup: toPickup(x.pickup),
   };
 }
+
+/** Medicine is on its way or waiting at the counter: the visit is not over, so the phone must keep this session. */
+export const pickupPending = (s: PatientView | null | undefined) => s?.pickup?.status === "preparing" || s?.pickup?.status === "ready";
 
 // Web (served under /patient by the Next app) defaults to same-origin; native defaults to the local API.
 const BASE = process.env.EXPO_PUBLIC_API_URL ?? (Platform.OS === "web" ? "" : "http://localhost:3000");

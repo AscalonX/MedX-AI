@@ -163,7 +163,8 @@ describe('patient-scoped routes', () => {
     const get = await (await sessionGet(new Request(`http://localhost/api/sessions/${s.id}?view=patient`), ctx(s.id))).json();
     expect(Object.keys(get)).toEqual(['session']);
     const check = (value: typeof get.session) => {
-      expect(Object.keys(value).sort()).toEqual(['code', 'id', 'patientLang', 'status', 'summary', 'turns']);
+      expect(Object.keys(value).sort()).toEqual(['code', 'id', 'patientLang', 'pickup', 'status', 'summary', 'turns']);
+      expect(value.pickup).toBeNull(); // a draft order is not yet with the pharmacy
       expect(value.turns.every((t: { role: string }) => t.role === 'patient')).toBe(true);
       expect(Object.keys(value.summary).sort()).toEqual(['abstained', 'nextQuestion', 'redFlags']);
       expect(JSON.stringify(value)).not.toContain('Clinician private discussion');

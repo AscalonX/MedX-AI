@@ -5,7 +5,8 @@ import type { AuditEvent, Evidence, ExtractedField, FieldKey, IntakeSession, Lan
 import { Badge, Button, Card, EvidenceHighlight, FieldValue, GradientHero, Icon, LangMorph, RedFlagInterrupt, type Mark } from "@/components/ui";
 import { FIELD_GROUPS, FIELD_LABEL, LANG_NAME, auditLine, clock, fetchSession, post, waited } from "./_lib";
 import { fmt, tr, type TKey } from "./_i18n";
-import { Complaint, FlagChip, LangBadge, StatusChip, returnedOrders } from "./_queue";
+import { Complaint, FlagChip, LangBadge, PharmacyChip, StatusChip, returnedOrders } from "./_queue";
+import { returnReport } from "./_stage";
 import { useClinician } from "./_shell";
 import { ct } from "./[id]/consult/_c18n";
 
@@ -235,6 +236,7 @@ export function Workspace({ id }: { id: string }) {
     <span className="flex flex-wrap items-center gap-2">
       <StatusChip s={session} lang={lang} />
       <FlagChip s={session} lang={lang} />
+      <PharmacyChip s={session} lang={lang} />
       <span lang={session.patientLang} className={hero ? "rounded-full bg-white/15 px-3 py-0.5 text-small font-semibold" : "rounded-full bg-muted px-3 py-0.5 text-small font-semibold text-ink-soft"}>
         {LANG_NAME[session.patientLang]}
       </span>
@@ -255,6 +257,7 @@ export function Workspace({ id }: { id: string }) {
       <div className="min-w-0 flex-1">
         <h1 className="text-title font-extrabold text-teal">{tr("approvedReceipt", lang)} · <span className="tabular-nums">{session.code}</span></h1>
         <p className="text-small text-ink-soft">{approver}, {clock(approvedEv?.at ?? session.updatedAt, lang)} · {fmt(tr("receiptFields", lang), { n: approvedCount })}</p>
+        <span className="mt-1.5 flex flex-wrap gap-2 empty:hidden"><PharmacyChip s={session} lang={lang} /></span>
       </div>
       <div className="flex flex-wrap gap-2">
         {nextOpen && <Link href={`/review/${nextOpen.id}`} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-5 text-small font-semibold text-on-primary shadow-[0_10px_18px_-10px_rgba(26,95,196,0.8)] transition-transform duration-quick ease-pen active:scale-[0.97]">{tr("nextCase", lang)} {nextOpen.code}<Icon name="chevron-right" size={14} /></Link>}
@@ -297,9 +300,20 @@ export function Workspace({ id }: { id: string }) {
           <Icon name="triangle-alert" size={16} />
           <div className="min-w-0 flex-1">
             <p className="font-bold">{tr("returnedBanner", lang)}</p>
-            {returnedOrders(session).map((o) => (
-              <p key={o.id}>{o.drugText}{o.dose ? ` ${o.dose}` : ""}{o.pharmacist?.note ? `. ${tr("pharmacistNote", lang)}: ${o.pharmacist.note}` : ""}</p>
-            ))}
+            {returnedOrders(session).map((o) => {
+              const report = returnReport(o);
+              return (
+                <div key={o.id} className="mt-0.5">
+                  <p>{o.drugText}{o.dose ? ` ${o.dose}` : ""}{o.pharmacist?.note ? `. ${tr("pharmacistNote", lang)}: ${o.pharmacist.note}` : ""}</p>
+                  {report && report.flagged.length > 0 && (
+                    <p className="text-ink-soft">{tr("reportFlagged", lang)}: {report.flagged.map((c) => c.message[lang] || c.message.en).join("; ")}</p>
+                  )}
+                  {report && report.options.length > 0 && (
+                    <p className="text-ink-soft">{tr("reportOptions", lang)}: <span className="font-semibold text-ink">{report.options.join(", ")}</span></p>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <Link href={`/review/${id}/orders`} className="inline-flex h-9 items-center gap-1 rounded-full bg-sheet px-4 font-semibold text-ocean">{tr("openOrders", lang)}<Icon name="chevron-right" size={14} /></Link>
         </div>

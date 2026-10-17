@@ -3,9 +3,18 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import type { OpsMetrics } from "@medx/shared";
-import { Card, CardHeader, GradientHero, Icon, StatTile } from "@/components/ui";
+import { Card, CardHeader, GradientHero, Icon, StatTile, type IconName } from "@/components/ui";
 import { ClinicianFrame, useFrame } from "./(clinician)/_frame";
 import { tr, type TKey } from "./(clinician)/review/_i18n";
+
+/** The visit as one synced case: who acts at each step. Rules and models only suggest; people decide. */
+const JOURNEY: { title: TKey; body: TKey; icon: IconName }[] = [
+  { title: "jPatient", body: "jPatientBody", icon: "mic" },
+  { title: "jNurse", body: "jNurseBody", icon: "activity" },
+  { title: "jDoctor", body: "jDoctorBody", icon: "clipboard-list" },
+  { title: "jPharm1", body: "jPharm1Body", icon: "pill" },
+  { title: "jPharm2", body: "jPharm2Body", icon: "bell" },
+];
 
 const pill =
   "inline-flex h-11 items-center gap-2 rounded-full bg-sheet px-5 text-body font-semibold text-ocean shadow-[0_8px_16px_-10px_rgba(0,0,0,0.4)] transition-transform duration-quick ease-pen active:scale-[0.97]";
@@ -51,10 +60,11 @@ function Landing() {
         ))}
       />
 
-      <section aria-label={tr("landStats", lang)} className="grid grid-cols-1 gap-4 min-[700px]:grid-cols-3">
-        <StatTile label={tr("statSessionsToday", lang)} value={m ? m.sessionsToday : null} tone="ocean" icon={<Icon name="clipboard-list" size={16} />} />
-        <StatTile label={tr("statEscalated", lang)} value={m ? m.escalations : null} tone={m && m.escalations ? "signal" : "default"} icon={<Icon name="triangle-alert" size={16} />} />
-        <StatTile label={tr("statAwaiting", lang)} value={m ? m.byStatus.awaiting_review : null} tone="teal" icon={<Icon name="clock" size={16} />} />
+      <section aria-label={tr("landStats", lang)} className="grid grid-cols-1 gap-4 min-[560px]:grid-cols-2 min-[1000px]:grid-cols-4">
+        <StatTile label={tr("statSessionsToday", lang)} value={m ? m.sessionsToday : null} emptyLabel={tr("noDataYet", lang)} tone="ocean" icon={<Icon name="clipboard-list" size={16} />} />
+        <StatTile label={tr("statEscalated", lang)} value={m ? m.escalations : null} emptyLabel={tr("noDataYet", lang)} tone={m && m.escalations ? "signal" : "default"} icon={<Icon name="triangle-alert" size={16} />} />
+        <StatTile label={tr("statAwaiting", lang)} value={m ? m.byStatus.awaiting_review : null} emptyLabel={tr("noDataYet", lang)} tone="teal" icon={<Icon name="clock" size={16} />} />
+        <StatTile label={tr("statReadyPickup", lang)} value={m?.pharmacy ? m.pharmacy.readyForPickup : null} emptyLabel={tr("noDataYet", lang)} icon={<Icon name="pill" size={16} />} />
       </section>
       {failed && <p role="status" className="text-small text-ink-soft">{tr("statsUnavailable", lang)}</p>}
 
@@ -79,6 +89,23 @@ function Landing() {
             </Link>
           </div>
         </div>
+      </Card>
+      <Card className="cl-enter" aria-labelledby="journey-title" role="region">
+        <h2 id="journey-title" className="text-lead font-bold text-ink">{tr("journeyTitle", lang)}</h2>
+        <p className="mt-1 max-w-[70ch] text-body text-ink-soft">{tr("journeyBody", lang)}</p>
+        <ol className="mt-4 grid grid-cols-1 gap-3 min-[700px]:grid-cols-2 min-[1024px]:grid-cols-5">
+          {JOURNEY.map((step, i) => (
+            <li key={step.title} className="flex flex-col gap-2 rounded-2xl bg-paper p-4">
+              <span className="flex items-center gap-2">
+                <span aria-hidden="true" className="grid size-8 shrink-0 place-items-center rounded-full bg-ocean-tint text-ocean"><Icon name={step.icon} size={16} /></span>
+                <span className="text-micro font-semibold tabular-nums text-ink-soft">{i + 1}</span>
+              </span>
+              <h3 className="text-body font-bold text-ink">{tr(step.title, lang)}</h3>
+              <p className="text-small text-ink-soft">{tr(step.body, lang)}</p>
+            </li>
+          ))}
+        </ol>
+        <p className="mt-3 text-small font-semibold text-ink">{tr("journeyFoot", lang)}</p>
       </Card>
       <p className="text-micro text-graphite">{tr("decisionSupportShort", lang)}</p>
     </div>

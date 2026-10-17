@@ -1,11 +1,12 @@
-import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import rules from '@medx/shared/src/redflags.json';
 import { checkRedFlags } from '../redflags';
 import type { RedFlagRuleFile } from '@medx/shared';
+import { readText } from './fixtures/text';
 
 // Keep the exact row selector used by docs/clinical/check-redflags.mjs.
-const markdown = readFileSync(new URL('../../../../../docs/clinical/REDFLAG-TESTS.md', import.meta.url), 'utf8');
+// readText strips a BOM and CRLF so the `$`-anchored selector matches on Windows checkouts too.
+const markdown = readText(new URL('../../../../../docs/clinical/REDFLAG-TESTS.md', import.meta.url));
 const rows = markdown.split('\n').flatMap(line => {
   const m = line.match(/^\| (RF-[A-Z0-9-]+) \| (en|it|th) \| (fire|no) \| (.+) \|$/);
   return m ? [{ id: m[1], lang: m[2], expected: m[3], text: m[4] }] : [];

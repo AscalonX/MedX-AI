@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ExtractedField, IntakeSession, MedAlert, OpsMetrics, RedFlagHit, SessionStatus } from "@medx/shared";
-import { healthHardware, highAlertsOpen, isEmptySession, isEmergency, isHealth, isMetrics, isModelFlag, isSessions, orderedQueue, pendingEscalations, recordedCalls, verifiedComplaint, waitingSeconds } from "./ops-data";
+import { healthHardware, highAlertsOpen, isEmptySession, isEmergency, isHealth, isMetrics, isModelFlag, isSessions, orderedQueue, pendingEscalations, pharmacyStages, readyForPickup, recordedCalls, verifiedComplaint, waitingSeconds } from "./ops-data";
 
 const localized = { en: "headache", it: "mal di testa", th: "ปวดหัว" };
 const field: ExtractedField = { key: "chief_complaint", value: localized, valueOriginal: "headache", status: "supported", confidence: 0.9, required: true, evidence: [{ turnId: "turn-1", quote: "headache", start: 0, end: 8 }] };
@@ -117,6 +117,25 @@ describe("ops data integrity", () => {
     expect(isMetrics({ ...metrics, medianReviewSeconds: undefined })).toBe(false);
     expect(isMetrics({ ...metrics, modelLatencyMs: { p50: Number.NaN, p95: 0 } })).toBe(false);
     expect(isMetrics({ ...metrics, provider: { name: "mock" } })).toBe(false);
+  });
+  it("accepts an absent pharmacy block and rejects a malformed one instead of showing zeros", () => {
+    const pharmacy = { toVerify: 2, toDispense: 1, readyForPickup: 1, collectedToday: 0 };
+    expect(isMetrics({ ...metrics, pharmacy })).toBe(true);
+    expect(isMetrics(metrics)).toBe(true);
+    expect(isMetrics({ ...metrics, pharmacy: { ...pharmacy, toDispense: 1.5 } })).toBe(false);
+    expect(isMetrics({ ...metrics, pharmacy: { ...pharmacy, collectedToday: -1 } })).toBe(false);
+    expect(isMetrics({ ...metrics, pharmacy: { toVerify: 2 } })).toBe(false);
+    expect(isMetrics({ ...metrics, pharmacy: null })).toBe(false);
+  });
+  it("lists only patients called and not yet collected, longest wait first, with code and counter only", () => {
+    const later = { ...session("approved", "later"), pickup: { status: "ready" as const, counter: " 2 ", calledBy: "Pharmacist B", calledAt: "2026-10-17T03:00:00Z" } };
+    const earlier = { ...session("approved", "earlier"), pickup: { status: "ready" as const, calledBy: "Pharmacist B", calledAt: "2026-10-17T02:00:00Z" } };
+    const collected = { ...session("approved", "collected"), pickup: { status: "collected" as const, calledBy: "Pharmacist B", calledAt: "2026-10-17T01:00:00Z", collectedBy: "Pharmacist B", collectedAt: "2026-10-17T01:10:00Z" } };
+    const malformed = { ...session("approved", "malformed"), pickup: { status: "ready", calledAt: "not a date" } } as unknown as IntakeSession;
+    const rows = readyForPickup([later, session("approved", "none"), collected, malformed, earlier]);
+    expect(rows).toEqual([{ id: "earlier", code: "earlier", calledAt: "2026-10-17T02:00:00Z" }, { id: "later", code: "later", calledAt: "2026-10-17T03:00:00Z", counter: "2" }]);
+    expect(JSON.stringify(rows)).not.toContain("Pharmacist");
+    expect(pharmacyStages).toEqual(["toVerify", "toDispense", "readyForPickup", "collectedToday"]);
   });
   it("keeps failed and zero-latency calls with their original provider/model", () => {
     const s = session();
