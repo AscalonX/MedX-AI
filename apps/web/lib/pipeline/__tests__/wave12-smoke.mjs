@@ -1,0 +1,56 @@
+// Synthetic-only live curl smoke. Uses the existing server; never resets its store.
+// Run: node apps/web/lib/pipeline/__tests__/wave12-smoke.mjs
+import { execFileSync } from 'node:child_process';
+import assert from 'node:assert/strict';
+const base = 'http://localhost:3000';
+const results = [];
+function call(path, value, expected = 200) {
+  const args = ['-sS', '--max-time', '45', '-w', '\n%{http_code}', `${base}${path}`];
+  if (value !== undefined) args.push('-H', 'Content-Type: application/json', '-X', 'POST', '--data-binary', JSON.stringify(value));
+  const raw = execFileSync('curl', args, { encoding: 'utf8', maxBuffer: 2 * 1024 * 1024 });
+  const at = raw.lastIndexOf('\n'), status = Number(raw.slice(at + 1));
+  const body = JSON.parse(raw.slice(0, at));
+  assert.equal(status, expected, `${path}: ${JSON.stringify(body)}`);
+  results.push({ path, status });
+  return body;
+}
+call('/api/health');
+const s = call('/api/sessions', { patientLang: 'en' }, 201), root = `/api/sessions/${s.id}`;
+call(`${root}/vitals`, { recordedBy: 'synthetic-w12-nurse', vitals: { heartRate: -8 } }, 400);
+let updated = call(`${root}/vitals`, { recordedBy: 'synthetic-w12-nurse', vitals: { heartRate: 70 } });
+assert.equal(updated.triage.suggestedLevel, 3); assert.equal(updated.triage.confirmed, undefined);
+call(`${root}/triage/confirm`, { reviewerId: 'synthetic-w12-nurse', level: 4 }, 400);
+call(`${root}/triage/confirm`, { reviewerId: 'synthetic-w12-nurse', level: 4, note: 'Synthetic in-person review' });
+updated = call(`${root}/vitals`, { recordedBy: 'synthetic-w12-nurse', vitals: { spo2: 88 } });
+assert.equal(updated.triage.suggestedLevel, 2); assert.equal(updated.triage.confirmed.level, 4);
+call(`${root}/orders/investigations`, { orderedBy: 'synthetic-w12-doctor', code: 'unknown-test' }, 400);
+updated = call(`${root}/orders/investigations`, { orderedBy: 'synthetic-w12-doctor', code: 'ecg', fromSuggestionId: 'consider:CR-CHEST-01' });
+assert.equal(updated.orders.investigations[0].code, 'ecg');
+const draft = { orderedBy: 'synthetic-w12-doctor', drugText: 'paracetamol', dose: '1500 mg', route: 'oral', frequency: 'every 6 hours' };
+updated = call(`${root}/orders/medications`, draft);
+let order = updated.orders.medications[0];
+assert.equal(order.checks.filter(a => a.kind === 'dose_range').length, 2);
+const orderRoot = `${root}/orders/medications/${order.id}`;
+call(`${orderRoot}/submit`, { orderedBy: draft.orderedBy, overrides: [] }, 409);
+call(`${orderRoot}/submit`, { orderedBy: draft.orderedBy, overrides: order.checks.filter(a => a.severity === 'high').map(a => ({ alertId: a.id, reason: 'Synthetic override documented for smoke test' })) });
+call(`${orderRoot}/pharmacy`, { reviewerId: 'synthetic-w12-pharmacist', action: 'return' }, 400);
+call(`${orderRoot}/pharmacy`, { reviewerId: 'synthetic-w12-pharmacist', action: 'return', note: 'Synthetic dose correction requested' });
+updated = call(`${root}/orders/medications`, { ...draft, orderId: order.id, dose: '500 mg' });
+order = updated.orders.medications[0]; assert.equal(order.status, 'draft'); assert.equal(order.checks.length, 0); assert.equal(order.overrides.length, 0);
+call(`${orderRoot}/submit`, { orderedBy: draft.orderedBy, overrides: [] });
+updated = call(`${orderRoot}/pharmacy`, { reviewerId: 'synthetic-w12-pharmacist', action: 'verify' });
+assert.equal(updated.orders.medications[0].status, 'verified');
+call(`${orderRoot}/cancel`, { orderedBy: draft.orderedBy, reason: 'Synthetic smoke completed' });
+call(`${root}/consult/turns`, { mode: 'doctor', speaker: 'patient', text: 'Chest pain since this morning, going to my left arm, and I feel sweaty' });
+const consult = call(`${root}/consult?mode=doctor`);
+assert(consult.suggestions.some(x => x.kind === 'consider' && x.workup?.length && x.guideline?.url));
+assert.equal(consult.modelCalls.length, 0);
+const note = call(`${root}/consult/note`, { reviewerId: draft.orderedBy, mode: 'doctor', action: 'draft' }).note;
+assert(note.lines.some(l => l.section === 'presenting_complaint' && /chest pain/i.test(l.text.en) && l.evidence.length));
+assert.equal(note.lines.filter(l => l.text.en.startsWith('Not yet asked:')).length, 1);
+const saved = call(root);
+assert(saved.audit.some(a => a.type === 'vitals_recorded'));
+assert(saved.audit.some(a => a.type === 'triage_confirmed'));
+assert(saved.audit.some(a => a.type === 'order_pharmacy_action'));
+assert(saved.audit.some(a => a.payload.action === 'cancel'));
+console.log(JSON.stringify({ passed: results.length, sessionId: s.id, assertions: 'all passed', routes: results }, null, 2));

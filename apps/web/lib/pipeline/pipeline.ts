@@ -13,6 +13,7 @@ import { words } from './verify';
 import { mergePharmacy, mockPharmacy, pharmacyEntries } from './pharmacyExtraction';
 import { aliases } from './prompts';
 import { quickAnswer } from './quickAnswers';
+import { assessTriage } from './triage';
 export type { ModelClient } from './llm';
 export const TURN_TIMEOUT_MS = 40000;
 type InternalTurn = IntakeSession['turns'][number] & { clientTurnId?: string };
@@ -148,6 +149,7 @@ export async function addTurnInLock(sessionId: string, rawText: string, inputMod
   if (clientTurnId !== undefined && (current.turns as InternalTurn[]).some(t => t.clientTurnId === clientTurnId)) return current;
   const events: { type: AuditEvent['type']; payload: Record<string, unknown> }[] = [];
   const session = await runTurn(current, rawText, { inputMode, audit: (type, payload) => events.push({ type, payload }) });
+  if (session.triage) session.triage = assessTriage(session);
   if (clientTurnId !== undefined) (session.turns.find(t => t.role === 'patient' && !current.turns.some(old => old.id === t.id)) as InternalTurn).clientTurnId = clientTurnId;
   saveSession(session);
   for (const e of events) appendAudit(sessionId, e.type, 'system', e.payload);

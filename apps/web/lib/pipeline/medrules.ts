@@ -22,7 +22,7 @@ const SOURCES: Partial<Record<MedAlertKind, string>> = {
   duplicate_therapy: 'BNF: Medicines, duplication of therapy',
   pregnancy_caution: 'BNF: Pregnancy sections of the named drug',
   max_dose_risk: 'BNF: Paracetamol, adult maximum 4 g in 24 hours',
-  unknown_medication: 'MedX Bridge pharmacy spec §3 (unidentified medicine)',
+  unknown_medication: 'MedX pharmacy spec §3 (unidentified medicine)',
 };
 
 /** Pure deterministic decision support; no model can remove or review an alert. */

@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import type { ConsultMode, ConsultNote, ConsultNoteLine, ConsultNoteReq, ConsultRuleFile, ConsultState, ConsultSuggestion, ConsultTurnReq, Evidence, IntakeSession, Localized } from '@medx/shared';
 import redFlags from '@medx/shared/src/redflags.json';
+import investigations from '@medx/shared/src/investigations.json';
 import { emptyFields, isPresent, QUESTION_PRIORITY } from './config';
 import { loadConsultRules } from './consultRules';
 import { chatJSON, type ModelClient } from './llm';
@@ -46,7 +47,14 @@ export function ruleSuggestions(s: IntakeSession, rules: ConsultRuleFile): Consu
   // Reuse AND-of-ORs, negation windows, cross-turn matching, Thai compaction,
   // NFKC/case/dash/zero-width normalization and original UTF-16 quote offsets.
   const hits = checkRedFlags(s.turns, undefined, { ...redFlags, rules: rules.rules.map(r => ({ id: r.id, match: r.match, severity: 'urgent', label: localizedText(r.id), action: localizedText('For clinician review'), patientMessage: localizedText(''), source: r.source })) });
-  const result: ConsultSuggestion[] = (s.summary?.redFlags || []).map(f => ({ id: `rule_out:flag:${f.ruleId}`, kind: 'rule_out', mode: both, text: { en: `Escalate: ${f.label.en}`, it: `Allertare il clinico: ${f.label.it}`, th: `แจ้งบุคลากรทันที: ${f.label.th}` }, why: f.action, evidence: clinicalEvidence(s, f.evidence), ruleId: f.ruleId, source: 'rule', confidence: 1, status: 'open' }));
+  const mergedFlags = new Map<string, ConsultSuggestion>();
+  for (const f of s.summary?.redFlags || []) {
+    const evidence = clinicalEvidence(s, f.evidence);
+    const prior = mergedFlags.get(f.ruleId);
+    if (prior) prior.evidence = [...new Map([...prior.evidence, ...evidence].map(e => [JSON.stringify(e), e])).values()];
+    else mergedFlags.set(f.ruleId, { id: `rule_out:flag:${f.ruleId}`, kind: 'rule_out', mode: both, text: { en: `Escalate: ${f.label.en}`, it: `Allertare il clinico: ${f.label.it}`, th: `แจ้งบุคลากรทันที: ${f.label.th}` }, why: localizedText('Record clinician review of this flag.', 'Registrare la revisione clinica di questo segnale.', 'บันทึกการทบทวนสัญญาณนี้โดยแพทย์'), evidence, ruleId: f.ruleId, source: 'rule', confidence: 1, status: 'open' });
+  }
+  const result = [...mergedFlags.values()];
   for (const r of rules.rules) {
     const hit = hits.find(h => h.ruleId === r.id); if (!hit) continue;
     const evidence = clinicalEvidence(s, hit.evidence); if (!evidence.length) continue;
@@ -62,7 +70,7 @@ export function ruleSuggestions(s: IntakeSession, rules: ConsultRuleFile): Consu
   for (const r of rules.rules) {
     const hit = hits.find(h => h.ruleId === r.id); if (!hit) continue;
     const evidence = clinicalEvidence(s, hit.evidence); if (!evidence.length) continue;
-    for (const c of r.considerations || []) result.push({ id: `consider:${r.id}:${c.id}`, kind: 'consider', mode: ['doctor'], text: { en: `Consider for clinician review: ${c.text.en}`, it: `Da considerare per revisione clinica: ${c.text.it}`, th: `ข้อพิจารณาสำหรับแพทย์ทบทวน: ${c.text.th}` }, why: c.why, evidence, ruleId: r.id, source: 'rule', confidence: 1, status: 'open' });
+    for (const c of r.considerations || []) result.push({ id: `consider:${r.id}:${c.id}`, kind: 'consider', mode: ['doctor'], text: { en: `Consider for clinician review: ${c.text.en}`, it: `Da considerare per revisione clinica: ${c.text.it}`, th: `ข้อพิจารณาสำหรับแพทย์ทบทวน: ${c.text.th}` }, why: c.why, evidence, ruleId: r.id, source: 'rule', confidence: 1, status: 'open', workup: (c.workup || []).flatMap(id => investigations.items.filter(i => i.id === id).map(i => ({ id: i.id, label: i.label }))), ...(c.guideline ? { guideline: c.guideline } : {}) });
   }
   return result;
 }
@@ -124,8 +132,11 @@ async function refresh(s: IntakeSession, record: ConsultRecord, options: Consult
   record.suggestions.sort((a, b) => rank(a) - rank(b));
 }
 function state(s: IntakeSession, record: ConsultRecord, mode: ConsultMode): ConsultState {
-  let open = 0;
-  return structuredClone({ sessionId: s.id, mode, suggestions: record.suggestions.filter(x => x.mode.includes(mode) && (x.status !== 'open' || ++open <= 8)), note: record.notes[mode] || null, modelCalls: record.modelCalls });
+  const candidates = record.suggestions.filter(x => x.mode.includes(mode));
+  // Reserve room for doctor considerations; missing-field prompts must not starve them.
+  const considers = mode === 'doctor' ? candidates.filter(x => x.kind === 'consider' && x.status === 'open').slice(0, 3) : [];
+  const rest = candidates.filter(x => x.status === 'open' && !considers.includes(x)).slice(0, 8 - considers.length);
+  return structuredClone({ sessionId: s.id, mode, suggestions: candidates.filter(x => x.status !== 'open' || rest.includes(x) || considers.includes(x)), note: record.notes[mode] || null, modelCalls: record.modelCalls });
 }
 export async function getConsult(id: string, mode: ConsultMode, options: ConsultOptions = {}) {
   consultMode(mode);
@@ -186,9 +197,27 @@ export function draftConsultNote(s: IntakeSession, suggestions: ConsultSuggestio
     const evidence = evidenceFor(s, raw);
     lines.push({ id, section, text, evidence, status: supported && evidence.length ? 'supported' : 'unsupported' });
   };
-  for (const f of s.summary?.fields || emptyFields()) {
+  const labels: Record<string, Localized> = {
+    chief_complaint: localizedText('Presenting complaint', 'Motivo della visita', 'อาการสำคัญ'), onset: localizedText('Onset', 'Esordio', 'เริ่มมีอาการ'),
+    duration: localizedText('Duration', 'Durata', 'ระยะเวลา'), severity: localizedText('Severity', 'Intensità', 'ความรุนแรง'), location: localizedText('Location', 'Sede', 'ตำแหน่ง'),
+    associated_symptoms: localizedText('Associated symptoms', 'Sintomi associati', 'อาการร่วม'), medical_history: localizedText('Medical history', 'Anamnesi', 'ประวัติการรักษา'),
+    pregnancy_status: localizedText('Pregnancy status', 'Stato di gravidanza', 'สถานะการตั้งครรภ์'), age: localizedText('Age', 'Età', 'อายุ'), sex: localizedText('Sex', 'Sesso', 'เพศ'),
+    medications: localizedText('Medications', 'Farmaci', 'ยา'), allergies: localizedText('Allergies', 'Allergie', 'การแพ้'),
+  };
+  const missing: Localized[] = [];
+  const fields = s.summary?.fields || emptyFields();
+  // Escalation deliberately skips extraction. Preserve every redacted patient
+  // report in the presenting history so new complaints cannot disappear.
+  for (const t of s.turns.filter(t => t.role === 'patient')) {
+    const verified = verifyDetailed(t.text, [t], t.id, false, false);
+    if (verified) add(`report:${t.id}`, 'presenting_complaint', localizedText(`Patient report: ${t.text}`, `Il paziente riferisce: ${t.text}`, `ผู้ป่วยแจ้ง: ${t.text}`), [verified.evidence]);
+  }
+  for (const f of fields) {
     if (['medications', 'allergies'].includes(f.key)) continue;
-    add(`field:${f.key}`, f.key === 'chief_complaint' ? 'presenting_complaint' : 'history', f.value || localizedText(`${f.key.replaceAll('_', ' ')}: not stated`, `${f.key}: non riferito`, `${f.key}: ยังไม่ระบุ`), f.evidence, isPresent(f));
+    if (f.key === 'chief_complaint' && lines.some(l => l.section === 'presenting_complaint')) continue;
+    if (!isPresent(f) || !f.value || !evidenceFor(s, f.evidence).length) { missing.push(labels[f.key]); continue; }
+    const value = f.value;
+    add(`field:${f.key}`, f.key === 'chief_complaint' ? 'presenting_complaint' : 'history', { en: `${labels[f.key].en}: ${value.en}`, it: `${labels[f.key].it}: ${value.it}`, th: `${labels[f.key].th}: ${value.th}` }, f.evidence);
   }
   for (const section of ['medications', 'allergies'] as const) {
     const entries = s.summary?.[section] || [];
@@ -200,14 +229,16 @@ export function draftConsultNote(s: IntakeSession, suggestions: ConsultSuggestio
     if (!entries.length) {
       const noKnown = section === 'allergies' ? s.summary?.noKnownAllergiesEvidence || [] : [];
       if (noKnown.length) add('allergies:no-known', section, localizedText('Patient reports no known allergies', 'Il paziente riferisce nessuna allergia nota', 'ผู้ป่วยแจ้งว่าไม่มีประวัติแพ้'), noKnown);
-      else add(`field:${section}`, section, f?.value || localizedText('Not stated', 'Non riferito', 'ยังไม่ระบุ'), f?.evidence || [], !!f && isPresent(f));
+      else if (f && isPresent(f) && f.value && evidenceFor(s, f.evidence).length) add(`field:${section}`, section, f.value, f.evidence);
+      else missing.push(labels[section]);
     }
   }
   for (const f of s.summary?.redFlags || []) add(`flag:${f.ruleId}`, 'red_flags', { en: `Flag for clinician review: ${f.label.en}`, it: `Segnalazione per revisione clinica: ${f.label.it}`, th: `ข้อเตือนให้บุคลากรทบทวน: ${f.label.th}` }, f.evidence);
   for (const x of suggestions.filter(x => x.mode.includes(mode))) {
     if (x.kind === 'consider' && mode === 'doctor') add(`suggestion:${x.id}`, 'considerations', x.text, x.evidence);
-    else if (x.kind !== 'consider' && x.status === 'open') add(`suggestion:${x.id}`, 'open_questions', x.text, x.evidence);
+    else if (x.kind !== 'consider' && x.status === 'open' && !x.field && !x.id.startsWith('rule_out:flag:')) add(`suggestion:${x.id}`, 'open_questions', x.text, x.evidence);
   }
+  if (missing.length) add('missing:fields', 'open_questions', { en: `Not yet asked: ${missing.map(x => x.en.toLowerCase()).join(', ')}`, it: `Da chiedere: ${missing.map(x => x.it.toLowerCase()).join(', ')}`, th: `ยังไม่ได้สอบถาม: ${missing.map(x => x.th).join(', ')}` }, [], false);
   const sections: ConsultNoteLine['section'][] = ['presenting_complaint', 'history', 'medications', 'allergies', 'red_flags', 'considerations', 'open_questions'];
   lines.sort((a, b) => sections.indexOf(a.section) - sections.indexOf(b.section));
   return { lines, generatedAt: new Date().toISOString(), disclaimer: localizedText('Draft for clinician review. Not a diagnosis.', 'Bozza per la revisione del clinico. Non è una diagnosi.', 'ร่างสำหรับให้แพทย์ทบทวน ไม่ใช่การวินิจฉัย') };
