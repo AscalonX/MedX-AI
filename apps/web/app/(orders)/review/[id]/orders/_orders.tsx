@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ConsultState, ConsultSuggestion, GetSessionRes, IntakeSession, InvestigationOrderReq, Localized } from "@medx/shared";
+import type { AuditEvent, ConsultState, ConsultSuggestion, GetSessionRes, IntakeSession, InvestigationOrderReq, Localized } from "@medx/shared";
 import { Button, Card, CardHeader, Field, Icon, Pill } from "@/components/ui";
 import { Head, Notice, ReadOnlyNote, useIdentity } from "../../../_bits";
 import { CATALOG, fixtureConsider, fixtureInvestigation, fixtureSession } from "../../../_fixture";
@@ -18,6 +18,7 @@ export function Orders({ id }: { id: string }) {
   const [session, setSession] = useState<IntakeSession | null>(null);
   const [fixture, setFixture] = useState(false);
   const [loadErr, setLoadErr] = useState<string | null>(null);
+  const [audit, setAudit] = useState<AuditEvent[]>([]);
   const [consider, setConsider] = useState<ConsultSuggestion[]>([]);
   const fixtureRef = useRef(false);
   fixtureRef.current = fixture;
@@ -27,6 +28,7 @@ export function Orders({ id }: { id: string }) {
       const r = await call<GetSessionRes>(`/api/sessions/${id}`, undefined, () => ({ session: fixtureSession(id), audit: [] }));
       setSession((cur) => (fixtureRef.current && cur ? cur : r.data.session));
       setFixture((f) => f || r.fixture);
+      setAudit(r.data.audit ?? []);
       const c = await call<ConsultState>(`/api/sessions/${id}/consult?mode=doctor`, undefined, () => ({ sessionId: id, mode: "doctor", suggestions: fixtureConsider, note: null, modelCalls: [] }));
       setConsider(c.data.suggestions.filter((s) => s.kind === "consider"));
       if (c.fixture) setFixture(true);
@@ -35,7 +37,11 @@ export function Orders({ id }: { id: string }) {
   }, [id]);
   useEffect(() => { void load(); }, [load]);
 
-  const apply = (s: IntakeSession, fx: boolean) => { setSession(s); if (fx) setFixture(true); };
+  const apply = (s: IntakeSession, fx: boolean) => {
+    setSession(s); if (fx) setFixture(true);
+    // writes return only the session; re-read for the audit trail behind the order timeline
+    call<GetSessionRes>(`/api/sessions/${id}`, undefined, () => ({ session: s, audit: [] })).then((r) => { if (!r.fixture) setAudit(r.data.audit ?? []); }, () => {});
+  };
   return (
     <div className="cl-enter mx-auto max-w-6xl px-4 py-6 sm:px-6">
       <Head id={id} title={tr("ordersTitle", lang)} session={session} lang={lang} fixture={fixture} />
@@ -43,7 +49,7 @@ export function Orders({ id }: { id: string }) {
       {!canOrder && <ReadOnlyNote>{tr("doctorsOnly", lang)}</ReadOnlyNote>}
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
         <Investigations id={id} session={session} consider={consider} lang={lang} reviewer={reviewer} apply={apply} readOnly={!canOrder} />
-        <Meds id={id} session={session} lang={lang} reviewer={reviewer} apply={apply} readOnly={!canOrder} />
+        <Meds id={id} session={session} lang={lang} reviewer={reviewer} apply={apply} readOnly={!canOrder} audit={audit} />
       </div>
       <p className="mt-4 text-small text-ink-soft">{tr("prototype", lang)}</p>
     </div>

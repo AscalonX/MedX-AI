@@ -123,6 +123,12 @@ export const T = {
   keep: L("Keep", "เก็บไว้", "Mantieni"),
   o2col: L("On O2", "ออกซิเจน", "O2"),
   acvpuCol: L("ACVPU", "ACVPU", "ACVPU"),
+  tlTitle: L("Order history", "ประวัติคำสั่ง", "Cronologia ordine"),
+  tlSubmitted: L("Submitted by", "ส่งโดย", "Inviato da"),
+  tlResubmitted: L("Resubmitted by", "ส่งใหม่โดย", "Reinviato da"),
+  tlReturned: L("Returned by", "ส่งกลับโดย", "Restituito da"),
+  tlVerified: L("Verified by", "ยืนยันโดย", "Verificato da"),
+  tlCancelled: L("Cancelled by", "ยกเลิกโดย", "Annullato da"),
   failed: L("Request failed", "ดำเนินการไม่สำเร็จ", "Richiesta non riuscita"),
 } satisfies Record<string, Localized>;
 export type TKey = keyof typeof T;

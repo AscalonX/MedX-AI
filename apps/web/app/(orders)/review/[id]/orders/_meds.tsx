@@ -1,16 +1,16 @@
 "use client";
 import { useRef, useState } from "react";
-import type { IntakeSession, Lang, MedAlert, MedicationOrder, MedicationOrderReq, SubmitOrderReq } from "@medx/shared";
+import type { AuditEvent, IntakeSession, Lang, MedAlert, MedicationOrder, MedicationOrderReq, SubmitOrderReq } from "@medx/shared";
 import { Badge, Button, Card, CardHeader, Field, Icon } from "@/components/ui";
 import { Notice, noDash, statusBadge } from "../../../_bits";
 import { fixtureMedication, fixtureMedStatus } from "../../../_fixture";
-import { RULE_COUNTS, asSession, call, tr } from "../../../_lib";
+import { RULE_COUNTS, asSession, call, clockOf, tr } from "../../../_lib";
 
 const EMPTY = { drugText: "", dose: "", route: "oral", frequency: "", duration: "" };
 type Apply = (s: IntakeSession, fx: boolean) => void;
 
-export function Meds({ id, session, lang, reviewer, apply, readOnly }: {
-  readOnly: boolean; id: string; session: IntakeSession | null; lang: Lang; reviewer: string; apply: Apply }) {
+export function Meds({ id, session, lang, reviewer, apply, readOnly, audit }: {
+  readOnly: boolean; audit: AuditEvent[]; id: string; session: IntakeSession | null; lang: Lang; reviewer: string; apply: Apply }) {
   const [f, setF] = useState(EMPTY);
   const [editing, setEditing] = useState<string | null>(null);
   const [errs, setErrs] = useState<Partial<Record<keyof typeof EMPTY, string>>>({});
@@ -78,7 +78,7 @@ export function Meds({ id, session, lang, reviewer, apply, readOnly }: {
 
       {meds.length > 0 && (
         <ul className="mt-6 space-y-4">
-          {meds.map((m) => <OrderCard key={`${m.id}-${m.at}-${m.status}`} m={m} lang={lang} busy={busy} err={err} readOnly={readOnly} onEdit={() => edit(m)}
+          {meds.map((m) => <OrderCard key={`${m.id}-${m.at}-${m.status}`} m={m} lang={lang} busy={busy} err={err} audit={audit} readOnly={readOnly} onEdit={() => edit(m)}
             onSubmit={(overrides) => mutate(m.id, "submit", { orderedBy: reviewer, overrides })} onCancel={() => mutate(m.id, "cancel", { orderedBy: reviewer })} />)}
         </ul>
       )}
@@ -88,8 +88,8 @@ export function Meds({ id, session, lang, reviewer, apply, readOnly }: {
   );
 }
 
-function OrderCard({ m, lang, busy, err, readOnly, onEdit, onSubmit, onCancel }: {
-  readOnly: boolean;
+function OrderCard({ m, lang, busy, err, readOnly, audit, onEdit, onSubmit, onCancel }: {
+  readOnly: boolean; audit: AuditEvent[];
   m: MedicationOrder; lang: Lang; busy: boolean; err: string | null; onEdit: () => void; onSubmit: (o: { alertId: string; reason: string }[]) => void; onCancel: () => void;
 }) {
   const [reasons, setReasons] = useState<Record<string, string>>(() => Object.fromEntries(m.overrides.map((o) => [o.alertId, o.reason])));
@@ -108,6 +108,8 @@ function OrderCard({ m, lang, busy, err, readOnly, onEdit, onSubmit, onCancel }:
       {m.status === "returned" && m.pharmacist && (
         <p className="mt-2 rounded-xl bg-warn-tint px-3 py-2 text-body text-warn"><b>{tr("pharmacistNote", lang)}:</b> {m.pharmacist.note || "-"} <span className="text-small">({m.pharmacist.by})</span></p>
       )}
+
+      <Timeline m={m} audit={audit} lang={lang} />
 
       <section className="mt-3" aria-label={tr("checksTitle", lang)}>
         <h4 className="text-small font-bold text-ink">{tr("checksTitle", lang)}</h4>
@@ -181,4 +183,23 @@ function CancelBtn({ busy, lang, onCancel }: { busy: boolean; lang: Lang; onCanc
       <Button onClick={() => setAsk(false)}>{tr("keep", lang)}</Button>
     </span>
   ) : <Button variant="quiet" disabled={busy} onClick={() => setAsk(true)}>{tr("cancelOrder", lang)}</Button>;
+}
+
+/** Order history from the audit trail: submitted / returned / resubmitted / verified / cancelled, in time order. */
+function Timeline({ m, audit, lang }: { m: MedicationOrder; audit: AuditEvent[]; lang: Lang }) {
+  const mine = audit.filter((e) => (e.payload as { orderId?: string }).orderId === m.id).sort((a, b) => a.at.localeCompare(b.at));
+  let returned = false;
+  const rows: { at: string; text: string; note?: string }[] = [];
+  for (const e of mine) {
+    const p = e.payload as { action?: string; by?: string; note?: string; reason?: string };
+    if (e.type === "order_submitted") { rows.push({ at: e.at, text: `${tr(returned ? "tlResubmitted" : "tlSubmitted", lang)} ${e.actorId ?? m.orderedBy}` }); returned = false; }
+    else if (e.type === "order_pharmacy_action") { if (p.action === "return") returned = true; rows.push({ at: e.at, text: `${tr(p.action === "return" ? "tlReturned" : "tlVerified", lang)} ${p.by ?? e.actorId ?? ""}`, note: p.note }); }
+    else if (e.type === "order_cancelled" || p.action === "cancel") rows.push({ at: e.at, text: `${tr("tlCancelled", lang)} ${e.actorId ?? ""}`, note: p.reason });
+  }
+  if (rows.length === 0) return null;
+  return (
+    <ol className="mt-3 space-y-1 border-l-2 border-rule pl-3 text-small text-ink-soft" aria-label={tr("tlTitle", lang)}>
+      {rows.map((r, i) => <li key={i}><b className="text-ink">{r.text}</b>{r.note ? `: ${r.note}` : ""}, {clockOf(r.at, lang)}</li>)}
+    </ol>
+  );
 }

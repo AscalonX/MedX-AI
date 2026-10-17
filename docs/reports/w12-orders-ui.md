@@ -49,3 +49,6 @@ Run with Playwright against :3000; screenshots v9-vitals-live.png, v9-orders-liv
 - P1/P2: per-page titles ("Vitals | MedX", "Orders | MedX"); em dashes in server text shown as commas; two-step Cancel order; ACVPU is now wrapping radio chips (no clipping); history table gains On O2 and ACVPU columns.
 - Note: `tsc` currently reports an error in `lib/pipeline/pharmacyExtraction.ts` (not my area). `app/(orders)` is clean.
 - Caveat: the shared frame (`(clinician)/_frame.tsx`) still holds role in React state; my pages sync it from storage on mount, so the header follows. Pharmacist/ops stored roles are treated as read-only here.
+
+## Order timeline (P2)
+Each medication order shows a small history from the session audit trail (order_submitted, order_pharmacy_action, cancel), e.g. "Submitted by Dr. Marco Bianchi", "Returned by Pharmacist Laura Conti: note", "Resubmitted by Dr. Marco Bianchi", with times. Audit is re-read after every write. Live-verified (screens/v12-order-timeline.png); tsc and eslint clean for app/(orders). `useStaffRole` hook not yet present (app/_shared absent), so `useIdentity` in `_bits.tsx` is unchanged.
