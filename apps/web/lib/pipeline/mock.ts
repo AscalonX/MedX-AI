@@ -34,12 +34,17 @@ export function mockJSON(req: ChatRequest): unknown {
   const patterns: Partial<Record<FieldKey, [RegExp, Localized][]>> = {
     chief_complaint: [
       [/(?:headache|mal di testa|ปวดหัว|ปวดศีรษะ)/i, { en: 'headache', it: 'mal di testa', th: 'ปวดหัว' }],
-      [/(?:stomach ache|stomach pain|mal di pancia|ปวดท้อง)/i, { en: 'stomach ache', it: 'mal di pancia', th: 'ปวดท้อง' }],
+      [/(?:stomach ?ache|stomach pain|tummy ache|belly (?:ache|pain)|abdominal pain|mal di pancia|ปวดท้อง)/i, { en: 'stomach ache', it: 'mal di pancia', th: 'ปวดท้อง' }],
       [/(?:cough|tosse|ไอ)/i, { en: 'cough', it: 'tosse', th: 'ไอ' }],
       [/(?:burning when I pee)/i, { en: 'burning urination', it: 'bruciore quando urino', th: 'แสบเวลาปัสสาวะ' }],
       [/(?:rolled my left ankle)/i, { en: 'left ankle injury', it: 'trauma alla caviglia sinistra', th: 'ข้อเท้าซ้ายบาดเจ็บ' }],
       [/(?:mal di gola)/i, { en: 'sore throat', it: 'mal di gola', th: 'เจ็บคอ' }],
       [/(?:febbre)/i, { en: 'fever', it: 'febbre', th: 'มีไข้' }],
+      [/\bsore throat\b|เจ็บคอ/i, { en: 'sore throat', it: 'mal di gola', th: 'เจ็บคอ' }],
+      [/\bback ?pain\b|\bbackache\b|mal di schiena|ปวดหลัง/i, { en: 'back pain', it: 'mal di schiena', th: 'ปวดหลัง' }],
+      [/\brash\b|\bhives\b|eruzione|ผื่น/i, { en: 'rash', it: 'eruzione cutanea', th: 'ผื่น' }],
+      [/\bdizz(?:y|iness)\b|\blightheaded\b|capogiro|เวียนหัว/i, { en: 'dizziness', it: 'capogiro', th: 'เวียนหัว' }],
+      [/\bfever\b|\bfeverish\b|ไข้/i, { en: 'fever', it: 'febbre', th: 'มีไข้' }],
     ],
     onset: [[/(?:since today|da oggi|ตั้งแต่วันนี้)/i, { en: 'since today', it: 'da oggi', th: 'ตั้งแต่วันนี้' }], [/(?:this week|questa settimana|สัปดาห์นี้)/i, { en: 'this week', it: 'questa settimana', th: 'สัปดาห์นี้' }], [/(?:since yesterday|started yesterday|da ieri|ตั้งแต่เมื่อวาน|เริ่มเมื่อวาน)/i, { en: 'since yesterday', it: 'da ieri', th: 'ตั้งแต่เมื่อวาน' }], [/(?:for two days|da due giorni)/i, { en: 'two days ago', it: 'da due giorni', th: 'สองวันก่อน' }], [/yesterday evening/i, { en: 'yesterday evening', it: 'ieri sera', th: 'เมื่อวานตอนเย็น' }], [/da stamattina/i, { en: 'this morning', it: 'da stamattina', th: 'เช้าวันนี้' }]],
     associated_symptoms: [[/(?:no other symptoms|nessun altro sintomo|ไม่มีอาการอื่น)/i, { en: 'no other symptoms', it: 'nessun altro sintomo', th: 'ไม่มีอาการอื่น' }], [/(?:nausea|คลื่นไส้)/i, { en: 'nausea', it: 'nausea', th: 'คลื่นไส้' }]],

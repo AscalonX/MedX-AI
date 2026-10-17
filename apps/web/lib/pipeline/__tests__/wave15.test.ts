@@ -45,11 +45,11 @@ describe('MF-1 model treatment gate', () => {
 });
 
 describe('MF-2 signed note adoption and immutable flags', () => {
-  it('excludes dismissed sepsis, preserves dismissed questions, and signs only explicitly kept considerations', async () => {
-    const s = await addTurn(createSession('en').id, 'Fever and sore throat.');
+  it('excludes dismissed dengue, preserves dismissed questions, and signs only explicitly kept considerations', async () => {
+    const s = await addTurn(createSession('en').id, 'I have a fever after a trip with mosquito bites and a cough for three weeks.');
     const state = await getConsult(s.id, 'doctor');
     const record = getConsultRecord(s.id);
-    const sepsis = record.suggestions.find(x => x.kind === 'consider' && /sepsis/i.test(x.text.en))!;
+    const sepsis = record.suggestions.find(x => x.kind === 'consider' && /dengue/i.test(x.text.en))!;
     expect(sepsis).toBeDefined();
     await reviewConsultSuggestion(s.id, sepsis.id, 'synthetic-dr', 'dismissed');
     const question = state.suggestions.find(x => x.kind === 'rule_out' && !x.id.includes(':flag:'))!;
@@ -64,7 +64,7 @@ describe('MF-2 signed note adoption and immutable flags', () => {
     expect(getAudit(s.id).at(-1)?.payload.keptConsiderationIds).toEqual([kept.id]);
   });
   it('drops every unkept consideration at sign', async () => {
-    const s = await addTurn(createSession('en').id, 'Fever and sore throat.');
+    const s = await addTurn(createSession('en').id, 'I have a fever after a trip with mosquito bites and a cough for three weeks.');
     await consultNote(s.id, { mode: 'doctor', reviewerId: 'dr', action: 'draft' });
     const signed = await consultNote(s.id, { mode: 'doctor', reviewerId: 'dr', action: 'sign' });
     expect(signed.note!.lines.filter(l => l.section === 'considerations')).toEqual([]);
@@ -157,7 +157,7 @@ describe('MF-8 override rationale', () => {
 
 describe('patient-scoped routes', () => {
   it('allowlists GET and POST responses and permits the mobile CORS header', async () => {
-    const s = await addTurn(createSession('en').id, 'Fever and sore throat.');
+    const s = await addTurn(createSession('en').id, 'I have a fever after a trip with mosquito bites and a cough for three weeks.');
     s.turns.push({ id: 'secret-clinician', role: 'clinician', lang: 'en', text: 'Clinician private discussion', at: '' }); saveSession(s);
     await medication(request(draft), ctx(s.id));
     const get = await (await sessionGet(new Request(`http://localhost/api/sessions/${s.id}?view=patient`), ctx(s.id))).json();

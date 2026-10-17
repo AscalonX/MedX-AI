@@ -13,6 +13,10 @@ export function text(value: unknown, name: string, max = 2000): string {
   if (!shortString(value, max)) invalid(`Invalid ${name}`);
   return redact(value.trim()).text;
 }
+export function actorId(value: unknown, name: string): string {
+  if (!shortString(value, 80)) invalid(`Invalid ${name}`);
+  return value.trim();
+}
 export function optionalText(value: unknown, name: string, max = 2000): string | undefined {
   return value === undefined ? undefined : text(value, name, max);
 }

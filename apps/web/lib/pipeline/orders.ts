@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { IntakeSession, Localized, MedAlert, MedicationEntry, MedicationOrder } from '@medx/shared';
 import catalog from '@medx/shared/src/investigations.json';
-import { conflict, invalid, optionalText, properties, sessionFor, text, written } from './clinicalWrites';
+import { actorId, conflict, invalid, optionalText, properties, sessionFor, text, written } from './clinicalWrites';
 import { checkMedRules, lookupDrug, MEDRULES, stableId } from './medrules';
 import { PipelineError } from './pipeline';
 import { shortString } from './schema';
@@ -80,7 +80,7 @@ function orderFor(s: IntakeSession, id: string) {
 }
 export function investigationOrder(id: string, req: unknown) {
   properties(req, ['orderedBy', 'code', 'reason', 'fromSuggestionId']);
-  const actor = text(req.orderedBy, 'orderedBy', 200); const code = text(req.code, 'code', 200);
+  const actor = actorId(req.orderedBy, 'orderedBy'); const code = text(req.code, 'code', 200);
   const item = catalog.items.find(i => i.id === code); if (!item) invalid('Unknown investigation code');
   const reason = optionalText(req.reason, 'reason'); const fromSuggestionId = req.fromSuggestionId === undefined ? undefined : reference(req.fromSuggestionId, 'fromSuggestionId', 300);
   return withSessionLock(id, () => {
@@ -93,7 +93,7 @@ export function investigationOrder(id: string, req: unknown) {
 }
 export function medicationOrder(id: string, req: unknown) {
   properties(req, ['orderedBy', 'orderId', 'drugText', 'dose', 'route', 'frequency', 'duration']);
-  const actor = text(req.orderedBy, 'orderedBy', 200); const orderId = req.orderId === undefined ? undefined : reference(req.orderId, 'orderId');
+  const actor = actorId(req.orderedBy, 'orderedBy'); const orderId = req.orderId === undefined ? undefined : reference(req.orderId, 'orderId');
   const drugText = text(req.drugText, 'drugText', 300), dose = text(req.dose, 'dose', 200), route = text(req.route, 'route', 100), frequency = text(req.frequency, 'frequency', 200), duration = optionalText(req.duration, 'duration', 200);
   return withSessionLock(id, () => {
     const s = sessionFor(id); const old = orderId ? orderFor(s, orderId) : undefined;
@@ -107,7 +107,7 @@ export function medicationOrder(id: string, req: unknown) {
 }
 export function medicationAction(id: string, orderId: string, action: 'submit' | 'cancel' | 'pharmacy', req: unknown) {
   properties(req, action === 'submit' ? ['orderedBy', 'overrides'] : action === 'cancel' ? ['orderedBy', 'reason'] : ['reviewerId', 'action', 'note']);
-  const actor = text(action === 'pharmacy' ? req.reviewerId : req.orderedBy, 'reviewer', 200);
+  const actor = actorId(action === 'pharmacy' ? req.reviewerId : req.orderedBy, 'reviewer');
   const note = optionalText(action === 'cancel' ? req.reason : action === 'pharmacy' ? req.note : undefined, 'note');
   if (action === 'pharmacy' && ((req.action !== 'verify' && req.action !== 'return') || (req.action === 'return' && !note))) invalid('Return requires a note');
   const overrides = action === 'submit' ? req.overrides : [];

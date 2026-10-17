@@ -7,7 +7,7 @@ import { appendAudit, getSession, saveSession, withSessionLock } from './store';
 
 function invalid(reason: string): never { throw new PipelineError(reason, 'bad_request'); }
 export function validatePharmacyReview(value: unknown): asserts value is PharmacyReviewReq {
-  if (!object(value) || Object.keys(value).some(k => !['reviewerId', 'medActions', 'alertActions', 'allergyActions', 'complete'].includes(k)) || !shortString(value.reviewerId, 200) || (value.complete !== undefined && typeof value.complete !== 'boolean')) invalid('Invalid pharmacy review body');
+  if (!object(value) || Object.keys(value).some(k => !['reviewerId', 'medActions', 'alertActions', 'allergyActions', 'complete'].includes(k)) || !shortString(value.reviewerId, 80) || (value.complete !== undefined && typeof value.complete !== 'boolean')) invalid('Invalid pharmacy review body');
   const lists = [
     { key: 'medActions', id: 'medId', actions: ['verify', 'edit', 'discontinue'], optional: ['generic', 'dose', 'frequency'] },
     { key: 'alertActions', id: 'alertId', actions: ['acknowledge', 'resolved', 'false_alarm'], optional: ['note'] },
@@ -30,7 +30,7 @@ export function validatePharmacyReview(value: unknown): asserts value is Pharmac
   if (!count && value.complete !== true) invalid('No pharmacy action supplied');
   // Accepted audit payloads are byte-for-value identical to the request actions.
   // Reject PII rather than silently rewriting a pharmacist's signed decision.
-  const freeText = new Set(['reviewerId', 'note', 'generic', 'dose', 'frequency', 'allergenClass', 'reaction']);
+  const freeText = new Set(['note', 'generic', 'dose', 'frequency', 'allergenClass', 'reaction']);
   const check = (x: unknown): void => { if (Array.isArray(x)) x.forEach(check); else if (object(x)) for (const [key, v] of Object.entries(x)) { if (freeText.has(key) && typeof v === 'string' && redact(v).text !== v) invalid('Remove personal data from pharmacy review'); if (typeof v === 'object') check(v); } };
   check(value);
 }

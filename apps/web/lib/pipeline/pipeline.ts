@@ -156,7 +156,7 @@ export async function addTurnInLock(sessionId: string, rawText: string, inputMod
 export async function review(sessionId: string, reviewerId: string, actions: ReviewAction[], redFlagActions: RedFlagReviewAction[] = []) {
   return withSessionLock(sessionId, () => {
     const session = requireSession(sessionId);
-    if (typeof reviewerId !== 'string' || !reviewerId.trim() || reviewerId.length > 200 || !Array.isArray(actions) || !Array.isArray(redFlagActions) || (!actions.length && !redFlagActions.length) || actions.length > 24 || redFlagActions.length > 18 || actions.some(a => !a || !FIELD_KEYS.includes(a.fieldKey) || !['approve', 'edit', 'reject'].includes(a.action) || (a.action === 'edit' && (typeof a.newValue !== 'string' || !a.newValue.trim() || a.newValue.length > 300))) || redFlagActions.some(a => !a || typeof a.ruleId !== 'string' || !['acknowledge', 'false_alarm'].includes(a.action) || (a.note !== undefined && (typeof a.note !== 'string' || a.note.length > 2000)) || (a.action === 'false_alarm' && !a.note?.trim()))) throw new PipelineError('Invalid review actions', 'bad_request');
+    if (typeof reviewerId !== 'string' || !reviewerId.trim() || reviewerId.length > 80 || !Array.isArray(actions) || !Array.isArray(redFlagActions) || (!actions.length && !redFlagActions.length) || actions.length > 24 || redFlagActions.length > 18 || actions.some(a => !a || !FIELD_KEYS.includes(a.fieldKey) || !['approve', 'edit', 'reject'].includes(a.action) || (a.action === 'edit' && (typeof a.newValue !== 'string' || !a.newValue.trim() || a.newValue.length > 300))) || redFlagActions.some(a => !a || typeof a.ruleId !== 'string' || !['acknowledge', 'false_alarm'].includes(a.action) || (a.note !== undefined && (typeof a.note !== 'string' || a.note.length > 2000)) || (a.action === 'false_alarm' && !a.note?.trim()))) throw new PipelineError('Invalid review actions', 'bad_request');
     if (!session.summary) throw new PipelineError('Session has no summary to review', 'bad_request');
     if (redFlagActions.some(a => !session.summary!.redFlags.some(f => f.ruleId === a.ruleId))) throw new PipelineError('Unknown red flag', 'bad_request');
     const unreviewed = session.summary.redFlags.filter(f => !f.review && !redFlagActions.some(a => a.ruleId === f.ruleId));
@@ -175,7 +175,7 @@ export async function review(sessionId: string, reviewerId: string, actions: Rev
     }
     session.summary.fields = applyRequiredFields(session.summary.fields);
     const at = new Date().toISOString();
-    const actorId = redact(reviewerId).text;
+    const actorId = reviewerId.trim();
     const safeFlagActions = redFlagActions.map(a => ({ ...a, ...(a.note !== undefined ? { note: redact(a.note.trim()).text } : {}) }));
     for (const action of safeFlagActions) {
       session.summary.redFlags.find(f => f.ruleId === action.ruleId)!.review = { action: action.action, reviewerId: actorId, at, ...(action.note !== undefined ? { note: action.note } : {}) };
@@ -191,12 +191,12 @@ export async function review(sessionId: string, reviewerId: string, actions: Rev
 }
 export async function takeover(sessionId: string, reviewerId: string, reason?: string) {
   return withSessionLock(sessionId, () => {
-    if (!reviewerId?.trim() || reviewerId.length > 200 || (reason !== undefined && (typeof reason !== 'string' || reason.length > 2000))) throw new PipelineError('Invalid takeover request', 'bad_request');
+    if (!reviewerId?.trim() || reviewerId.length > 80 || (reason !== undefined && (typeof reason !== 'string' || reason.length > 2000))) throw new PipelineError('Invalid takeover request', 'bad_request');
     const session = requireSession(sessionId);
     if (session.status === 'approved') throw new PipelineError('Approved session cannot be taken over', 'bad_request', 409);
     session.status = 'taken_over'; session.updatedAt = new Date().toISOString();
     if (session.summary) session.summary.nextQuestion = null;
-    saveSession(session); appendAudit(sessionId, 'takeover', 'clinician', { reason: reason ? redact(reason).text : undefined }, redact(reviewerId).text); return session;
+    saveSession(session); appendAudit(sessionId, 'takeover', 'clinician', { reason: reason ? redact(reason).text : undefined }, reviewerId.trim()); return session;
   });
 }
 export function listSessions() { return getSessions().filter(s => s.turns.some(t => t.role === 'patient')).sort((a, b) => Number(b.status === 'escalated') - Number(a.status === 'escalated') || b.createdAt.localeCompare(a.createdAt)); }

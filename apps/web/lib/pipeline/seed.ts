@@ -69,7 +69,7 @@ export async function seedDemo(options: { reset?: boolean } = {}) {
         }
         // This is an explicit synthetic clinician approval, using only verified pipeline fields.
         if (expectedStatus === 'approved' && session.status === 'awaiting_review' && session.summary?.fields.filter(f => f.required).every(f => f.status === 'supported')) {
-          session = await review(session.id, 'demo-clinician', session.summary.fields.filter(f => f.required).map(f => ({ fieldKey: f.key, action: 'approve' })));
+          session = await review(session.id, 'Dr. Marco Bianchi', session.summary.fields.filter(f => f.required).map(f => ({ fieldKey: f.key, action: 'approve' })));
         }
       }
       sessions.push(session);

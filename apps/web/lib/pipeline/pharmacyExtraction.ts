@@ -137,6 +137,14 @@ export function mergePharmacy(session: IntakeSession, next: ReturnType<typeof ph
     const value = supported.map(m => label(m)).join(', ');
     Object.assign(field, { valueOriginal: supported.map(m => label(m, true)).join(', '), value: { en: value, it: value, th: `ยาที่แจ้ง: ${supported.map(m => label(m, true)).join(', ')}` }, evidence: supported.flatMap(m => m.evidence), confidence: Math.min(...supported.map(m => m.confidence)), status: 'supported' });
   }
+  // Same rule for allergies: the clinician field mirrors supported pharmacy allergy entries (or the verified denial) with the same evidence.
+  const allergyField = summary.fields.find(f => f.key === 'allergies');
+  const allergic = summary.allergies.filter(x => ['supported', 'verified', 'edited'].includes(x.status) && x.evidence.length);
+  if (allergyField?.status === 'missing' && (allergic.length || summary.noKnownAllergiesEvidence.length)) {
+    const one = (x: typeof allergic[number]) => `${x.allergenOriginal}${x.reaction ? ` (${x.reaction})` : ''}`;
+    const value = allergic.length ? allergic.map(one).join(', ') : 'No known allergies';
+    Object.assign(allergyField, { valueOriginal: allergic.length ? value : null, value: { en: value, it: value, th: allergic.length ? `แพ้: ${value}` : 'ไม่มีประวัติแพ้' }, evidence: allergic.length ? allergic.flatMap(x => x.evidence) : summary.noKnownAllergiesEvidence, confidence: 0.9, status: 'supported' });
+  }
   refreshMedAlerts(summary, previous?.medAlerts);
   if (summary.medications.length || summary.allergies.length) {
     const changed = JSON.stringify([summary.medications, summary.allergies, summary.medAlerts, summary.noKnownAllergiesEvidence]) !== JSON.stringify([previous?.medications, previous?.allergies, previous?.medAlerts, previous?.noKnownAllergiesEvidence]);

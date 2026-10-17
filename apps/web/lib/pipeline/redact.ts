@@ -1,4 +1,5 @@
 import redFlagRules from '@medx/shared/src/redflags.json';
+import { STAFF } from '@medx/shared/src/staff';
 
 // Keep name boundaries aligned with the clinical vocabulary, including stems
 // such as ปาก/แขน used by multi-part red-flag rules.
@@ -58,7 +59,10 @@ export function redact(input: string) {
     }
     return [{ start: m.index!, end: end + length }];
   });
-  for (const span of spans.reverse()) {
+  // Overlapping triggers ("hello Mr. Smith") must collapse into one span or the splice corrupts the text.
+  spans.sort((x, y) => x.start - y.start);
+  const merged = spans.reduce<typeof spans>((out, s) => { const last = out[out.length - 1]; if (last && s.start < last.end) last.end = Math.max(last.end, s.end); else out.push({ ...s }); return out; }, []);
+  for (const span of merged.reverse()) {
     replaceSpan(span.start, span.end, 'NAME');
   }
   // Strong symptom stems also stop an unspaced introduction. Short stems
@@ -70,4 +74,13 @@ export function redact(input: string) {
   replace('NAME', new RegExp(`(?:ผม|ฉัน)[ \\t]*${thaiToken}(?:[ \\t]+${thaiToken})?`, 'gu'));
   replace('NAME', new RegExp(`\\b(?:Mr\\.?|Mrs\\.?|Ms\\.?|Miss|Dr\\.?|Signor|Signora|Sig\\.?)[ \\t]+${thaiToken}(?:[ \\t]+${thaiToken})?`, 'giu'));
   return { text, positions, replaced: [...counts].map(([type, count]) => ({ type, count })) };
+}
+
+/** Clinician speech: exact STAFF-directory names are not patient data and survive; every other name is still redacted. */
+export function redactKeepStaff(input: string): string {
+  const names = STAFF.map(s => s.name).sort((a, b) => b.length - a.length);
+  let text = input.normalize('NFC');
+  names.forEach((n, i) => { text = text.split(n).join(`\uE000${String.fromCharCode(0xE100 + i)}\uE001`); });
+  text = redact(text).text;
+  return text.replace(/\uE000(.)\uE001/gu, (_, c: string) => names[c.charCodeAt(0) - 0xE100] ?? '');
 }

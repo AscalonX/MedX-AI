@@ -151,7 +151,7 @@ describe('demo fixture replay', () => {
       for (const field of session.summary!.fields) for (const e of field.evidence) expect(session.turns.find(t => t.id === e.turnId)?.text.slice(e.start, e.end)).toBe(e.quote);
     }
     const approved = first.sessions.find(s => s.status === 'approved')!;
-    expect(getAudit(approved.id).at(-1)).toMatchObject({ type: 'review', actor: 'clinician', actorId: 'demo-clinician' });
+    expect(getAudit(approved.id).at(-1)).toMatchObject({ type: 'review', actor: 'clinician', actorId: 'Dr. Marco Bianchi' });
   });
   it('uses the configured AMD transport and records actual provider calls', async () => {
     vi.useFakeTimers();

@@ -9,7 +9,7 @@ import { MEDRULES } from './medrules';
 import { addTurnInLock, PipelineError } from './pipeline';
 import { aliases, CONSULT_SYSTEM, consultPrompt } from './prompts';
 import { checkRedFlags } from './redflags';
-import { redact } from './redact';
+import { redact, redactKeepStaff } from './redact';
 import { localized, object, shortString } from './schema';
 import { appendAudit, getConsultRecord, getSession, hasClientTurnId, saveConsultRecord, saveSession, withSessionLock, type ConsultRecord } from './store';
 import { QUESTIONS } from './templates';
@@ -24,8 +24,8 @@ export function consultMode(value: unknown): ConsultMode {
   return value;
 }
 function reviewer(value: unknown): string {
-  if (!shortString(value, 200)) throw new PipelineError('Invalid reviewerId', 'bad_request');
-  return redact(value.trim()).text;
+  if (!shortString(value, 80)) throw new PipelineError('Invalid reviewerId', 'bad_request');
+  return value.trim();
 }
 function evidenceFor(s: IntakeSession, evidence: Evidence[]): Evidence[] {
   return evidence.filter(e => {
@@ -68,9 +68,16 @@ export function ruleSuggestions(s: IntakeSession, rules: ConsultRuleFile): Consu
     const subject = f.key.replaceAll('_', ' ');
     result.push({ id: `ask_next:field:${f.key}`, kind: 'ask_next', mode: both, text: { en: `Ask about ${subject}: ${q.en}`, it: `Chiedere al paziente: ${q.it}`, th: `สอบถามผู้ป่วย: ${q.th}` }, why: localizedText('Required intake information is missing; ask the patient.', 'Manca un dato necessario; chiedere al paziente.', 'ข้อมูลที่จำเป็นยังขาดอยู่ กรุณาสอบถามผู้ป่วย'), evidence: [], field: f.key, source: 'rule', confidence: 1, status: 'open' });
   }
-  for (const r of rules.rules) {
-    const hit = hits.find(h => h.ruleId === r.id); if (!hit) continue;
-    const evidence = clinicalEvidence(s, hit.evidence); if (!evidence.length) continue;
+  // Considerations: only rules whose FIRST group (the presenting complaint) matches, strongest match first.
+  const complaint = checkRedFlags(s.turns, undefined, { ...redFlags, rules: rules.rules.map(r => ({ id: r.id, match: r.match.slice(0, 1), severity: 'urgent', label: localizedText(r.id), action: localizedText(''), patientMessage: localizedText(''), source: r.source })) });
+  const turnOrder = (e: Evidence) => s.turns.findIndex(t => t.id === e.turnId) * 1e6 + e.start;
+  const ranked = rules.rules.flatMap((r, i) => {
+    const hit = hits.find(h => h.ruleId === r.id); if (!hit || !complaint.some(h => h.ruleId === r.id)) return [];
+    const evidence = clinicalEvidence(s, hit.evidence); if (!evidence.length) return [];
+    // ponytail: strength = groups * 10 + distinct matched spans; weights are heuristic.
+    return [{ r, i, evidence, strength: r.match.length * 10 + new Set(evidence.map(e => `${e.turnId}:${e.start}`)).size, first: Math.min(...evidence.map(turnOrder)) }];
+  }).sort((a, b) => b.strength - a.strength || a.first - b.first || a.i - b.i);
+  for (const { r, evidence } of ranked) {
     for (const c of r.considerations || []) result.push({ id: `consider:${r.id}:${c.id}`, kind: 'consider', mode: ['doctor'], text: { en: `Consider for clinician review: ${c.text.en}`, it: `Da considerare per revisione clinica: ${c.text.it}`, th: `ข้อพิจารณาสำหรับแพทย์ทบทวน: ${c.text.th}` }, why: c.why, evidence, ruleId: r.id, source: 'rule', confidence: 1, status: 'open', workup: (c.workup || []).flatMap(id => investigations.items.filter(i => i.id === id).map(i => ({ id: i.id, label: i.label }))), ...(c.guideline ? { guideline: c.guideline } : {}) });
   }
   return result;
@@ -168,10 +175,13 @@ async function refresh(s: IntakeSession, record: ConsultRecord, options: Consult
   const rank = (x: ConsultSuggestion) => x.id.startsWith('rule_out:flag:') ? 0 : x.kind === 'rule_out' ? 1 : x.source === 'rule' && x.kind === 'ask_next' ? 2 : x.source === 'rule' ? 3 : 4;
   record.suggestions.sort((a, b) => rank(a) - rank(b));
 }
+/** The only considerations a doctor sees (and orders/note may draw on): open, rule-ranked, at most 4. */
+const MAX_CONSIDERATIONS = 4;
+const shownConsiderations = (xs: ConsultSuggestion[]) => xs.filter(x => x.kind === 'consider' && x.status === 'open').slice(0, MAX_CONSIDERATIONS);
 function state(s: IntakeSession, record: ConsultRecord, mode: ConsultMode): ConsultState {
   const candidates = record.suggestions.filter(x => x.mode.includes(mode) && (x.source !== 'model' || (x.kind === 'ask_next' && ![...Object.values(x.text), ...Object.values(x.why)].some(unsafeModelText))));
   // Reserve room for doctor considerations; missing-field prompts must not starve them.
-  const considers = mode === 'doctor' ? candidates.filter(x => x.kind === 'consider' && x.status === 'open').slice(0, 3) : [];
+  const considers = mode === 'doctor' ? shownConsiderations(candidates) : [];
   const rest = candidates.filter(x => x.status === 'open' && !considers.includes(x)).slice(0, 8 - considers.length);
   return structuredClone({ sessionId: s.id, mode, suggestions: candidates.filter(x => x.status !== 'open' || rest.includes(x) || considers.includes(x)), note: record.notes[mode] || null, modelCalls: record.modelCalls });
 }
@@ -204,7 +214,7 @@ export async function addConsultTurn(id: string, req: ConsultTurnReq, options: C
     if (req.speaker === 'patient') s = await addTurnInLock(id, req.text, 'voice', req.clientTurnId);
     else {
       await refresh(s, record, options);
-      const turn = { id: randomUUID(), role: 'clinician' as const, lang: s.patientLang, text: redact(req.text.normalize('NFC')).text, at: new Date().toISOString(), inputMode: 'voice' as const };
+      const turn = { id: randomUUID(), role: 'clinician' as const, lang: s.patientLang, text: redactKeepStaff(req.text), at: new Date().toISOString(), inputMode: 'voice' as const };
       s.turns.push(turn); s.updatedAt = turn.at; saveSession(s, req.clientTurnId);
       for (const x of record.suggestions) if (x.status === 'open' && x.kind !== 'consider' && askedMatch(turn.text, x)) {
         x.status = 'asked'; (record.askedAfterTurn ||= {})[x.id] = s.turns.length;
@@ -247,15 +257,18 @@ export function draftConsultNote(s: IntakeSession, suggestions: ConsultSuggestio
   };
   const missing: Localized[] = [];
   const fields = s.summary?.fields || emptyFields();
-  // Escalation deliberately skips extraction. Preserve every redacted patient
-  // report in the presenting history so new complaints cannot disappear.
-  for (const t of s.turns.filter(t => t.role === 'patient')) {
-    const verified = verifyDetailed(t.text, [t], t.id, false, false);
-    if (verified) add(`report:${t.id}`, 'presenting_complaint', localizedText(`Patient report: ${t.text}`, `Il paziente riferisce: ${t.text}`, `ผู้ป่วยแจ้ง: ${t.text}`), [verified.evidence]);
+  // Presenting complaint comes only from the supported chief_complaint value. Escalation skips
+  // extraction, so without one fall back to substantive patient reports (never short answers like "No").
+  const complaint = fields.find(f => f.key === 'chief_complaint');
+  if (!(complaint && isPresent(complaint) && complaint.value && evidenceFor(s, complaint.evidence).length)) {
+    for (const [n, t] of s.turns.filter(t => t.role === 'patient').entries()) {
+      if (n > 0 && words(norm(t.text).t, t.lang).length < 4) continue;
+      const verified = verifyDetailed(t.text, [t], t.id, false, false);
+      if (verified) add(`report:${t.id}`, 'presenting_complaint', localizedText(`Patient report: ${t.text}`, `Il paziente riferisce: ${t.text}`, `ผู้ป่วยแจ้ง: ${t.text}`), [verified.evidence]);
+    }
   }
   for (const f of fields) {
     if (['medications', 'allergies'].includes(f.key)) continue;
-    if (f.key === 'chief_complaint' && lines.some(l => l.section === 'presenting_complaint')) continue;
     if (!isPresent(f) || !f.value || !evidenceFor(s, f.evidence).length) { missing.push(labels[f.key]); continue; }
     const value = f.value;
     add(`field:${f.key}`, f.key === 'chief_complaint' ? 'presenting_complaint' : 'history', { en: `${labels[f.key].en}: ${value.en}`, it: `${labels[f.key].it}: ${value.it}`, th: `${labels[f.key].th}: ${value.th}` }, f.evidence);
@@ -275,8 +288,9 @@ export function draftConsultNote(s: IntakeSession, suggestions: ConsultSuggestio
     }
   }
   for (const f of s.summary?.redFlags || []) add(`flag:${f.ruleId}`, 'red_flags', { en: `Flag for clinician review: ${f.label.en}`, it: `Segnalazione per revisione clinica: ${f.label.it}`, th: `ข้อเตือนให้บุคลากรทบทวน: ${f.label.th}` }, f.evidence);
+  const shown = new Set(shownConsiderations(suggestions.filter(x => x.mode.includes(mode))));
   for (const x of suggestions.filter(x => x.mode.includes(mode))) {
-    if (x.kind === 'consider' && x.source === 'rule' && mode === 'doctor' && x.status !== 'dismissed') add(`suggestion:${x.id}`, 'considerations', x.text, x.evidence);
+    if (x.kind === 'consider' && x.source === 'rule' && mode === 'doctor' && shown.has(x)) add(`suggestion:${x.id}`, 'considerations', x.text, x.evidence);
     else if (x.kind !== 'consider' && x.status !== 'answered' && !x.field && !x.id.startsWith('rule_out:flag:')) {
       const prefix = x.status === 'dismissed' ? localizedText('Not asked (dismissed): ', 'Non chiesto (scartato): ', 'ไม่ได้ถาม (ยกเลิก): ') : x.status === 'asked' ? localizedText('Asked, no answer recorded: ', 'Chiesto, nessuna risposta registrata: ', 'ถามแล้ว ยังไม่บันทึกคำตอบ: ') : localizedText('');
       add(`suggestion:${x.id}`, 'open_questions', { en: prefix.en + x.text.en, it: prefix.it + x.text.it, th: prefix.th + x.text.th }, x.evidence);
@@ -307,7 +321,7 @@ export async function consultNote(id: string, req: ConsultNoteReq, options: Cons
         const line = note.lines.find(l => l.id === edit.lineId);
         if (!line || ids.has(edit.lineId)) throw new PipelineError('Unknown or duplicate note line', 'bad_request');
         if (line.section === 'red_flags') throw new PipelineError('Red-flag note lines cannot be edited', 'bad_request');
-        ids.add(edit.lineId); line.text = localizedText(redact(edit.text.trim()).text); line.status = 'edited';
+        ids.add(edit.lineId); line.text = localizedText(redactKeepStaff(edit.text.trim())); line.status = 'edited';
       }
       // Only the missing-fields summary is informational. Every other unsupported
       // line needs an explicit doctor edit, including a resolution like "Not assessed".
