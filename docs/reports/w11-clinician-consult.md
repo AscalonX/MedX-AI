@@ -43,3 +43,8 @@ From about 20:00 the dev server on :3000 returned 500 for every page and API rou
 - Signed note: title "Signed visit note", teal read-only banner instead of the amber draft banner, no edit/redraft/sign controls, receipt primary "Write orders" (to /review/[id]/orders) and secondary "Next case". Verified live.
 - Returned by pharmacist: queue chip and a case-page banner with the pharmacist's note and an "Open orders" link when any medication order has status returned. Verified live on B-004 (Thai UI).
 - Also: consult header "Next: vitals" link for nurses; announcements no longer end in "?.". Not done: confirmed triage/NEWS2 on the case page, "Presenting complaint" raw lines (server data), and the doubled consent paragraph.
+
+## Leftovers (triage on case page, consent paragraph, ops role keys)
+- Case header shows the triage state with a link to Vitals: "Triage level N confirmed" (or "Suggested level N, not confirmed"), "NEWS2 n", and a red-tint "Suggested level N is more urgent: re-confirm" when the suggestion is more urgent than the confirmed level. Verified on B-012 (level 2 confirmed, NEWS2 8); the re-confirm warning was not triggered live.
+- Consult: the duplicated privacy paragraph is removed; the consent checkbox text carries the wording.
+- Ops (`OpsDashboard.tsx` only): writes `medx.role=ops` and the ops identity (`medx.reviewer.ops`) on load, and writes the chosen role (and `medx.clinicianRole` for nurse/doctor) before navigating. Verified: ops stored role ops, switching to Doctor landed on /review with Doctor selected and Dr. Somchai Chaiyo kept. The ops header still shows the localized "head nurse" label, not the staff name.

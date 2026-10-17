@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Lang } from "@medx/shared";
+import { ROLE_STORAGE_KEY, reviewerStorageKey, staffFor } from "@medx/shared/src/staff";
 import { Button, Card, GradientHero, Icon, LangMorph, type ShellRole } from "@/components/ui";
 import { copy, locale, statusCopy } from "../i18n";
 import { StatusChart, LatencyChart } from "./Charts";
@@ -22,8 +23,13 @@ export function OpsDashboard() {
   const pending = snapshot ? pendingEscalations(snapshot.sessions) : [];
   const date = snapshot ? new Intl.DateTimeFormat(locale[lang], { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Bangkok" }).format(snapshot.fetchedAt) : null;
   const time = snapshot ? new Intl.DateTimeFormat(locale[lang], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Asia/Bangkok" }).format(snapshot.fetchedAt) : null;
+  // Share role + identity with the other surfaces (packages/shared/src/staff.ts keys).
+  useEffect(() => {
+    try { localStorage.setItem(ROLE_STORAGE_KEY, "ops"); localStorage.setItem(reviewerStorageKey("ops"), staffFor("ops")[0].name); } catch { /* storage blocked: nothing to persist */ }
+  }, []);
   const changeRole = (role: ShellRole) => {
     if (role === "ops") return;
+    try { localStorage.setItem(ROLE_STORAGE_KEY, role); if (role === "nurse" || role === "doctor") localStorage.setItem("medx.clinicianRole", role); } catch { /* storage blocked */ }
     router.push(role === "pharmacist" ? "/pharmacy" : "/review");
   };
   return (

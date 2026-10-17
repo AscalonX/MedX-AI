@@ -217,6 +217,19 @@ export function Workspace({ id }: { id: string }) {
       </>
     );
   };
+  const triage = session.triage;
+  const conf = triage?.confirmed;
+  const moreUrgent = !!triage && !!conf && triage.suggestedLevel < conf.level;
+  const triageRow = (hero: boolean) => triage ? (
+    <Link href={`/review/${id}/vitals`} className={`mt-2 flex flex-wrap items-center gap-2 text-small font-semibold ${hero ? "text-on-primary" : "text-ink"}`}>
+      <span className={hero ? "rounded-full bg-white/15 px-3 py-0.5" : "rounded-full bg-muted px-3 py-0.5"}>
+        {conf ? fmt(tr("triageConfirmed", lang), { n: conf.level }) : fmt(tr("triageSuggested", lang), { n: triage.suggestedLevel })}
+      </span>
+      {triage.warningScore !== undefined && <span className={hero ? "rounded-full bg-white/15 px-3 py-0.5" : "rounded-full bg-muted px-3 py-0.5"}>{fmt(tr("news2", lang), { n: triage.warningScore })}</span>}
+      {moreUrgent && <span className="rounded-full bg-signal-tint px-3 py-0.5 text-signal">{fmt(tr("triageReconfirm", lang), { n: triage.suggestedLevel })}</span>}
+      <span className="underline underline-offset-4">{tr("vitalsLink", lang)}</span>
+    </Link>
+  ) : null;
   const headerMeta = (hero: boolean) => (
     <span className="flex flex-wrap items-center gap-2">
       <StatusChip s={session} lang={lang} />
@@ -257,6 +270,7 @@ export function Workspace({ id }: { id: string }) {
         </div>
       </div>
       {headerMeta(false)}
+      {triageRow(false)}
       <div className="flex flex-wrap gap-2">{headerActions(false)}</div>
     </Card>
   ) : (
@@ -267,6 +281,7 @@ export function Workspace({ id }: { id: string }) {
       action={headerActions(true)}
     >
       {headerMeta(true)}
+      {triageRow(true)}
     </GradientHero>
   );
   const header = <div ref={headRef} tabIndex={-1} className="outline-none">{headerBlock}</div>;

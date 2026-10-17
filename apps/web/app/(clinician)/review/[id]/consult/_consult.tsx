@@ -267,7 +267,6 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
               </label>
               <Button type="submit" variant="primary" disabled={!text.trim()}>{ct("send", lang)}</Button>
             </form>
-            <p className="text-micro text-ink-soft">{ct("privacy", lang)}</p>
           </Card>
 
           <Card padded={false} className="cl-enter flex h-[420px] flex-col">

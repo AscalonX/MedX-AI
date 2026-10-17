@@ -171,6 +171,11 @@ export const T = {
   returnedBanner: L("A pharmacist returned a medication order", "เภสัชกรส่งคำสั่งยากลับมา", "Il farmacista ha restituito un ordine di farmaci"),
   pharmacistNote: L("Pharmacist note", "บันทึกจากเภสัชกร", "Nota del farmacista"),
   openOrders: L("Open orders", "เปิดคำสั่ง", "Apri gli ordini"),
+  triageConfirmed: L("Triage level {n} confirmed", "ระดับการคัดแยก {n} ยืนยันแล้ว", "Livello di triage {n} confermato"),
+  triageSuggested: L("Suggested triage level {n}, not confirmed", "ระดับการคัดแยกที่แนะนำ {n} ยังไม่ยืนยัน", "Livello di triage suggerito {n}, non confermato"),
+  triageReconfirm: L("Suggested level {n} is more urgent: re-confirm", "ระดับที่แนะนำ {n} เร่งด่วนกว่า: โปรดยืนยันใหม่", "Il livello suggerito {n} è più urgente: riconfermare"),
+  news2: L("NEWS2 {n}", "NEWS2 {n}", "NEWS2 {n}"),
+  vitalsLink: L("Vitals", "สัญญาณชีพ", "Parametri vitali"),
 } satisfies Record<string, Localized>;
 
 export type TKey = keyof typeof T;
