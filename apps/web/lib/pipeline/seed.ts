@@ -11,7 +11,7 @@ import med01 from '../../../../data/cases/MED-01.json';
 import med03 from '../../../../data/cases/MED-03.json';
 import med05 from '../../../../data/cases/MED-05.json';
 import { addTurn, createSession, PipelineError, review } from './pipeline';
-import { getAudit, getSession, resetDemoStore, withSessionLock } from './store';
+import { getAudit, getSession, getSessions, resetDemoStore, withSessionLock } from './store';
 import { paceSeedCalls } from './llm';
 
 interface Fixture { id: string; lang: string; synthetic: boolean; turns: { role: string; text: string }[] }
@@ -80,4 +80,10 @@ export async function seedDemo(options: { reset?: boolean } = {}) {
     return { created, reused: sessions.length - created, sessions, byStatus, mismatches };
     } finally { paceSeedCalls(false); }
   });
+}
+
+/** Serverless demo hosts lose /tmp state on cold start; replay the synthetic seed once when the store is empty. */
+export async function ensureDemoSeed() {
+  if (process.env.DEMO_AUTOSEED !== '1' || process.env.DEMO_SEED !== '1' || getSessions().length > 0) return;
+  try { await seedDemo(); } catch { /* seeding is best-effort; the empty queue still renders */ }
 }
