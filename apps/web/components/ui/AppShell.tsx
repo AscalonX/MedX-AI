@@ -57,7 +57,7 @@ export function AppShell({
           <SegmentedControl
             ariaLabel="Role"
             size="sm"
-            className="w-full justify-between"
+            className="grid! w-full grid-cols-2 gap-0.5 rounded-2xl"
             value={role}
             onChange={onRoleChange}
             options={roles.map((r) => ({ value: r, label: roleLabel[r] }))}

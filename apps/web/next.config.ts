@@ -6,6 +6,8 @@ const repoRoot = path.join(__dirname, "../..");
 const nextConfig: NextConfig = {
   transpilePackages: ["@medx/shared"],
   output: "standalone",
+  // Hide the Next.js dev badge so demo recordings stay clean.
+  devIndicators: false,
   // The app imports ../../packages/shared, so both bundler and tracing must see the repo root.
   turbopack: { root: repoRoot },
   outputFileTracingRoot: repoRoot,
