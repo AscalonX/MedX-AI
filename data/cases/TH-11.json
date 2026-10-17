@@ -1,0 +1,76 @@
+{
+  "id": "TH-11",
+  "lang": "th",
+  "tags": [
+    "colloquial"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ท้องเสียหนักมากเลยครับ ขี้ไหลทั้งคืน ถ่ายเป็นน้ำ 8-9 รอบได้ ตั้งแต่เมื่อคืนหลังกินส้มตำริมทาง อ่อนเพลียนิดนึง ผมอายุ 26 ผู้ชาย ไม่แพ้ยา ไม่ได้กินยาอะไร"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Severe watery diarrhoea",
+        "evidence": [
+          "ท้องเสียหนักมาก"
+        ]
+      },
+      "onset": {
+        "value_en": "Since last night, after eating street papaya salad",
+        "evidence": [
+          "ตั้งแต่เมื่อคืนหลังกินส้มตำริมทาง"
+        ]
+      },
+      "duration": null,
+      "severity": {
+        "value_en": "Severe; 8-9 watery stools",
+        "evidence": [
+          "ท้องเสียหนักมาก",
+          "ถ่ายเป็นน้ำ 8-9 รอบ"
+        ]
+      },
+      "location": null,
+      "associated_symptoms": {
+        "value_en": "Mild fatigue",
+        "evidence": [
+          "อ่อนเพลียนิดนึง"
+        ]
+      },
+      "medications": {
+        "value_en": "None",
+        "evidence": [
+          "ไม่ได้กินยาอะไร"
+        ]
+      },
+      "allergies": {
+        "value_en": "No drug allergy",
+        "evidence": [
+          "ไม่แพ้ยา"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "26",
+        "evidence": [
+          "อายุ 26"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "ผู้ชาย"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

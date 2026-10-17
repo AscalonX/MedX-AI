@@ -1,0 +1,45 @@
+{
+  "id": "IT-03",
+  "lang": "it",
+  "tags": [
+    "missing"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Salve, ho la febbre da stamattina e mi sento a pezzi."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Fever",
+        "evidence": [
+          "ho la febbre"
+        ]
+      },
+      "onset": {
+        "value_en": "Since this morning",
+        "evidence": [
+          "da stamattina"
+        ]
+      },
+      "duration": null,
+      "severity": null,
+      "location": null,
+      "associated_symptoms": null,
+      "medications": null,
+      "allergies": null,
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": null,
+      "sex": null
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": "severity",
+    "pii": [],
+    "injectionPresent": false
+  }
+}

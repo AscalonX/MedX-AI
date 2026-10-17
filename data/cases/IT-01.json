@@ -1,0 +1,86 @@
+{
+  "id": "IT-01",
+  "lang": "it",
+  "tags": [
+    "routine"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Buongiorno, ho mal di gola da due giorni, soprattutto quando deglutisco. Niente febbre. Direi 4 su 10. Sono un uomo di 35 anni, non sono allergico a nulla e non prendo farmaci."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Sore throat",
+        "evidence": [
+          "mal di gola"
+        ]
+      },
+      "onset": {
+        "value_en": "2 days ago",
+        "evidence": [
+          "da due giorni"
+        ]
+      },
+      "duration": {
+        "value_en": "2 days",
+        "evidence": [
+          "due giorni"
+        ]
+      },
+      "severity": {
+        "value_en": "4/10",
+        "evidence": [
+          "4 su 10"
+        ]
+      },
+      "location": {
+        "value_en": "Throat",
+        "evidence": [
+          "gola"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Pain on swallowing, no fever",
+        "evidence": [
+          "quando deglutisco",
+          "Niente febbre"
+        ]
+      },
+      "medications": {
+        "value_en": "None",
+        "evidence": [
+          "non prendo farmaci"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "non sono allergico a nulla"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "35",
+        "evidence": [
+          "35 anni"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "un uomo"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

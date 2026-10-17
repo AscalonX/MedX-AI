@@ -1,0 +1,85 @@
+{
+  "id": "IT-08",
+  "lang": "it",
+  "tags": [
+    "negated"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Ho mal di testa da tre giorni, una fitta alla tempia, 5 su 10. Non ho dolore al petto e non ho affanno, respiro bene. Ho 29 anni, sono un uomo, nessuna allergia, prendo la vitamina D."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Headache",
+        "evidence": [
+          "mal di testa"
+        ]
+      },
+      "onset": {
+        "value_en": "3 days ago",
+        "evidence": [
+          "da tre giorni"
+        ]
+      },
+      "duration": {
+        "value_en": "3 days",
+        "evidence": [
+          "tre giorni"
+        ]
+      },
+      "severity": {
+        "value_en": "5/10",
+        "evidence": [
+          "5 su 10"
+        ]
+      },
+      "location": {
+        "value_en": "Temple",
+        "evidence": [
+          "alla tempia"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Denies chest pain and breathlessness",
+        "evidence": [
+          "Non ho dolore al petto e non ho affanno"
+        ]
+      },
+      "medications": {
+        "value_en": "Vitamin D",
+        "evidence": [
+          "la vitamina D"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "nessuna allergia"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "29",
+        "evidence": [
+          "29 anni"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "un uomo"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

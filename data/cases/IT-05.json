@@ -1,0 +1,73 @@
+{
+  "id": "IT-05",
+  "lang": "it",
+  "tags": [
+    "rf_explicit"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Ho mangiato un dolce con le arachidi venti minuti fa e adesso ho le labbra gonfie e faccio fatica a respirare, mi gira anche la testa. Ho 22 anni, sono un ragazzo, sono allergico alle arachidi ma non pensavo ce ne fossero. Non prendo farmaci."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Swollen lips and difficulty breathing after eating peanuts",
+        "evidence": [
+          "ho le labbra gonfie e faccio fatica a respirare"
+        ]
+      },
+      "onset": {
+        "value_en": "20 minutes ago, after eating",
+        "evidence": [
+          "venti minuti fa"
+        ]
+      },
+      "duration": null,
+      "severity": null,
+      "location": null,
+      "associated_symptoms": {
+        "value_en": "Dizziness",
+        "evidence": [
+          "mi gira anche la testa"
+        ]
+      },
+      "medications": {
+        "value_en": "None",
+        "evidence": [
+          "Non prendo farmaci"
+        ]
+      },
+      "allergies": {
+        "value_en": "Peanuts",
+        "evidence": [
+          "allergico alle arachidi"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "22",
+        "evidence": [
+          "22 anni"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "un ragazzo"
+        ]
+      }
+    },
+    "redFlags": [
+      "RF-ANAPH-01",
+      "RF-BREATH-02"
+    ],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

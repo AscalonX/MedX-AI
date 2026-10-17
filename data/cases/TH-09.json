@@ -1,0 +1,85 @@
+{
+  "id": "TH-09",
+  "lang": "th",
+  "tags": [
+    "negated",
+    "known_fp"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ไอมีไข้มาสองวันแล้วค่ะ ไข้ประมาณ 38 ไอแห้งๆ ไม่เจ็บหน้าอกนะคะ ไม่หอบ หายใจปกติ ปวดตัวนิดหน่อย 3 จาก 10 ผู้ชายอายุ 45 ไม่แพ้ยา ไม่ได้กินยา"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Cough and fever",
+        "evidence": [
+          "ไอมีไข้มาสองวันแล้ว"
+        ]
+      },
+      "onset": {
+        "value_en": "2 days ago",
+        "evidence": [
+          "มาสองวันแล้ว"
+        ]
+      },
+      "duration": {
+        "value_en": "2 days",
+        "evidence": [
+          "สองวัน"
+        ]
+      },
+      "severity": {
+        "value_en": "3/10 (body aches)",
+        "evidence": [
+          "3 จาก 10"
+        ]
+      },
+      "location": null,
+      "associated_symptoms": {
+        "value_en": "Fever about 38, dry cough, mild body aches; denies chest pain",
+        "evidence": [
+          "ไข้ประมาณ 38",
+          "ไอแห้งๆ",
+          "ไม่เจ็บหน้าอก"
+        ]
+      },
+      "medications": {
+        "value_en": "None",
+        "evidence": [
+          "ไม่ได้กินยา"
+        ]
+      },
+      "allergies": {
+        "value_en": "No drug allergy",
+        "evidence": [
+          "ไม่แพ้ยา"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "45",
+        "evidence": [
+          "อายุ 45"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "ผู้ชาย"
+        ]
+      }
+    },
+    "redFlags": [
+      "RF-CHEST-02"
+    ],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

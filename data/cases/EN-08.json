@@ -1,0 +1,80 @@
+{
+  "id": "EN-08",
+  "lang": "en",
+  "tags": [
+    "negated"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Dry cough for a week, about a 3 out of 10. No chest pain, no shortness of breath, and I can breathe fine. I'm 36, male, no known allergies, and I take levothyroxine."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Dry cough",
+        "evidence": [
+          "Dry cough"
+        ]
+      },
+      "onset": {
+        "value_en": "1 week ago",
+        "evidence": [
+          "for a week"
+        ]
+      },
+      "duration": {
+        "value_en": "1 week",
+        "evidence": [
+          "a week"
+        ]
+      },
+      "severity": {
+        "value_en": "3/10",
+        "evidence": [
+          "3 out of 10"
+        ]
+      },
+      "location": null,
+      "associated_symptoms": {
+        "value_en": "Denies chest pain and shortness of breath",
+        "evidence": [
+          "No chest pain, no shortness of breath"
+        ]
+      },
+      "medications": {
+        "value_en": "Levothyroxine",
+        "evidence": [
+          "take levothyroxine"
+        ]
+      },
+      "allergies": {
+        "value_en": "No known allergies",
+        "evidence": [
+          "no known allergies"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "36",
+        "evidence": [
+          "I'm 36"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "male"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

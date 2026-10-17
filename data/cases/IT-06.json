@@ -1,0 +1,88 @@
+{
+  "id": "IT-06",
+  "lang": "it",
+  "tags": [
+    "buried_red_flag",
+    "tourist",
+    "rule_gap"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Buongiorno, siamo in vacanza da tre giorni e ieri sera ho preso una storta alla caviglia destra scendendo dal taxi, ma soprattutto da stamattina ho un dolore forte al petto che va al braccio sinistro e sudo freddo. Ho 61 anni, uomo, nessuna allergia, prendo la pastiglia per il colesterolo."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Strong chest pain radiating to the left arm with cold sweat; right ankle sprain",
+        "evidence": [
+          "un dolore forte al petto che va al braccio sinistro e sudo freddo"
+        ]
+      },
+      "onset": {
+        "value_en": "This morning (chest); yesterday evening (ankle)",
+        "evidence": [
+          "da stamattina",
+          "ieri sera"
+        ]
+      },
+      "duration": null,
+      "severity": {
+        "value_en": "Strong",
+        "evidence": [
+          "dolore forte"
+        ]
+      },
+      "location": {
+        "value_en": "Chest, left arm; right ankle",
+        "evidence": [
+          "al petto",
+          "braccio sinistro",
+          "caviglia destra"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Cold sweat",
+        "evidence": [
+          "sudo freddo"
+        ]
+      },
+      "medications": {
+        "value_en": "Cholesterol tablet",
+        "evidence": [
+          "la pastiglia per il colesterolo"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "nessuna allergia"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "61",
+        "evidence": [
+          "61 anni"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "uomo"
+        ]
+      }
+    },
+    "redFlags": [
+      "RF-CHEST-01",
+      "RF-CHEST-02"
+    ],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

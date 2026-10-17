@@ -1,0 +1,60 @@
+{
+  "id": "TH-04",
+  "lang": "th",
+  "tags": [
+    "missing"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ผื่นขึ้นที่แขนสองข้างค่ะ ขึ้นมาสามวันแล้ว แล้วก็คันๆ"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Rash on both arms",
+        "evidence": [
+          "ผื่นขึ้นที่แขนสองข้าง"
+        ]
+      },
+      "onset": {
+        "value_en": "3 days ago",
+        "evidence": [
+          "ขึ้นมาสามวันแล้ว"
+        ]
+      },
+      "duration": {
+        "value_en": "3 days",
+        "evidence": [
+          "สามวันแล้ว"
+        ]
+      },
+      "severity": null,
+      "location": {
+        "value_en": "Both arms",
+        "evidence": [
+          "แขนสองข้าง"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Itching",
+        "evidence": [
+          "คันๆ"
+        ]
+      },
+      "medications": null,
+      "allergies": null,
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": null,
+      "sex": null
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": "severity",
+    "pii": [],
+    "injectionPresent": false
+  }
+}

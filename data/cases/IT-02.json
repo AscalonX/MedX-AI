@@ -1,0 +1,76 @@
+{
+  "id": "IT-02",
+  "lang": "it",
+  "tags": [
+    "routine",
+    "colloquial"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Ieri ho sollevato una scatola pesante e mi si è bloccata la schiena, adesso ho una botta di dolore nella parte bassa, direi 7 su 10. Ho 47 anni, sono un uomo, allergico alla penicillina, prendo solo la pastiglia per la pressione."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Low back pain, back locked up after lifting a heavy box",
+        "evidence": [
+          "mi si è bloccata la schiena"
+        ]
+      },
+      "onset": {
+        "value_en": "Yesterday, after lifting a heavy box",
+        "evidence": [
+          "Ieri ho sollevato una scatola pesante"
+        ]
+      },
+      "duration": null,
+      "severity": {
+        "value_en": "7/10",
+        "evidence": [
+          "7 su 10"
+        ]
+      },
+      "location": {
+        "value_en": "Lower back",
+        "evidence": [
+          "nella parte bassa"
+        ]
+      },
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "Blood pressure tablet",
+        "evidence": [
+          "la pastiglia per la pressione"
+        ]
+      },
+      "allergies": {
+        "value_en": "Penicillin",
+        "evidence": [
+          "allergico alla penicillina"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "47",
+        "evidence": [
+          "47 anni"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "sono un uomo"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

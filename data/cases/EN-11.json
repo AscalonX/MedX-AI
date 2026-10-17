@@ -1,0 +1,76 @@
+{
+  "id": "EN-11",
+  "lang": "en",
+  "tags": [
+    "code_switch"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Hello, ho mal di pancia since this morning, a dull pain, 4/10, and I feel a bit nauseous. I'm 34, a man, allergic to nothing, no medicine."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Abdominal pain",
+        "evidence": [
+          "ho mal di pancia"
+        ]
+      },
+      "onset": {
+        "value_en": "Since this morning",
+        "evidence": [
+          "since this morning"
+        ]
+      },
+      "duration": null,
+      "severity": {
+        "value_en": "4/10",
+        "evidence": [
+          "4/10"
+        ]
+      },
+      "location": null,
+      "associated_symptoms": {
+        "value_en": "Dull pain, mild nausea",
+        "evidence": [
+          "a dull pain",
+          "a bit nauseous"
+        ]
+      },
+      "medications": {
+        "value_en": "None",
+        "evidence": [
+          "no medicine"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "allergic to nothing"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "34",
+        "evidence": [
+          "I'm 34"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "a man"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

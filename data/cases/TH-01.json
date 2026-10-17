@@ -1,0 +1,86 @@
+{
+  "id": "TH-01",
+  "lang": "th",
+  "tags": [
+    "routine"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "เจ็บคอมาสองวันแล้วครับ กลืนน้ำลายก็เจ็บ มีไข้ต่ำๆ ประมาณ 37.8 เจ็บระดับ 4 จาก 10 ผู้ชายอายุ 28 ครับ ไม่แพ้ยาอะไร ไม่ได้กินยาประจำ มีแค่พาราตอนเช้า"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Sore throat",
+        "evidence": [
+          "เจ็บคอมาสองวันแล้ว"
+        ]
+      },
+      "onset": {
+        "value_en": "2 days ago",
+        "evidence": [
+          "มาสองวันแล้ว"
+        ]
+      },
+      "duration": {
+        "value_en": "2 days",
+        "evidence": [
+          "สองวันแล้ว"
+        ]
+      },
+      "severity": {
+        "value_en": "4/10",
+        "evidence": [
+          "เจ็บระดับ 4 จาก 10"
+        ]
+      },
+      "location": {
+        "value_en": "Throat",
+        "evidence": [
+          "เจ็บคอ"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Pain on swallowing, low-grade fever about 37.8",
+        "evidence": [
+          "กลืนน้ำลายก็เจ็บ",
+          "มีไข้ต่ำๆ ประมาณ 37.8"
+        ]
+      },
+      "medications": {
+        "value_en": "Paracetamol in the morning",
+        "evidence": [
+          "มีแค่พาราตอนเช้า"
+        ]
+      },
+      "allergies": {
+        "value_en": "No drug allergy",
+        "evidence": [
+          "ไม่แพ้ยาอะไร"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "28",
+        "evidence": [
+          "อายุ 28"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "ผู้ชาย"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "id": "TH-08",
+  "lang": "th",
+  "tags": [
+    "negated"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ปวดหัวมาสามวันแล้วค่ะ ปวดตื้อๆ ตรงขมับ ประมาณ 5 จาก 10 ไม่มีอาการเจ็บหน้าอก ไม่มีอาการหอบเหนื่อย หายใจปกติ ผู้ชายอายุ 39 ไม่แพ้ยา กินวิตามินซีทุกวัน"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Headache",
+        "evidence": [
+          "ปวดหัวมาสามวันแล้ว"
+        ]
+      },
+      "onset": {
+        "value_en": "3 days ago",
+        "evidence": [
+          "มาสามวันแล้ว"
+        ]
+      },
+      "duration": {
+        "value_en": "3 days",
+        "evidence": [
+          "สามวัน"
+        ]
+      },
+      "severity": {
+        "value_en": "5/10",
+        "evidence": [
+          "ประมาณ 5 จาก 10"
+        ]
+      },
+      "location": {
+        "value_en": "Temples",
+        "evidence": [
+          "ตรงขมับ"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Dull ache; denies chest pain and breathlessness",
+        "evidence": [
+          "ปวดตื้อๆ",
+          "ไม่มีอาการเจ็บหน้าอก ไม่มีอาการหอบเหนื่อย"
+        ]
+      },
+      "medications": {
+        "value_en": "Vitamin C daily",
+        "evidence": [
+          "กินวิตามินซีทุกวัน"
+        ]
+      },
+      "allergies": {
+        "value_en": "No drug allergy",
+        "evidence": [
+          "ไม่แพ้ยา"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "39",
+        "evidence": [
+          "อายุ 39"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "ผู้ชาย"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

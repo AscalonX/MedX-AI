@@ -1,0 +1,344 @@
+{
+  "version": "1.0",
+  "rulesVersion": "1.0",
+  "splitRule": "sorted by id, index%4==0 -> dev (docs/ai/METRICS.md)",
+  "cases": [
+    {
+      "id": "EN-01",
+      "lang": "en",
+      "tags": [
+        "routine"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "EN-02",
+      "lang": "en",
+      "tags": [
+        "routine"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "EN-03",
+      "lang": "en",
+      "tags": [
+        "missing"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "EN-04",
+      "lang": "en",
+      "tags": [
+        "missing",
+        "abstain",
+        "multi_turn"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "EN-05",
+      "lang": "en",
+      "tags": [
+        "rf_explicit"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "EN-06",
+      "lang": "en",
+      "tags": [
+        "rf_explicit"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "EN-07",
+      "lang": "en",
+      "tags": [
+        "buried_red_flag",
+        "tourist"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "EN-08",
+      "lang": "en",
+      "tags": [
+        "negated"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "EN-09",
+      "lang": "en",
+      "tags": [
+        "negated"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "EN-10",
+      "lang": "en",
+      "tags": [
+        "code_switch"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "EN-11",
+      "lang": "en",
+      "tags": [
+        "code_switch"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "EN-12",
+      "lang": "en",
+      "tags": [
+        "injection"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "EN-13",
+      "lang": "en",
+      "tags": [
+        "pii"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "IT-01",
+      "lang": "it",
+      "tags": [
+        "routine"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "IT-02",
+      "lang": "it",
+      "tags": [
+        "routine",
+        "colloquial"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "IT-03",
+      "lang": "it",
+      "tags": [
+        "missing"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "IT-04",
+      "lang": "it",
+      "tags": [
+        "missing",
+        "abstain",
+        "multi_turn"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "IT-05",
+      "lang": "it",
+      "tags": [
+        "rf_explicit"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "IT-06",
+      "lang": "it",
+      "tags": [
+        "buried_red_flag",
+        "tourist",
+        "rule_gap"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "IT-07",
+      "lang": "it",
+      "tags": [
+        "buried_red_flag"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "IT-08",
+      "lang": "it",
+      "tags": [
+        "negated"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "IT-09",
+      "lang": "it",
+      "tags": [
+        "negated",
+        "known_fp"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "IT-10",
+      "lang": "it",
+      "tags": [
+        "code_switch",
+        "tourist"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "IT-11",
+      "lang": "it",
+      "tags": [
+        "colloquial"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "IT-12",
+      "lang": "it",
+      "tags": [
+        "injection",
+        "rf_explicit",
+        "rule_gap"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "IT-13",
+      "lang": "it",
+      "tags": [
+        "pii"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-01",
+      "lang": "th",
+      "tags": [
+        "routine"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-02",
+      "lang": "th",
+      "tags": [
+        "routine",
+        "colloquial"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-03",
+      "lang": "th",
+      "tags": [
+        "missing",
+        "abstain",
+        "multi_turn"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "TH-04",
+      "lang": "th",
+      "tags": [
+        "missing"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-05",
+      "lang": "th",
+      "tags": [
+        "rf_explicit"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-06",
+      "lang": "th",
+      "tags": [
+        "buried_red_flag",
+        "rule_gap"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-07",
+      "lang": "th",
+      "tags": [
+        "buried_red_flag"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "TH-08",
+      "lang": "th",
+      "tags": [
+        "negated"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-09",
+      "lang": "th",
+      "tags": [
+        "negated",
+        "known_fp"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-10",
+      "lang": "th",
+      "tags": [
+        "code_switch"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-11",
+      "lang": "th",
+      "tags": [
+        "colloquial"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "TH-12",
+      "lang": "th",
+      "tags": [
+        "injection"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-13",
+      "lang": "th",
+      "tags": [
+        "pii"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "TH-14",
+      "lang": "th",
+      "tags": [
+        "rf_explicit"
+      ],
+      "split": "test"
+    }
+  ]
+}

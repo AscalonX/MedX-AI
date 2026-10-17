@@ -1,0 +1,81 @@
+{
+  "id": "TH-10",
+  "lang": "th",
+  "tags": [
+    "code_switch"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ปวด migraine มาสามวันแล้วค่ะ มี nausea นิดหน่อย โดนแสง light แล้วยิ่งปวด severity ประมาณ 6/10 ผู้ชายอายุ 31 no allergy ค่ะ ปกติกิน paracetamol บ้าง"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Migraine headache",
+        "evidence": [
+          "ปวด migraine มาสามวันแล้ว"
+        ]
+      },
+      "onset": {
+        "value_en": "3 days ago",
+        "evidence": [
+          "มาสามวันแล้ว"
+        ]
+      },
+      "duration": {
+        "value_en": "3 days",
+        "evidence": [
+          "สามวัน"
+        ]
+      },
+      "severity": {
+        "value_en": "6/10",
+        "evidence": [
+          "6/10"
+        ]
+      },
+      "location": null,
+      "associated_symptoms": {
+        "value_en": "Mild nausea, worse with light",
+        "evidence": [
+          "nausea นิดหน่อย",
+          "โดนแสง light แล้วยิ่งปวด"
+        ]
+      },
+      "medications": {
+        "value_en": "Paracetamol occasionally",
+        "evidence": [
+          "กิน paracetamol บ้าง"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "no allergy"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "31",
+        "evidence": [
+          "อายุ 31"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "ผู้ชาย"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

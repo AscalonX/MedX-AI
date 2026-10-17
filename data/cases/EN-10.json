@@ -1,0 +1,75 @@
+{
+  "id": "EN-10",
+  "lang": "en",
+  "tags": [
+    "code_switch"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Sawasdee krub. I have ปวดท้อง since yesterday, like 5 out of 10, mostly around the belly button, and I feel ท้องอืด too. I'm 29, no drug allergy, don't take any medicine."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Abdominal pain",
+        "evidence": [
+          "ปวดท้อง"
+        ]
+      },
+      "onset": {
+        "value_en": "Since yesterday",
+        "evidence": [
+          "since yesterday"
+        ]
+      },
+      "duration": null,
+      "severity": {
+        "value_en": "5/10",
+        "evidence": [
+          "5 out of 10"
+        ]
+      },
+      "location": {
+        "value_en": "Around the belly button",
+        "evidence": [
+          "around the belly button"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Bloating",
+        "evidence": [
+          "ท้องอืด"
+        ]
+      },
+      "medications": {
+        "value_en": "None",
+        "evidence": [
+          "don't take any medicine"
+        ]
+      },
+      "allergies": {
+        "value_en": "No drug allergy",
+        "evidence": [
+          "no drug allergy"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "29",
+        "evidence": [
+          "I'm 29"
+        ]
+      },
+      "sex": null
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}

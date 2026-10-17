@@ -1,0 +1,86 @@
+{
+  "id": "TH-02",
+  "lang": "th",
+  "tags": [
+    "routine",
+    "colloquial"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ปวดเข่าขวามาอาทิตย์นึงแล้วครับ ตั้งแต่ไปวิ่งมินิมาราธอน ลงบันไดทีเจ็บจี๊ดๆ เลย ประมาณ 5 เต็ม 10 ผมอายุ 34 ผู้ชาย แพ้ยาเพนิซิลลิน กินแค่ไอบูโพรเฟนเวลาปวด"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Right knee pain",
+        "evidence": [
+          "ปวดเข่าขวา"
+        ]
+      },
+      "onset": {
+        "value_en": "About a week ago, after a mini-marathon",
+        "evidence": [
+          "มาอาทิตย์นึงแล้ว"
+        ]
+      },
+      "duration": {
+        "value_en": "1 week",
+        "evidence": [
+          "อาทิตย์นึง"
+        ]
+      },
+      "severity": {
+        "value_en": "5/10",
+        "evidence": [
+          "5 เต็ม 10"
+        ]
+      },
+      "location": {
+        "value_en": "Right knee",
+        "evidence": [
+          "เข่าขวา"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Sharp pain going down stairs",
+        "evidence": [
+          "ลงบันไดทีเจ็บจี๊ดๆ"
+        ]
+      },
+      "medications": {
+        "value_en": "Ibuprofen when in pain",
+        "evidence": [
+          "กินแค่ไอบูโพรเฟนเวลาปวด"
+        ]
+      },
+      "allergies": {
+        "value_en": "Penicillin",
+        "evidence": [
+          "แพ้ยาเพนิซิลลิน"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "34",
+        "evidence": [
+          "อายุ 34"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "ผู้ชาย"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false
+  }
+}
