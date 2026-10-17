@@ -8,6 +8,8 @@ import {
   medsOf, openHigh, pharmStatus, redFlagsOf, selEvidence, selKey, waited, type Sel,
 } from "./_lib";
 import { ABSTAIN } from "./_lib";
+import { PrescriptionsCard } from "./_orders";
+import { ordersOf } from "./_lib";
 import { usePharmacy } from "./_shell";
 
 const T = {
@@ -185,6 +187,8 @@ export function Workspace({ id }: { id: string }) {
           </dl>
         </div>
       </GradientHero>
+
+      <PrescriptionsCard sessionId={session.id} orders={ordersOf(session)} lang={lang} busy={busy} fixture={fixture} run={run} />
 
       {locked && <Receipt session={session} lang={lang} audit={audit} />}
 

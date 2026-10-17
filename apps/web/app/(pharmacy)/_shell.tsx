@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { AuditEvent, IntakeSession, Lang, PharmacyReviewReq } from "@medx/shared";
 import { AppShell, Badge, Icon, type ShellRole } from "@/components/ui";
 import { FIXTURES } from "./_fixtures";
-import { C as CH, L, PHARMACISTS, setDisplayLang, applyReview, fetchQueue, hasMedData, openFlags, openHigh, post, sortQueue } from "./_lib";
+import { C as CH, L, PHARMACISTS, setDisplayLang, applyReview, fetchQueue, hasMedData, hasOrders, openFlags, openHigh, post, sortQueue } from "./_lib";
 
 export interface Entry { session: IntakeSession; fixture: boolean }
 type Submit = (id: string, body: Omit<PharmacyReviewReq, "reviewerId">) => Promise<void>;
@@ -17,6 +17,7 @@ interface Ctx {
   error: string | null;
   refresh: () => void;
   submit: Submit;
+  submitOrder: (sessionId: string, orderId: string, action: "verify" | "return", note?: string) => Promise<void>;
   /** Locally recorded audit events for fixture sessions. */
   fixtureAudit: Record<string, AuditEvent[]>;
 }
@@ -79,7 +80,7 @@ export function Shell({ children }: { children: ReactNode }) {
   // Live sessions that carry medication data win. Fixtures appear only when there are none.
   const entries = useMemo<Entry[] | null>(() => {
     if (live === null) return null;
-    const real = live.filter(hasMedData).map((session) => ({ session, fixture: false }));
+    const real = live.filter((x) => hasMedData(x) || hasOrders(x)).map((session) => ({ session, fixture: false }));
     if (real.length && !forceFix) return sortQueue(real.map((e) => e.session)).map((s) => ({ session: s, fixture: false }));
     return sortQueue(fixtures).map((session) => ({ session, fixture: true }));
   }, [live, fixtures, forceFix]);
@@ -112,6 +113,23 @@ export function Shell({ children }: { children: ReactNode }) {
 
   setDisplayLang(lang);
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+  const submitOrder = useCallback<Ctx["submitOrder"]>(async (sessionId, orderId, action, note) => {
+    const at = new Date().toISOString();
+    if (fixturesRef.current.some((x) => x.id === sessionId)) {
+      setFixtures((cur) => cur.map((x) => x.id !== sessionId || !x.orders ? x : { ...x, orders: { ...x.orders, medications: x.orders.medications.map((o) => o.id !== orderId ? o : { ...o, status: action === "verify" ? "verified" as const : "returned" as const, pharmacist: { action, by: reviewer, at, ...(note ? { note } : {}) } }) } }));
+      return;
+    }
+    mutating.current++; gen.current++;
+    let failed = false;
+    try {
+      const res = await post<IntakeSession | unknown>(`/api/sessions/${sessionId}/orders/medications/${orderId}/pharmacy`, { reviewerId: reviewer, action, ...(note ? { note } : {}) });
+      const updated = res as IntakeSession;
+      if (updated && updated.id === sessionId) setLive((cur) => (cur ? cur.map((x) => (x.id === sessionId ? updated : x)) : cur));
+      else failed = true; // unknown response shape: reload
+    } catch (e) { failed = true; throw e; }
+    finally { mutating.current--; gen.current++; if (failed) refresh(); }
+  }, [reviewer, refresh]);
+
   const usingFixtures = entries?.some((e) => e.fixture) ?? false;
   const urgent = (entries ?? []).reduce((n, e) => n + openHigh(e.session).length + openFlags(e.session).length, 0);
   const hour = now ? new Date(now).getHours() : 12;
@@ -120,7 +138,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const switchRole = (r: ShellRole) => { if (r === "ops") router.push("/ops"); else if (r !== "pharmacist") router.push("/review"); };
 
   return (
-    <C.Provider value={{ lang, setLang, reviewer, setReviewer, now, entries, error, refresh, submit, fixtureAudit }}>
+    <C.Provider value={{ lang, setLang, reviewer, setReviewer, now, entries, error, refresh, submit, submitOrder, fixtureAudit }}>
       <AppShell
         role="pharmacist"
         onRoleChange={switchRole}

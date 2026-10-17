@@ -1,5 +1,5 @@
 import type {
-  AllergyEntry, AuditEvent, Evidence, RedFlagHit, GetSessionRes, IntakeSession, Lang, Localized, MedAlert, MedAlertKind, MedicationEntry,
+  MedicationOrder, AllergyEntry, AuditEvent, Evidence, RedFlagHit, GetSessionRes, IntakeSession, Lang, Localized, MedAlert, MedAlertKind, MedicationEntry,
   PharmacyReviewReq,
 } from "@medx/shared";
 
@@ -378,3 +378,17 @@ export const C = {
   receiptNote: L("การแจ้งเตือนทั้งหมดยังอยู่ในบันทึก ไม่มีผลต่อการรักษาจนกว่าแพทย์ยืนยัน", "Tutti gli avvisi restano nel registro. Nulla cambia l'assistenza finché un clinico non conferma.", "All alerts stay on the record. Nothing changes care until a clinician confirms."),
   signedOffAnnounce: L("ลงนามเทียบรายการยาแล้ว", "Riconciliazione firmata", "Reconciliation signed off"),
 };
+
+// ---------- doctor medication orders ----------
+export const ordersOf = (s: IntakeSession): MedicationOrder[] => s.orders?.medications ?? [];
+export const hasOrders = (s: IntakeSession) => ordersOf(s).length > 0;
+/** Submitted orders that still need the pharmacist. */
+export const pendingOrders = (s: IntakeSession) => ordersOf(s).filter((o) => o.status === "submitted");
+export const overrideOf = (o: MedicationOrder, alertId: string) => o.overrides.find((x) => x.alertId === alertId);
+export const openHighChecks = (o: MedicationOrder) => o.checks.filter((c) => c.severity === "high" && !overrideOf(o, c.id));
+/** Why Verify is disabled: every high alert needs a documented prescriber override. */
+export function orderBlock(o: MedicationOrder): string | null {
+  const n = openHighChecks(o).length;
+  return n ? `${n} high ${n === 1 ? "alert has" : "alerts have"} no prescriber override. Return the order to the prescriber with a note.` : null;
+}
+export const orderTitle = (o: MedicationOrder) => `${o.generic ?? o.drugText} ${o.dose}`;

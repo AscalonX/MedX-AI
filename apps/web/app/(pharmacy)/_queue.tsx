@@ -1,12 +1,16 @@
 "use client";
 import Link from "next/link";
-import { Badge, Card, EmptyState, Icon, LangMorph, StatTile } from "@/components/ui";
-import { C, LANG_NAME, PHARM_STATUS_LABEL, U, alertsOf, isAbstained, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, waited } from "./_lib";
+import { useState } from "react";
+import { Badge, Card, EmptyState, Icon, LangMorph, SegmentedControl, StatTile } from "@/components/ui";
+import { PrescriptionQueue } from "./_orders";
+import { C, LANG_NAME, PHARM_STATUS_LABEL, U, alertsOf, isAbstained, pendingOrders, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, waited } from "./_lib";
 import { usePharmacy } from "./_shell";
 
 export function Queue() {
   const { entries, error, lang, now } = usePharmacy();
   const list = entries ?? [];
+  const [tab, setTab] = useState<"recon" | "rx">("recon");
+  const rxCount = list.reduce((n, e) => n + pendingOrders(e.session).length, 0);
   const pending = list.filter((e) => pharmStatus(e.session) !== "reconciled").length;
   const high = list.reduce((n, e) => n + openHigh(e.session).length, 0);
   const flags = list.reduce((n, e) => n + openFlags(e.session).length, 0);
@@ -21,8 +25,11 @@ export function Queue() {
       </section>
       {error && <p role="status" className="text-small text-ink-soft">{C.notRefreshed[lang]}: {error}.</p>}
       <Card padded={false}>
-        <h2 className="px-5 pb-2 pt-5 text-lead font-bold">{C.queue[lang]}</h2>
-        {!entries ? (
+        <div className="flex flex-wrap items-center gap-3 px-5 pb-2 pt-5">
+          <h2 className="text-lead font-bold">{C.queue[lang]}</h2>
+          <SegmentedControl ariaLabel="Queue" value={tab} onChange={setTab} options={[{ value: "recon", label: C.queueTitle[lang] }, { value: "rx", label: `Prescriptions (${rxCount})` }]} />
+        </div>
+        {tab === "rx" ? <PrescriptionQueue /> : !entries ? (
           <div aria-busy="true" aria-label="Loading" className="flex flex-col gap-3 p-5">
             {[0, 1, 2].map((i) => <span key={i} className="mx-blank !block !h-14 !w-full !rounded-2xl" />)}
           </div>

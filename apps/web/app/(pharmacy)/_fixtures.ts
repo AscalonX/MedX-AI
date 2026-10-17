@@ -1,7 +1,7 @@
 // Fixture sessions that follow the pharmacist contract (types.ts MedicationEntry / AllergyEntry / MedAlert).
 // Used only while the engine does not yet populate summary.medications. The UI badges them "fixture data".
 // Synthetic patients. Evidence offsets are computed from the turn text so every quote verifies.
-import type { AllergyEntry, Evidence, ExtractedField, IntakeSession, Lang, MedAlert, MedicationEntry, RedFlagHit, Turn } from "@medx/shared";
+import type { MedicationOrder, AllergyEntry, Evidence, ExtractedField, IntakeSession, Lang, MedAlert, MedicationEntry, RedFlagHit, Turn } from "@medx/shared";
 
 const base = Date.now();
 const iso = (minAgo: number) => new Date(base - minAgo * 60000).toISOString();
@@ -151,5 +151,24 @@ const fx5 = session({
     evidence: [ev(t5, 1, "crushing chest pain since this morning")],
   }],
 });
+
+// ---- doctor medication orders (submitted, with deterministic checks) ----
+const ord = (id: string, drugText: string, generic: string, drugClass: string, dose: string, frequency: string, duration: string, checks: MedAlert[], overrides: MedicationOrder["overrides"], minAgo: number): MedicationOrder =>
+  ({ id, drugText, generic, drugClass, dose, route: "oral", frequency, duration, orderedBy: "Dr. M. Rossi", at: iso(minAgo), status: "submitted", checks, overrides });
+const chk = (id: string, kind: MedAlert["kind"], severity: MedAlert["severity"], en: string, act: string, src: string): MedAlert =>
+  ({ id, ruleId: `MR-${kind.toUpperCase().slice(0, 6)}-O`, kind, severity, medIds: [], allergyIds: [], evidence: [], source: src, message: L(en, en, en), action: L(act, act, act) });
+fx1.orders = { investigations: [], medications: [
+  ord("fx1-o1", "Paracetamol 1000 mg", "Paracetamol", "analgesic_antipyretic", "1000 mg", "every 6 hours", "3 days",
+    [chk("fx1-o1-c1", "max_dose_risk", "moderate", "With the 1500 mg already taken today, the daily paracetamol total would reach 5500 mg.", "Confirm the time of the last dose and the daily total before dispensing.", "Paracetamol labelling, adult maximum 4 g per day")], [], 4)] };
+fx2.orders = { investigations: [], medications: [
+  ord("fx2-o1", "Amoxicillin 500 mg", "Amoxicillin", "aminopenicillin", "500 mg", "every 8 hours", "5 days",
+    [chk("fx2-o1-c1", "allergy_conflict", "high", "The patient states a penicillin allergy; amoxicillin is a penicillin.", "Return to the prescriber to confirm the plan.", "Aminopenicillins are contraindicated in penicillin allergy")], [], 6)] };
+fx3.orders = { investigations: [], medications: [
+  ord("fx3-o1", "Diclofenac 50 mg", "Diclofenac", "nsaid", "50 mg", "every 8 hours", "5 days",
+    [chk("fx3-o1-c1", "interaction", "high", "Diclofenac with warfarin raises the risk of bleeding.", "Check the plan with the prescriber.", "NSAID with warfarin: increased bleeding risk"),
+     chk("fx3-o1-c2", "dose_range", "moderate", "150 mg per day is at the upper end of the usual range.", "Confirm the duration.", "Dictionary daily range")],
+    [{ alertId: "fx3-o1-c1", reason: "INR checked this morning (2.4); short course with gastric protection; patient counselled.", by: "Dr. M. Rossi", at: iso(5) }], 5),
+  ord("fx3-o2", "Naproxen 500 mg", "Naproxen", "nsaid", "500 mg", "twice daily", "7 days",
+    [chk("fx3-o2-c1", "interaction", "high", "Naproxen with warfarin raises the risk of bleeding.", "Return to the prescriber to confirm the plan.", "NSAID with warfarin: increased bleeding risk")], [], 3)] };
 
 export const FIXTURES: IntakeSession[] = [fx1, fx2, fx3, fx4, fx5];
