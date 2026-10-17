@@ -8,5 +8,4 @@ dist/
 *.log
 .DS_Store
 eval/runs/
-apps/web/public/patient/
 .vercel
