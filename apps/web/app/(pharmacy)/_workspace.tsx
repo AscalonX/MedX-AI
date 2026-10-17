@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AllergyEntry, AllergyReviewAction, AuditEvent, Lang, MedAlert, MedAlertReviewAction, MedicationEntry, MedReviewAction } from "@medx/shared";
-import { Badge, Button, EvidenceHighlight, Field, InkConfidence, LangMorph, PencilField, type Mark } from "@/components/ui";
+import { Badge, Button, Card, CardHeader, EvidenceHighlight, Field, GradientHero, Icon, InkConfidence, LangMorph, PencilField, type Mark } from "@/components/ui";
 import {
   KIND_LABEL, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
   medsOf, openHigh, pharmStatus, redFlagsOf, selEvidence, selKey, waited, type Sel,
@@ -127,7 +127,7 @@ export function Workspace({ id }: { id: string }) {
 
   const moveFocus = (e: React.KeyboardEvent) => {
     if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-    const rows = [...(scrollRef.current?.parentElement?.parentElement?.querySelectorAll<HTMLElement>("[data-row]") ?? [])];
+    const rows = [...(scrollRef.current?.querySelectorAll<HTMLElement>("[data-row]") ?? [])];
     const i = rows.indexOf(document.activeElement as HTMLElement);
     if (i < 0) return;
     e.preventDefault();
@@ -137,70 +137,73 @@ export function Workspace({ id }: { id: string }) {
   const extract = session.summary?.modelCalls.find((c) => c.step === "extract");
 
   return (
-    <div onKeyDown={moveFocus} className="grid min-h-0 flex-1 grid-cols-1 gap-6 min-[1024px]:grid-cols-[minmax(0,1fr)_340px] min-[1280px]:grid-cols-[minmax(0,1fr)_340px_380px]">
+    <div ref={scrollRef} onKeyDown={moveFocus} className="flex flex-col gap-6">
       <p aria-live="polite" className="sr-only">{announce}</p>
+      <h1 className="sr-only">Medication reconciliation for {session.code}</h1>
 
-      <section aria-label={`Medication reconciliation for ${session.code}`} className="flex min-h-0 min-w-0 flex-col bg-sheet shadow-sheet">
-        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-          <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1 px-6 pb-3 pt-5">
-            <Link href="/pharmacy" className="text-small text-ink-soft underline underline-offset-4">Queue</Link>
-            <h1 className="text-title">{session.code}</h1>
-            <span lang={pl} className="text-body text-ink-soft">{LANG_NAME[pl]}</span>
-            <span className="text-small text-ink-soft">
-              started {clock(session.createdAt)}{!locked && now > 0 && <>, waiting {waited(session.createdAt, now)}</>}
-            </span>
-            <Badge tone={st === "reconciled" ? "ink" : st === "in_review" ? "outline" : "pencil"}>{PHARM_STATUS_LABEL[st]}</Badge>
+      <GradientHero
+        title={<span className="flex flex-wrap items-baseline gap-x-3">{session.code}<span lang={pl} className="text-body font-semibold text-on-primary/90">{LANG_NAME[pl]}</span></span>}
+        subtitle={<>Started {clock(session.createdAt)}{!locked && now > 0 && <>, waiting {waited(session.createdAt, now)}</>}</>}
+        action={
+          <>
+            <Link href="/pharmacy" className="inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-small font-semibold text-on-primary ring-1 ring-inset ring-white/40 hover:bg-white/25">Back to queue</Link>
+            <button type="button" onClick={() => setDrawer(true)} aria-controls="transcript" className="inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-small font-semibold text-on-primary ring-1 ring-inset ring-white/40 hover:bg-white/25 min-[1600px]:hidden">Patient&apos;s words</button>
+          </>
+        }
+      >
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={st === "reconciled" ? "teal" : "outline"}>{PHARM_STATUS_LABEL[st]}</Badge>
             {fixture && <Badge tone="pencil">Fixture data</Badge>}
-            <button type="button" onClick={() => setDrawer(true)} aria-controls="transcript" className="ml-auto text-small underline underline-offset-4 min-[1280px]:hidden">
-              Patient&apos;s words
-            </button>
-          </header>
+          </div>
+          <dl className="flex gap-8">
+            {([["Medicines", meds.length], ["Allergies", allergies.length], ["Alerts", alerts.length]] as const).map(([k, n]) => (
+              <div key={k}>
+                <dt className="text-micro font-semibold text-on-primary/85">{k}</dt>
+                <dd className="text-stat font-extrabold tabular-nums">{abstained ? "-" : n}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </GradientHero>
 
-          {flags.length > 0 && (
-            <section aria-labelledby="h-flags" role="alert" className="mx-6 mb-3 border-y-2 border-signal bg-signal-tint">
-              <h2 id="h-flags" className="px-3 pt-2 font-sans text-small font-medium"><LangMorph text={U.flags} lang={lang} /></h2>
-              <ul>
-                {flags.map((h) => (
-                  <li key={h.ruleId} className="flex flex-col gap-1 border-b border-rule px-3 py-2 last:border-b-0">
-                    <p className="flex flex-wrap items-center gap-2">
-                      <Badge tone={h.severity === "emergency" ? "signal" : "signalOutline"}>{h.severity === "emergency" ? "Emergency" : "Urgent"}</Badge>
-                      <span className="font-serif text-lead"><LangMorph text={h.label} lang={lang} /></span>
-                      <span className="text-micro text-ink-soft">{h.ruleId}</span>
-                    </p>
-                    <p className="text-small"><LangMorph text={h.action} lang={lang} /></p>
-                    <p className="text-small text-ink-soft">
-                      {h.review ? <>{M(lang, "flagDone")} {h.review.reviewerId}, {clock(h.review.at)}</> : <LangMorph text={U.flagOpen} lang={lang} />}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-              <p className="px-3 pb-2 pt-1 text-small">
-                <Link href={`/review/${session.id}`} className="font-medium underline underline-offset-4"><LangMorph text={U.flagReview} lang={lang} /></Link>
-              </p>
-            </section>
-          )}
-          {fixture && <p role="note" className="mx-6 border-y border-rule py-2 text-small text-ink-soft"><LangMorph text={U.fixtureNote} lang={lang} /></p>}
+      {flags.length > 0 && (
+        <section aria-labelledby="h-flags" role="alert" className="rounded-card border border-signal/50 bg-signal-tint p-5 ring-1 ring-signal/20">
+          <h2 id="h-flags" className="flex items-center gap-2 text-lead font-bold text-signal"><Icon name="triangle-alert" /><LangMorph text={U.flags} lang={lang} /></h2>
+          <ul className="mt-3 flex flex-col gap-3">
+            {flags.map((h) => (
+              <li key={h.ruleId} className="flex flex-col gap-1 rounded-2xl bg-sheet p-3">
+                <p className="flex flex-wrap items-center gap-2">
+                  <Badge tone={h.severity === "emergency" ? "signal" : "signalOutline"}>{h.severity === "emergency" ? "Emergency" : "Urgent"}</Badge>
+                  <span className="text-lead font-bold"><LangMorph text={h.label} lang={lang} /></span>
+                  <span className="text-micro text-ink-soft">{h.ruleId}</span>
+                </p>
+                <p className="text-small"><LangMorph text={h.action} lang={lang} /></p>
+                <p className="text-small text-ink-soft">{h.review ? <>{M(lang, "flagDone")} {h.review.reviewerId}, {clock(h.review.at)}</> : <LangMorph text={U.flagOpen} lang={lang} />}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-3 text-small"><Link href={`/review/${session.id}`} className="font-semibold text-ocean underline underline-offset-4"><LangMorph text={U.flagReview} lang={lang} /></Link></p>
+        </section>
+      )}
+      {fixture && <p role="note" className="rounded-2xl bg-warn-tint px-4 py-2 text-small text-warn"><LangMorph text={U.fixtureNote} lang={lang} /></p>}
 
+      <div className="grid items-start gap-6 min-[1024px]:grid-cols-[minmax(0,1fr)_340px] min-[1600px]:grid-cols-[minmax(0,1fr)_340px_380px]">
+        <div className="flex min-w-0 flex-col gap-6">
           {abstained ? (
-            <section aria-labelledby="h-abst" className="flex flex-col gap-2 border-t border-rule px-6 py-5">
-              <h2 id="h-abst" className="text-title"><LangMorph text={U.needsHuman} lang={lang} /></h2>
-              <p className="max-w-[60ch] text-body text-ink-soft"><LangMorph text={U.needsHumanBody} lang={lang} /></p>
-              {session.summary?.abstainReason && <p className="text-micro text-graphite">{session.summary.abstainReason}</p>}
-              <button type="button" onClick={() => setDrawer(true)} aria-controls="transcript" className="self-start text-small underline underline-offset-4">Patient&apos;s words</button>
-            </section>
+            <Card aria-labelledby="h-abst">
+              <h2 id="h-abst" className="text-title font-extrabold"><LangMorph text={U.needsHuman} lang={lang} /></h2>
+              <p className="mt-2 max-w-[60ch] text-body text-ink-soft"><LangMorph text={U.needsHumanBody} lang={lang} /></p>
+              {session.summary?.abstainReason && <p className="mt-2 text-micro text-graphite">{session.summary.abstainReason}</p>}
+            </Card>
           ) : (
             <>
-              <section aria-labelledby="h-meds" className="border-t border-rule pt-3">
-                <h2 id="h-meds" className="px-6 pb-1 font-sans text-small font-medium text-ink-soft"><LangMorph text={T.medicines} lang={lang} /></h2>
-                {meds.length > 0 && (
-                  <p aria-hidden="true" className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-x-4 px-6 pb-1 text-micro text-ink-soft">
-                    <span>Patient&apos;s words ({LANG_NAME[pl]})</span><span>Generic name and class</span>
-                  </p>
-                )}
+              <Card padded={false} aria-labelledby="h-meds">
+                <div className="px-5 pt-5"><CardHeader title={<span id="h-meds"><LangMorph text={T.medicines} lang={lang} /></span>} action={<span className="text-small text-ink-soft">{meds.length}</span>} className="mb-2" /></div>
                 {meds.length === 0 ? (
-                  <p className="px-6 py-3 text-body text-ink-soft"><span className="mx-blank mr-2" aria-hidden="true" /><LangMorph text={U.noMeds} lang={lang} /></p>
+                  <p className="px-5 pb-5 text-body text-ink-soft"><LangMorph text={U.noMeds} lang={lang} /></p>
                 ) : (
-                  <ul>
+                  <ul className="divide-y divide-rule/70">
                     {meds.map((m) => (
                       <MedRow
                         key={m.id} m={m} lang={lang} pl={pl} busy={busy} locked={locked}
@@ -216,11 +219,11 @@ export function Workspace({ id }: { id: string }) {
                     ))}
                   </ul>
                 )}
-              </section>
+              </Card>
 
-              <section aria-labelledby="h-alg" className="border-t border-rule pt-3">
-                <h2 id="h-alg" className="px-6 pb-1 font-sans text-small font-medium text-ink-soft"><LangMorph text={T.allergies} lang={lang} /></h2>
-                <ul>
+              <Card padded={false} aria-labelledby="h-alg">
+                <div className="px-5 pt-5"><CardHeader title={<span id="h-alg"><LangMorph text={T.allergies} lang={lang} /></span>} className="mb-2" /></div>
+                <ul className="divide-y divide-rule/70">
                   {allergies.map((a) => (
                     <AllergyRow
                       key={a.id} a={a} lang={lang} pl={pl} busy={busy} locked={locked}
@@ -233,106 +236,110 @@ export function Workspace({ id }: { id: string }) {
                   ))}
                   {nka && (
                     <li className={sel?.type === "nka" ? "bg-paper" : ""}>
-                      <button type="button" data-row aria-pressed={sel?.type === "nka"} aria-controls="transcript" onClick={() => select({ type: "nka", id: "nka" })} className="flex w-full flex-wrap items-baseline gap-x-3 px-6 py-2.5 text-left hover:bg-paper">
-                        <span className="text-body font-medium"><LangMorph text={U.nka} lang={lang} /></span>
-                        <span lang={pl} className="font-serif text-body italic text-ink-soft">&ldquo;{nkaEv[0].quote}&rdquo;</span>
+                      <button type="button" data-row aria-pressed={sel?.type === "nka"} aria-controls="transcript" onClick={() => select({ type: "nka", id: "nka" })} className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 px-5 py-3 text-left hover:bg-paper">
+                        <Badge tone="ocean" icon={<Icon name="quote" size={14} />}><LangMorph text={U.nka} lang={lang} /></Badge>
+                        <span lang={pl} className="text-body text-ink-soft">&ldquo;{nkaEv[0].quote}&rdquo;</span>
                       </button>
                     </li>
                   )}
                   {allergies.length === 0 && !nka && (
-                    <li className="flex flex-wrap items-baseline gap-x-3 px-6 py-2.5">
-                      <span className="mx-blank" aria-hidden="true" />
-                      <span className="text-body text-ink-soft"><LangMorph text={U.notStatedAsk} lang={lang} /></span>
+                    <li className="flex items-center gap-3 px-5 py-3">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-small font-medium text-graphite"><Icon name="circle-minus" size={14} /><LangMorph text={U.notStatedAsk} lang={lang} /></span>
                     </li>
                   )}
                 </ul>
-              </section>
+              </Card>
 
-              <section aria-labelledby="h-q" className="border-t border-rule pb-4 pt-3">
-                <h2 id="h-q" className="px-6 pb-1 font-sans text-small font-medium text-ink-soft"><LangMorph text={T.questions} lang={lang} /></h2>
+              <Card aria-labelledby="h-q">
+                <CardHeader title={<span id="h-q"><LangMorph text={T.questions} lang={lang} /></span>} />
                 {questions.length === 0 ? (
-                  <p className="px-6 py-2 text-small text-ink-soft"><LangMorph text={L("ไม่มีข้อมูลที่ต้องถามเพิ่ม", "Nessuna domanda in sospeso", "Nothing more to ask")} lang={lang} /></p>
+                  <p className="text-small text-ink-soft"><LangMorph text={L("ไม่มีข้อมูลที่ต้องถามเพิ่ม", "Nessuna domanda in sospeso", "Nothing more to ask")} lang={lang} /></p>
                 ) : (
-                  <ol className="flex flex-col">
+                  <ol className="flex flex-col gap-3">
                     {questions.map((qn) => (
-                      <li key={qn.id} className="flex flex-col gap-0.5 border-b border-rule px-6 py-2.5 last:border-b-0">
-                        <p lang={pl} className="max-w-[65ch] font-serif text-lead text-ink">{qn.text[pl]}</p>
-                        {lang !== pl && <p lang={lang} className="max-w-[70ch] text-small text-ink-soft"><LangMorph text={qn.text} lang={lang} /></p>}
-                        <p className="text-micro text-graphite">{qn.why}</p>
+                      <li key={qn.id} className="rounded-2xl bg-paper p-4">
+                        <p lang={pl} className="max-w-[65ch] text-lead font-bold text-ink">{qn.text[pl]}</p>
+                        {lang !== pl && <p lang={lang} className="mt-1 max-w-[70ch] text-small text-ink-soft"><LangMorph text={qn.text} lang={lang} /></p>}
+                        <p className="mt-1 text-micro text-graphite">{qn.why}</p>
                       </li>
                     ))}
                   </ol>
                 )}
-              </section>
+              </Card>
             </>
           )}
+          <Provenance
+            lang={lang} audit={audit} open={auditOpen} onToggle={() => setAuditOpen((o) => !o)}
+            provenance={extract ? `Extracted by ${extract.provider} / ${extract.model}` : "Extraction record not available"} generatedAt={session.summary?.generatedAt}
+          />
         </div>
 
-        <SignOff
-          lang={lang} busy={busy} locked={locked} block={block} error={actionError} audit={audit} open={auditOpen} onToggle={() => setAuditOpen((o) => !o)}
-          reconciledBy={locked ? session.pharmacyReviewerId : undefined} reconciledAt={locked ? session.updatedAt : undefined}
-          onSignOff={() => send([], [], true)} reviewer={reviewer}
-          provenance={extract ? `Extracted by ${extract.provider} / ${extract.model}` : "Extraction record not available"}
-          generatedAt={session.summary?.generatedAt}
-        />
-      </section>
+        <aside aria-label="Medication alerts" className="min-[1024px]:sticky min-[1024px]:top-4 min-[1024px]:max-h-[calc(100dvh-2rem)] min-[1024px]:overflow-y-auto rounded-card">
+          <Card padded={false}>
+            <div className="flex items-center gap-3 px-5 pt-5">
+              <CardHeader title={<LangMorph text={T.alerts} lang={lang} />} className="mb-2" />
+              {!abstained && openHigh(session).length > 0 && <Badge tone="signalOutline" className="mb-2">{openHigh(session).length} high</Badge>}
+            </div>
+            {abstained ? (
+              <p className="px-5 pb-5 text-small text-ink-soft"><LangMorph text={U.needsHuman} lang={lang} />. <LangMorph text={L("ไม่แสดงการแจ้งเตือนเมื่อไม่มีสรุป", "Nessun avviso mostrato senza riepilogo", "No alerts are shown without a summary")} lang={lang} /></p>
+            ) : alerts.length === 0 ? (
+              <p className="px-5 pb-5 text-small text-ink-soft"><LangMorph text={U.noAlerts} lang={lang} /></p>
+            ) : (
+              <ul className="flex flex-col gap-3 p-4 pt-1">
+                {[...alerts].sort((a, b) => Number(!!a.review) - Number(!!b.review) || Number(b.severity === "high") - Number(a.severity === "high")).map((a) => (
+                  <AlertItem
+                    key={a.id} a={a} lang={lang} meds={meds} busy={busy} locked={locked}
+                    selected={sel?.type === "alert" && sel.id === a.id} linked={!!alertLinkedToSel(a)}
+                    onSelect={() => select({ type: "alert", id: a.id })}
+                    onReview={(action, note) => send([], [{ alertId: a.id, action, ...(note ? { note } : {}) }])}
+                    onShowMed={(mid) => select({ type: "med", id: mid })}
+                  />
+                ))}
+              </ul>
+            )}
+          </Card>
+        </aside>
 
-      <aside aria-label="Medication alerts" className="flex min-h-0 min-w-0 flex-col bg-sheet shadow-sheet">
-        <div className="flex items-baseline gap-3 border-b border-rule px-4 py-3">
-          <h2 className="text-body"><LangMorph text={T.alerts} lang={lang} /></h2>
-          {!abstained && openHigh(session).length > 0 && <Badge tone="signalOutline">{openHigh(session).length} high to handle</Badge>}
-        </div>
-        {abstained ? (
-          <p className="p-4 text-small text-ink-soft"><LangMorph text={U.needsHuman} lang={lang} />. <LangMorph text={L("ไม่แสดงการแจ้งเตือนเมื่อไม่มีสรุป", "Nessun avviso mostrato senza riepilogo", "No alerts are shown without a summary")} lang={lang} /></p>
-        ) : alerts.length === 0 ? (
-          <p className="p-4 text-small text-ink-soft"><LangMorph text={U.noAlerts} lang={lang} /></p>
-        ) : (
-          <ul className="min-h-0 flex-1 overflow-y-auto">
-            {[...alerts].sort((a, b) => Number(!!a.review) - Number(!!b.review) || Number(b.severity === "high") - Number(a.severity === "high")).map((a) => (
-              <AlertItem
-                key={a.id} a={a} lang={lang} meds={meds} busy={busy} locked={locked}
-                selected={sel?.type === "alert" && sel.id === a.id} linked={!!alertLinkedToSel(a)}
-                onSelect={() => select({ type: "alert", id: a.id })}
-                onReview={(action, note) => send([], [{ alertId: a.id, action, ...(note ? { note } : {}) }])}
-                onShowMed={(mid) => select({ type: "med", id: mid })}
-              />
-            ))}
-          </ul>
-        )}
-      </aside>
+        <aside
+          id="transcript" aria-label="Patient's words"
+          className={cls(
+            "flex min-h-0 flex-col rounded-card border border-rule/70 bg-sheet shadow-sheet",
+            "min-[1600px]:sticky min-[1600px]:top-4 min-[1600px]:max-h-[calc(100dvh-2rem)]",
+            "max-[1599px]:fixed max-[1599px]:inset-y-0 max-[1599px]:right-0 max-[1599px]:z-30 max-[1599px]:w-[400px] max-[1599px]:max-w-full max-[1599px]:rounded-r-none max-[1599px]:shadow-sheet-lifted",
+            "max-[1599px]:transition-transform max-[1599px]:duration-base max-[1599px]:ease-pen",
+            !drawer && "max-[1599px]:invisible max-[1599px]:translate-x-full",
+          )}
+        >
+          <div className="flex items-center px-5 pb-2 pt-5">
+            <h2 className="text-lead font-bold">Patient&apos;s words</h2>
+            <button type="button" onClick={() => setDrawer(false)} className="ml-auto text-small font-semibold text-ocean min-[1600px]:hidden">Close</button>
+          </div>
+          <ol className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
+            {session.turns.map((t, i) => {
+              const marks = marksFor(t.id);
+              const hasActive = marks.some((m) => m.active);
+              return (
+                <li key={t.id} className="border-t border-rule/70 py-3 first:border-t-0">
+                  <p className="flex gap-2 text-micro text-ink-soft">
+                    <span>{i + 1}</span><span>{clock(t.at)}</span><span>{t.role === "patient" ? "Patient" : "Question"}</span><span lang={t.lang}>{LANG_NAME[t.lang]}</span>
+                  </p>
+                  {t.role === "patient" ? (
+                    <EvidenceHighlight key={hasActive ? `${t.id}:${selKey(sel)}` : t.id} text={t.text} lang={t.lang} marks={marks} className="mt-1" />
+                  ) : (
+                    <p lang={t.lang} className="mt-1 text-body text-ink-soft">{t.text}</p>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </aside>
+      </div>
 
-      <aside
-        id="transcript" aria-label="Patient's words"
-        className={cls(
-          "flex min-h-0 flex-col bg-sheet shadow-sheet",
-          "max-[1279px]:fixed max-[1279px]:inset-y-0 max-[1279px]:right-0 max-[1279px]:z-20 max-[1279px]:w-[400px] max-[1279px]:max-w-full max-[1279px]:shadow-sheet-lifted",
-          "max-[1279px]:transition-transform max-[1279px]:duration-base max-[1279px]:ease-pen",
-          !drawer && "max-[1279px]:invisible max-[1279px]:translate-x-full",
-        )}
-      >
-        <div className="flex items-center border-b border-rule px-4 py-3">
-          <h2 className="text-body">Patient&apos;s words</h2>
-          <button type="button" onClick={() => setDrawer(false)} className="ml-auto text-small underline underline-offset-4 min-[1280px]:hidden">Close</button>
-        </div>
-        <ol className="min-h-0 flex-1 overflow-y-auto">
-          {session.turns.map((t, i) => {
-            const marks = marksFor(t.id);
-            const hasActive = marks.some((m) => m.active);
-            return (
-              <li key={t.id} className="border-b border-rule px-4 py-3">
-                <p className="flex gap-2 text-micro text-ink-soft">
-                  <span>{i + 1}</span><span>{clock(t.at)}</span><span>{t.role === "patient" ? "Patient" : "Question"}</span><span lang={t.lang}>{LANG_NAME[t.lang]}</span>
-                </p>
-                {t.role === "patient" ? (
-                  <EvidenceHighlight key={hasActive ? `${t.id}:${selKey(sel)}` : t.id} text={t.text} lang={t.lang} marks={marks} className="mt-1" />
-                ) : (
-                  <p lang={t.lang} className="mt-1 font-serif text-body text-ink-soft">{t.text}</p>
-                )}
-              </li>
-            );
-          })}
-        </ol>
-      </aside>
+      <SignOff
+        lang={lang} busy={busy} locked={locked} block={block} error={actionError}
+        reconciledBy={locked ? session.pharmacyReviewerId : undefined} reconciledAt={locked ? session.updatedAt : undefined}
+        onSignOff={() => send([], [], true)} reviewer={reviewer}
+      />
     </div>
   );
 }
@@ -354,48 +361,52 @@ function MedRow({ m, lang, pl, busy, locked, selected, linked, highAlert, by, ed
   const startEdit = (mode: "edit" | "identify") => { setDraft({ generic: m.generic ?? "", dose: m.dose ?? "", frequency: m.frequency ?? "" }); onEdit(mode); };
   const strike = (old: string | null | undefined, now: string | null) => (old && old !== now ? <s className="mx-struck mr-1.5 text-body">{old}</s> : null);
 
-  const generic = (() => {
-    if (unmatched) return <span className="inline-flex items-baseline gap-2"><span className="mx-blank" aria-hidden="true" /><span className="text-small text-ink-soft">{M(lang, "unmatched")}</span></span>;
+  const Chip = () => {
+    if (unmatched) return <Badge tone="pencil" icon={<Icon name="circle-minus" size={14} />}>{M(lang, "unmatched")}</Badge>;
+    if (pencil) return <Badge tone="pencil" icon={<Icon name="triangle-alert" size={14} />}>{M(lang, "needsCheck")}</Badge>;
+    if (stopped) return <Badge tone="outline">{M(lang, "stopped")}</Badge>;
+    if (m.status === "verified") return <Badge tone="teal" icon={<Icon name="check" size={14} />}>{M(lang, "verified")}{by ? `, ${by}` : ""}</Badge>;
+    if (m.status === "edited") return <Badge tone="teal" icon={<Icon name="pencil" size={14} />}>{M(lang, "editedBy")}{by ? `, ${by}` : ""}</Badge>;
+    return <Badge tone="ocean" icon={<Icon name="quote" size={14} />}>{M(lang, "fromPatient")}</Badge>;
+  };
+  const initial = [...m.nameOriginal.replace(/^ยา/, "")][0]?.toUpperCase() ?? "?";
+  const sub = (() => {
+    if (unmatched) return <span className="inline-flex items-center gap-2"><span className="mx-blank" aria-hidden="true" /></span>;
     if (pencil) return <PencilField value={m.generic ?? m.nameOriginal} lang={lang} />;
-    if (stopped) return <span className="inline-flex flex-wrap items-baseline gap-x-2"><s className="mx-struck text-body">{m.generic ?? m.nameOriginal}</s><Badge tone="outline">{M(lang, "stopped")}</Badge></span>;
-    if (m.status === "edited") {
-      return (
-        <span className="inline-flex flex-wrap items-baseline gap-x-1">
-          {strike(prev?.generic, m.generic)}
-          <span className="text-body font-medium">{m.generic ?? m.nameOriginal}</span>
-          <span className="ml-1 text-micro text-ink-soft">{M(lang, "editedBy")}{by ? `, ${by}` : ""}</span>
-        </span>
-      );
-    }
-    if (m.status === "verified") return <span className="inline-flex flex-wrap items-baseline gap-2"><span className="text-body font-medium">{m.generic ?? m.nameOriginal}</span><Badge tone="outline">{M(lang, "verified")}{by ? `, ${by}` : ""}</Badge></span>;
-    return <InkConfidence confidence={m.confidence} lang={lang}><span className="text-body font-medium">{m.generic ?? m.nameOriginal}</span></InkConfidence>;
+    if (stopped) return <s className="mx-struck">{m.generic ?? m.nameOriginal}</s>;
+    if (m.status === "edited") return <span>{strike(prev?.generic, m.generic)}<span className="font-semibold text-ink">{m.generic ?? m.nameOriginal}</span></span>;
+    if (m.status === "supported") return <InkConfidence confidence={m.confidence} lang={lang}><span className="font-semibold">{m.generic ?? m.nameOriginal}</span></InkConfidence>;
+    return <span className="font-semibold text-ink">{m.generic ?? m.nameOriginal}</span>;
   })();
-
   const value = (v: string | null, was?: string | null) => {
     const struck = m.status === "edited" ? strike(was, v) : null;
-    if (!v) return <>{struck}{<span className="mx-blank" aria-label="Not stated" />}</>;
-    return <span lang={pl} className={cls("text-body", stopped && "mx-struck", pencil && "mx-pencil")}>{struck}{v}</span>;
+    if (!v) return <>{struck}<span className="mx-blank" aria-label="Not stated" /></>;
+    return <span lang={pl} className={cls(stopped && "mx-struck", pencil && "mx-pencil")}>{struck}{v}</span>;
   };
 
   return (
-    <li className={cls("border-b border-rule last:border-b-0", (selected || linked) && "bg-paper")}>
+    <li className={cls((selected || linked) && "bg-paper")}>
       <button
         type="button" data-row aria-pressed={selected} aria-controls="transcript" onClick={onSelect}
-        className="grid w-full grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-start gap-x-4 px-6 pb-1 pt-2.5 text-left hover:bg-paper"
+        className="flex w-full items-start gap-4 px-5 py-4 text-left transition-colors duration-quick ease-pen hover:bg-paper"
       >
-        <span lang={pl} className={cls("font-serif text-lead", stopped && "mx-struck", pencil && "mx-pencil")}>&ldquo;{m.nameOriginal}&rdquo;</span>
-        <span className="flex flex-col gap-0.5">
+        <span aria-hidden="true" className={cls("grid size-11 shrink-0 place-items-center rounded-full text-lead font-bold", pencil ? "bg-warn-tint text-warn" : unmatched || stopped ? "bg-muted text-graphite" : "bg-ocean-tint text-ocean")}>{initial}</span>
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span lang={pl} className={cls("text-lead font-bold", stopped && "mx-struck", pencil && "mx-pencil")}>{m.nameOriginal}</span>
           <span className={cls("flex flex-wrap items-center gap-x-2 text-small", pencil ? "text-graphite" : "text-ink-soft")}>
-            {humanClass(m.drugClass) ?? M(lang, "classUnknown")}
-            {highAlert && <Badge tone="signalOutline">{M(lang, "highAlert")}</Badge>}
-            {linked && <span className="text-micro">linked to selected alert</span>}
+            {sub}<span aria-hidden="true">·</span>{humanClass(m.drugClass) ?? M(lang, "classUnknown")}
           </span>
-          {generic}
+          <span className="text-small text-ink-soft"><LangMorph text={T.timing} lang={lang} />: {value(m.timing)}</span>
+          <span className="mt-1 flex flex-wrap items-center gap-2"><Chip />{highAlert && <Badge tone="signalOutline">{M(lang, "highAlert")}</Badge>}{linked && <span className="text-micro text-ink-soft">linked to selected alert</span>}</span>
+        </span>
+        <span className="flex shrink-0 flex-col items-end gap-0.5 text-right tabular-nums">
+          <span className="text-lead font-bold">{value(m.dose, prev?.dose)}</span>
+          <span className="text-small text-ink-soft">{value(m.frequency, prev?.frequency)}</span>
         </span>
       </button>
       {editing ? (
         <form
-          className="grid grid-cols-1 gap-3 px-6 pb-3 pt-1 min-[700px]:grid-cols-3"
+          className="grid grid-cols-1 gap-3 px-5 pb-4 pl-[84px] min-[700px]:grid-cols-3"
           onSubmit={(e) => {
             e.preventDefault();
             if (editing === "identify") { if (draft.generic.trim()) onSave({ generic: draft.generic.trim() }); return; }
@@ -419,44 +430,32 @@ function MedRow({ m, lang, pl, busy, locked, selected, linked, highAlert, by, ed
               <Field label="Frequency" maxLength={60} value={draft.frequency} onChange={(e) => setDraft({ ...draft, frequency: e.target.value })} />
             </>
           )}
-          <div className="flex items-center gap-2 min-[700px]:col-span-3">
+          <div className="flex flex-wrap items-center gap-2 min-[700px]:col-span-3">
             <Button type="submit" variant="primary" className={sm} disabled={busy || (editing === "identify" && !draft.generic.trim())}>{M(lang, "save")}</Button>
             <Button className={sm} onClick={onCancel}>{M(lang, "cancel")}</Button>
             <p className="text-micro text-ink-soft"><LangMorph text={U.oldStays} lang={lang} /></p>
           </div>
         </form>
-      ) : (
-        <>
-          <dl className="grid grid-cols-3 gap-x-4 px-6 pb-2">
-            {([["dose", m.dose, prev?.dose], ["frequency", m.frequency, prev?.frequency], ["timing", m.timing, undefined]] as const).map(([k, v, was]) => (
-              <div key={k} className="flex flex-col">
-                <dt className="text-micro text-ink-soft"><LangMorph text={T[k]} lang={lang} /></dt>
-                <dd>{value(v, was)}</dd>
-              </div>
-            ))}
-          </dl>
-          {!locked && (
-            <div className="flex flex-wrap items-center gap-2 px-6 pb-3">
-              {unmatched ? (
-                <Button className={sm} variant="primary" disabled={busy} onClick={() => startEdit("identify")}>{M(lang, "identify")}</Button>
-              ) : (
-                <>
-                  <Button className={sm} disabled={busy || stopped || m.status === "verified"} onClick={onVerify}>{M(lang, "verify")}<span className="sr-only">, {m.nameOriginal}</span></Button>
-                  <Button className={sm} disabled={busy || stopped} onClick={() => startEdit("edit")}>{M(lang, "edit")}<span className="sr-only">, {m.nameOriginal}</span></Button>
-                </>
-              )}
-              {!stopped && !confirmStop && <Button className={sm} variant="quiet" disabled={busy} onClick={() => setConfirmStop(true)}>{M(lang, "discontinue")}<span className="sr-only">, {m.nameOriginal}</span></Button>}
-              {confirmStop && (
-                <>
-                  <span className="text-small text-ink-soft"><LangMorph text={U.confirmStop} lang={lang} /></span>
-                  <Button className={sm} variant="primary" disabled={busy} onClick={() => { setConfirmStop(false); onDiscontinue(); }}>{M(lang, "confirmStopBtn")}</Button>
-                  <Button className={sm} onClick={() => setConfirmStop(false)}>{M(lang, "cancel")}</Button>
-                </>
-              )}
-            </div>
+      ) : !locked ? (
+        <div className="flex flex-wrap items-center gap-2 px-5 pb-4 pl-[84px]">
+          {unmatched ? (
+            <Button className={sm} variant="primary" disabled={busy} onClick={() => startEdit("identify")}>{M(lang, "identify")}</Button>
+          ) : (
+            <>
+              <Button className={sm} disabled={busy || stopped || m.status === "verified"} onClick={onVerify}>{M(lang, "verify")}<span className="sr-only">, {m.nameOriginal}</span></Button>
+              <Button className={sm} disabled={busy || stopped} onClick={() => startEdit("edit")}>{M(lang, "edit")}<span className="sr-only">, {m.nameOriginal}</span></Button>
+            </>
           )}
-        </>
-      )}
+          {!stopped && !confirmStop && <Button className={sm} variant="quiet" disabled={busy} onClick={() => setConfirmStop(true)}>{M(lang, "discontinue")}<span className="sr-only">, {m.nameOriginal}</span></Button>}
+          {confirmStop && (
+            <>
+              <span className="text-small text-ink-soft"><LangMorph text={U.confirmStop} lang={lang} /></span>
+              <Button className={sm} variant="primary" disabled={busy} onClick={() => { setConfirmStop(false); onDiscontinue(); }}>{M(lang, "confirmStopBtn")}</Button>
+              <Button className={sm} onClick={() => setConfirmStop(false)}>{M(lang, "cancel")}</Button>
+            </>
+          )}
+        </div>
+      ) : null}
     </li>
   );
 }
@@ -469,29 +468,30 @@ function AllergyRow({ a, lang, pl, busy, locked, selected, linked, editing, onSe
   const pencil = a.status === "unsupported";
   const prev = a.review?.previous;
   const strike = (old: string | null | undefined, now: string | null) => (old && old !== now ? <s className="mx-struck mr-1.5">{old}</s> : null);
+  const chip = pencil ? <Badge tone="pencil" icon={<Icon name="triangle-alert" size={14} />}>{M(lang, "needsCheck")}</Badge>
+    : a.status === "unmatched" ? <Badge tone="pencil" icon={<Icon name="circle-minus" size={14} />}>{M(lang, "unmatched")}</Badge>
+    : a.status === "verified" ? <Badge tone="teal" icon={<Icon name="check" size={14} />}>{M(lang, "verified")}{a.review ? `, ${a.review.reviewerId}` : ""}</Badge>
+    : a.status === "edited" ? <Badge tone="teal" icon={<Icon name="pencil" size={14} />}>{M(lang, "editedBy")}{a.review ? `, ${a.review.reviewerId}` : ""}</Badge>
+    : <Badge tone="ocean" icon={<Icon name="quote" size={14} />}>{M(lang, "fromPatient")}</Badge>;
   return (
-    <li className={cls("border-b border-rule last:border-b-0", (selected || linked) && "bg-paper")}>
-      <button type="button" data-row aria-pressed={selected} aria-controls="transcript" onClick={onSelect} className="grid w-full grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-start gap-x-4 px-6 py-2.5 text-left hover:bg-paper">
-        <span lang={pl} className={cls("font-serif text-lead", pencil && "mx-pencil")}>&ldquo;{a.allergenOriginal}&rdquo;</span>
-        <span className="flex flex-col gap-0.5">
-          <span className="flex flex-wrap items-baseline gap-x-2">
-            {pencil ? <PencilField value={a.allergenClass ?? a.allergenOriginal} lang={lang} /> :
-              a.status === "unmatched" ? <><span className="mx-blank" aria-hidden="true" /><span className="text-small text-ink-soft"><LangMorph text={L("ไม่รู้จักสารก่อภูมิแพ้ ถามผู้ป่วย", "Allergene non riconosciuto, chiedere al paziente", "Unmatched, ask which medicine")} lang={lang} /></span></> :
-                <span className="text-body font-medium">{a.status === "edited" && strike(prev?.allergenClass, a.allergenClass)}{a.allergenClass ?? a.allergenOriginal}</span>}
-            {a.status === "verified" && <Badge tone="outline">{M(lang, "verified")}{a.review ? `, ${a.review.reviewerId}` : ""}</Badge>}
-            {a.status === "edited" && <span className="text-micro text-ink-soft">{M(lang, "editedBy")}{a.review ? `, ${a.review.reviewerId}` : ""}</span>}
-            {linked && <span className="text-micro text-ink-soft">linked to selected alert</span>}
+    <li className={cls((selected || linked) && "bg-paper")}>
+      <button type="button" data-row aria-pressed={selected} aria-controls="transcript" onClick={onSelect} className="flex w-full items-start gap-4 px-5 py-4 text-left transition-colors duration-quick ease-pen hover:bg-paper">
+        <span aria-hidden="true" className={cls("grid size-11 shrink-0 place-items-center rounded-full", pencil ? "bg-warn-tint text-warn" : "bg-ocean-tint text-ocean")}><Icon name="activity" /></span>
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span lang={pl} className={cls("text-lead font-bold", pencil && "mx-pencil")}>{a.allergenOriginal}</span>
+          <span className="text-small text-ink-soft">
+            {a.status === "unmatched" ? <span className="mx-blank" aria-hidden="true" /> : pencil ? <PencilField value={a.allergenClass ?? a.allergenOriginal} lang={lang} /> : <span className="font-semibold text-ink">{a.status === "edited" && strike(prev?.allergenClass, a.allergenClass)}{a.allergenClass ?? a.allergenOriginal}</span>}
           </span>
           <span className={cls("text-small", pencil ? "text-graphite" : "text-ink-soft")}>
-            <LangMorph text={T.reaction} lang={lang} />:{" "}
-            {a.status === "edited" && strike(prev?.reaction, a.reaction)}
+            <LangMorph text={T.reaction} lang={lang} />: {a.status === "edited" && strike(prev?.reaction, a.reaction)}
             {a.reaction ? <span lang={pl} className={pencil ? "mx-pencil" : "text-ink"}>{a.reaction}</span> : <span className="mx-blank" aria-label="Not stated" />}
           </span>
+          <span className="mt-1 flex flex-wrap items-center gap-2">{chip}{linked && <span className="text-micro text-ink-soft">linked to selected alert</span>}</span>
         </span>
       </button>
       {editing ? (
         <form
-          className="grid grid-cols-1 gap-3 px-6 pb-3 min-[700px]:grid-cols-2"
+          className="grid grid-cols-1 gap-3 px-5 pb-4 pl-[84px] min-[700px]:grid-cols-2"
           onSubmit={(e) => {
             e.preventDefault();
             const v: { allergenClass?: string; reaction?: string } = {};
@@ -503,14 +503,14 @@ function AllergyRow({ a, lang, pl, busy, locked, selected, linked, editing, onSe
         >
           <Field autoFocus label="Allergen class" maxLength={80} value={draft.allergenClass} onChange={(e) => setDraft({ ...draft, allergenClass: e.target.value })} />
           <Field label="Reaction" maxLength={120} value={draft.reaction} onChange={(e) => setDraft({ ...draft, reaction: e.target.value })} />
-          <div className="flex items-center gap-2 min-[700px]:col-span-2">
+          <div className="flex flex-wrap items-center gap-2 min-[700px]:col-span-2">
             <Button type="submit" variant="primary" className={sm} disabled={busy}>{M(lang, "save")}</Button>
             <Button className={sm} onClick={onCancel}>{M(lang, "cancel")}</Button>
             <p className="text-micro text-ink-soft"><LangMorph text={U.oldStays} lang={lang} /></p>
           </div>
         </form>
       ) : !locked ? (
-        <div className="flex gap-2 px-6 pb-3">
+        <div className="flex gap-2 px-5 pb-4 pl-[84px]">
           <Button className={sm} disabled={busy || a.status === "verified"} onClick={onVerify}>{M(lang, "verify")}<span className="sr-only">, {a.allergenOriginal}</span></Button>
           <Button className={sm} disabled={busy} onClick={() => { setDraft({ allergenClass: a.allergenClass ?? "", reaction: a.reaction ?? "" }); onEdit(); }}>{M(lang, "edit")}<span className="sr-only">, {a.allergenOriginal}</span></Button>
         </div>
@@ -526,29 +526,29 @@ function AlertItem({ a, lang, meds, busy, locked, selected, linked, onSelect, on
   const [form, setForm] = useState<null | "resolved" | "false_alarm">(null);
   const [note, setNote] = useState("");
   const open = !a.review;
-  const urgent = a.severity === "high" && open;
+  const high = a.severity === "high" && open; // red only for unhandled high alerts
+  const amber = a.severity === "moderate" && open;
   const linkedMeds = a.medIds.map((id) => meds.find((m) => m.id === id)).filter(Boolean) as MedicationEntry[];
   const verb = { acknowledge: L("รับทราบแล้ว", "Preso in carico", "Acknowledged"), resolved: L("จัดการแล้ว", "Risolto", "Resolved"), false_alarm: L("ระบุว่าเป็นการแจ้งเตือนผิด", "Segnato come falso allarme", "Marked false alarm") };
   const btn = { acknowledge: L("รับทราบ", "Prendi in carico", "Acknowledge"), resolved: L("จัดการแล้ว", "Risolto", "Resolved"), false_alarm: L("แจ้งเตือนผิด", "Falso allarme", "False alarm") };
   return (
-    <li className={cls("flex flex-col gap-2 border-b border-rule px-4 py-3", urgent && "border-t-2 border-t-signal bg-signal-tint", !urgent && (selected || linked) && "bg-paper")}>
+    <li className={cls("flex flex-col gap-2 rounded-2xl p-4", high ? "border border-signal/50 bg-signal-tint ring-1 ring-signal/20" : amber ? "border border-warn/30 bg-warn-tint" : "border border-rule/70 bg-sheet", (selected || linked) && !high && !amber && "bg-paper")}>
       <button type="button" data-row aria-pressed={selected} aria-controls="transcript" onClick={onSelect} className={cls("flex flex-wrap items-center gap-x-2 gap-y-1 text-left", selected && "underline underline-offset-4")}>
-        <Badge tone={a.severity === "high" ? (open ? "signalOutline" : "outline") : "outline"}>{a.severity === "high" ? L("สูง", "Alto", "High")[lang] : L("ปานกลาง", "Moderato", "Moderate")[lang]}</Badge>
-        <span className="text-body font-medium"><LangMorph text={KIND_LABEL[a.kind]} lang={lang} /></span>
+        <span aria-hidden="true" className={cls("grid size-8 place-items-center rounded-full", high ? "bg-signal text-on-signal" : amber ? "bg-warn text-on-primary" : "bg-muted text-graphite")}><Icon name="triangle-alert" size={16} /></span>
+        <Badge tone={high ? "signalOutline" : amber ? "pencil" : "outline"}>{a.severity === "high" ? L("สูง", "Alto", "High")[lang] : L("ปานกลาง", "Moderato", "Moderate")[lang]}</Badge>
+        <span className="text-body font-bold"><LangMorph text={KIND_LABEL[a.kind]} lang={lang} /></span>
         <span className="text-micro text-ink-soft">{a.ruleId}<span className="sr-only">, show in the patient&apos;s words</span></span>
       </button>
       <p className="text-body"><LangMorph text={a.message} lang={lang} /></p>
-      <p className="text-small text-ink-soft"><span className="font-medium"><LangMorph text={T.check} lang={lang} />: </span><LangMorph text={a.action} lang={lang} /></p>
+      <p className="text-small text-ink-soft"><span className="font-semibold"><LangMorph text={T.check} lang={lang} />: </span><LangMorph text={a.action} lang={lang} /></p>
       {linkedMeds.length > 0 && (
         <p className="flex flex-wrap gap-x-3 text-small">
-          {linkedMeds.map((m) => <button key={m.id} type="button" onClick={() => onShowMed(m.id)} className="underline underline-offset-4">{m.nameOriginal}</button>)}
+          {linkedMeds.map((m) => <button key={m.id} type="button" onClick={() => onShowMed(m.id)} className="font-semibold text-ocean underline underline-offset-4">{m.nameOriginal}</button>)}
         </p>
       )}
       <p className="text-micro text-graphite">{a.source}</p>
       {a.review ? (
-        <p className="text-small text-ink-soft">
-          {verb[a.review.action][lang]}, {a.review.reviewerId}, {clock(a.review.at)}.{a.review.note ? ` ${a.review.note}` : ""}
-        </p>
+        <p className="text-small text-ink-soft">{verb[a.review.action][lang]}, {a.review.reviewerId}, {clock(a.review.at)}.{a.review.note ? ` ${a.review.note}` : ""}</p>
       ) : !locked && !form ? (
         <div className="flex flex-wrap gap-2">
           <Button className={sm} disabled={busy} onClick={() => onReview("acknowledge")}>{btn.acknowledge[lang]}</Button>
@@ -577,46 +577,54 @@ function AlertItem({ a, lang, meds, busy, locked, selected, linked, onSelect, on
   );
 }
 
-function SignOff({ lang, busy, locked, block, error, audit, open, onToggle, onSignOff, reconciledBy, reconciledAt, reviewer, provenance, generatedAt }: {
-  lang: Lang; busy: boolean; locked: boolean; block: ReturnType<typeof blockers>; error: string | null; audit: AuditEvent[]; open: boolean; onToggle: () => void; onSignOff: () => void;
-  reconciledBy?: string; reconciledAt?: string; reviewer: string; provenance: string; generatedAt?: string;
+/** Sticky sign-off pill: the button plus the reason it is blocked, in the clinician language. */
+function SignOff({ lang, busy, locked, block, error, onSignOff, reconciledBy, reconciledAt, reviewer }: {
+  lang: Lang; busy: boolean; locked: boolean; block: ReturnType<typeof blockers>; error: string | null; onSignOff: () => void;
+  reconciledBy?: string; reconciledAt?: string; reviewer: string;
 }) {
   return (
-    <footer className="shrink-0 border-t border-rule">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3">
-        {!locked && <Button variant="primary" disabled={busy || block.length > 0} aria-describedby="signoff-block" onClick={onSignOff}>{M(lang, "signOff")}</Button>}
+    <div className="sticky bottom-4 z-20">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[28px] border border-rule/70 bg-sheet px-4 py-3 shadow-sheet-lifted">
+        {!locked && <Button variant="primary" size="lg" disabled={busy || block.length > 0} aria-describedby="signoff-block" onClick={onSignOff} icon={<Icon name="circle-check" />}>{M(lang, "signOff")}</Button>}
         <div className="min-w-0 flex-1 basis-64">
-          {error && <p role="alert" className="text-small text-signal">{U.refused[lang]}: {error}</p>}
+          {error && <p role="alert" className="text-small font-semibold text-signal">{U.refused[lang]}: {error}</p>}
           {locked ? (
-            <p className="text-small text-ink-soft"><Badge tone="ink">{PHARM_STATUS_LABEL.reconciled}</Badge> <span className="ml-1">{reconciledBy ?? "pharmacist"}{reconciledAt ? `, ${clock(reconciledAt)}` : ""}</span></p>
+            <p className="text-small text-ink-soft"><Badge tone="teal" icon={<Icon name="check" size={14} />}>{PHARM_STATUS_LABEL.reconciled}</Badge> <span className="ml-1">{reconciledBy ?? "pharmacist"}{reconciledAt ? `, ${clock(reconciledAt)}` : ""}</span></p>
           ) : block.length > 0 ? (
-            <p id="signoff-block" role="status" className="text-small text-ink-soft">
-              <span className="font-medium text-ink">{U.blocked[lang]}: </span>{block.map((b) => b[lang]).join("; ")}.
+            <p id="signoff-block" role="status" className="text-small text-warn">
+              <span className="font-bold">{U.blocked[lang]}: </span>{block.map((b) => b[lang]).join("; ")}.
             </p>
           ) : (
             <p id="signoff-block" className="text-small text-ink-soft">{U.ready[lang]}. {reviewer}.</p>
           )}
         </div>
       </div>
-      <div className="border-t border-rule px-6 py-2">
-        <button type="button" aria-expanded={open} aria-controls="audit-log" onClick={onToggle} className="text-small text-ink-soft underline underline-offset-4">
-          {open ? "Hide" : "Show"} audit and provenance ({audit.length} events)
-        </button>
-        <p lang={lang} className="mt-0.5 text-micro text-ink-soft">{U.ruleSet[lang]}</p>
-        <p className="text-micro text-graphite">{provenance}{generatedAt ? `, summary ${clock(generatedAt)}` : ""}.</p>
-        {open && (
-          <ol id="audit-log" className="mt-2 max-h-40 overflow-y-auto border-t border-rule">
-            <li lang={lang} className="border-b border-rule py-1.5 text-micro text-graphite">{U.disclaimer[lang]}</li>
-            {audit.length === 0 && <li className="py-1.5 text-small text-ink-soft">No pharmacist actions recorded yet.</li>}
-            {audit.map((e) => (
-              <li key={e.id} className="flex gap-3 border-b border-rule py-1.5 text-small last:border-b-0">
-                <span className="w-14 shrink-0 text-ink-soft">{clock(e.at)}</span>
-                <span>{auditLine(e)}{e.actorId ? <span className="text-ink-soft">, {e.actorId}</span> : null}</span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </div>
-    </footer>
+    </div>
+  );
+}
+
+function Provenance({ lang, audit, open, onToggle, provenance, generatedAt }: {
+  lang: Lang; audit: AuditEvent[]; open: boolean; onToggle: () => void; provenance: string; generatedAt?: string;
+}) {
+  return (
+    <Card aria-label="Audit and provenance">
+      <p lang={lang} className="text-small text-ink-soft">{U.ruleSet[lang]}</p>
+      <p className="mt-1 text-micro text-graphite">{provenance}{generatedAt ? `, summary ${clock(generatedAt)}` : ""}.</p>
+      <button type="button" aria-expanded={open} aria-controls="audit-log" onClick={onToggle} className="mt-2 text-small font-semibold text-ocean underline underline-offset-4">
+        {open ? "Hide" : "Show"} audit and provenance ({audit.length} events)
+      </button>
+      {open && (
+        <ol id="audit-log" className="mt-2 max-h-48 overflow-y-auto border-t border-rule/70">
+          <li lang={lang} className="border-b border-rule/70 py-1.5 text-micro text-graphite">{U.disclaimer[lang]}</li>
+          {audit.length === 0 && <li className="py-1.5 text-small text-ink-soft">No pharmacist actions recorded yet.</li>}
+          {audit.map((e) => (
+            <li key={e.id} className="flex gap-3 border-b border-rule/70 py-1.5 text-small last:border-b-0">
+              <span className="w-14 shrink-0 text-ink-soft">{clock(e.at)}</span>
+              <span>{auditLine(e)}{e.actorId ? <span className="text-ink-soft">, {e.actorId}</span> : null}</span>
+            </li>
+          ))}
+        </ol>
+      )}
+    </Card>
   );
 }

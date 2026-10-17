@@ -1,10 +1,10 @@
 "use client";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { AuditEvent, IntakeSession, Lang, PharmacyReviewReq } from "@medx/shared";
-import { Badge } from "@/components/ui";
+import { AppShell, Badge, Icon, type ShellRole } from "@/components/ui";
 import { FIXTURES } from "./_fixtures";
-import { LANG_OPTIONS, PHARMACISTS, applyReview, fetchQueue, hasMedData, post, sortQueue } from "./_lib";
+import { L, PHARMACISTS, applyReview, fetchQueue, hasMedData, openFlags, openHigh, post, sortQueue } from "./_lib";
 
 export interface Entry { session: IntakeSession; fixture: boolean }
 type Submit = (id: string, body: Omit<PharmacyReviewReq, "reviewerId">) => Promise<void>;
@@ -101,35 +101,36 @@ export function Shell({ children }: { children: ReactNode }) {
   }, [reviewer, refresh]);
 
   const usingFixtures = entries?.some((e) => e.fixture) ?? false;
+  const urgent = (entries ?? []).reduce((n, e) => n + openHigh(e.session).length + openFlags(e.session).length, 0);
+  const hour = now ? new Date(now).getHours() : 12;
+  const greeting = (hour < 12 ? L("สวัสดีตอนเช้า", "Buongiorno", "Good morning") : hour < 18 ? L("สวัสดีตอนบ่าย", "Buon pomeriggio", "Good afternoon") : L("สวัสดีตอนเย็น", "Buonasera", "Good evening"))[lang];
+  const router = useRouter();
+  const switchRole = (r: ShellRole) => { if (r === "ops") router.push("/ops"); else if (r !== "pharmacist") router.push("/review"); };
 
   return (
     <C.Provider value={{ lang, setLang, reviewer, setReviewer, now, entries, error, refresh, submit, fixtureAudit }}>
-      <div className="flex h-dvh flex-col overflow-hidden">
-        <header className="flex h-12 shrink-0 items-center gap-4 border-b border-rule px-4 min-[1280px]:px-6">
-          <Link href="/" className="font-serif text-lead font-medium">MedX Bridge</Link>
-          <Link href="/pharmacy" className="text-small text-ink-soft underline-offset-4 hover:underline">Pharmacy reconciliation</Link>
-          {usingFixtures && <Badge tone="pencil">Fixture data</Badge>}
-          <div className="ml-auto flex items-center gap-4">
+      <AppShell
+        role="pharmacist"
+        onRoleChange={switchRole}
+        nav={[{ href: "/pharmacy", label: "Reconciliation queue", icon: <Icon name="pill" />, active: true, alert: urgent || undefined }]}
+        greeting={greeting}
+        userName={reviewer}
+        lang={lang}
+        onLangChange={setLang}
+        actions={
+          <>
+            {usingFixtures && <Badge tone="pencil">Fixture data</Badge>}
             <label className="flex items-center gap-2 text-small text-ink-soft">
-              <span className="hidden min-[1100px]:inline">Signed in as</span>
-              <select value={reviewer} onChange={(e) => setReviewer(e.target.value)} className="h-8 rounded-control border border-rule-strong bg-sheet px-2 text-small text-ink" aria-label="Signed in as">
+              <span className="sr-only min-[1100px]:not-sr-only">Signed in as</span>
+              <select value={reviewer} onChange={(e) => setReviewer(e.target.value)} className="h-9 rounded-full border border-rule-strong/60 bg-sheet px-3 text-small font-semibold text-ink" aria-label="Signed in as">
                 {PHARMACISTS.map((r) => <option key={r}>{r}</option>)}
               </select>
             </label>
-            <div role="radiogroup" aria-label="Clinician language" className="flex overflow-hidden rounded-control border border-rule-strong">
-              {LANG_OPTIONS.map((o) => (
-                <button
-                  key={o.lang} type="button" role="radio" aria-checked={lang === o.lang} lang={o.lang} onClick={() => setLang(o.lang)}
-                  className={`h-8 px-3 text-small font-medium transition-colors duration-quick ease-pen ${lang === o.lang ? "bg-ink text-sheet" : "bg-sheet text-ink hover:bg-paper"}`}
-                >
-                  {o.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </header>
-        <main className="flex min-h-0 flex-1 flex-col px-4 pb-4 pt-4 min-[1280px]:px-6 min-[1280px]:pb-6">{children}</main>
-      </div>
+          </>
+        }
+      >
+        {children}
+      </AppShell>
     </C.Provider>
   );
 }

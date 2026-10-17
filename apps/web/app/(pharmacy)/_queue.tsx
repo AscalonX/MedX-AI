@@ -1,27 +1,35 @@
 "use client";
 import Link from "next/link";
-import { Badge, LangMorph } from "@/components/ui";
+import { Badge, Card, EmptyState, Icon, LangMorph, StatTile } from "@/components/ui";
 import { LANG_NAME, PHARM_STATUS_LABEL, U, alertsOf, isAbstained, medsOf, openFlags, openHigh, pharmStatus, waited } from "./_lib";
 import { usePharmacy } from "./_shell";
 
 export function Queue() {
   const { entries, error, lang, now } = usePharmacy();
+  const list = entries ?? [];
+  const pending = list.filter((e) => pharmStatus(e.session) !== "reconciled").length;
+  const high = list.reduce((n, e) => n + (isAbstained(e.session) ? 0 : openHigh(e.session).length), 0);
+  const flags = list.reduce((n, e) => n + openFlags(e.session).length, 0);
+  const done = list.filter((e) => pharmStatus(e.session) === "reconciled").length;
   return (
-    <section aria-labelledby="queue-h" className="flex min-h-0 flex-1 flex-col bg-sheet shadow-sheet">
-      <h1 id="queue-h" className="border-b border-rule px-6 py-4 text-title">Medication reconciliation queue</h1>
-      {error && <p role="status" className="border-b border-rule px-6 py-2 text-small text-ink-soft">Live queue not refreshed: {error}.</p>}
-      {!entries ? (
-        <div aria-busy="true" aria-label="Loading queue" className="flex flex-col gap-3 p-6">
-          {[0, 1, 2].map((i) => <span key={i} className="mx-blank !block !h-5 !w-full" />)}
-        </div>
-      ) : entries.length === 0 ? (
-        <p className="p-6 text-body text-ink-soft">No intakes need reconciliation yet.</p>
-      ) : (
-        <>
-          <p aria-hidden="true" className="hidden grid-cols-[88px_120px_minmax(0,1fr)_200px_120px_90px] gap-4 border-b border-rule px-6 py-2 text-small font-medium text-ink-soft min-[900px]:grid">
-            <span>Code</span><span>Patient language</span><span>Chief complaint</span><span>Alerts</span><span>Status</span><span>Waiting</span>
-          </p>
-          <ul className="min-h-0 flex-1 overflow-y-auto">
+    <div className="flex flex-col gap-6">
+      <h1 className="sr-only">Medication reconciliation queue</h1>
+      <section aria-label="Summary" className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatTile label="Pending reconciliation" value={entries ? pending : null} icon={<Icon name="clipboard-list" />} />
+        <StatTile label="High alerts and red flags open" value={entries ? high + flags : null} tone={high + flags > 0 ? "signal" : "default"} icon={<Icon name="triangle-alert" />} />
+        <StatTile label="Reconciled today" value={entries ? done : null} tone="teal" icon={<Icon name="circle-check" />} />
+      </section>
+      {error && <p role="status" className="text-small text-ink-soft">Live queue not refreshed: {error}.</p>}
+      <Card padded={false} aria-label="Queue">
+        <h2 className="px-5 pb-2 pt-5 text-lead font-bold">Queue</h2>
+        {!entries ? (
+          <div aria-busy="true" aria-label="Loading queue" className="flex flex-col gap-3 p-5">
+            {[0, 1, 2].map((i) => <span key={i} className="mx-blank !block !h-14 !w-full !rounded-2xl" />)}
+          </div>
+        ) : entries.length === 0 ? (
+          <EmptyState icon={<Icon name="inbox" />} title="No intakes need reconciliation" body="New intakes with medicines appear here as patients finish." />
+        ) : (
+          <ul className="flex flex-col gap-3 p-4 pt-1">
             {entries.map(({ session: s, fixture }) => {
               const abst = isAbstained(s);
               const high = abst ? 0 : openHigh(s).length;
@@ -30,40 +38,44 @@ export function Queue() {
               const mod = open.length - high;
               const cc = s.summary?.fields.find((f) => f.key === "chief_complaint");
               const st = pharmStatus(s);
+              const hot = high > 0 || flags > 0;
               return (
-                <li key={s.id} className={`border-b border-rule ${high || flags ? "border-l-2 border-l-signal bg-signal-tint" : "bg-sheet hover:bg-paper"}`}>
+                <li key={s.id}>
                   <Link
                     href={`/pharmacy/${s.id}`}
-                    className="grid min-h-14 grid-cols-[88px_minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 px-6 py-2 min-[900px]:grid-cols-[88px_120px_minmax(0,1fr)_200px_120px_90px]"
+                    className={`flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border p-4 transition-[transform,box-shadow] duration-base ease-pen hover:-translate-y-0.5 hover:shadow-sheet-lifted ${hot ? "border-signal/40 bg-signal-tint" : "border-rule/70 bg-sheet"}`}
                   >
-                    <span className="font-medium">
-                      {s.code}
-                      {fixture && <span className="ml-2 text-micro font-normal text-graphite">fixture</span>}
+                    <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full ${hot ? "bg-signal text-on-signal" : "bg-ocean-tint text-ocean"}`}><Icon name={hot ? "triangle-alert" : "pill"} /></span>
+                    <span className="min-w-0 flex-1 basis-56">
+                      <span className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-lead font-bold">{s.code}</span>
+                        <span lang={s.patientLang} className="text-small text-ink-soft">{LANG_NAME[s.patientLang]}</span>
+                        {fixture && <span className="text-micro text-graphite">fixture</span>}
+                      </span>
+                      <span className="block truncate text-small text-ink-soft">
+                        {abst ? <LangMorph text={U.needsHuman} lang={lang} /> : cc?.value && cc.status !== "missing"
+                          ? (cc.status === "unsupported" ? <span className="mx-pencil"><LangMorph text={cc.value} lang={lang} /></span> : <LangMorph text={cc.value} lang={lang} />)
+                          : "No complaint yet"}
+                        {!abst && <span className="ml-2 text-graphite">{medsOf(s).length} medicines</span>}
+                      </span>
                     </span>
-                    <span lang={s.patientLang} className="hidden text-small text-ink-soft min-[900px]:inline">{LANG_NAME[s.patientLang]}</span>
-                    <span className="truncate text-small text-ink-soft">
-                      {abst ? (
-                        <span className="text-graphite"><LangMorph text={U.needsHuman} lang={lang} /></span>
-                      ) : cc?.value && cc.status !== "missing" ? (
-                        cc.status === "unsupported" ? <span className="mx-pencil"><LangMorph text={cc.value} lang={lang} /></span> : <LangMorph text={cc.value} lang={lang} />
-                      ) : <span className="text-graphite">No complaint yet</span>}
-                      {!abst && <span className="ml-2 text-micro text-graphite">{medsOf(s).length} medicines</span>}
-                    </span>
-                    <span className="flex flex-wrap gap-1.5">
-                      {flags > 0 && <Badge tone="signal">{flags} red {flags === 1 ? "flag" : "flags"}</Badge>}
+                    <span className="flex flex-wrap items-center gap-2">
+                      {flags > 0 && <Badge tone="signal" icon={<Icon name="triangle-alert" size={14} />}>{flags} red {flags === 1 ? "flag" : "flags"}</Badge>}
                       {high > 0 && <Badge tone="signalOutline">{high} high</Badge>}
-                      {mod > 0 && <Badge tone="outline">{mod} to check</Badge>}
-                      {abst ? <Badge tone="pencil">Needs human review</Badge> : open.length === 0 && flags === 0 && <span className="text-small text-ink-soft">{alertsOf(s).length ? "All handled" : "No rule alerts"}</span>}
+                      {mod > 0 && <Badge tone="pencil">{mod} to check</Badge>}
+                      {abst && <Badge tone="pencil">Needs human review</Badge>}
+                      {!abst && open.length === 0 && flags === 0 && <span className="text-small text-ink-soft">{alertsOf(s).length ? "All handled" : "No rule alerts"}</span>}
+                      <Badge tone={st === "reconciled" ? "teal" : st === "in_review" ? "ocean" : "outline"}>{PHARM_STATUS_LABEL[st]}</Badge>
+                      <span className="w-16 text-right text-small text-ink-soft">{st === "reconciled" ? "" : now ? waited(s.createdAt, now) : ""}</span>
                     </span>
-                    <span><Badge tone={st === "reconciled" ? "ink" : st === "in_review" ? "outline" : "pencil"}>{PHARM_STATUS_LABEL[st]}</Badge></span>
-                    <span className="whitespace-nowrap text-small text-ink-soft">{st === "reconciled" ? "" : now ? waited(s.createdAt, now) : ""}</span>
+                    <Icon name="chevron-right" className="text-graphite" />
                   </Link>
                 </li>
               );
             })}
           </ul>
-        </>
-      )}
-    </section>
+        )}
+      </Card>
+    </div>
   );
 }

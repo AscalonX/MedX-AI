@@ -248,6 +248,8 @@ export function selEvidence(s: IntakeSession, sel: Sel | null): Evidence[] {
 
 /** Operational and safety copy, localized for the clinician language. */
 export const U = {
+  fromPatient: L("จากคำพูดผู้ป่วย", "Dalle parole del paziente", "From patient's words"),
+  needsCheck: L("ต้องตรวจสอบ", "Da verificare", "Needs check"),
   verify: L("ยืนยัน", "Verifica", "Verify"),
   edit: L("แก้ไข", "Modifica", "Edit"),
   discontinue: L("หยุดรายการ", "Sospendi", "Discontinue"),
