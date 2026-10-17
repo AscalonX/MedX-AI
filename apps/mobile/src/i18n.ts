@@ -32,7 +32,7 @@ export const STR: Record<Lang, S> = {
     deskBody: "We could not send your answers. Nothing is lost: the staff will help you in person.",
     deskNoCode: "Please go to the desk and tell the staff you started this form.",
     retry: "Try again",
-    rfShow: "Show this screen to the staff at the desk.", atDesk: "I'm at the desk", atDeskDone: "Please keep this screen open and show it to the staff.", rfCode: "Your code",
+    rfShow: "Show this screen to the staff at the desk.", atDesk: "I'm at the desk", atDeskDone: "A nurse is coming to you. Please keep this screen open.", rfCode: "Your code",
   },
   it: {
     pickTitle: "Ci dica perché è venuto oggi.",
@@ -53,7 +53,7 @@ export const STR: Record<Lang, S> = {
     deskBody: "Non siamo riusciti a inviare le sue risposte. Non si perde nulla: il personale la aiuterà di persona.",
     deskNoCode: "Vada al banco e dica al personale che ha iniziato questo modulo.",
     retry: "Riprova",
-    rfShow: "Mostri questa schermata al personale al banco.", atDesk: "Sono al banco", atDeskDone: "Tenga aperta questa schermata e la mostri al personale.", rfCode: "Il suo codice",
+    rfShow: "Mostri questa schermata al personale al banco.", atDesk: "Sono al banco", atDeskDone: "Un infermiere sta venendo da lei. Tenga aperta questa schermata.", rfCode: "Il suo codice",
   },
   th: {
     pickTitle: "บอกเราว่าวันนี้คุณมาด้วยเรื่องอะไร",
@@ -74,6 +74,15 @@ export const STR: Record<Lang, S> = {
     deskBody: "ส่งคำตอบของคุณไม่สำเร็จ ไม่มีอะไรหาย เจ้าหน้าที่จะช่วยคุณโดยตรง",
     deskNoCode: "กรุณาไปที่เคาน์เตอร์และแจ้งเจ้าหน้าที่ว่าคุณเริ่มกรอกแบบฟอร์มนี้แล้ว",
     retry: "ลองอีกครั้ง",
-    rfShow: "แสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดู", atDesk: "ฉันอยู่ที่เคาน์เตอร์แล้ว", atDeskDone: "กรุณาเปิดหน้าจอนี้ไว้และแสดงให้เจ้าหน้าที่ดู", rfCode: "รหัสของคุณ",
+    rfShow: "แสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดู", atDesk: "ฉันอยู่ที่เคาน์เตอร์แล้ว", atDeskDone: "พยาบาลกำลังมาหาคุณ กรุณาเปิดหน้าจอนี้ไว้", rfCode: "รหัสของคุณ",
   },
 };
+
+const HIDDEN: Record<Lang, Record<string, string>> = {
+  en: { NAME: "name hidden", PHONE: "phone number hidden", EMAIL: "email hidden", ID: "ID number hidden", DOB: "date of birth hidden", _: "hidden" },
+  it: { NAME: "nome nascosto", PHONE: "numero di telefono nascosto", EMAIL: "email nascosta", ID: "numero di documento nascosto", DOB: "data di nascita nascosta", _: "nascosto" },
+  th: { NAME: "ซ่อนชื่อ", PHONE: "ซ่อนเบอร์โทร", EMAIL: "ซ่อนอีเมล", ID: "ซ่อนเลขบัตร", DOB: "ซ่อนวันเกิด", _: "ซ่อนข้อมูล" },
+};
+/** Redacted tokens from the API ([NAME_1], [PHONE_2]) shown as friendly text. */
+export const friendly = (t: string, lang: Lang) =>
+  t.replace(/\[([A-Z]+)_\d+\]/g, (_, k: string) => `(${HIDDEN[lang][k] ?? HIDDEN[lang]._})`);

@@ -16,7 +16,7 @@ export default function Pick() {
   async function choose(l: Lang) {
     setFailed(null); setBusy(l); reset(); set({ lang: l });
     try {
-      set({ session: await createSession(l), answers: [] });
+      set({ session: await createSession(l) });
       router.replace("/intake");
     } catch {
       setFailed(l);

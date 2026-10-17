@@ -3,18 +3,18 @@ import type { Href } from "expo-router";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 type Ctx = {
-  lang: Lang; session: IntakeSession | null; answers: string[];
-  set: (p: Partial<Pick<Ctx, "lang" | "session" | "answers">>) => void; reset: () => void;
+  lang: Lang; session: IntakeSession | null;
+  set: (p: Partial<Pick<Ctx, "lang" | "session">>) => void; reset: () => void;
 };
 const C = createContext<Ctx>(null as never);
 export const useStore = () => useContext(C);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [s, setS] = useState<Pick<Ctx, "lang" | "session" | "answers">>({ lang: "en", session: null, answers: [] });
+  const [s, setS] = useState<Pick<Ctx, "lang" | "session">>({ lang: "en", session: null });
   const value: Ctx = {
     ...s,
     set: (p) => setS((o) => ({ ...o, ...p })),
-    reset: () => setS((o) => ({ ...o, session: null, answers: [] })),
+    reset: () => setS((o) => ({ ...o, session: null })),
   };
   return <C.Provider value={value}>{children}</C.Provider>;
 }

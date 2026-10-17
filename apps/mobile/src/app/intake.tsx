@@ -6,46 +6,47 @@ import { Pressable, TextInput, View } from "react-native";
 import Animated, { Easing, FadeIn, useReducedMotion } from "react-native-reanimated";
 import { addTurn } from "@/api";
 import { Button, Page, Rule, T } from "@/components/ui";
-import { LANG_NAME, STR } from "@/i18n";
+import { friendly, LANG_NAME, STR } from "@/i18n";
 import { screenFor, useStore } from "@/store";
 
 const PITCH = 34; // ruled-line pitch (>= Thai line height at 19px)
 
 export default function Intake() {
-  const { lang, session, answers, set } = useStore();
+  const { lang, session, set } = useStore();
   const s = STR[lang];
   const reduced = useReducedMotion();
   const [text, setText] = useState("");
-  const [pending, setPending] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const input = useRef<React.ComponentRef<typeof TextInput>>(null);
   const [h, setH] = useState(PITCH * 4);
 
   useEffect(() => { if (!session) router.replace("/"); }, [session]);
-  const busy = pending !== null;
-  useEffect(() => { if (!busy && !failed) input.current?.focus(); }, [busy, failed, answers.length]);
+  const answered = session?.turns.filter((t) => t.role === "patient").length ?? 0;
+  useEffect(() => { if (!busy && !failed) input.current?.focus(); }, [busy, failed, answered]);
   if (!session) return null;
+  // Ledger = redacted patient turns returned by the API, never the raw text typed.
+  const ledger = session.turns.filter((t) => t.role === "patient").map((t) => friendly(t.text, lang));
 
-  const question = answers.length === 0 ? s.q1 : session.summary?.nextQuestion?.text[lang] ?? "";
+  const question = answered === 0 ? s.q1 : session.summary?.nextQuestion?.text[lang] ?? "";
   const lines = Math.max(4, Math.ceil(h / PITCH));
 
   async function submit() {
     const t = text.trim();
     if (!t || busy || !session) return;
-    setFailed(false); setPending(t);
+    setFailed(false); setBusy(true);
     try {
       const next = await addTurn(session.id, t);
-      set({ session: next, answers: [...answers, t] });
+      set({ session: next });
       setText(""); setH(PITCH * 4);
       router.replace(screenFor(next));
     } catch {
       setFailed(true);
     } finally {
-      setPending(null);
+      setBusy(false);
     }
   }
 
-  const ledger = busy ? [...answers, pending!] : answers;
   const fade = FadeIn.duration(reduced ? 0 : 260).easing(Easing.bezier(0.2, 0.8, 0.2, 1));
 
   return (
@@ -56,7 +57,7 @@ export default function Intake() {
       </View>
       <View style={{ height: space[6] }} />
 
-      {ledger.length > 0 && (
+      {(ledger.length > 0 || busy) && (
         <View accessibilityLabel={s.told} style={{ marginBottom: space[8] }}>
           <T lang={lang} token="small" tone="inkSoft" style={{ marginBottom: space[2] }}>{s.told}</T>
           <Rule />
@@ -66,11 +67,17 @@ export default function Intake() {
               <Rule />
             </View>
           ))}
+          {busy && (
+            <View>
+              <T lang={lang} token="body" tone="graphite" style={{ paddingVertical: space[2] }}>{s.sending}…</T>
+              <Rule />
+            </View>
+          )}
         </View>
       )}
 
-      {answers.length > 0 && !busy && (
-        <T lang={lang} token="small" tone="inkSoft" style={{ marginBottom: space[2] }}>{s.counter(Math.min(answers.length, 3))}</T>
+      {answered > 0 && !busy && (
+        <T lang={lang} token="small" tone="inkSoft" style={{ marginBottom: space[2] }}>{s.counter(Math.min(answered, 3))}</T>
       )}
 
       {busy ? (
@@ -113,7 +120,7 @@ export default function Intake() {
               style={{ fontFamily: mobileFont("sans", lang), fontSize: scale.bodyPatient.size, lineHeight: PITCH, color: color.ink, padding: 0, margin: 0, minHeight: lines * PITCH, paddingBottom: 3, outlineStyle: "none" } as object}
             />
           </Pressable>
-          <T lang={lang} token="small" tone="graphite" style={{ marginTop: space[3] }}>{answers.length === 0 ? s.hint : s.hintFollow}</T>
+          <T lang={lang} token="small" tone="graphite" style={{ marginTop: space[3] }}>{answered === 0 ? s.hint : s.hintFollow}</T>
         </>
       ) : null}
 

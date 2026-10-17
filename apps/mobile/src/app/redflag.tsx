@@ -2,7 +2,7 @@ import { color, duration, easing, space } from "@medx/shared";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { AccessibilityInfo, Pressable, useWindowDimensions, View } from "react-native";
+import { AccessibilityInfo, Alert, Platform, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from "react-native-reanimated";
 import { Button, Page, T } from "@/components/ui";
 import { STR } from "@/i18n";
@@ -35,6 +35,12 @@ export default function RedFlag() {
   }, []);
   const slide = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
   if (!session) return null;
+  // Staff-only (demo): long-press the code for 2 s. The patient has no path out of this screen.
+  const endIntake = () => {
+    const end = () => { reset(); router.replace("/"); };
+    if (Platform.OS === "web") { if (window.confirm("Staff: end this intake?")) end(); return; }
+    Alert.alert("Staff: end this intake?", "Demo staff only. This clears the red-flag screen.", [{ text: "Cancel", style: "cancel" }, { text: "End intake", style: "destructive", onPress: end }]);
+  };
   const [head, rest] = splitFirst(message, lang === "th");
 
   return (
@@ -44,16 +50,12 @@ export default function RedFlag() {
         {!!rest && <T lang={lang} token="lead" tone="onSignal" style={{ marginTop: space[4] }}>{rest}</T>}
         <View style={{ height: space[8] }} />
         <T lang={lang} token="small" tone="onSignal">{s.rfCode}</T>
-        <T lang="en" token="code" weight="semibold" tone="onSignal" accessibilityLabel={`${s.rfCode} ${session.code.split("").join(" ")}`} style={{ marginVertical: space[2] }}>{session.code}</T>
+        <Pressable onLongPress={endIntake} delayLongPress={2000} accessible={false}>
+          <T lang="en" token="code" weight="semibold" tone="onSignal" accessible accessibilityLabel={`${s.rfCode} ${session.code.split("").join(" ")}`} style={{ marginVertical: space[2] }}>{session.code}</T>
+        </Pressable>
         <T lang={lang} tone="onSignal" style={{ marginTop: space[3] }}>{atDesk ? s.atDeskDone : s.rfShow}</T>
         <View style={{ flexGrow: 1, minHeight: space[8] }} />
-        {!atDesk ? (
-          <Button lang={lang} label={s.atDesk} onSignal onPress={() => setAtDesk(true)} />
-        ) : (
-          <Pressable accessibilityRole="button" onPress={() => { reset(); router.replace("/"); }} style={{ minHeight: 48, justifyContent: "center", alignSelf: "flex-start" }}>
-            <T lang={lang} token="small" tone="onSignal" style={{ textDecorationLine: "underline" }}>{s.newIntake}</T>
-          </Pressable>
-        )}
+        {!atDesk && <Button lang={lang} label={s.atDesk} onSignal onPress={() => setAtDesk(true)} />}
       </Page>
     </Animated.View>
   );
