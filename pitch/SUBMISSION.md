@@ -8,7 +8,7 @@ Track 2, Health and Wellbeing. Research prototype, synthetic data only. Items ma
 
 ## lablab form (copy-paste, fits the form limits)
 
-**Submission Title** (≤50): MedX: Every word, understood
+**Submission Title** (≤50, 47 chars): MedX: Multilingual AI Copilot for Clinic Visits
 
 **Short Description** (≤255, 251 chars):
 

@@ -13,3 +13,4 @@
 - 2026-10-17 18:50 — Scope added by owner: nurse vitals + triage suggestion (nurse confirms), doctor investigation orders + medication orders with deterministic prescribing checks and a pharmacist verify/return loop, and doctor-facing "treatment" support limited to guideline links per consideration (no drug names or doses from AI). AI never orders, prescribes or decides triage. Owner: user; framing: orchestrator.
 - 2026-10-17 20:40 — Product renamed to "MedX" (dropped "Bridge"). GitHub repo/URL slugs (medx-bridge) unchanged for now. Owner: user.
 - 2026-10-17 21:35 — From here, backend engine changes are done by Claude Sonnet 5.5 agents instead of Codex (speed). Owner: user.
+- 2026-10-18 01:20 — lablab submission title changed to "MedX: Multilingual AI Copilot for Clinic Visits" (old title was a slogan that did not say what the product does); "Every word, understood." stays as tagline. Owner: user.

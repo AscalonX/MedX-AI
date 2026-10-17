@@ -2,7 +2,7 @@
   <img src="docs/design/logo/readme-banner.png" alt="MedX: Every word, understood." width="100%">
 </p>
 
-<h3 align="center">Every word, understood.</h3>
+<h3 align="center">Multilingual AI copilot for clinic visits. Every word, understood.</h3>
 
 <p align="center">
   A multilingual care journey, from the patient's own words to the pharmacy.<br>
