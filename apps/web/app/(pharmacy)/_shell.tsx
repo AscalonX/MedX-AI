@@ -55,13 +55,19 @@ export function Shell({ children }: { children: ReactNode }) {
   const setLang = (l: Lang) => { setLangState(l); store.set("medx.lang", l); };
   const setReviewer = (r: string) => { setReviewerState(r); store.set("medx.pharmacist", r); };
 
-  // Generation counter: a GET that started before a newer GET or a POST must not overwrite fresher data.
+  // Polls are single-flight, suspended during mutations, and every GET that started before a mutation
+  // began or finished is discarded by the generation counter.
   const gen = useRef(0);
+  const inflight = useRef(false);
+  const mutating = useRef(0);
   const refresh = useCallback(() => {
+    if (mutating.current > 0 || inflight.current) return;
     const g = ++gen.current;
+    inflight.current = true;
     fetchQueue()
       .then((q) => { if (g === gen.current) { setLive(q); setError(null); } })
-      .catch((e: Error) => { if (g === gen.current) { setLive((cur) => cur ?? []); setError(e.message); } });
+      .catch((e: Error) => { if (g === gen.current) { setLive((cur) => cur ?? []); setError(e.message); } })
+      .finally(() => { inflight.current = false; });
   }, []);
   useEffect(() => {
     refresh();
@@ -90,13 +96,17 @@ export function Shell({ children }: { children: ReactNode }) {
       }));
       return;
     }
-    gen.current++; // drop any poll already in flight
+    mutating.current++; gen.current++; // suspend polling, invalidate outstanding GETs
+    let failed = false;
     try {
       const updated = await post<IntakeSession>(`/api/sessions/${id}/pharmacy-review`, req);
       setLive((cur) => (cur ? cur.map((s) => (s.id === id ? updated : s)) : cur));
     } catch (e) {
-      refresh(); // reload the real state before the controls unlock
+      failed = true;
       throw e;
+    } finally {
+      mutating.current--; gen.current++; // GETs that raced the POST must not overwrite its result
+      if (failed) refresh(); // reload the real state before the controls unlock
     }
   }, [reviewer, refresh]);
 

@@ -8,7 +8,7 @@ export function Queue() {
   const { entries, error, lang, now } = usePharmacy();
   const list = entries ?? [];
   const pending = list.filter((e) => pharmStatus(e.session) !== "reconciled").length;
-  const high = list.reduce((n, e) => n + (isAbstained(e.session) ? 0 : openHigh(e.session).length), 0);
+  const high = list.reduce((n, e) => n + openHigh(e.session).length, 0);
   const flags = list.reduce((n, e) => n + openFlags(e.session).length, 0);
   const done = list.filter((e) => pharmStatus(e.session) === "reconciled").length;
   return (
@@ -32,10 +32,10 @@ export function Queue() {
           <ul className="flex flex-col gap-3 p-4 pt-1">
             {entries.map(({ session: s, fixture }) => {
               const abst = isAbstained(s);
-              const high = abst ? 0 : openHigh(s).length;
+              const high = openHigh(s).length; // recorded rule alerts stay counted even when the summary abstained
               const flags = openFlags(s).length;
               const flagsAll = redFlagsOf(s).length;
-              const open = abst ? [] : alertsOf(s).filter((a) => !a.review);
+              const open = alertsOf(s).filter((a) => !a.review);
               const mod = open.length - high;
               const cc = s.summary?.fields.find((f) => f.key === "chief_complaint");
               const st = pharmStatus(s);
@@ -56,7 +56,7 @@ export function Queue() {
                       </span>
                       <span className="block truncate text-small text-ink-soft">
                         {abst ? <LangMorph text={U.needsHuman} lang={lang} /> : cc?.value && cc.status !== "missing"
-                          ? (cc.status === "unsupported" ? <span className="mx-pencil"><LangMorph text={cc.value} lang={lang} /></span> : <LangMorph text={cc.value} lang={lang} />)
+                          ? (cc.status === "unsupported" ? <span className="mx-pencil"><span className="sr-only">{C.unverified[lang]}: </span><span aria-hidden="true" className="mr-1 font-semibold">{C.unverified[lang]}:</span><LangMorph text={cc.value} lang={lang} /></span> : <LangMorph text={cc.value} lang={lang} />)
                           : C.noComplaint[lang]}
                         {!abst && <span className="ml-2 text-graphite">{C.medicinesN(medsOf(s).length)[lang]}</span>}
                       </span>
@@ -67,7 +67,7 @@ export function Queue() {
                       {mod > 0 && <Badge tone="pencil">{C.toCheckN(mod)[lang]}</Badge>}
                       {abst && <Badge tone="pencil">{U.needsHuman[lang]}</Badge>}
                       {!abst && flags === 0 && flagsAll > 0 && <span className="text-small text-ink-soft">{C.redFlagsDone(flagsAll)[lang]}</span>}
-                      {!abst && open.length === 0 && flagsAll === 0 && <span className="text-small text-ink-soft">{alertsOf(s).length ? C.allHandled[lang] : C.noRuleAlerts[lang]}</span>}
+                      {open.length === 0 && flagsAll === 0 && !abst && <span className="text-small text-ink-soft">{alertsOf(s).length ? C.allHandled[lang] : C.noRuleAlerts[lang]}</span>}
                       <Badge tone={st === "reconciled" ? "teal" : st === "in_review" ? "ocean" : "outline"}>{PHARM_STATUS_LABEL[st][lang]}</Badge>
                       <span className="w-16 text-right text-small text-ink-soft">{st === "reconciled" ? "" : now ? waited(s.createdAt, now) : ""}</span>
                     </span>

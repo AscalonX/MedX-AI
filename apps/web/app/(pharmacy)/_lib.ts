@@ -81,12 +81,13 @@ export const openFlags = (s: IntakeSession) => redFlagsOf(s).filter((h) => !h.re
 
 /** Reasons the pharmacist cannot sign off yet; empty list means the button is live. */
 export function blockers(s: IntakeSession): Localized[] {
-  if (isAbstained(s)) return [L("ระบบไม่สามารถสรุปได้ ต้องให้บุคลากรตรวจ", "Il sistema non ha prodotto un riepilogo: serve revisione umana", "No summary was produced: needs human review")];
   const out: Localized[] = [];
+  if (isAbstained(s)) out.push(L("ระบบไม่สามารถสรุปได้ ต้องให้บุคลากรตรวจ", "Il sistema non ha prodotto un riepilogo: serve revisione umana", "No summary was produced: needs human review"));
   const nf = openFlags(s).length;
   if (nf) out.push(L(`สัญญาณอันตราย ${nf} รายการยังไม่ได้รับการทบทวนโดยแพทย์/พยาบาล`, `${nf} segnali d'allarme non ancora rivisti da un clinico`, `${nf} red ${nf === 1 ? "flag has" : "flags have"} not been reviewed by a clinician`));
   const high = openHigh(s).length;
   if (high) out.push(L(`การแจ้งเตือนระดับสูง ${high} รายการยังไม่ได้จัดการ`, `${high} avvisi alti non ancora gestiti`, `${high} high ${high === 1 ? "alert" : "alerts"} not handled`));
+  if (isAbstained(s)) return out; // extracted medicines and allergies are untrusted when abstained
   const names = (list: { nameOriginal: string }[]) => list.map((m) => `"${m.nameOriginal}"`).join(", ");
   const un = medsOf(s).filter((m) => m.status === "unmatched");
   if (un.length) out.push(L(`ต้องระบุชื่อยา ${names(un)}`, `identificare ${names(un)}`, `identify ${names(un)}`));
@@ -213,27 +214,38 @@ export function applyReview(s: IntakeSession, req: PharmacyReviewReq, at: string
   };
 }
 
-export function auditLine(e: AuditEvent): string {
-  const p = e.payload as { allergyActions?: { action: string }[]; medActions?: { medId: string; action: string }[]; alertActions?: { alertId: string; action: string }[]; complete?: boolean };
-  switch (e.type) {
-    case "pharmacy_review": {
-      const parts = [
-        ...(p.medActions ?? []).map((a) => `${a.action} medicine`),
-        ...(p.allergyActions ?? []).map((a) => `${a.action} allergy`),
-        ...(p.alertActions ?? []).map((a) => `${a.action.replace("_", " ")} alert`),
-        ...(p.complete ? ["signed off reconciliation"] : []),
-      ];
-      return `Pharmacy review: ${parts.join(", ") || "opened"}`;
-    }
-    case "red_flag": return "Red flag raised";
-    case "summary_generated": return "Summary generated";
-    case "pii_redacted": return "Personal details redacted";
-    case "session_created": return "Intake started";
-    case "turn_added": return "Turn added";
-    case "review": return "Clinician field review";
-    default: return e.type;
+const AUD = {
+  med: { verify: L("ยืนยันยา", "verificato farmaco", "verified medicine"), edit: L("แก้ไขยา", "modificato farmaco", "edited medicine"), discontinue: L("หยุดยา", "sospeso farmaco", "discontinued medicine") },
+  allergy: { verify: L("ยืนยันการแพ้", "verificata allergia", "verified allergy"), edit: L("แก้ไขการแพ้", "modificata allergia", "edited allergy") },
+  alert: { acknowledge: L("รับทราบการแจ้งเตือน", "avviso preso in carico", "acknowledged alert"), resolved: L("จัดการการแจ้งเตือนแล้ว", "avviso risolto", "resolved alert"), false_alarm: L("แจ้งเตือนผิด", "falso allarme", "false alarm alert") },
+  signed: L("ลงนามเทียบรายการยา", "riconciliazione firmata", "signed off reconciliation"),
+  review: L("การทบทวนของเภสัชกร", "Revisione farmacista", "Pharmacy review"),
+  opened: L("เปิดดู", "aperta", "opened"),
+  events: {
+    red_flag: L("พบสัญญาณอันตราย", "Segnale d'allarme rilevato", "Red flag raised"),
+    summary_generated: L("สร้างสรุปแล้ว", "Riepilogo generato", "Summary generated"),
+    pii_redacted: L("ปกปิดข้อมูลส่วนตัวแล้ว", "Dati personali oscurati", "Personal details redacted"),
+    session_created: L("เริ่มการรับข้อมูล", "Accesso avviato", "Intake started"),
+    turn_added: L("มีข้อความใหม่", "Messaggio aggiunto", "Turn added"),
+    review: L("แพทย์/พยาบาลทบทวนช่องข้อมูล", "Revisione clinica dei campi", "Clinician field review"),
+  } as Record<string, Localized>,
+};
+export function auditLine(e: AuditEvent, lang: Lang): string {
+  const p = e.payload as { allergyActions?: { action: string }[]; medActions?: { action: string }[]; alertActions?: { action: string }[]; complete?: boolean };
+  if (e.type === "pharmacy_review") {
+    const parts = [
+      ...(p.medActions ?? []).map((a) => (AUD.med as Record<string, Localized>)[a.action]?.[lang] ?? a.action),
+      ...(p.allergyActions ?? []).map((a) => (AUD.allergy as Record<string, Localized>)[a.action]?.[lang] ?? a.action),
+      ...(p.alertActions ?? []).map((a) => (AUD.alert as Record<string, Localized>)[a.action]?.[lang] ?? a.action),
+      ...(p.complete ? [AUD.signed[lang]] : []),
+    ];
+    return `${AUD.review[lang]}: ${parts.join(", ") || AUD.opened[lang]}`;
   }
+  return AUD.events[e.type]?.[lang] ?? e.type;
 }
+
+/** The completed (signed-off) pharmacy_review event, the only trustworthy source for the receipt time and signer. */
+export const signOffEvent = (audit: AuditEvent[]) => [...audit].reverse().find((e) => e.type === "pharmacy_review" && (e.payload as { complete?: boolean }).complete === true);
 
 export type Sel = { type: "med" | "allergy" | "alert" | "nka"; id: string };
 export const selKey = (s: Sel | null) => (s ? `${s.type}:${s.id}` : "");
@@ -343,6 +355,11 @@ export const C = {
   evidenceTurn: (n: number) => L(`หลักฐาน ข้อความที่ ${n}`, `Evidenza, messaggio ${n}`, `Evidence, turn ${n}`),
   noEvidence: L("ไม่มีคำพูดอ้างอิงสำหรับรายการนี้", "Nessuna citazione per questo elemento", "No evidence quote for this item"),
   extractedBy: (x: string) => L(`สกัดข้อมูลโดย ${x}`, `Estratto da ${x}`, `Extracted by ${x}`),
+  unverified: L("ยังไม่ยืนยัน", "Non verificato", "Unverified"),
+  safetyAlerts: L("การแจ้งเตือนด้านความปลอดภัย (กฎ)", "Avvisi di sicurezza (regole)", "Safety alerts (rules)"),
+  safetyAlertsNote: L("แสดงเฉพาะการแจ้งเตือนจากกฎที่บันทึกไว้ รายการยาที่สกัดได้ไม่ถูกแสดงเพราะระบบสรุปไม่ได้", "Solo gli avvisi delle regole registrati. I farmaci estratti non sono mostrati perché il riepilogo non è affidabile.", "Recorded rule alerts only. Extracted medicines are not shown because the summary is not reliable."),
+  statedStopped: L("ผู้ป่วยบอกว่าหยุดยานี้แล้ว โปรดยืนยัน", "Il paziente dice di aver sospeso il farmaco: confermare", "Patient says this medicine was stopped: confirm"),
+  openDrawer: L("เปิดคำพูดของผู้ป่วย", "Apri le parole del paziente", "Open the patient's words"),
   noExtraction: L("ไม่มีบันทึกการสกัดข้อมูล", "Registro di estrazione non disponibile", "Extraction record not available"),
   summaryAt: L("สรุปเมื่อ", "riepilogo alle", "summary"),
   showAudit: (open: boolean, n: number) => L(`${open ? "ซ่อน" : "แสดง"}บันทึกการตรวจสอบ (${n} รายการ)`, `${open ? "Nascondi" : "Mostra"} registro e provenienza (${n} eventi)`, `${open ? "Hide" : "Show"} audit and provenance (${n} events)`),

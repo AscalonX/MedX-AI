@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AllergyEntry, AllergyReviewAction, AuditEvent, IntakeSession, Lang, MedAlert, MedAlertReviewAction, MedicationEntry, MedReviewAction } from "@medx/shared";
 import { Badge, Button, Card, CardHeader, EvidenceHighlight, Field, GradientHero, Icon, InkConfidence, LangMorph, PencilField, type Mark } from "@/components/ui";
 import {
-  C, KIND_LABEL, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
+  C, KIND_LABEL, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, signOffEvent, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
   medsOf, openHigh, pharmStatus, redFlagsOf, selEvidence, selKey, waited, type Sel,
 } from "./_lib";
 import { ABSTAIN } from "./_lib";
@@ -44,6 +44,9 @@ export function Workspace({ id }: { id: string }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [auditOpen, setAuditOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [auditTick, setAuditTick] = useState(0);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => { setSel(null); setEdit(null); setActionError(null); setAuditOpen(false); }, [id]);
 
@@ -55,13 +58,21 @@ export function Workspace({ id }: { id: string }) {
     pull();
     const t = setInterval(pull, 5000);
     return () => { dead = true; clearInterval(t); };
-  }, [id, entry, fixture]);
+  }, [id, entry, fixture, auditTick]);
 
+  const wide = () => typeof window !== "undefined" && window.matchMedia("(min-width: 1600px)").matches;
+  // Explicit open (button): move focus into the drawer. Selecting a row opens it without stealing focus.
+  const openDrawer = (el: HTMLElement | null) => { triggerRef.current = el; setDrawer(true); if (!wide()) setTimeout(() => closeRef.current?.focus(), 60); };
+  const closeDrawer = () => {
+    const inside = document.getElementById("transcript")?.contains(document.activeElement);
+    setDrawer(false);
+    if (inside || triggerRef.current) { const t = triggerRef.current; triggerRef.current = null; setTimeout(() => t?.focus(), 0); }
+  };
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
       if (e.key !== "Escape" || tag === "INPUT" || tag === "TEXTAREA") return;
-      setSel(null); setDrawer(false);
+      setSel(null); closeDrawer();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -71,7 +82,7 @@ export function Workspace({ id }: { id: string }) {
     setBusy(true); setActionError(null);
     try { await fn(); return true; }
     catch (e) { setActionError(`${(e as Error).message}`); return false; }
-    finally { setBusy(false); }
+    finally { setBusy(false); setAuditTick((t) => t + 1); }
   }, []);
 
   if (!entries) {
@@ -95,7 +106,7 @@ export function Workspace({ id }: { id: string }) {
   // An abstained summary carries no clinical conclusions: nothing below may render from it.
   const meds = abstained ? [] : medsOf(session);
   const allergies = abstained ? [] : allergiesOf(session);
-  const alerts = abstained ? [] : alertsOf(session);
+  const alerts = alertsOf(session); // deterministic rule alerts stay visible even when the summary abstained
   const flags = redFlagsOf(session);
   const pl = session.patientLang;
   const st = pharmStatus(session);
@@ -150,7 +161,7 @@ export function Workspace({ id }: { id: string }) {
         action={
           <>
             <Link href="/pharmacy" className="inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-small font-semibold text-on-primary ring-1 ring-inset ring-white/40 hover:bg-white/25">{C.back[lang]}</Link>
-            <button type="button" onClick={() => setDrawer(true)} aria-controls="transcript" className="inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-small font-semibold text-on-primary ring-1 ring-inset ring-white/40 hover:bg-white/25 min-[1600px]:hidden">{C.words[lang]}</button>
+            <button type="button" onClick={(e) => openDrawer(e.currentTarget)} aria-controls="transcript" aria-expanded={drawer} className="inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-small font-semibold text-on-primary ring-1 ring-inset ring-white/40 hover:bg-white/25 min-[1600px]:hidden">{C.words[lang]}</button>
           </>
         }
       >
@@ -163,14 +174,14 @@ export function Workspace({ id }: { id: string }) {
             {([[T.medicines, meds.length], [T.allergies, allergies.length], [T.alerts, alerts.length]] as const).map(([k, n]) => (
               <div key={k.en}>
                 <dt className="text-micro font-semibold text-on-primary/85">{k[lang]}</dt>
-                <dd className="text-stat font-extrabold tabular-nums">{abstained ? "-" : n}</dd>
+                <dd className="text-stat font-extrabold tabular-nums">{abstained && k.en !== "Medication alerts" ? "-" : n}</dd>
               </div>
             ))}
           </dl>
         </div>
       </GradientHero>
 
-      {locked && <Receipt session={session} lang={lang} />}
+      {locked && <Receipt session={session} lang={lang} audit={audit} />}
 
       {flags.length > 0 && (
         <section aria-labelledby="h-flags" role="alert" className="rounded-card border border-signal/50 bg-signal-tint p-5 ring-1 ring-signal/20">
@@ -204,7 +215,7 @@ export function Workspace({ id }: { id: string }) {
               </p>
               <p className="mt-3 max-w-[60ch] text-body"><LangMorph text={C.askDirect} lang={lang} /></p>
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button variant="primary" onClick={() => setDrawer(true)} aria-controls="transcript">{C.readWords[lang]}</Button>
+                <Button variant="primary" onClick={(e) => openDrawer(e.currentTarget)} aria-controls="transcript" aria-expanded={drawer}>{C.readWords[lang]}</Button>
                 <Link href={`/review/${session.id}`} className="inline-flex h-10 items-center rounded-full border border-rule-strong/60 bg-sheet px-4 text-body font-semibold hover:border-ocean hover:text-ocean"><LangMorph text={U.flagReview} lang={lang} /></Link>
               </div>
             </Card>
@@ -289,12 +300,11 @@ export function Workspace({ id }: { id: string }) {
         <aside aria-label={T.alerts[lang]} className="min-[1024px]:sticky min-[1024px]:top-4 min-[1024px]:max-h-[calc(100dvh-2rem)] min-[1024px]:overflow-y-auto rounded-card">
           <Card padded={false}>
             <div className="flex items-center gap-3 px-5 pt-5">
-              <CardHeader title={<LangMorph text={T.alerts} lang={lang} />} className="mb-2" />
-              {!abstained && openHigh(session).length > 0 && <Badge tone="signalOutline" className="mb-2">{openHigh(session).length} high</Badge>}
+              <CardHeader title={<LangMorph text={abstained ? C.safetyAlerts : T.alerts} lang={lang} />} className="mb-2" />
+              {openHigh(session).length > 0 && <Badge tone="signalOutline" className="mb-2">{C.highN(openHigh(session).length)[lang]}</Badge>}
             </div>
-            {abstained ? (
-              <p className="px-5 pb-5 text-small text-ink-soft"><LangMorph text={U.needsHuman} lang={lang} />. <LangMorph text={L("ไม่แสดงการแจ้งเตือนเมื่อไม่มีสรุป", "Nessun avviso mostrato senza riepilogo", "No alerts are shown without a summary")} lang={lang} /></p>
-            ) : alerts.length === 0 ? (
+            {abstained && <p className="px-5 pb-2 text-small text-ink-soft"><LangMorph text={C.safetyAlertsNote} lang={lang} /></p>}
+            {alerts.length === 0 ? (
               <p className="px-5 pb-5 text-small text-ink-soft"><LangMorph text={U.noAlerts} lang={lang} /></p>
             ) : (
               <ul className="flex flex-col gap-3 p-4 pt-1">
@@ -324,7 +334,7 @@ export function Workspace({ id }: { id: string }) {
         >
           <div className="flex items-center px-5 pb-2 pt-5">
             <h2 className="text-lead font-bold">{C.words[lang]}</h2>
-            <button type="button" onClick={() => setDrawer(false)} className="ml-auto text-small font-semibold text-ocean min-[1600px]:hidden">{C.close[lang]}</button>
+            <button ref={closeRef} type="button" onClick={closeDrawer} className="ml-auto text-small font-semibold text-ocean min-[1600px]:hidden">{C.close[lang]}</button>
           </div>
           <ol className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
             {session.turns.map((t, i) => {
@@ -559,6 +569,9 @@ function AlertItem({ a, lang, meds, busy, locked, selected, linked, onSelect, on
           {linkedMeds.map((m) => <button key={m.id} type="button" onClick={() => onShowMed(m.id)} className="font-semibold text-ocean underline underline-offset-4">{m.nameOriginal}</button>)}
         </p>
       )}
+      {linkedMeds.some((m) => m.status === "discontinued" || /stopp|smess|sospe|หยุด/i.test(m.timing ?? "")) && (
+        <p className="flex items-center gap-1.5 rounded-xl bg-warn-tint px-3 py-1.5 text-small font-semibold text-warn"><Icon name="triangle-alert" size={14} />{C.statedStopped[lang]}</p>
+      )}
       <p className="text-micro text-graphite">{a.source}</p>
       {a.review ? (
         <p className="text-small text-ink-soft">{verb[a.review.action][lang]}, {a.review.reviewerId}, {clock(a.review.at)}.{a.review.note ? ` ${a.review.note}` : ""}</p>
@@ -635,7 +648,7 @@ function Provenance({ lang, audit, open, onToggle, provenance, generatedAt }: {
           {audit.map((e) => (
             <li key={e.id} className="flex gap-3 border-b border-rule/70 py-1.5 text-small last:border-b-0">
               <span className="w-14 shrink-0 text-ink-soft">{clock(e.at)}</span>
-              <span>{auditLine(e)}{e.actorId ? <span className="text-ink-soft">, {e.actorId}</span> : null}</span>
+              <span>{auditLine(e, lang)}{e.actorId ? <span className="text-ink-soft">, {e.actorId}</span> : null}</span>
             </li>
           ))}
         </ol>
@@ -645,15 +658,16 @@ function Provenance({ lang, audit, open, onToggle, provenance, generatedAt }: {
 }
 
 /** Teal receipt after sign-off: who, when, and what was reconciled. Mirrors the clinician approval receipt. */
-function Receipt({ session, lang }: { session: IntakeSession; lang: Lang }) {
+function Receipt({ session, lang, audit }: { session: IntakeSession; lang: Lang; audit: AuditEvent[] }) {
+  const ev = signOffEvent(audit);
   const meds = medsOf(session), alg = allergiesOf(session), al = alertsOf(session);
   const n = (st: string) => meds.filter((m) => m.status === st).length;
   const rv = (a: string) => al.filter((x) => x.review?.action === a).length;
-  const when = new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short", hour12: false }).format(new Date(session.updatedAt));
+  const when = ev ? new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short", hour12: false }).format(new Date(ev.at)) : "";
   return (
     <section role="status" aria-label={C.signedOffAnnounce[lang]} className="rounded-card border border-teal/30 bg-teal-tint p-5">
       <h2 className="flex items-center gap-2 text-lead font-bold text-teal"><Icon name="circle-check" />{C.receiptTitle[lang]}</h2>
-      <p className="mt-1 text-body text-ink">{C.receiptBy[lang]} {session.pharmacyReviewerId ?? "pharmacist"}, {when}</p>
+      <p className="mt-1 text-body text-ink">{C.receiptBy[lang]} {ev?.actorId ?? session.pharmacyReviewerId ?? "pharmacist"}{when ? `, ${when}` : ""}</p>
       <ul className="mt-3 flex flex-col gap-1 text-small text-ink-soft">
         <li>{C.receiptMeds(meds.length, n("verified"), n("edited"), n("discontinued"))[lang]}</li>
         <li>{C.receiptAllergies(alg.length, alg.length === 0 && hasNka(session))[lang]}</li>
