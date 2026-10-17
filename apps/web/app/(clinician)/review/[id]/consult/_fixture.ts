@@ -1,6 +1,6 @@
 import type { ConsultMode, ConsultNote, ConsultNoteLine, ConsultState, ConsultSuggestion, Evidence, Localized } from "@medx/shared";
 
-export interface Line { id: string; speaker: "patient" | "clinician"; text: string; at: string; /** intake question from the system, not the clinician */ system?: boolean }
+export interface Line { id: string; speaker: "patient" | "clinician"; text: string; at: string; /** intake question from the system, not the clinician */ system?: boolean; /** how a local line was entered */ input?: "text" | "voice" }
 
 const L = (en: string, th = en, it = en): Localized => ({ en, th, it });
 

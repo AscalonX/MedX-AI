@@ -94,14 +94,14 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
   }, [shown, lang]);
 
   // ---- speech
-  const submit = useCallback(async (raw: string, who: "patient" | "clinician") => {
+  const submit = useCallback(async (raw: string, who: "patient" | "clinician", input: "text" | "voice" = "text") => {
     const t = raw.trim();
     if (!t) return;
     const clientTurnId = crypto.randomUUID();
-    setLocal((l) => [...l, { id: `local-${clientTurnId}`, speaker: who, text: t, at: new Date().toISOString() }]);
+    setLocal((l) => [...l, { id: `local-${clientTurnId}`, speaker: who, text: t, at: new Date().toISOString(), input }]);
     if (!fixture) {
       try {
-        const r = await post<ConsultState>(`/api/sessions/${id}/consult/turns`, { speaker: who, text: t, mode, clientTurnId });
+        const r = await post<ConsultState>(`/api/sessions/${id}/consult/turns`, { speaker: who, text: t, mode, clientTurnId, inputMode: input });
         setCs(r); setWriteError(null);
       } catch (e) { setWriteError(`${ct("writeFailed", lang)}: ${(e as Error).message}`); }
     }
@@ -115,7 +115,7 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
   const speakerRef = useRef(speaker);
   speakerRef.current = speaker;
   const recLang = REC_LANG[speaker === "patient" ? patientLang : lang];
-  const sp = useSpeech(recLang, (t) => submit(t, speakerRef.current));
+  const sp = useSpeech(recLang, (t) => submit(t, speakerRef.current, "voice"));
   // Changing the speaker changes the recognition language: restart if listening.
   const wasListening = useRef(false);
   wasListening.current = sp.listening;
@@ -344,6 +344,7 @@ function Transcript({ lines, turnLang, marksFor, sel, lang }: { lines: Line[]; t
             <p className="flex items-center gap-2 text-micro text-graphite">
               <Badge tone={l.speaker === "patient" ? "ocean" : "outline"}>{l.system ? tr("question", lang) : ct(l.speaker, lang)}</Badge>
               <span className="tabular-nums">{clock(l.at, lang)}</span>
+              {l.input && <Badge tone="outline">{tr(l.input === "voice" ? "tagSpoken" : "tagTyped", lang)}</Badge>}
             </p>
             {l.speaker === "patient" ? (
               <EvidenceHighlight key={hasActive ? `${l.id}:${sel?.key}` : l.id} text={l.text} lang={turnLang(l)} marks={marks} className="mt-1" />

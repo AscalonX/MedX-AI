@@ -1,13 +1,14 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Lang } from "@medx/shared";
 import { AppShell, Icon, type ShellRole } from "@/components/ui";
-import { ROLE_STORAGE_KEY, reviewerStorageKey } from "@medx/shared/src/staff";
+import { reviewerStorageKey } from "@medx/shared/src/staff";
+import { useStaffRole } from "../_shared/useStaffRole";
 import { reviewersFor } from "./review/_lib";
 import { tr } from "./review/_i18n";
 
-interface Frame { clinicianRole: "nurse" | "doctor"; setClinicianRole: (r: "nurse" | "doctor") => void; lang: Lang; setLang: (l: Lang) => void; reviewer: string; setReviewer: (r: string) => void; now: number }
+interface Frame { clinicianRole: "nurse" | "doctor"; setClinicianRole: (r: "nurse" | "doctor") => void; restored: boolean; lang: Lang; setLang: (l: Lang) => void; reviewer: string; setReviewer: (r: string) => void; now: number }
 const F = createContext<Frame | null>(null);
 export const useFrame = () => {
   const c = useContext(F);
@@ -30,17 +31,13 @@ export function ClinicianFrame({ active, urgent, children }: { active: "home" | 
   const [lang, setLangState] = useState<Lang>("en");
   const [reviewer, setReviewerState] = useState(reviewersFor("nurse")[0]);
   const [now, setNow] = useState(0);
-  const [clinicianRole, setClinicianRoleState] = useState<"nurse" | "doctor">("nurse");
-  const chosen = useRef(false); // a role picked in this page view beats the stored one
-  const setClinicianRole = (r: "nurse" | "doctor") => { chosen.current = true; setClinicianRoleState(r); store.set("medx.clinicianRole", r); store.set(ROLE_STORAGE_KEY, r); };
+  const { role: clinicianRole, setRole: setClinicianRole, restored } = useStaffRole();
   const router = useRouter();
   const path = usePathname();
 
   useEffect(() => {
     const l = store.get("medx.lang");
     if (l === "th" || l === "it" || l === "en") setLangState(l);
-    const cr = store.get("medx.clinicianRole");
-    if (!chosen.current && (cr === "nurse" || cr === "doctor")) setClinicianRoleState(cr);
     setNow(Date.now());
     const t = setInterval(() => setNow(Date.now()), 5000);
     return () => clearInterval(t);
@@ -57,18 +54,16 @@ export function ClinicianFrame({ active, urgent, children }: { active: "home" | 
     setReviewerState(saved && reviewersFor(clinicianRole).includes(saved) ? saved : reviewersFor(clinicianRole)[0]);
   }, [clinicianRole]);
 
-  useEffect(() => { if (!path?.startsWith("/pharmacy") && !path?.startsWith("/ops")) store.set(ROLE_STORAGE_KEY, clinicianRole); }, [path, clinicianRole]);
-
   const hour = now ? new Date(now).getHours() : -1;
   const greeting = tr(hour < 0 ? "hello" : hour < 12 ? "greetMorning" : hour < 18 ? "greetAfternoon" : "greetEvening", lang);
   const role: ShellRole = path?.startsWith("/pharmacy") ? "pharmacist" : path?.startsWith("/ops") ? "ops" : clinicianRole;
   const switchRole = (r: ShellRole) => {
-    if (r === "pharmacist" || r === "ops") { store.set(ROLE_STORAGE_KEY, r); router.push(r === "pharmacist" ? "/pharmacy" : "/ops"); }
+    if (r === "pharmacist" || r === "ops") { try { localStorage.setItem("medx.role", r); } catch { /* storage blocked */ } router.push(r === "pharmacist" ? "/pharmacy" : "/ops"); }
     else { setClinicianRole(r); if (active === "home" || !path?.startsWith("/review")) router.push("/review"); }
   };
 
   return (
-    <F.Provider value={{ clinicianRole, setClinicianRole, lang, setLang, reviewer, setReviewer, now }}>
+    <F.Provider value={{ clinicianRole, setClinicianRole, restored, lang, setLang, reviewer, setReviewer, now }}>
       <style>{ENTER_CSS}</style>
       <a href="#main-content" className="sr-only z-50 rounded-full bg-sheet px-4 py-2 text-small font-semibold text-ocean focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
         {tr("skip", lang)}
