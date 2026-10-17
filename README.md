@@ -14,7 +14,7 @@
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-0F1E2E?style=flat-square&logo=nextdotjs&logoColor=white">
   <img alt="Expo SDK 58" src="https://img.shields.io/badge/Expo-SDK%2058-0F1E2E?style=flat-square&logo=expo&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-1A5FC4?style=flat-square&logo=typescript&logoColor=white">
-  <img alt="Tests 1,807 passing" src="https://img.shields.io/badge/tests-1%2C807%20passing-0A8077?style=flat-square">
+  <img alt="Tests 1,863 passing" src="https://img.shields.io/badge/tests-1%2C863%20passing-0A8077?style=flat-square">
   <img alt="Gemma on AMD (Token Factory)" src="https://img.shields.io/badge/Gemma-AMD%20Token%20Factory%20(designed)-1A5FC4?style=flat-square">
   <img alt="AMD Developer Hackathon ACT III, Track 2" src="https://img.shields.io/badge/AMD%20ACT%20III-Track%202%20Health-0F1E2E?style=flat-square">
 </p>
@@ -101,7 +101,7 @@ All model calls (extraction, translation, safety screen, next question, medicati
 ## Quick start
 
 ```bash
-git clone https://github.com/KingPhuripol/medx-bridge.git && cd medx-bridge
+git clone https://github.com/KingPhuripol/MedX-AI.git && cd MedX-AI
 npm --prefix apps/web install
 cd apps/web && MODEL_PROVIDER=mock DEMO_SEED=1 DEMO_AUTOSEED=1 DEMO_TOKEN=pick-a-secret npm run dev
 # open http://localhost:3000  (synthetic demo cases are seeded automatically)
@@ -143,7 +143,7 @@ Also: `AMD_JSON_SCHEMA=false` disables `response_format` json_schema if an endpo
 ## Tests and evaluation
 
 ```bash
-npm --prefix apps/web test      # vitest: 1,807 tests in 21 files
+npm --prefix apps/web test      # vitest: 1,863 tests in 21 files
 node docs/clinical/check-redflags.mjs   # 175 red-flag reference tests (also check-medrules, check-consultrules)
 cd apps/web && MODEL_PROVIDER=mock npx vite-node ../../eval/run.ts -- --split all
 ```

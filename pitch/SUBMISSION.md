@@ -4,7 +4,7 @@ Live demo: [URL pending]
 
 Team: Team MedX. Built by a human lead orchestrating Claude (Opus/Sonnet) and OpenAI Codex agents in role-based lanes.
 
-Track 2, Health and Wellbeing. Research prototype, synthetic data only. Items marked [pending AMD run] are filled from `eval/REPORT.md` after the Gemma-on-AMD run; do not publish a number that is not in that report. Repo: https://github.com/KingPhuripol/medx-bridge
+Track 2, Health and Wellbeing. Research prototype, synthetic data only. Items marked [pending AMD run] are filled from `eval/REPORT.md` after the Gemma-on-AMD run; do not publish a number that is not in that report. Repo: https://github.com/KingPhuripol/MedX-AI
 
 ## Title
 
