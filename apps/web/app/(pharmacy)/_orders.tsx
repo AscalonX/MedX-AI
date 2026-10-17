@@ -17,7 +17,7 @@ const OL = {
     cancelled: L("ยกเลิก", "Annullato", "Cancelled"),
   } as Record<MedicationOrder["status"], Localized>,
   prescribedBy: L("สั่งโดย", "Prescritto da", "Prescribed by"),
-  noAlerts: L("ไม่มีการแจ้งเตือนจากกฎสำหรับคำสั่งนี้ ไม่ใช่การตรวจการสั่งยาแบบครบถ้วน", "Nessun avviso dalle regole per questo ordine. Non è un controllo completo della prescrizione.", "{OL.noAlerts[lang]}"),
+  noAlerts: L("ไม่มีการแจ้งเตือนจากกฎสำหรับคำสั่งนี้ ไม่ใช่การตรวจการสั่งยาแบบครบถ้วน", "Nessun avviso dalle regole per questo ordine. Non è un controllo completo della prescrizione.", "No rule alerts for this order. This is not a complete prescribing check."),
   high: L("สูง", "Alto", "High"), moderate: L("ปานกลาง", "Moderato", "Moderate"),
   check: L("สิ่งที่ต้องตรวจ", "Da verificare", "Check"),
   override: L("แพทย์ยืนยันดำเนินการต่อ", "Deroga del prescrittore", "Prescriber override"),
@@ -71,10 +71,11 @@ function OrderCard({ o, lang, busy, onAction }: { o: MedicationOrder; lang: Lang
           {o.checks.map((c) => {
             const ov = overrideOf(o, c.id);
             const high = c.severity === "high" && !ov;
+            const unchecked = /UNCHECKED|UNKNOWN/.test(c.ruleId); // the rule could not check: shown as needs-check, never as safe
             return (
-              <li key={c.id} className={`rounded-xl p-3 ${high ? "border border-signal/50 bg-signal-tint ring-1 ring-signal/20" : c.severity === "high" ? "border border-warn/30 bg-warn-tint" : "border border-rule/70 bg-paper"}`}>
+              <li key={c.id} className={`rounded-xl p-3 ${high ? "border border-signal/50 bg-signal-tint ring-1 ring-signal/20" : c.severity === "high" || unchecked ? "border border-warn/30 bg-warn-tint" : "border border-rule/70 bg-paper"}`}>
                 <p className="flex flex-wrap items-center gap-2">
-                  <Badge tone={c.severity === "high" ? (high ? "signalOutline" : "pencil") : "outline"} icon={<Icon name="triangle-alert" size={14} />}>{c.severity === "high" ? OL.high[lang] : OL.moderate[lang]}</Badge>
+                  <Badge tone={c.severity === "high" ? (high ? "signalOutline" : "pencil") : unchecked ? "pencil" : "outline"} icon={<Icon name="triangle-alert" size={14} />}>{c.severity === "high" ? OL.high[lang] : OL.moderate[lang]}</Badge>
                   <span className="font-bold"><LangMorph text={KIND_LABEL[c.kind]} lang={lang} /></span>
                   <span className="text-micro text-ink-soft">{c.ruleId}</span>
                 </p>
