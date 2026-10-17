@@ -1,5 +1,5 @@
 // HTTP contract between apps/mobile, apps/web UI and apps/web/app/api. Base path: /api
-import type { AuditEvent, IntakeSession, Lang, OpsMetrics, ReviewAction } from "./types";
+import type { AuditEvent, IntakeSession, Lang, OpsMetrics, RedFlagReviewAction, ReviewAction } from "./types";
 
 /** POST /api/sessions */
 export interface CreateSessionReq { patientLang: Lang }
@@ -16,7 +16,7 @@ export type ListSessionsRes = IntakeSession[];
 export interface GetSessionRes { session: IntakeSession; audit: AuditEvent[] }
 
 /** POST /api/sessions/:id/review */
-export interface ReviewReq { reviewerId: string; actions: ReviewAction[] }
+export interface ReviewReq { reviewerId: string; actions: ReviewAction[]; redFlagActions?: RedFlagReviewAction[] }
 export type ReviewRes = IntakeSession;
 
 /** POST /api/sessions/:id/takeover */

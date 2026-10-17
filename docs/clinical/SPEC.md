@@ -1,0 +1,112 @@
+# MedX Bridge: clinical spec (Doctor, v1.0, Sat 17 Oct 2026)
+
+Scope: what the intake must capture, when it escalates, what the nurse sees, and when it must abstain.
+Contracts: `packages/shared/src/types.ts` (not edited). Rules: `packages/shared/src/redflags.json`. Tests: `docs/clinical/REDFLAG-TESTS.md`.
+
+## 1. Intended user and setting
+
+| Item | Spec |
+|---|---|
+| Primary user | Triage nurse at a walk-in clinic or ED front desk. GP reads the same summary afterwards. |
+| Time budget | 2–3 min per intake; the summary must be readable in **≤ 30 s**. |
+| Patient | Adult (≥ 16 y) walk-in, ambulatory, able to type on their own phone (or a companion types). May not share a language with staff (TH / IT / EN). |
+| When | Before the nurse sees them: in the waiting area or on arrival. Not for patients who are already collapsed: those go straight to the desk. |
+| Not for | Children as the primary subject (the infant fever rule exists only so a caregiver report is not silently missed), ambulance arrivals, follow-up visits, prescribing, discharge. |
+| Data | Synthetic only in this prototype. |
+
+## 2. Intake fields
+
+`required` is set by the pipeline per session. Missing ≠ negative: "no allergies" must come from a patient quote; silence is `missing`.
+
+| FieldKey | Required? | Why (one line) |
+|---|---|---|
+| `chief_complaint` | **Required** | Without the reason for the visit there is nothing to triage. |
+| `onset` | **Required** | Time-critical conditions (stroke, ACS, SAH) depend on when it started. |
+| `severity` | **Required** | Drives acuity; pain 7–10/10 changes queue position. |
+| `age` | **Required** | Risk changes sharply with age; also gates the adult-only scope. |
+| `allergies` | **Required** | Must be known before any drug is given; explicit "none" is a valid value. |
+| `medications` | **Required** | Anticoagulants, insulin, etc. change risk and management; explicit "none" is valid. |
+| `pregnancy_status` | **Conditional**: required if `sex` is female or unknown **and** age is 12–55 or unknown | Changes differential (ectopic), imaging and drug choices. |
+| `sex` | Optional | Only needed to decide whether the pregnancy question applies. |
+| `duration` | Optional | Usually inferable from onset; nice for the GP. |
+| `location` | Optional | Useful for pain complaints; the nurse examines anyway. |
+| `associated_symptoms` | Optional | Dangerous combinations are caught by the deterministic rules, not by this field. |
+| `medical_history` | Optional | Useful context; not needed to triage. |
+
+### Follow-up question priority (one question at a time, most safety-critical missing field first)
+
+1. `chief_complaint` 2. `onset` 3. `severity` 4. `pregnancy_status` (only if conditionally required) 5. `allergies` 6. `medications` 7. `age`
+
+Rules: never ask a follow-up after a red-flag hit (the patient goes to the desk instead). Ask at most **3** follow-ups per session, then hand over to the nurse with the rest marked `missing`. Questions are plain and short in the patient's language (e.g. "When did this start?" / "Quando è iniziato?" / "เริ่มมีอาการเมื่อไหร่คะ").
+
+## 3. Escalation policy
+
+**Red flags override everything.** They run first, on every new patient turn, in deterministic code. No model output, no later turn and no abstain path can clear a hit. A clinician may *acknowledge* or mark *false alarm with a reason*; both are audit events and the hit stays visible.
+
+| | Emergency | Urgent |
+|---|---|---|
+| Meaning | Could be life-threatening in minutes. ESI 1–2 type. | Needs priority assessment, not routine queue. |
+| Rules (v1.0) | CHEST-01, STROKE-01, BREATH-01, ANAPH-01, SUICIDE-01, BLEED-01, PREG-01, HEAD-01, SEIZ-01, MENING-01, CONSC-01 | CHEST-02, BREATH-02, SYNC-01, ABD-01, FEVER-INF-01 |
+| Session status | `escalated` | `escalated` |
+| Intake flow | Stops immediately. No more questions. | Stops. No more questions. |
+| **Patient sees** | Full-screen calm message in their language: go to the nurse desk now, show this screen; if not at the clinic call 1669 (TH) / 112 (EU). Session code shown large. **No diagnosis, no rule name, no confidence.** | "Please tell the nurse at the desk now. You will be seen as a priority." plus any safety advice in the rule (sit or lie down; do not eat or drink). |
+| **Clinician sees** | Top of queue, red interrupt that pushes the summary away. Rule label + action (in clinician language), the exact patient sentence highlighted, time of hit, every rule that fired. | Top of the routine queue, amber banner, same detail. |
+| Multiple hits | Show all; sort by severity (emergency first). | |
+
+Only `emergency` and `urgent` exist. Anything else is a normal intake; the system never labels a patient "non-urgent" or "safe".
+
+## 4. What the nurse needs on ONE screen (top to bottom)
+
+1. **Red-flag interrupt** (only if hit): severity, label, recommended action, highlighted patient quote, time. Acknowledge button.
+2. **Header line:** session code · patient language · age · sex · pregnancy (if relevant) · minutes waiting · status.
+3. **Chief complaint**: one line in the clinician's language, original quote one click away.
+4. **Safety block:** allergies · medications · pregnancy status. Each shows `missing` loudly if not known.
+5. **Present illness:** onset · duration · severity · location · associated symptoms.
+6. **Background:** medical history.
+7. **Not known / unverified list:** every `missing` field and every `unsupported` field (pencil style, never as fact).
+8. **Follow-up asked + answer** (question in both languages).
+9. **Actions:** approve field · edit · approve all · take over. Transcript drawer with highlighter links.
+10. **Footer:** model + latency + "Decision support. Research prototype. Clinician confirms."
+
+No differential diagnosis and no treatment suggestion on this screen. The tool structures what the patient said; it does not interpret it.
+
+## 5. Abstain policy (clinical view): when the system must say "needs human review"
+
+| Trigger | Behaviour | `abstainReason` |
+|---|---|---|
+| Model/provider error or timeout | No summary; nurse takes the raw (redacted) transcript. | `provider_error` |
+| Output fails schema | Same. | `schema_error` |
+| Chief complaint unsupported or missing after follow-ups | Abstain: a summary without a verified reason for the visit is worse than none. | `low_confidence` |
+| Any **required** field below the confidence threshold set by the AI researcher | Abstain (do not show a guessed allergy/medication list). | `low_confidence` |
+| Language not TH/IT/EN, or text unreadable | Abstain; nurse uses interpreter service. | `unsupported_language` |
+| Patient contradicts themselves on a safety field (e.g. "no allergies" … "allergic to penicillin") | Abstain or mark field conflict; never pick one silently. | `low_confidence` (see CR-2) |
+| Age < 16 as the subject | Abstain from summary (out of scope); red flags still run. | `low_confidence` (see CR-2) |
+| Text looks like instructions to the system (prompt injection) | Abstain; red flags still run on the text. | `schema_error` or `low_confidence` |
+
+Abstaining never hides or delays a red flag. Red-flag evaluation does not depend on the model at all.
+
+## 6. Claim boundary (pitch wording)
+
+Say:
+- "MedX Bridge **supports** triage nurses: it structures what the patient said, in the nurse's language, with every field linked to the patient's own sentence."
+- "Red flags are **deterministic, guideline-based rules** that run before the AI and that the AI cannot switch off. They **flag for the clinician**; the clinician decides."
+- "When the system is unsure, it **says so** and hands over to a human."
+- "**Research prototype**, evaluated on **synthetic** cases only. Not a medical device. Not validated for clinical use."
+
+Never say: diagnoses, triages (on its own), decides urgency, safe to wait, replaces the nurse/interpreter, clinically validated, prescribes, "AI doctor".
+
+## 7. Red-flag rule design notes
+
+- 16 rules, every rule backed by a guideline (`source` field; PubMed-verified DOIs where the source is a journal article: Gulati 2021, Powers 2019, Cardona 2020, Godwin 2019, Perry 2013).
+- Bias is deliberately toward **false alarms over misses**. Bare Thai `ไม่` is not a negation cue (it appears inside red-flag phrases like `หายใจไม่ได้`). Known accepted false positives are listed and pinned as tests.
+- `requires` is unused on purpose: it would let a model-extracted field veto a deterministic rule.
+- Terms avoid known collisions: `ชักจะ` (getting worse) ≠ seizure, `เป็นลมพิษ` (hives) ≠ fainting, `แน่นอน` ≠ `แน่นอก`, `ปวดท้องได้ 2 วัน` ≠ pregnant, "I can't speak Thai" ≠ stroke, "parlo male il thai" ≠ stroke.
+
+## 8. Contract change requests (orchestrator decides; types.ts not edited)
+
+| ID | Request | Why | Priority |
+|---|---|---|---|
+| CR-1 | Optional `exclude?: string[]` per `RedFlagRule` (phrases that cancel a match), or per-language negation window | Lets Thai negation (`ไม่เจ็บหน้าอก`) be handled without the global-cue false-negative risk | Post-hackathon |
+| CR-2 | Add `"out_of_scope"` and `"conflicting_information"` to `abstainReason` | Abstain reasons in §5 currently have to be squeezed into `low_confidence` | Nice to have |
+| CR-3 | Optional FieldKey `reporter` ("self" / "companion") | Confusion, seizure, infant cases are usually typed by someone else; the nurse should know | Nice to have |
+| CR-4 | Optional `acknowledgedBy` / `falseAlarmReason` on `RedFlagHit` (or as audit payload only) | Clinician acknowledges without deleting a hit | Can live in audit payload |

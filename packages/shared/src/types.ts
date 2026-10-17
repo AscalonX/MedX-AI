@@ -95,6 +95,14 @@ export interface RedFlagHit {
   /** What the patient sees on their phone. */
   patientMessage: Localized;
   evidence: Evidence[];
+  /** Set by a clinician (CR-4). A red flag is never deleted, only acknowledged or marked a false alarm. */
+  review?: { action: "acknowledge" | "false_alarm"; reviewerId: string; at: string; note?: string };
+}
+
+export interface RedFlagReviewAction {
+  ruleId: string;
+  action: "acknowledge" | "false_alarm";
+  note?: string;
 }
 
 export interface NextQuestion {
@@ -121,7 +129,7 @@ export interface IntakeSummary {
   nextQuestion: NextQuestion | null;
   /** True when the pipeline refused to produce a summary; UI shows "needs human review". */
   abstained: boolean;
-  abstainReason?: "provider_error" | "schema_error" | "low_confidence" | "unsupported_language";
+  abstainReason?: "provider_error" | "schema_error" | "low_confidence" | "unsupported_language" | "out_of_scope" | "conflicting_information";
   modelCalls: ModelCall[];
   generatedAt: string;
 }
@@ -143,6 +151,7 @@ export type AuditType =
   | "summary_generated"
   | "abstained"
   | "review"
+  | "red_flag_review"
   | "takeover";
 
 export interface AuditEvent {
