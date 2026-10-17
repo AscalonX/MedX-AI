@@ -6,7 +6,7 @@ import { AppShell, Icon, type ShellRole } from "@/components/ui";
 import { REVIEWERS } from "./review/_lib";
 import { tr } from "./review/_i18n";
 
-interface Frame { lang: Lang; setLang: (l: Lang) => void; reviewer: string; setReviewer: (r: string) => void; now: number }
+interface Frame { clinicianRole: "nurse" | "doctor"; setClinicianRole: (r: "nurse" | "doctor") => void; lang: Lang; setLang: (l: Lang) => void; reviewer: string; setReviewer: (r: string) => void; now: number }
 const F = createContext<Frame | null>(null);
 export const useFrame = () => {
   const c = useContext(F);
@@ -57,7 +57,7 @@ export function ClinicianFrame({ active, urgent, children }: { active: "home" | 
   };
 
   return (
-    <F.Provider value={{ lang, setLang, reviewer, setReviewer, now }}>
+    <F.Provider value={{ clinicianRole, setClinicianRole, lang, setLang, reviewer, setReviewer, now }}>
       <style>{ENTER_CSS}</style>
       <a href="#main-content" className="sr-only z-50 rounded-full bg-sheet px-4 py-2 text-small font-semibold text-ocean focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
         {tr("skip", lang)}

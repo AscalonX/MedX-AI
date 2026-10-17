@@ -7,13 +7,14 @@ import { FIELD_GROUPS, FIELD_LABEL, LANG_NAME, auditLine, clock, fetchSession, p
 import { fmt, tr, type TKey } from "./_i18n";
 import { Complaint, FlagChip, LangBadge, StatusChip } from "./_queue";
 import { useClinician } from "./_shell";
+import { ct } from "./[id]/consult/_c18n";
 
 type Sel = { type: "field"; key: FieldKey } | { type: "flag"; key: string };
 const selId = (s: Sel | null) => (s ? `${s.type}:${s.key}` : "");
 const sm = "h-8! px-3! text-small!";
 
 export function Workspace({ id }: { id: string }) {
-  const { lang, reviewer, now, refreshQueue, sorted, markOpened } = useClinician();
+  const { lang, reviewer, now, refreshQueue, sorted, markOpened, clinicianRole } = useClinician();
   const [data, setData] = useState<{ session: IntakeSession; audit: AuditEvent[] } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -201,6 +202,11 @@ export function Workspace({ id }: { id: string }) {
     return (
       <>
         <Link href="/review" className={cls}><Icon name="chevron-right" size={14} className="rotate-180" />{tr("navQueue", lang)}</Link>
+        {session.status !== "approved" && session.status !== "collecting" && (
+          <Link href={`/review/${id}/consult?mode=${clinicianRole}`} className={hero ? cls : "inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-4 text-small font-semibold text-on-primary shadow-[0_10px_18px_-10px_rgba(26,95,196,0.8)]"}>
+            <Icon name="mic" size={14} />{ct(clinicianRole === "doctor" ? "startDoctor" : "startNurse", lang)}
+          </Link>
+        )}
         {nextCase && <Link href={`/review/${nextCase.id}`} className={cls}>{tr("nextCase", lang)} {nextCase.code}<Icon name="chevron-right" size={14} /></Link>}
         <button type="button" onClick={openDrawer} aria-expanded={drawer} aria-controls="transcript" className={`${cls} min-[1280px]:hidden`}>
           <Icon name="quote" size={14} />{tr("patientsWords", lang)}
