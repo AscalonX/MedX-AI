@@ -38,7 +38,7 @@ export const mascotColors = {
   bellyShade: "#D5ECEE",
   earInner: "#FFD3DC",
   earInnerShade: "#F7B6C4",
-  cheek: "#FF8FA8",
+  cheek: "#FF7E9F",
   eye: "#10213A",
   white: "#FFFFFF",
   tube: "#22344A",
@@ -61,12 +61,30 @@ export const mascotGradients: MascotGradient[] = [
     ],
   },
   {
-    id: "mali-ear",
+    id: "mali-ear-l",
     type: "linear",
-    coords: { x1: 20, y1: 40, x2: 90, y2: 130 },
+    coords: { x1: 20, y1: 44, x2: 84, y2: 126 },
     stops: [
       { offset: 0, color: c.bodyLight },
-      { offset: 1, color: c.deep },
+      { offset: 1, color: c.ocean },
+    ],
+  },
+  {
+    id: "mali-ear-r",
+    type: "linear",
+    coords: { x1: 180, y1: 44, x2: 116, y2: 126 },
+    stops: [
+      { offset: 0, color: c.bodyLight },
+      { offset: 1, color: c.ocean },
+    ],
+  },
+  {
+    id: "mali-trunk",
+    type: "linear",
+    coords: { x1: 96, y1: 92, x2: 118, y2: 136 },
+    stops: [
+      { offset: 0, color: c.bodyLight },
+      { offset: 1, color: c.teal },
     ],
   },
   {
@@ -141,14 +159,15 @@ function ears(raised: boolean): MascotLayer[] {
   const y = raised ? 70 : 80;
   const x = raised ? 46 : 50;
   return [
-    { d: ellipsePath(x, y, 33, 37, -tilt), fill: "url(#mali-ear)", part: "ears" },
-    { d: ellipsePath(200 - x, y, 33, 37, tilt), fill: "url(#mali-ear)", part: "ears" },
+    { d: ellipsePath(x, y, 33, 37, -tilt), fill: "url(#mali-ear-l)", part: "ears" },
+    { d: ellipsePath(200 - x, y, 33, 37, tilt), fill: "url(#mali-ear-r)", part: "ears" },
     { d: ellipsePath(x + 4, y + 3, 21, 26, -tilt), fill: "url(#mali-ear-inner)", part: "ears" },
     { d: ellipsePath(196 - x, y + 3, 21, 26, tilt), fill: "url(#mali-ear-inner)", part: "ears" },
   ];
 }
 
 const head: MascotLayer[] = [
+  { d: ellipsePath(100, 118, 34, 9), fill: c.deep, opacity: 0.18 },
   { d: ellipsePath(100, 82, 45, 41), fill: "url(#mali-body)" },
   { d: ellipsePath(100, 82, 45, 41), fill: "url(#mali-sheen)" },
   // tuft
@@ -157,23 +176,28 @@ const head: MascotLayer[] = [
 
 // Trunk curls down and to the right, holding the stethoscope chest piece.
 const trunk: MascotLayer[] = [
+  { d: ellipsePath(110, 141, 15, 4.5), fill: c.deep, opacity: 0.12 },
   {
-    d: "M89 96C87 112 90 128 103 134C112 138 122 135 126 128C128 123 124 119 119 121C116 123 115 126 110 126C102 125 104 112 110 97Z",
-    fill: "url(#mali-body)",
+    d: "M87 90C85 112 88 130 102 137C112 142 124 138 128 129C130 123 125 119 120 122C116 124 115 128 109 127C101 125 103 110 113 90C106 84 94 84 87 90Z",
+    fill: "url(#mali-trunk)",
   },
-  { d: "M93 112Q99 114 106 111", stroke: c.deep, strokeWidth: 1.6, opacity: 0.35 },
-  { d: "M95 120Q101 122 107 119", stroke: c.deep, strokeWidth: 1.6, opacity: 0.35 },
+  // side outlines only, so the trunk melts into the face at the top
+  { d: "M87.5 98C86 114 89 130 102 137C112 142 124 138 128 129C130 123 125 119 120 122C116 124 115 128 109 127C101 125 103 112 111 98", stroke: c.deep, strokeWidth: 1.2, opacity: 0.55 },
+  { d: "M91 108Q98 111 106 107", stroke: c.deep, strokeWidth: 1.6, opacity: 0.28 },
+  { d: "M92 117Q99 120 105 116", stroke: c.deep, strokeWidth: 1.6, opacity: 0.28 },
+  { d: "M96 125Q101 128 106 125", stroke: c.deep, strokeWidth: 1.6, opacity: 0.28 },
+  { d: ellipsePath(93, 102, 3, 8, 8), fill: c.white, opacity: 0.22 },
 ];
 
 const cheeks: MascotLayer[] = [
-  { d: ellipsePath(70, 96, 8, 5), fill: c.cheek, opacity: 0.45 },
-  { d: ellipsePath(130, 96, 8, 5), fill: c.cheek, opacity: 0.45 },
+  { d: ellipsePath(68, 96, 8, 5), fill: c.cheek, opacity: 0.6 },
+  { d: ellipsePath(132, 96, 8, 5), fill: c.cheek, opacity: 0.6 },
 ];
 
 // Stethoscope: tube around the neck, a drop to the chest piece held by the trunk.
 const stethoscope: MascotLayer[] = [
-  { d: "M70 110C78 126 92 130 100 130", stroke: c.tube, strokeWidth: 3.6, opacity: 1 },
-  { d: "M130 110C126 118 122 122 122 124", stroke: c.tube, strokeWidth: 3.6 },
+  { d: "M68 108C76 126 92 132 102 132", stroke: c.tube, strokeWidth: 4 },
+  { d: "M132 108C130 116 126 120 125 123", stroke: c.tube, strokeWidth: 4 },
 ];
 const chestPiece: MascotLayer[] = [
   { d: circle(124, 130, 7.5), fill: "url(#mali-metal)", stroke: c.metalShade, strokeWidth: 1.2 },
@@ -185,30 +209,30 @@ function eyes(look: Look): MascotLayer[] {
   const ox = look === "right" ? 3 : look === "up" ? -1.5 : 0;
   const oy = look === "up" ? -3 : 0;
   return [
-    { d: ellipsePath(81, 80, 7.5, 9.5), fill: c.eye, part: "eyes" },
-    { d: ellipsePath(119, 80, 7.5, 9.5), fill: c.eye, part: "eyes" },
-    { d: circle(83.5 + ox, 76 + oy, 3), fill: c.white, part: "eyes" },
-    { d: circle(121.5 + ox, 76 + oy, 3), fill: c.white, part: "eyes" },
-    { d: circle(79 + ox, 84 + oy, 1.3), fill: c.white, part: "eyes", opacity: 0.9 },
-    { d: circle(117 + ox, 84 + oy, 1.3), fill: c.white, part: "eyes", opacity: 0.9 },
+    { d: ellipsePath(78, 80, 8.5, 10.5), fill: c.eye, part: "eyes" },
+    { d: ellipsePath(122, 80, 8.5, 10.5), fill: c.eye, part: "eyes" },
+    { d: circle(81 + ox, 75.5 + oy, 3.4), fill: c.white, part: "eyes" },
+    { d: circle(125 + ox, 75.5 + oy, 3.4), fill: c.white, part: "eyes" },
+    { d: circle(76 + ox, 84.5 + oy, 1.5), fill: c.white, part: "eyes", opacity: 0.9 },
+    { d: circle(120 + ox, 84.5 + oy, 1.5), fill: c.white, part: "eyes", opacity: 0.9 },
   ];
 }
 const happyEyes: MascotLayer[] = [
-  { d: "M73 82Q81 72 89 82", stroke: c.eye, strokeWidth: 3.4 },
-  { d: "M111 82Q119 72 127 82", stroke: c.eye, strokeWidth: 3.4 },
+  { d: "M70 82Q78 72 86 82", stroke: c.eye, strokeWidth: 3.6 },
+  { d: "M114 82Q122 72 130 82", stroke: c.eye, strokeWidth: 3.6 },
 ];
 
-const smile: MascotLayer = { d: "M78 101Q83 106 88 103", stroke: c.eye, strokeWidth: 2.4 };
-const bigSmile: MascotLayer = { d: "M76 99Q83 110 90 102Z", fill: c.eye };
-const flat: MascotLayer = { d: "M79 103Q83 104 87 102", stroke: c.eye, strokeWidth: 2.2 };
+const smile: MascotLayer = { d: "M76 100Q80 105 85 102", stroke: c.eye, strokeWidth: 2.2 };
+const bigSmile: MascotLayer = { d: "M73 99Q79 111 86 102Z", fill: c.eye };
+const flat: MascotLayer = { d: "M76 103Q80 104 84 102", stroke: c.eye, strokeWidth: 2.2 };
 
 // Arms (shoulders at ~ (66,126) and (134,126)).
 const armLeftDown: MascotLayer = { d: ellipsePath(62, 142, 11, 17, 22), fill: "url(#mali-body)" };
 const armRightDown: MascotLayer = { d: ellipsePath(138, 142, 11, 17, -22), fill: "url(#mali-body)" };
 const armRightWave: MascotLayer = { d: ellipsePath(150, 110, 10.5, 18, 32), fill: "url(#mali-body)", part: "waveArm" };
 const armLeftUp: MascotLayer = { d: ellipsePath(50, 110, 10.5, 18, -32), fill: "url(#mali-body)" };
-const armRightPoint: MascotLayer = { d: ellipsePath(156, 130, 18, 10, -8), fill: "url(#mali-body)" };
-const palmWave: MascotLayer = { d: ellipsePath(158, 96, 6, 5, 32), fill: c.belly, opacity: 0.9, part: "waveArm" };
+const armRightPoint: MascotLayer = { d: ellipsePath(150, 128, 16, 9.5, -10), fill: "url(#mali-body)" };
+const palmWave: MascotLayer = { d: ellipsePath(158, 96, 5, 4, 32), fill: c.belly, opacity: 0.5, part: "waveArm" };
 
 // Extras
 const soundWaves: MascotLayer[] = [

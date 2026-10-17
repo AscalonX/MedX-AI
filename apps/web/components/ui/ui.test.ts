@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { color, inkLevel } from "@medx/shared/src/tokens";
 import { segments } from "./segments";
+import { MASCOT_POSES, mascotGradients, mascotPoses, mascotSvg } from "@medx/shared/src/mascot";
 
 describe("segments", () => {
   const text = "ho mal di petto e sudo freddo";
@@ -69,6 +70,21 @@ describe("copy rules", () => {
     for (const f of readdirSync(__dirname).filter((n) => n.endsWith(".tsx"))) {
       const src = readFileSync(join(__dirname, f), "utf8");
       expect(src, f).not.toMatch(/[\u2013\u2014]/);
+    }
+  });
+});
+
+describe("mascot", () => {
+  it("every pose renders and every gradient reference resolves", () => {
+    const ids = new Set(mascotGradients.map((g) => g.id));
+    for (const p of MASCOT_POSES) {
+      expect(mascotPoses[p].length, p).toBeGreaterThan(20);
+      for (const l of mascotPoses[p]) {
+        const m = l.fill?.match(/^url\(#(.+)\)$/);
+        if (m) expect(ids.has(m[1]!), `${p}: ${m[1]}`).toBe(true);
+        expect(l.d, p).not.toMatch(/NaN|undefined/);
+      }
+      expect(mascotSvg(p)).toContain("<svg");
     }
   });
 });

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MedX Bridge cover v3</title>
+<!--
+  Cover v3 source. Render (headless Chrome, from repo root):
+    1600x900:  --window-size=1600,900  file://.../pitch/cover/cover-v3.html
+    1080x1080: --window-size=1080,1080 file://.../pitch/cover/cover-v3.html#square
+  Mascot: docs/design/mascot/mali-wave.svg (generated from packages/shared/src/mascot.ts).
+  Screens: real app screenshots from docs/reports/screens/.
+-->
+<style>
+@font-face{font-family:"SCBXBeta2";src:url("../../apps/web/app/fonts/SCBXBeta2-Light.otf");font-weight:300}
+@font-face{font-family:"SCBXBeta2";src:url("../../apps/web/app/fonts/SCBXBeta2-Regular.otf");font-weight:400}
+@font-face{font-family:"SCBXBeta2";src:url("../../apps/web/app/fonts/SCBXBeta2-Bold.otf");font-weight:700}
+:root{--ink:#0F1E2E;--soft:#45566A;--teal:#08716A;--ocean:#1A5CBF;--from:#0A8077;--to:#1A5FC4;--rule:#E3E9EF}
+*{margin:0;box-sizing:border-box}
+body{width:1600px;height:900px;overflow:hidden;position:relative;font-family:"SCBXBeta2",system-ui,sans-serif;color:var(--ink);
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%231A5FC4' stroke-opacity='.075' stroke-width='1.4'%3E%3Cpath d='M24 14c4 6 4 14 0 20c-4-6-4-14 0-20zM24 54c-4-6-4-14 0-20c4 6 4 14 0 20zM4 34c6-4 14-4 20 0c-6 4-14 4-20 0zM44 34c-6 4-14 4-20 0c6-4 14-4 20 0z'/%3E%3Cpath d='M72 66l6 6l-6 6l-6-6z'/%3E%3Ccircle cx='72' cy='24' r='2.2'/%3E%3Ccircle cx='24' cy='82' r='2.2'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(900px 600px at 0% 0%,rgba(10,128,119,.12),transparent 60%),
+    radial-gradient(900px 700px at 100% 100%,rgba(26,95,196,.14),transparent 60%),
+    linear-gradient(160deg,#F1F6F8,#E6EEFA);}
+.brand{position:absolute;left:80px;top:64px;display:flex;align-items:center;gap:14px;font-size:22px;font-weight:700;color:var(--soft)}
+.mark{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--from),var(--to));color:#fff;display:grid;place-items:center;font-size:24px;font-weight:700;box-shadow:0 10px 18px -10px rgba(26,95,196,.8)}
+h1{position:absolute;left:80px;top:128px;font-size:104px;line-height:1;font-weight:700;letter-spacing:-.025em}
+.tag{position:absolute;left:80px;top:252px;width:840px;font-size:30px;line-height:1.25;font-weight:400;color:var(--soft)}
+.badges{position:absolute;left:80px;top:312px;display:flex;gap:12px}
+.badge{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;background:#fff;font-size:20px;font-weight:700;color:var(--ink);box-shadow:0 8px 20px -12px rgba(15,45,80,.35);border:1px solid rgba(227,233,239,.8)}
+.badge svg{width:20px;height:20px;stroke:var(--ocean);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.hero{position:absolute;left:930px;top:64px;width:590px;height:300px;border-radius:30px;color:#fff;overflow:hidden;padding:44px 250px 0 40px;
+  background:radial-gradient(120% 90% at 100% 100%,rgba(255,255,255,.14),transparent 55%),linear-gradient(135deg,var(--from),var(--to));box-shadow:0 30px 50px -26px rgba(26,95,196,.7)}
+.hero::before{content:"";position:absolute;right:-70px;top:-90px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.1)}
+.hero h2{font-size:44px;line-height:1.05;font-weight:700;position:relative}
+.hero p{margin-top:12px;font-size:23px;line-height:1.3;opacity:.94;position:relative}
+.hero .pill{position:relative;margin-top:22px;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 22px;border-radius:999px;background:#fff;color:var(--ocean);font-size:20px;font-weight:700}
+.hero .pill svg{width:20px;height:20px;stroke:var(--ocean);fill:none;stroke-width:2;stroke-linecap:round}
+.mali{position:absolute;right:6px;bottom:-26px;width:260px;filter:drop-shadow(0 14px 18px rgba(8,40,90,.35))}
+.glow{position:absolute;right:20px;bottom:0;width:230px;height:230px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.55),rgba(255,255,255,.16) 70%,transparent)}
+
+.steps{position:absolute;left:80px;top:396px;width:1440px;height:440px;display:grid;grid-template-columns:250px 1fr 1fr 1fr;gap:40px}
+.step{position:relative;display:flex;flex-direction:column;gap:16px}
+.head{display:flex;flex-direction:column;gap:12px;position:relative;z-index:1}
+.num{flex:none;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--from),var(--to));color:#fff;display:grid;place-items:center;font-size:24px;font-weight:700;box-shadow:0 0 0 6px #EEF4F8}
+.cap{font-size:22px;line-height:1.15;font-weight:700;min-height:48px}
+.cap small{display:block;font-size:16px;font-weight:400;color:var(--soft);margin-top:2px}
+.dots{position:absolute;top:24px;left:60px;right:-28px;border-top:3px dotted rgba(26,92,191,.45);z-index:0}
+.step:last-child .dots{display:none}
+.phone{width:160px;height:306px;border-radius:30px;border:7px solid #13233A;overflow:hidden;background:#fff;box-shadow:0 26px 40px -22px rgba(15,45,80,.55)}
+.phone img{width:100%;height:auto;display:block}
+.frame{position:relative;width:100%;height:290px;border-radius:20px;overflow:hidden;background:#fff;border:1px solid rgba(227,233,239,.9);box-shadow:0 26px 44px -24px rgba(15,45,80,.45)}
+.frame .bar{height:26px;background:#F5F8FA;border-bottom:1px solid var(--rule);display:flex;gap:6px;align-items:center;padding:0 12px}
+.frame .bar i{width:9px;height:9px;border-radius:50%;background:#D4DCE5}
+.frame .shot{position:relative;height:calc(100% - 26px);overflow:hidden}
+.frame .shot img{position:absolute}
+.foot{position:absolute;left:80px;right:80px;bottom:26px;display:flex;justify-content:space-between;font-size:17px;color:var(--soft)}
+
+/* ---------- square 1080x1080 ---------- */
+body.sq{width:1080px;height:1080px}
+.sq .brand{left:64px;top:56px}
+.sq h1{left:64px;top:118px;font-size:92px}
+.sq .tag{left:64px;top:228px;width:960px;font-size:29px}
+.sq .badges{left:64px;top:282px}
+.sq .hero{left:64px;top:356px;width:952px;height:236px;padding:40px 330px 0 40px}
+.sq .hero h2{font-size:42px}
+.sq .mali{width:250px;right:40px;bottom:-30px}
+.sq .glow{right:52px;width:220px;height:220px}
+.sq .steps{left:64px;top:628px;width:952px;height:400px;grid-template-columns:130px 1fr 1fr 1fr;gap:22px}
+.sq .head{gap:10px}
+.sq .cap{font-size:18px;min-height:42px}
+.sq .num{width:42px;height:42px;font-size:21px}
+.sq .dots{top:21px}
+.sq .cap small{display:none}
+.sq .dots{top:24px;left:56px;right:-22px}
+.sq .phone{width:124px;height:250px;border-width:5px;border-radius:22px}
+.sq .frame{height:250px;border-radius:16px}
+.sq .frame .bar{height:18px}
+.sq .frame .shot{height:calc(100% - 18px)}
+.sq .foot{left:64px;right:64px;bottom:22px;font-size:15px}
+.sq .foot span:last-child{display:none}
+</style>
+</head>
+<body>
+<div class="brand"><div class="mark">M</div>AMD Developer Hackathon ACT III, Track 2</div>
+<h1>MedX Bridge</h1>
+<p class="tag">Every field points back to the patient's own words.</p>
+<div class="badges">
+  <span class="badge"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>Thai · Italiano · English</span>
+  <span class="badge"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M20 9h2M20 14h2M2 9h2M2 14h2"/></svg>Gemma on AMD (Token Factory)</span>
+</div>
+
+<section class="hero">
+  <span class="glow"></span>
+  <img class="mali" src="../../docs/design/mascot/mali-wave.svg" alt="">
+  <h2>Hi, I'm Mali.</h2>
+  <p>Tell us what brings you in, in your own language.</p>
+  <span class="pill"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></svg>Start speaking</span>
+</section>
+
+<div class="steps">
+  <div class="step">
+    <div class="head"><span class="num">1</span><p class="cap">Patient speaks<small>in their own language</small></p></div>
+    <span class="dots"></span>
+    <div class="phone"><img src="../../docs/reports/screens/v3-mobile-voice-5-listening-ios.png" alt=""></div>
+  </div>
+  <div class="step">
+    <div class="head"><span class="num">2</span><p class="cap">Nurse checks every source<small>quotes highlight the summary</small></p></div>
+    <span class="dots"></span>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i></div><div class="shot" data-src="../../docs/reports/screens/v6-consult-nurse.png" data-crop="290,545,560,440"></div></div>
+  </div>
+  <div class="step">
+    <div class="head"><span class="num">3</span><p class="cap">Doctor orders, checked<small>allergy conflicts caught</small></p></div>
+    <span class="dots"></span>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i></div><div class="shot" data-src="../../docs/reports/screens/v7-orders.png" data-crop="870,500,500,385"></div></div>
+  </div>
+  <div class="step">
+    <div class="head"><span class="num">4</span><p class="cap">Pharmacist verifies<small>interactions flagged first</small></p></div>
+    <span class="dots"></span>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i></div><div class="shot" data-src="../../docs/reports/screens/v7-pharmacy-prescriptions-card.png" data-crop="160,85,360,280"></div></div>
+  </div>
+</div>
+
+<div class="foot"><span>Research prototype with synthetic data. Supports clinicians; does not diagnose.</span><span>Every recommendation needs clinician approval</span></div>
+
+<script>
+if (location.hash === "#square") document.body.classList.add("sq");
+// Crop real screenshots into frames: data-crop = x,y,w,h in source pixels, scaled to cover the frame.
+for (const el of document.querySelectorAll(".shot")) {
+  const [x, y, w, h] = el.dataset.crop.split(",").map(Number);
+  const img = new Image();
+  img.src = el.dataset.src;
+  img.onload = () => {
+    const fw = el.clientWidth, fh = el.clientHeight;
+    const s = Math.max(fw / w, fh / h);
+    img.style.width = img.naturalWidth * s + "px";
+    img.style.left = -x * s + "px";
+    img.style.top = -y * s + "px";
+    el.appendChild(img);
+  };
+}
+</script>
+</body>
+</html>
