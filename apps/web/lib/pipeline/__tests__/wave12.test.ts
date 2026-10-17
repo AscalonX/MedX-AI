@@ -35,7 +35,7 @@ describe('vitals and triage routes and NEWS2 rules', () => {
     ['score four', { ...normal, respRate: 22, heartRate: 95, tempC: 38.2 }, 3, 4],
     ['score nineteen', { ...normal, respRate: 26, spo2: 90, onOxygen: true, systolicBP: 88, heartRate: 135, consciousness: 'pain' as const, tempC: 39.5 }, 2, 19],
     ['cold', { ...normal, tempC: 35 }, 2, 3], ['36 C', { ...normal, tempC: 36 }, 3, 1], ['SBP220', { ...normal, systolicBP: 220 }, 2, 3],
-    ['incomplete', { heartRate: 80 }, 3, undefined], ['incomplete low oxygen', { spo2: 88 }, 2, undefined], ['rounded temperature', { ...normal, tempC: 35.05 }, 3, 1],
+    ['incomplete', { heartRate: 80 }, 3, 0], ['incomplete low oxygen', { spo2: 88 }, 2, 3], ['rounded temperature', { ...normal, tempC: 35.05 }, 3, 1],
   ])('%s', (_name, values, level, score) => {
     const result = assessTriage(createSession('en', { persist: false }), values);
     expect(result.suggestedLevel).toBe(level); expect(result.warningScore).toBe(score);
@@ -47,7 +47,7 @@ describe('vitals and triage routes and NEWS2 rules', () => {
     expect(result.warningScore).toBe(band.points);
     expect(result.vitalAlerts.some(a => a.ruleId === band.alert?.ruleId)).toBe(!!band.alert);
   });
-  it('supports categorical equals and incompleteVitals predicates with first-match precedence', () => {
+  it('supports categorical equals and incompleteVitals predicates', () => {
     const bank = structuredClone(vitalrules) as VitalRuleFile;
     bank.bands = bank.bands.filter(b => b.vital !== 'onOxygen' && b.vital !== 'consciousness');
     bank.bands.push({ vital: 'onOxygen', equals: false, points: 0 }, { vital: 'consciousness', equals: 'alert', points: 0 });

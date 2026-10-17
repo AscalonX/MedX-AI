@@ -87,3 +87,74 @@ Runner caveat: the first complete run hit the command's 60-second limit. A subse
 ## NEXT ACTION
 
 Orchestrator can exercise the existing vitals/orders/pharmacy UI against the live backend and review the working changes. Reproduce backend smoke with the script above; use the documented single-thread Vitest command for the full suite. No commit was created by this task.
+
+---
+
+# Wave 13 — AI engineer — partial NEWS2 safety fix
+
+## STATUS
+
+done
+
+## SUMMARY
+
+Omitted `onOxygen` now defaults to `false` (room air) for scoring only. A localized reason discloses this assumption; the original recorded vitals remain unchanged. All available NEWS2 bands contribute to `warningScore`, including incomplete sets. Incomplete assessments include localized “partial score from N of 7 parameters” text in English, Thai and Italian; no `scoreComplete` field was added. N includes the defaulted room-air parameter.
+
+Level selection evaluates every matching red-flag, score, single-band and incomplete-vitals rule and takes the lowest (most urgent) level. An incomplete set additionally has a level-3 floor, which cannot suppress a more urgent suggestion. Clinician confirmation and append-only audit behavior remain intact.
+
+## FILES CHANGED
+
+- `apps/web/lib/pipeline/triage.ts` — partial scoring, explicit room-air assumption, localized completeness reasons and most-urgent rule selection.
+- `apps/web/lib/pipeline/__tests__/wave12.test.ts` — update two obsolete undefined-score expectations and the precedence test title.
+- `apps/web/lib/pipeline/__tests__/wave13.test.ts` — 26 regressions covering the reported POST, normal/incomplete sets, each missing required parameter, all three-point bands, reordered rules, red flags, audit and confirmation preservation.
+- `apps/web/lib/pipeline/__tests__/wave13-smoke.mjs` — reproducible synthetic live curl verification against the existing server.
+- `docs/reports/w12-ai-engineer.md` — append this Wave 13 report.
+
+## TESTS RUN + RESULTS
+
+From `apps/web`:
+
+- `./node_modules/.bin/vitest run --pool=threads --maxWorkers=1 --minWorkers=1` — **18/18 files, 1,368/1,368 tests passed**, 55.01 seconds.
+- Targeted Wave 12 + Wave 13 Vitest run — **143/143 tests passed**.
+- `./node_modules/.bin/tsc --noEmit` — **passed**.
+- `./node_modules/.bin/eslint .` — **passed**.
+
+From repository root:
+
+- `node apps/web/lib/pipeline/__tests__/wave13-smoke.mjs` — **8/8 live curl requests and all assertions passed**, existing `localhost:3000` server, synthetic session `cd87d034-6463-4b6e-b569-0528f3a902a3`.
+- `git diff --check` — **passed**.
+
+Runner notes: the initial full-suite batch exceeded its 55-second budget, skipping the subsequent TypeScript/ESLint commands; those were then run separately and passed. A direct shell Vitest attempt exited 139 before test output; the final context-mode run above completed successfully. The first curl smoke reached all five passing assessment assertions but used the wrong GET-session response nesting in its final storage assertion; corrected to `saved.session.vitals` and rerun successfully.
+
+## EVIDENCE
+
+Live curl results:
+
+| Synthetic case | Suggested level | warningScore | Vital alerts |
+|---|---:|---:|---:|
+| Exact reported values, onOxygen omitted | 2 | 10 | 5 |
+| Incomplete set with score seven and no three-point band | 2 | 7 | 3 |
+| Incomplete normal, heartRate 70 only | 3 | 0 | 0 |
+| Complete normal | 4 | 0 | 0 |
+| Single three-point band, spo2 88 only | 2 | 3 | 1 |
+
+The reported score is 2 each for respiratory rate, SpO2, systolic pressure, heart rate and temperature, plus 0 for alert consciousness and assumed room air. Partial live cases expose “partial score from 5 of 7 parameters” and “partial score from 2 of 7 parameters” respectively. All five writes have audit entries; none auto-confirms triage. Reproduction script: `apps/web/lib/pipeline/__tests__/wave13-smoke.mjs`.
+
+## ASSUMPTIONS
+
+- Per the Wave 13 request, omitted oxygen support means room air for score calculation. Explicit `true` still contributes its configured oxygen-support points.
+- Diastolic pressure and pain score are recorded but are not among the seven NEWS2 parameters. No other omitted score parameter receives a default.
+- All clinical thresholds and level mappings remain Doctor-owned `vitalrules.json` values. These are review suggestions requiring clinician confirmation.
+
+## RISKS
+
+- If oxygen support was omitted accidentally, its two points cannot contribute until the clinician records it. The assumption is disclosed in localized reasons.
+- A partial zero score does not establish normal physiology; the localized completeness reason and level-3 floor remain active.
+
+## OPEN QUESTIONS / CONTRACT CHANGE REQUESTS
+
+No blocking questions or shape changes. Orchestrator follow-up: the `VitalRuleFile.levels` comment in shared `types.ts` still says “first match wins”; update that documentation to describe most-urgent matching level selection. Shared files were left untouched under ownership rules.
+
+## NEXT ACTION
+
+Orchestrator can repeat the synthetic curl script and review the changes. No commit, dependency install or server restart was performed. Pre-existing `.impeccable/` was left untouched.
