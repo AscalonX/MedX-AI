@@ -1,6 +1,6 @@
 # MedX Bridge: lablab submission copy
 
-Track 2, Health and Wellbeing. Research prototype, synthetic data only. Items marked [TBD-METRIC] are filled from `eval/REPORT.md` after the Gemma-on-AMD run. Do not publish a number that is not in that report.
+Track 2, Health and Wellbeing. Research prototype, synthetic data only. Items marked [pending AMD run] are filled from `eval/REPORT.md` after the Gemma-on-AMD run; do not publish a number that is not in that report. Repo: https://github.com/KingPhuripol/medx-bridge
 
 ## Title options
 
@@ -10,44 +10,39 @@ Track 2, Health and Wellbeing. Research prototype, synthetic data only. Items ma
 
 ## Tagline
 
-Multilingual pre-visit intake where every field points back to the patient's own sentence.
+Multilingual intake where every field points back to the patient's own words.
 
 ## Short description (max 255 characters)
 
-Multilingual pre-visit intake for clinics. A patient writes in Thai, Italian or English; the nurse reads a summary in English, each field linked to the patient's own words. Red flags escalate to a human. Gemma on AMD. Research prototype, synthetic data.
+Multilingual pre-visit intake: patients speak or type in Thai, Italian or English; the nurse reads English with each field linked to the patient's words. Red flags escalate to a human; pharmacists reconcile meds. Gemma on AMD. Synthetic data.
 
-(Character count: 253.)
+(Character count: 242.)
 
 ## Long description
 
-**The problem.** When a patient and a clinic do not share a language, communication errors become safety events. In six US hospitals, adverse events in patients with limited English proficiency involved physical harm in 49.1% of cases against 29.5% for English speakers (Divi et al., Int J Qual Health Care 2007). Doctors also spend 49.2% of the office day on EHR and desk work against 27.0% face time (Sinsky et al., Ann Intern Med 2016). Thailand had 32.97 million foreign tourist arrivals in 2025, so a language mismatch at the desk is routine.
+**Problem.** When patient and clinic do not share a language, communication errors become safety events: in six US hospitals, adverse events in limited-English patients involved physical harm in 49.1% of cases vs 29.5% for English speakers (Divi 2007). Medication lists are fragile too: 13% to 59% of patients had an unintended error in their admission list across six pharmacist-checked studies.
 
-**The user.** A triage nurse at a walk-in clinic, and the GP who reads the same page afterwards. They need a summary readable in 30 seconds.
+**Who it helps.** The patient (Thai, Italian or English), the triage nurse, the pharmacist, and the clinic manager.
 
-**What it does.** Before the nurse sees the patient, the patient answers a short guided chat on their phone in Thai, Italian or English. The nurse gets a one-screen summary in English. Click a field and the patient's original sentence is highlighted. If a required item is missing, the patient gets one follow-up question in their own language.
+**What it does.** A patient answers a short guided intake on their phone, by voice or text. A voice agent reads each question aloud, and the patient checks and corrects the transcript before sending. The nurse reads an English summary where every field links to the patient's own sentence. Missing items trigger one follow-up question in the patient's language. When the nurse approves, the patient's phone shows the status change. The pharmacist reconciles named medicines (brand to generic, duplicate paracetamol, allergy conflicts, interactions) from a 59-drug dictionary. The manager sees an ops dashboard: queue by urgency, escalations, abstain rate, model latency.
 
-**How Gemma on AMD is used.** Gemma, served on AMD Instinct GPUs (ROCm) through the hackathon Token Factory, does three jobs behind one gateway: (1) extraction and translation of the transcript into a typed JSON record with an evidence quote per field; (2) an add-only red-flag safety screen that runs in parallel with extraction; (3) generation of the next question in the patient's language. Quote verification is plain code. The Token Factory integration is pending our key; the endpoint and model id come from environment variables, and tests use a mock provider.
+**Gemma on AMD.** Gemma, served on AMD Instinct GPUs (ROCm) through the hackathon Token Factory, does three jobs behind one gateway: extraction and translation with a quote per field; an add-only red-flag safety screen in parallel; and the next question. Quote verification is plain code. The Token Factory key was pending at submission build time, so the pipeline runs on a mock model today and latency is [pending AMD run].
 
-**Safety design (Track 2 questions).**
-- *Unsupported responses:* a field without a verified quote is shown as "unsupported", never as fact.
-- *Sensitive information:* patient text is redacted before storage or any model call; synthetic data only.
-- *Uncertain results:* confidence is shown visually; provider error, schema error or low confidence gives "needs human review", never a guess.
-- *High-risk decisions:* about 18 deterministic red-flag rules run before any model call and no model output can clear them. The Gemma screen can only add flags, shown as "model-suggested, confirm".
-- *Human review:* nothing is final until a clinician approves, edits or takes over. Every action goes to an append-only audit log.
+**Safety (Track 2 questions).**
+- Unsupported answers: no verified quote means "needs check", never fact.
+- Sensitive information: redaction before storage or any model call; synthetic data only.
+- Uncertain results: confidence is shown; low confidence or provider failure means abstain, "needs human review".
+- High-risk decisions: 18 deterministic red-flag rules run before any model and cannot be cleared by it. The Gemma screen only adds flags, shown as "model-suggested, confirm".
+- Human review: nothing is final until a clinician approves; every action is in an append-only audit log.
 
-**Measurable results** (synthetic evaluation, n = 40 cases plus an 18-case blind holdout, research prototype):
-- Asserted-field precision; unsupported-claim rate with vs without verifier: [TBD-METRIC]
-- Red-flag recall on the blind holdout: keyword rules alone 7/10 emergencies caught, 3/8 false alarms. With the Gemma screen added: [TBD-METRIC]
-- Reading load (summary / transcript words); Gemma-on-AMD latency p50 / p95: [TBD-METRIC]
+**Evidence (synthetic, small n).** 52 synthetic cases and an 18-case blind holdout; 18 red-flag rules with 175 reference tests; 1,041 automated tests passing; an independent read-only review of the Codex-built engine plus QA scripts, with findings fixed under regression tests. On the blind holdout, keyword rules alone caught 7 of 10 emergencies with 3 of 8 false alarms, which is why we added the Gemma screen. With the screen: [pending AMD run].
 
-**Limitations.** Synthetic cases only; small n; not clinically validated and not a medical device. It supports a clinician and never diagnoses, triages on its own or prescribes. The verifier checks that a quote exists, not that its meaning is right, so the clinician confirms. The model screen will miss some cases and raise some false alarms. Italian and Thai text needs native-speaker review.
-
-(About 450 words.)
+**Limits.** Not clinically validated, not a medical device. It supports clinicians and never diagnoses, prescribes or decides urgency. The verifier checks that a quote exists, not that its meaning is right. Thai and Italian text needs native-speaker review.
 
 ## Technology tags
 
-Gemma, AMD Instinct, ROCm, AMD Token Factory, vLLM, Next.js, TypeScript, React Native, Expo, Docker, healthcare, multilingual, clinical decision support, human-in-the-loop
+Gemma, AMD Instinct, ROCm, AMD Token Factory, Next.js, TypeScript, React Native, Expo, voice interface, Docker, healthcare, multilingual, clinical decision support, human-in-the-loop
 
 ## Category
 
-Health and Wellbeing (Track 2). Patient journey step: pre-visit intake and triage support.
+Health and Wellbeing (Track 2). Patient journey step: pre-visit intake and medication reconciliation.

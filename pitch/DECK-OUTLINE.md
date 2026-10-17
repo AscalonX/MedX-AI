@@ -1,5 +1,8 @@
 # MedX Bridge: 8-slide deck outline
 
+> Updated for wave 9: the built deck is `pitch/deck/deck.html` (PDF `MedX-Bridge-deck.pdf`, previews `png/`). It follows the app's v2 look and now also covers the voice agent with patient confirmation, live status on the patient phone, pharmacist reconciliation, the ops dashboard, and the Claude-reviews-Codex plus QA process. Slide order: 1 title, 2 problem (cited), 3 three users and the phone, 4 pipeline, 5 safety by design, 6 evidence (52 cases, 18 blind holdout, 1,041 tests, 7/10 keyword recall), 7 Gemma on AMD (latency [pending AMD run]), 8 next steps, pharmacist screen, team. The text below is the original outline; `deck.html` is the source of truth.
+
+
 Visual language: "Clinical paper" (`docs/design/DIRECTION.md`): warm off-white, ink-black type, serif display, red only for urgency, no gradients, no card grids. Every number must be cited or marked [TBD-METRIC].
 
 ## 1. MedX Bridge
