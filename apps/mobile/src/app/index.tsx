@@ -2,7 +2,7 @@ import { color, gradient, space } from "@medx/shared";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { createSession } from "@/api";
 import { Card, GradientHero, Page, Pill, Segmented, T } from "@/components/ui";
 import { STR } from "@/i18n";
@@ -28,12 +28,13 @@ export default function Home() {
 
   return (
     <Page>
-      <View style={{ flexDirection: "row", alignItems: "center", gap: space[3] }}>
+      {/* Staff only: long-press the logo for 2 s to forget the stored session and start fresh. */}
+      <Pressable onLongPress={() => { reset(); router.replace("/"); }} delayLongPress={2000} accessible={false} style={{ flexDirection: "row", alignItems: "center", gap: space[3] }}>
         <LinearGradient colors={[gradient.primary.from, gradient.primary.to]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" }}>
           <T lang="en" token="body" weight="bold" tone="onPrimary" importantForAccessibility="no">M</T>
         </LinearGradient>
         <T lang="en" token="lead" weight="bold">MedX Bridge</T>
-      </View>
+      </Pressable>
       <View style={{ height: space[5] }} />
       <T lang={lang} token="body" tone="inkSoft">{s.hello}</T>
       <T lang={lang} token="title" weight="bold" accessibilityRole="header">{s.greetSub}</T>

@@ -1,6 +1,7 @@
 import type { IntakeSession, Lang } from "@medx/shared";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { Href } from "expo-router";
+import { router, type Href } from "expo-router";
+import { Platform } from "react-native";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { getSession } from "@/api";
 
@@ -30,17 +31,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     booted.current = true;
     (async () => {
       try {
-        const raw = await AsyncStorage.getItem(KEY);
+        const fresh = Platform.OS === "web" && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("new") === "1";
+        const raw = fresh ? null : await AsyncStorage.getItem(KEY);
+        if (fresh) {
+          const keep = await AsyncStorage.getItem(KEY).then((r) => (r ? (JSON.parse(r) as { lang: Lang }).lang : null)).catch(() => null);
+          await AsyncStorage.setItem(KEY, JSON.stringify({ session: null, lang: keep ?? "en" }));
+          if (keep) setS((o) => ({ ...o, lang: keep }));
+        }
         if (raw) {
           const saved = JSON.parse(raw) as { session: IntakeSession | null; lang: Lang };
+          if (saved.lang) setS((o) => ({ ...o, lang: saved.lang }));
           if (saved.session) {
-            let session = saved.session;
-            if (session.status !== "escalated") {
-              try { session = (await getSession(session.id)).session; } catch { /* offline: keep the stored one */ }
+            // Validate against the server: the stored copy is never trusted. 404 or no answer after a retry: forget it, go Home.
+            let session: IntakeSession | null = null;
+            for (let i = 0; i < 2 && !session; i++) {
+              try { session = (await getSession(saved.session.id)).session; }
+              catch (e) {
+                if ((e as { status?: number }).status === 404) break;
+                if (i === 0) await new Promise((r) => setTimeout(r, 1500));
+              }
             }
-            setS((o) => ({ ...o, lang: saved.lang, session }));
-            setRestored(session);
-          } else if (saved.lang) setS((o) => ({ ...o, lang: saved.lang }));
+            if (session) { setS((o) => ({ ...o, session })); setRestored(session); } // routed by the SERVER status
+            else router.replace("/");
+          }
         }
       } catch { /* storage unavailable: start fresh */ }
       setReady(true);

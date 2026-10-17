@@ -28,7 +28,7 @@ export async function getSession(id: string): Promise<{ session: IntakeSession; 
   const t = setTimeout(() => ctl.abort(), 8000);
   try {
     const r = await fetch(`${BASE}/api/sessions/${id}`, { signal: ctl.signal });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    if (!r.ok) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
     const j = (await r.json()) as { session: IntakeSession; audit?: { type: string; at: string }[] };
     const rev = (j.audit ?? []).filter((a) => a.type === "review" || a.type === "takeover").pop();
     return { session: j.session, reviewedAt: rev?.at ?? null };

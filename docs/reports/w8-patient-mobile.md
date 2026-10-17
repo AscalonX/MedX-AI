@@ -21,3 +21,10 @@ STATUS: done. Not committed. tsc, expo lint, web export pass. `scripts/build-pat
 - The nurse approved via the API for the demo of live status; the clinician UI button does the same call.
 - Restored sessions are not cleared when the clinic resets demo data (`/api/demo/reset`): a stale id falls back to the stored copy; start a new intake to clear.
 - Name-redaction gap in apps/web/lib/pipeline/redact.ts (capital "Sono Marco Rossi") still open for the AI engineer.
+
+## Addendum: re-audit P0 fix (restore validation)
+- `src/store.tsx`: the stored session is never trusted. On start it calls `GET /api/sessions/:id` (retry once after 1.5 s on a network error). 404, or no answer after the retry: the stored session is cleared, language kept, patient goes Home. Found: routed by the SERVER status (escalated to red flag, approved/taken_over/awaiting_review to Done with live status, collecting to intake). `api.getSession` now throws with `status`.
+- Escape hatches: web `/patient/?new=1` clears the stored session (language kept); native/web staff long-press (2 s) on the logo on Home. The red-flag screen still has no patient exit while the server session is escalated; the existing staff long-press on the code remains.
+- P2: step 2 reads "Waiting for a nurse" / "In attesa di un infermiere" / "รอพยาบาล" with "Your answers are waiting for a nurse." (no claim that a nurse is reading); it becomes "Reviewed" only when the server status is approved or taken_over.
+- Verified on web 375x812 (own tab): escalated Thai session reloads to the red flag (server confirms); after editing localStorage to a random uuid and reloading `/patient/redflag`, the app landed on Home in Thai (`v4-mobile-5-stale-id-goes-home.jpg`). `scripts/build-patient-web.sh` re-run. tsc and expo lint clean. Native long-press on the logo not exercised.
+- Trade-off per the coordinator: an escalated patient who is offline at relaunch (no answer after the retry) goes Home instead of seeing the stored red flag.
