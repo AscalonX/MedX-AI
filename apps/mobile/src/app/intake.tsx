@@ -16,7 +16,7 @@ import { screenFor, useStore } from "@/store";
 const MAX = 3;
 
 export default function Intake() {
-  const { lang, session, speak, set } = useStore();
+  const { lang, session, speak, set, offline } = useStore();
   const s = STR[lang];
   const reduced = useReducedMotion();
   const [busy, setBusy] = useState(false);
@@ -79,6 +79,7 @@ export default function Intake() {
       <View accessibilityElementsHidden style={{ height: 4, borderRadius: 2, backgroundColor: color.muted, marginTop: space[3], overflow: "hidden" }}>
         <View style={{ width: `${pct * 100}%`, height: 4, backgroundColor: color.ocean }} />
       </View>
+      {offline && <T lang={lang} token="small" tone="warn" style={{ marginTop: space[2] }}>{s.offlineNote}</T>}
       <View style={{ height: space[5] }} />
 
       {busy ? (

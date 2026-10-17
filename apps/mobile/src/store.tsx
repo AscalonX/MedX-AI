@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import { getSession } from "@/api";
 
 type S = { lang: Lang; session: IntakeSession | null; speak: boolean };
-type Ctx = S & { ready: boolean; restored: IntakeSession | null; set: (p: Partial<S>) => void; reset: () => void };
+type Ctx = S & { ready: boolean; restored: IntakeSession | null; offline: boolean; set: (p: Partial<S>) => void; reset: () => void };
 const C = createContext<Ctx>(null as never);
 export const useStore = () => useContext(C);
 
@@ -22,6 +22,7 @@ export function screenFor(s: IntakeSession): Href {
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [s, setS] = useState<S>({ lang: "en", session: null, speak: false });
   const [ready, setReady] = useState(false);
+  const [offline, setOffline] = useState(false);
   const [restored, setRestored] = useState<IntakeSession | null>(null);
   const booted = useRef(false);
 
@@ -44,15 +45,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           if (saved.session) {
             // Validate against the server: the stored copy is never trusted. 404 or no answer after a retry: forget it, go Home.
             let session: IntakeSession | null = null;
+            let gone = false;
             for (let i = 0; i < 2 && !session; i++) {
               try { session = (await getSession(saved.session.id)).session; }
               catch (e) {
-                if ((e as { status?: number }).status === 404) break;
+                if ((e as { status?: number }).status === 404) { gone = true; break; }
                 if (i === 0) await new Promise((r) => setTimeout(r, 1500));
               }
             }
             if (session) { setS((o) => ({ ...o, session })); setRestored(session); } // routed by the SERVER status
-            else router.replace("/");
+            else if (gone) router.replace("/"); // only a definitive 404 clears it
+            else { setOffline(true); setS((o) => ({ ...o, session: saved.session })); setRestored(saved.session); } // offline: keep the stored screen
           }
         }
       } catch { /* storage unavailable: start fresh */ }
@@ -66,7 +69,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [ready, s.session, s.lang]);
 
   const value: Ctx = {
-    ...s, ready, restored,
+    ...s, ready, restored, offline,
     set: (p) => setS((o) => ({ ...o, ...p })),
     reset: () => setS((o) => ({ ...o, session: null })),
   };

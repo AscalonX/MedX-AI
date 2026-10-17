@@ -21,7 +21,7 @@ function splitFirst(m: string, thai: boolean): [string, string] {
 }
 
 export default function RedFlag() {
-  const { lang, session, speak, reset } = useStore();
+  const { lang, session, speak, reset, offline } = useStore();
   const s = STR[lang];
   const reduced = useReducedMotion();
   const { height } = useWindowDimensions();
@@ -65,6 +65,7 @@ export default function RedFlag() {
             </View>
           </Pressable>
           <T lang={lang} tone="onSignal" style={{ marginTop: space[5] }}>{atDesk ? s.atDeskDone : s.rfShow}</T>
+          {offline && <T lang={lang} token="small" tone="onSignal" style={{ marginTop: space[3], opacity: 0.9 }}>{s.offlineRed}</T>}
           <View style={{ flexGrow: 1, minHeight: space[8] }} />
           {!atDesk && <Pill lang={lang} variant="white" tone="signal" label={s.atDesk} onPress={() => setAtDesk(true)} />}
         </Page>

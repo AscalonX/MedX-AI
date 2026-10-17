@@ -15,7 +15,7 @@ const POLL_MS = 4000;
 const hhmm = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) : "");
 
 export default function Done() {
-  const { lang, session, set } = useStore();
+  const { lang, session, set, offline } = useStore();
   const s = STR[lang];
   const reduced = useReducedMotion();
   const [reviewedAt, setReviewedAt] = useState<string | null>(null);
@@ -91,6 +91,7 @@ export default function Done() {
         {!!note && <T lang={lang} token="body" tone="inkSoft">{note}</T>}
       </Card>
 
+      {offline && <T lang={lang} token="small" tone="warn" style={{ marginTop: space[3] }}>{s.offlineNote}</T>}
       <Card style={{ marginTop: space[4], gap: space[3] }}>
         <T lang={lang} token="body" weight="bold">{s.nextTitle}</T>
         {[s.doneNext1, s.doneNext3].map((l, i) => <T key={i} lang={lang} token="body" tone="inkSoft">{l}</T>)}
