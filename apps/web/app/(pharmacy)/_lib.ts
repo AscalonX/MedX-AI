@@ -27,12 +27,16 @@ export const post = <T,>(url: string, body: unknown) =>
   getJson<T>(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
 // ---------- time ----------
-export const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+// Display language for times and durations. The shell sets it on every render, before children render.
+let DISPLAY_LANG: Lang = "en";
+export const setDisplayLang = (l: Lang) => { DISPLAY_LANG = l; };
+export const clock = (iso: string) => new Intl.DateTimeFormat(DISPLAY_LANG, { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso));
 export function waited(fromIso: string, now: number): string {
   const min = Math.max(0, Math.floor((now - Date.parse(fromIso)) / 60000));
-  if (min < 60) return `${min} min`;
+  const u = { th: { m: "นาที", h: "ชม.", d: "วัน" }, it: { m: "min", h: "h", d: "g" }, en: { m: "min", h: "h", d: "d" } }[DISPLAY_LANG];
+  if (min < 60) return `${min} ${u.m}`;
   const h = Math.floor(min / 60);
-  return h < 48 ? `${h} h ${min % 60} min` : `${Math.floor(h / 24)} d`;
+  return h < 48 ? `${h} ${u.h} ${min % 60} ${u.m}` : `${Math.floor(h / 24)} ${u.d}`;
 }
 
 // ---------- labels ----------
@@ -44,7 +48,11 @@ export const KIND_LABEL: Record<MedAlertKind, Localized> = {
   max_dose_risk: L("เสี่ยงเกินขนาดสูงสุด", "Rischio dose massima", "Maximum dose risk"),
   unknown_medication: L("ยาที่ไม่รู้จัก", "Farmaco non riconosciuto", "Unknown medicine"),
 };
-export const PHARM_STATUS_LABEL = { pending: "Pending", in_review: "In review", reconciled: "Reconciled" } as const;
+export const PHARM_STATUS_LABEL = {
+  pending: L("รอดำเนินการ", "In attesa", "Pending"),
+  in_review: L("กำลังตรวจ", "In revisione", "In review"),
+  reconciled: L("เทียบรายการยาแล้ว", "Riconciliato", "Reconciled"),
+} as const;
 export const pharmStatus = (s: IntakeSession) => s.pharmacyStatus ?? "pending";
 
 /** Only the explicit contract field counts as no known allergies. */
@@ -93,8 +101,8 @@ export function blockers(s: IntakeSession): Localized[] {
 }
 
 // ---------- questions for the patient ----------
-export interface PatientQuestion { id: string; why: string; text: Localized }
-const q = (id: string, why: string, th: string, it: string, en: string): PatientQuestion => ({ id, why, text: L(th, it, en) });
+export interface PatientQuestion { id: string; why: Localized; text: Localized }
+const q = (id: string, why: Localized, th: string, it: string, en: string): PatientQuestion => ({ id, why, text: L(th, it, en) });
 
 /** Generated client-side from gaps in the record. Wording is plain and never suggests a diagnosis. */
 export function buildQuestions(s: IntakeSession): PatientQuestion[] {
@@ -107,29 +115,29 @@ export function buildQuestions(s: IntakeSession): PatientQuestion[] {
     const n = m.nameOriginal;
     const thn = n.startsWith("ยา") ? n : `ยา ${n}`; // avoid "ยา ยา..."
     if (m.status === "unmatched") {
-      out.push(q(`um-${m.id}`, `Unmatched: ${n}`,
+      out.push(q(`um-${m.id}`, L(`ไม่รู้จักยา: ${n}`, `Non riconosciuto: ${n}`, `Unmatched: ${n}`),
         `“${n}” คือยาอะไร ช่วยแสดงกล่องหรือฉลากยาให้ดูได้ไหม`,
         `Che medicinale è «${n}»? Può mostrarmi la confezione o l'etichetta?`,
         `What is "${n}"? Can you show me the box or the label?`));
       continue;
     }
-    if (!m.dose) out.push(q(`dose-${m.id}`, `Dose missing: ${n}`,
+    if (!m.dose) out.push(q(`dose-${m.id}`, L(`ไม่มีขนาดยา: ${n}`, `Dose mancante: ${n}`, `Dose missing: ${n}`),
       `${thn} กินครั้งละเท่าไร (กี่เม็ด หรือกี่มิลลิกรัม)`,
       `Quanto ${n} prende per volta (compresse o mg)?`,
       `How much ${n} do you take each time (tablets or mg)?`));
-    if (!m.frequency) out.push(q(`freq-${m.id}`, `Frequency missing: ${n}`,
+    if (!m.frequency) out.push(q(`freq-${m.id}`, L(`ไม่มีความถี่: ${n}`, `Frequenza mancante: ${n}`, `Frequency missing: ${n}`),
       `${thn} กินวันละกี่ครั้ง และกินครั้งล่าสุดเมื่อไร`,
       `Quante volte al giorno prende ${n}, e quando è stata l'ultima dose?`,
       `How many times a day do you take ${n}, and when was the last dose?`));
   }
   if (allergiesOf(s).length === 0 && !hasNka(s)) {
-    out.push(q("allergy-ask", "Allergies not stated",
+    out.push(q("allergy-ask", L("ยังไม่ได้ระบุการแพ้", "Allergie non indicate", "Allergies not stated"),
       "แพ้ยา อาหาร หรืออะไรบ้างไหม ถ้าแพ้ เป็นอย่างไร",
       "Ha allergie a farmaci, cibi o altro? Se sì, che reazione ha avuto?",
       "Are you allergic to any medicines, foods or anything else? If so, what happened?"));
   }
   for (const a of allergiesOf(s)) {
-    if (!a.reaction) out.push(q(`react-${a.id}`, `Reaction missing: ${a.allergenOriginal}`,
+    if (!a.reaction) out.push(q(`react-${a.id}`, L(`ไม่มีอาการแพ้: ${a.allergenOriginal}`, `Reazione mancante: ${a.allergenOriginal}`, `Reaction missing: ${a.allergenOriginal}`),
       `เมื่อแพ้ ${a.allergenOriginal} มีอาการอย่างไร`,
       `Quale reazione ha avuto con ${a.allergenOriginal}?`,
       `What reaction did you have to ${a.allergenOriginal}?`));
@@ -140,17 +148,17 @@ export function buildQuestions(s: IntakeSession): PatientQuestion[] {
     if (!names.length) continue;
     const joined = names.join(" + ");
     if (al.kind === "max_dose_risk" || al.kind === "duplicate_therapy") {
-      out.push(q(`al-${al.id}`, `${KIND_LABEL[al.kind].en}: ${joined}`,
+      out.push(q(`al-${al.id}`, L(`${KIND_LABEL[al.kind].th}: ${joined}`, `${KIND_LABEL[al.kind].it}: ${joined}`, `${KIND_LABEL[al.kind].en}: ${joined}`),
         `วันนี้กิน ${joined} ไปรวมกันกี่เม็ดแล้ว และกินครั้งล่าสุดเมื่อไร`,
         `Quante compresse in totale di ${joined} ha preso oggi, e a che ora l'ultima?`,
         `How many tablets of ${joined} have you taken today in total, and when was the last one?`));
     } else if (al.kind === "allergy_conflict") {
-      out.push(q(`al-${al.id}`, `${KIND_LABEL[al.kind].en}: ${joined}`,
+      out.push(q(`al-${al.id}`, L(`${KIND_LABEL[al.kind].th}: ${joined}`, `${KIND_LABEL[al.kind].it}: ${joined}`, `${KIND_LABEL[al.kind].en}: ${joined}`),
         `หลังกิน ${joined} ครั้งนี้ มีผื่น คัน หรือหายใจลำบากไหม`,
         `Dopo ${joined} ha avuto eruzioni cutanee, prurito o difficoltà a respirare?`,
         `After taking ${joined} this time, did you get a rash, itching or trouble breathing?`));
     } else if (al.kind === "interaction") {
-      out.push(q(`al-${al.id}`, `${KIND_LABEL[al.kind].en}: ${joined}`,
+      out.push(q(`al-${al.id}`, L(`${KIND_LABEL[al.kind].th}: ${joined}`, `${KIND_LABEL[al.kind].it}: ${joined}`, `${KIND_LABEL[al.kind].en}: ${joined}`),
         `ใช้ ${joined} ร่วมกันมานานเท่าไร และมีอาการผิดปกติไหม`,
         `Da quanto tempo assume ${joined} insieme, e ha notato sintomi insoliti?`,
         `How long have you taken ${joined} together, and have you noticed anything unusual?`));
@@ -282,4 +290,70 @@ export const U = {
   fixtureNote: L("ข้อมูลตัวอย่างสังเคราะห์ ระบบยังไม่ส่งข้อมูลยา การกระทำจะเก็บในเบราว์เซอร์นี้เท่านั้น", "Dati sintetici: il motore non restituisce ancora i farmaci. Le azioni restano solo in questo browser.", "Synthetic data: the engine does not return medicines yet. Actions stay in this browser only."),
   disclaimer: L("การแจ้งเตือนมาจากกฎตายตัว โมเดลล้างไม่ได้ และไม่มีผลต่อการรักษาจนกว่าแพทย์ยืนยัน", "Gli avvisi vengono da regole deterministiche; un modello non può cancellarli. Nulla cambia l'assistenza finché un clinico non conferma.", "Alerts come from deterministic rules; a model cannot clear them. Nothing here changes care until a clinician confirms."),
   refused: L("เซิร์ฟเวอร์ปฏิเสธ", "Rifiutato dal server", "Server refused"),
+};
+
+/** Plain-language reasons for an abstained summary (local map until lib/pipeline/messages.ts exists). */
+export const ABSTAIN: Record<string, Localized> = {
+  provider_error: L("บริการโมเดลไม่ตอบสนอง", "Il servizio del modello non ha risposto", "The model service did not answer"),
+  schema_error: L("ตรวจสอบคำตอบของโมเดลไม่ได้", "La risposta del modello non è verificabile", "The model's answer could not be checked"),
+  low_confidence: L("คำตอบของผู้ป่วยไม่ชัดพอที่จะสรุปอย่างปลอดภัย", "La risposta era troppo poco chiara per riassumerla in sicurezza", "The answer was too unclear to summarise safely"),
+  unsupported_language: L("ข้อความไม่ใช่ภาษาไทย อิตาลี หรืออังกฤษ หรืออ่านไม่ได้", "Il testo non è in thailandese, italiano o inglese, o non è leggibile", "The text is not in Thai, Italian or English, or could not be read"),
+  out_of_scope: L("เรื่องนี้อยู่นอกขอบเขตของแบบสอบถามนี้", "Questo sembra fuori dallo scopo di questo modulo", "This looks outside what this intake is for"),
+  conflicting_information: L("ผู้ป่วยให้ข้อมูลที่ขัดแย้งกัน", "Il paziente ha detto cose contraddittorie", "The patient said things that contradict each other"),
+};
+
+/** Chrome strings (th/it/en). */
+export const C = {
+  queueTitle: L("คิวเทียบรายการยา", "Coda di riconciliazione", "Reconciliation queue"),
+  queue: L("คิว", "Coda", "Queue"),
+  pendingStat: L("รอเทียบรายการยา", "In attesa di riconciliazione", "Pending reconciliation"),
+  urgentStat: L("การแจ้งเตือนสูงและสัญญาณอันตรายที่ยังเปิดอยู่", "Avvisi alti e segnali d'allarme aperti", "High alerts and red flags open"),
+  doneStat: L("เทียบรายการแล้ววันนี้", "Riconciliati oggi", "Reconciled today"),
+  noIntakes: L("ยังไม่มีรายการที่ต้องเทียบยา", "Nessun accesso da riconciliare", "No intakes need reconciliation"),
+  noIntakesBody: L("รายการที่มียาจะปรากฏที่นี่เมื่อผู้ป่วยตอบเสร็จ", "Gli accessi con farmaci compaiono qui quando il paziente ha finito.", "New intakes with medicines appear here as patients finish."),
+  noComplaint: L("ยังไม่มีอาการสำคัญ", "Nessun motivo indicato", "No complaint yet"),
+  medicinesN: (n: number) => L(`ยา ${n} รายการ`, n === 1 ? "1 farmaco" : `${n} farmaci`, n === 1 ? "1 medicine" : `${n} medicines`),
+  redFlagsN: (n: number) => L(`สัญญาณอันตราย ${n}`, n === 1 ? "1 segnale d'allarme" : `${n} segnali d'allarme`, n === 1 ? "1 red flag" : `${n} red flags`),
+  redFlagsDone: (n: number) => L(`สัญญาณอันตราย ${n} ทบทวนแล้ว`, n === 1 ? "1 segnale rivisto" : `${n} segnali rivisti`, n === 1 ? "1 red flag, reviewed" : `${n} red flags, reviewed`),
+  highN: (n: number) => L(`สูง ${n}`, `${n} alti`, `${n} high`),
+  toCheckN: (n: number) => L(`ต้องตรวจ ${n}`, `${n} da verificare`, `${n} to check`),
+  allHandled: L("จัดการครบแล้ว", "Tutto gestito", "All handled"),
+  noRuleAlerts: L("ไม่มีการแจ้งเตือนจากกฎ", "Nessun avviso dalle regole", "No rule alerts"),
+  notRefreshed: L("รีเฟรชคิวสดไม่ได้", "Coda non aggiornata", "Live queue not refreshed"),
+  back: L("กลับไปที่คิว", "Torna alla coda", "Back to queue"),
+  words: L("คำพูดของผู้ป่วย", "Parole del paziente", "Patient's words"),
+  close: L("ปิด", "Chiudi", "Close"),
+  started: L("เริ่มเมื่อ", "Iniziato alle", "Started"),
+  waiting: L("รอมา", "attesa", "waiting"),
+  patient: L("ผู้ป่วย", "Paziente", "Patient"),
+  question: L("คำถาม", "Domanda", "Question"),
+  emergency: L("ฉุกเฉิน", "Emergenza", "Emergency"),
+  urgent: L("เร่งด่วน", "Urgente", "Urgent"),
+  notStated: L("ไม่ได้ระบุ", "Non indicato", "Not stated"),
+  originalLang: (name: string) => L(`ภาษาเดิม: ${name}`, `Lingua originale: ${name}`, `Original language: ${name}`),
+  fixture: L("ข้อมูลตัวอย่าง", "Dati di esempio", "Fixture data"),
+  fixtureTag: L("ตัวอย่าง", "esempio", "fixture"),
+  signedInAs: L("ลงชื่อเข้าใช้เป็น", "Accesso come", "Signed in as"),
+  linked: L("เชื่อมกับการแจ้งเตือนที่เลือก", "collegato all'avviso selezionato", "linked to selected alert"),
+  genericName: L("ชื่อสามัญ", "Nome generico", "Generic name"),
+  identifyAs: L("ระบุว่าเป็น (ชื่อสามัญ)", "Identifica come (nome generico)", "Identify as (generic name)"),
+  identifyHint: L("พิมพ์ชื่อสามัญจากกล่องหรือฉลาก คำพูดของผู้ป่วยยังอยู่ในบันทึก", "Scrivi il nome generico dalla confezione o etichetta. Le parole del paziente restano nel registro.", "Type the generic name from the box or label. The patient's words stay on record."),
+  allergenClass: L("กลุ่มสารก่อภูมิแพ้", "Classe dell'allergene", "Allergen class"),
+  alertHelp: L("รับทราบ = เห็นแล้ว ยังเกี่ยวข้อง  จัดการแล้ว = ดำเนินการแล้ว  แจ้งเตือนผิด = กฎไม่ตรงกับกรณีนี้ (ต้องมีหมายเหตุ)", "Presa in carico = visto, ancora rilevante. Risolto = gestito. Falso allarme = la regola non si applica (nota obbligatoria).", "Acknowledge = seen, still relevant. Resolved = handled. False alarm = rule does not apply (note required)."),
+  evidenceTurn: (n: number) => L(`หลักฐาน ข้อความที่ ${n}`, `Evidenza, messaggio ${n}`, `Evidence, turn ${n}`),
+  noEvidence: L("ไม่มีคำพูดอ้างอิงสำหรับรายการนี้", "Nessuna citazione per questo elemento", "No evidence quote for this item"),
+  extractedBy: (x: string) => L(`สกัดข้อมูลโดย ${x}`, `Estratto da ${x}`, `Extracted by ${x}`),
+  noExtraction: L("ไม่มีบันทึกการสกัดข้อมูล", "Registro di estrazione non disponibile", "Extraction record not available"),
+  summaryAt: L("สรุปเมื่อ", "riepilogo alle", "summary"),
+  showAudit: (open: boolean, n: number) => L(`${open ? "ซ่อน" : "แสดง"}บันทึกการตรวจสอบ (${n} รายการ)`, `${open ? "Nascondi" : "Mostra"} registro e provenienza (${n} eventi)`, `${open ? "Hide" : "Show"} audit and provenance (${n} events)`),
+  noPharmActions: L("ยังไม่มีการดำเนินการของเภสัชกร", "Nessuna azione del farmacista registrata", "No pharmacist actions recorded yet"),
+  readWords: L("อ่านคำพูดของผู้ป่วย", "Leggi le parole del paziente", "Read the patient's words"),
+  askDirect: L("ถามผู้ป่วยโดยตรงเกี่ยวกับยาและการแพ้ แล้วบันทึกผลในหน้าทบทวนของแพทย์/พยาบาล", "Chiedere direttamente al paziente di farmaci e allergie, poi registrare nella revisione clinica.", "Ask the patient directly about medicines and allergies, then record it in clinician review."),
+  receiptTitle: L("เทียบรายการยาเสร็จแล้ว", "Riconciliazione completata", "Reconciliation signed off"),
+  receiptBy: L("โดย", "da", "by"),
+  receiptMeds: (n: number, v: number, e: number, d: number) => L(`ยา ${n} รายการ: ยืนยัน ${v} แก้ไข ${e} หยุด ${d}`, `${n} farmaci: ${v} verificati, ${e} modificati, ${d} sospesi`, `${n} ${n === 1 ? "medicine" : "medicines"}: ${v} verified, ${e} edited, ${d} discontinued`),
+  receiptAllergies: (n: number, nka: boolean) => L(nka ? "ผู้ป่วยแจ้งว่าไม่มีประวัติแพ้ยา" : `การแพ้ ${n} รายการ`, nka ? "Il paziente dichiara nessuna allergia" : `${n} allergie`, nka ? "Patient stated no known allergies" : `${n} ${n === 1 ? "allergy" : "allergies"}`),
+  receiptAlerts: (n: number, ack: number, res: number, fa: number) => L(`การแจ้งเตือน ${n} รายการ: รับทราบ ${ack} จัดการแล้ว ${res} แจ้งเตือนผิด ${fa}`, `${n} avvisi: ${ack} presi in carico, ${res} risolti, ${fa} falsi allarmi`, `${n} ${n === 1 ? "alert" : "alerts"}: ${ack} acknowledged, ${res} resolved, ${fa} false alarms`),
+  receiptNote: L("การแจ้งเตือนทั้งหมดยังอยู่ในบันทึก ไม่มีผลต่อการรักษาจนกว่าแพทย์ยืนยัน", "Tutti gli avvisi restano nel registro. Nulla cambia l'assistenza finché un clinico non conferma.", "All alerts stay on the record. Nothing changes care until a clinician confirms."),
+  signedOffAnnounce: L("ลงนามเทียบรายการยาแล้ว", "Riconciliazione firmata", "Reconciliation signed off"),
 };

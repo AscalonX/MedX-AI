@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { AuditEvent, IntakeSession, Lang, PharmacyReviewReq } from "@medx/shared";
 import { AppShell, Badge, Icon, type ShellRole } from "@/components/ui";
 import { FIXTURES } from "./_fixtures";
-import { L, PHARMACISTS, applyReview, fetchQueue, hasMedData, openFlags, openHigh, post, sortQueue } from "./_lib";
+import { C as CH, L, PHARMACISTS, setDisplayLang, applyReview, fetchQueue, hasMedData, openFlags, openHigh, post, sortQueue } from "./_lib";
 
 export interface Entry { session: IntakeSession; fixture: boolean }
 type Submit = (id: string, body: Omit<PharmacyReviewReq, "reviewerId">) => Promise<void>;
@@ -100,6 +100,8 @@ export function Shell({ children }: { children: ReactNode }) {
     }
   }, [reviewer, refresh]);
 
+  setDisplayLang(lang);
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   const usingFixtures = entries?.some((e) => e.fixture) ?? false;
   const urgent = (entries ?? []).reduce((n, e) => n + openHigh(e.session).length + openFlags(e.session).length, 0);
   const hour = now ? new Date(now).getHours() : 12;
@@ -112,17 +114,17 @@ export function Shell({ children }: { children: ReactNode }) {
       <AppShell
         role="pharmacist"
         onRoleChange={switchRole}
-        nav={[{ href: "/pharmacy", label: "Reconciliation queue", icon: <Icon name="pill" />, active: true, alert: urgent || undefined }]}
+        nav={[{ href: "/pharmacy", label: CH.queueTitle[lang], icon: <Icon name="pill" />, active: true, alert: urgent || undefined }]}
         greeting={greeting}
         userName={reviewer}
         lang={lang}
         onLangChange={setLang}
         actions={
           <>
-            {usingFixtures && <Badge tone="pencil">Fixture data</Badge>}
+            {usingFixtures && <Badge tone="pencil">{CH.fixture[lang]}</Badge>}
             <label className="flex items-center gap-2 text-small text-ink-soft">
-              <span className="sr-only min-[1100px]:not-sr-only">Signed in as</span>
-              <select value={reviewer} onChange={(e) => setReviewer(e.target.value)} className="h-9 rounded-full border border-rule-strong/60 bg-sheet px-3 text-small font-semibold text-ink" aria-label="Signed in as">
+              <span className="sr-only min-[1100px]:not-sr-only">{CH.signedInAs[lang]}</span>
+              <select value={reviewer} onChange={(e) => setReviewer(e.target.value)} className="h-9 rounded-full border border-rule-strong/60 bg-sheet px-3 text-small font-semibold text-ink" aria-label={CH.signedInAs[lang]}>
                 {PHARMACISTS.map((r) => <option key={r}>{r}</option>)}
               </select>
             </label>

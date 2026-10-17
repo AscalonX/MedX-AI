@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AllergyEntry, AllergyReviewAction, AuditEvent, Lang, MedAlert, MedAlertReviewAction, MedicationEntry, MedReviewAction } from "@medx/shared";
+import type { AllergyEntry, AllergyReviewAction, AuditEvent, IntakeSession, Lang, MedAlert, MedAlertReviewAction, MedicationEntry, MedReviewAction } from "@medx/shared";
 import { Badge, Button, Card, CardHeader, EvidenceHighlight, Field, GradientHero, Icon, InkConfidence, LangMorph, PencilField, type Mark } from "@/components/ui";
 import {
-  KIND_LABEL, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
+  C, KIND_LABEL, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
   medsOf, openHigh, pharmStatus, redFlagsOf, selEvidence, selKey, waited, type Sel,
 } from "./_lib";
+import { ABSTAIN } from "./_lib";
 import { usePharmacy } from "./_shell";
 
 const T = {
@@ -24,6 +25,8 @@ const sm = "h-7! px-2! text-small!";
 const cls = (...a: (string | false | undefined | null)[]) => a.filter(Boolean).join(" ");
 const humanClass = (c: string | null) => (c ? c.replace(/_/g, " ") : null);
 const M = (l: Lang, k: keyof typeof U) => U[k][l];
+/** Visible text chip, never an empty skeleton-like pill. */
+const NotStated = ({ lang }: { lang: Lang }) => <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-micro font-semibold text-graphite">{C.notStated[lang]}</span>;
 
 type Edit = { id: string; mode: "edit" | "identify" };
 
@@ -118,7 +121,7 @@ export function Workspace({ id }: { id: string }) {
     [...used, ...activeEv].filter((e) => e.turnId === turnId).map((e) => ({
       start: e.start, end: e.end, quote: e.quote, active: activeEv.some((a) => a.turnId === e.turnId && a.start === e.start && a.end === e.end),
     }));
-  const announce = !sel ? "" : activeEv.length ? `Evidence, turn ${session.turns.findIndex((t) => t.id === activeEv[0].turnId) + 1}` : "No evidence quote for this item";
+  const announce = !sel ? "" : activeEv.length ? C.evidenceTurn(session.turns.findIndex((t) => t.id === activeEv[0].turnId) + 1)[lang] : C.noEvidence[lang];
 
   const select = (s: Sel) => { setSel(s); setDrawer(true); };
   const selAlert = sel?.type === "alert" ? alerts.find((a) => a.id === sel.id) : undefined;
@@ -137,35 +140,37 @@ export function Workspace({ id }: { id: string }) {
   const extract = session.summary?.modelCalls.find((c) => c.step === "extract");
 
   return (
-    <div ref={scrollRef} onKeyDown={moveFocus} className="flex flex-col gap-6">
+    <div ref={scrollRef} lang={lang} onKeyDown={moveFocus} className="flex flex-col gap-6">
       <p aria-live="polite" className="sr-only">{announce}</p>
-      <h1 className="sr-only">Medication reconciliation for {session.code}</h1>
+      <h1 className="sr-only">{C.queueTitle[lang]}: {session.code}</h1>
 
       <GradientHero
         title={<span className="flex flex-wrap items-baseline gap-x-3">{session.code}<span lang={pl} className="text-body font-semibold text-on-primary/90">{LANG_NAME[pl]}</span></span>}
-        subtitle={<>Started {clock(session.createdAt)}{!locked && now > 0 && <>, waiting {waited(session.createdAt, now)}</>}</>}
+        subtitle={<>{C.started[lang]} {clock(session.createdAt)}{!locked && now > 0 && <>, {C.waiting[lang]} {waited(session.createdAt, now)}</>}</>}
         action={
           <>
-            <Link href="/pharmacy" className="inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-small font-semibold text-on-primary ring-1 ring-inset ring-white/40 hover:bg-white/25">Back to queue</Link>
-            <button type="button" onClick={() => setDrawer(true)} aria-controls="transcript" className="inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-small font-semibold text-on-primary ring-1 ring-inset ring-white/40 hover:bg-white/25 min-[1600px]:hidden">Patient&apos;s words</button>
+            <Link href="/pharmacy" className="inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-small font-semibold text-on-primary ring-1 ring-inset ring-white/40 hover:bg-white/25">{C.back[lang]}</Link>
+            <button type="button" onClick={() => setDrawer(true)} aria-controls="transcript" className="inline-flex h-10 items-center gap-2 rounded-full bg-white/15 px-4 text-small font-semibold text-on-primary ring-1 ring-inset ring-white/40 hover:bg-white/25 min-[1600px]:hidden">{C.words[lang]}</button>
           </>
         }
       >
         <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge tone={st === "reconciled" ? "teal" : "outline"}>{PHARM_STATUS_LABEL[st]}</Badge>
-            {fixture && <Badge tone="pencil">Fixture data</Badge>}
+            <Badge tone={st === "reconciled" ? "teal" : "outline"}>{PHARM_STATUS_LABEL[st][lang]}</Badge>
+            {fixture && <Badge tone="pencil">{C.fixture[lang]}</Badge>}
           </div>
           <dl className="flex gap-8">
-            {([["Medicines", meds.length], ["Allergies", allergies.length], ["Alerts", alerts.length]] as const).map(([k, n]) => (
-              <div key={k}>
-                <dt className="text-micro font-semibold text-on-primary/85">{k}</dt>
+            {([[T.medicines, meds.length], [T.allergies, allergies.length], [T.alerts, alerts.length]] as const).map(([k, n]) => (
+              <div key={k.en}>
+                <dt className="text-micro font-semibold text-on-primary/85">{k[lang]}</dt>
                 <dd className="text-stat font-extrabold tabular-nums">{abstained ? "-" : n}</dd>
               </div>
             ))}
           </dl>
         </div>
       </GradientHero>
+
+      {locked && <Receipt session={session} lang={lang} />}
 
       {flags.length > 0 && (
         <section aria-labelledby="h-flags" role="alert" className="rounded-card border border-signal/50 bg-signal-tint p-5 ring-1 ring-signal/20">
@@ -174,7 +179,7 @@ export function Workspace({ id }: { id: string }) {
             {flags.map((h) => (
               <li key={h.ruleId} className="flex flex-col gap-1 rounded-2xl bg-sheet p-3">
                 <p className="flex flex-wrap items-center gap-2">
-                  <Badge tone={h.severity === "emergency" ? "signal" : "signalOutline"}>{h.severity === "emergency" ? "Emergency" : "Urgent"}</Badge>
+                  <Badge tone={h.severity === "emergency" ? "signal" : "signalOutline"}>{h.severity === "emergency" ? C.emergency[lang] : C.urgent[lang]}</Badge>
                   <span className="text-lead font-bold"><LangMorph text={h.label} lang={lang} /></span>
                   <span className="text-micro text-ink-soft">{h.ruleId}</span>
                 </p>
@@ -193,8 +198,15 @@ export function Workspace({ id }: { id: string }) {
           {abstained ? (
             <Card aria-labelledby="h-abst">
               <h2 id="h-abst" className="text-title font-extrabold"><LangMorph text={U.needsHuman} lang={lang} /></h2>
-              <p className="mt-2 max-w-[60ch] text-body text-ink-soft"><LangMorph text={U.needsHumanBody} lang={lang} /></p>
-              {session.summary?.abstainReason && <p className="mt-2 text-micro text-graphite">{session.summary.abstainReason}</p>}
+              <p className="mt-2 max-w-[60ch] text-body text-ink-soft">
+                {session.summary?.abstainReason && ABSTAIN[session.summary.abstainReason] ? <LangMorph text={ABSTAIN[session.summary.abstainReason]} lang={lang} /> : <LangMorph text={U.needsHumanBody} lang={lang} />}
+                {". "}<LangMorph text={U.needsHumanBody} lang={lang} />
+              </p>
+              <p className="mt-3 max-w-[60ch] text-body"><LangMorph text={C.askDirect} lang={lang} /></p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button variant="primary" onClick={() => setDrawer(true)} aria-controls="transcript">{C.readWords[lang]}</Button>
+                <Link href={`/review/${session.id}`} className="inline-flex h-10 items-center rounded-full border border-rule-strong/60 bg-sheet px-4 text-body font-semibold hover:border-ocean hover:text-ocean"><LangMorph text={U.flagReview} lang={lang} /></Link>
+              </div>
             </Card>
           ) : (
             <>
@@ -260,7 +272,7 @@ export function Workspace({ id }: { id: string }) {
                       <li key={qn.id} className="rounded-2xl bg-paper p-4">
                         <p lang={pl} className="max-w-[65ch] text-lead font-bold text-ink">{qn.text[pl]}</p>
                         {lang !== pl && <p lang={lang} className="mt-1 max-w-[70ch] text-small text-ink-soft"><LangMorph text={qn.text} lang={lang} /></p>}
-                        <p className="mt-1 text-micro text-graphite">{qn.why}</p>
+                        <p className="mt-1 text-micro text-graphite">{qn.why[lang]}</p>
                       </li>
                     ))}
                   </ol>
@@ -270,11 +282,11 @@ export function Workspace({ id }: { id: string }) {
           )}
           <Provenance
             lang={lang} audit={audit} open={auditOpen} onToggle={() => setAuditOpen((o) => !o)}
-            provenance={extract ? `Extracted by ${extract.provider} / ${extract.model}` : "Extraction record not available"} generatedAt={session.summary?.generatedAt}
+            provenance={extract ? C.extractedBy(`${extract.provider} / ${extract.model}`)[lang] : C.noExtraction[lang]} generatedAt={session.summary?.generatedAt}
           />
         </div>
 
-        <aside aria-label="Medication alerts" className="min-[1024px]:sticky min-[1024px]:top-4 min-[1024px]:max-h-[calc(100dvh-2rem)] min-[1024px]:overflow-y-auto rounded-card">
+        <aside aria-label={T.alerts[lang]} className="min-[1024px]:sticky min-[1024px]:top-4 min-[1024px]:max-h-[calc(100dvh-2rem)] min-[1024px]:overflow-y-auto rounded-card">
           <Card padded={false}>
             <div className="flex items-center gap-3 px-5 pt-5">
               <CardHeader title={<LangMorph text={T.alerts} lang={lang} />} className="mb-2" />
@@ -301,7 +313,7 @@ export function Workspace({ id }: { id: string }) {
         </aside>
 
         <aside
-          id="transcript" aria-label="Patient's words"
+          id="transcript" aria-label={C.words[lang]}
           className={cls(
             "flex min-h-0 flex-col rounded-card border border-rule/70 bg-sheet shadow-sheet",
             "min-[1600px]:sticky min-[1600px]:top-4 min-[1600px]:max-h-[calc(100dvh-2rem)]",
@@ -311,8 +323,8 @@ export function Workspace({ id }: { id: string }) {
           )}
         >
           <div className="flex items-center px-5 pb-2 pt-5">
-            <h2 className="text-lead font-bold">Patient&apos;s words</h2>
-            <button type="button" onClick={() => setDrawer(false)} className="ml-auto text-small font-semibold text-ocean min-[1600px]:hidden">Close</button>
+            <h2 className="text-lead font-bold">{C.words[lang]}</h2>
+            <button type="button" onClick={() => setDrawer(false)} className="ml-auto text-small font-semibold text-ocean min-[1600px]:hidden">{C.close[lang]}</button>
           </div>
           <ol className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
             {session.turns.map((t, i) => {
@@ -321,7 +333,7 @@ export function Workspace({ id }: { id: string }) {
               return (
                 <li key={t.id} className="border-t border-rule/70 py-3 first:border-t-0">
                   <p className="flex gap-2 text-micro text-ink-soft">
-                    <span>{i + 1}</span><span>{clock(t.at)}</span><span>{t.role === "patient" ? "Patient" : "Question"}</span><span lang={t.lang}>{LANG_NAME[t.lang]}</span>
+                    <span>{i + 1}</span><span>{clock(t.at)}</span><span>{t.role === "patient" ? C.patient[lang] : C.question[lang]}</span><span lang={t.lang}>{LANG_NAME[t.lang]}</span>
                   </p>
                   {t.role === "patient" ? (
                     <EvidenceHighlight key={hasActive ? `${t.id}:${selKey(sel)}` : t.id} text={t.text} lang={t.lang} marks={marks} className="mt-1" />
@@ -380,7 +392,7 @@ function MedRow({ m, lang, pl, busy, locked, selected, linked, highAlert, by, ed
   })();
   const value = (v: string | null, was?: string | null) => {
     const struck = m.status === "edited" ? strike(was, v) : null;
-    if (!v) return <>{struck}<span className="mx-blank" aria-label="Not stated" /></>;
+    if (!v) return <>{struck}<NotStated lang={lang} /></>;
     return <span lang={pl} className={cls(stopped && "mx-struck", pencil && "mx-pencil")}>{struck}{v}</span>;
   };
 
@@ -397,11 +409,12 @@ function MedRow({ m, lang, pl, busy, locked, selected, linked, highAlert, by, ed
             {sub}<span aria-hidden="true">·</span>{humanClass(m.drugClass) ?? M(lang, "classUnknown")}
           </span>
           <span className="text-small text-ink-soft"><LangMorph text={T.timing} lang={lang} />: {value(m.timing)}</span>
-          <span className="mt-1 flex flex-wrap items-center gap-2"><Chip />{highAlert && <Badge tone="signalOutline">{M(lang, "highAlert")}</Badge>}{linked && <span className="text-micro text-ink-soft">linked to selected alert</span>}</span>
+          <span className="mt-1 flex flex-wrap items-center gap-2"><Chip />{highAlert && <Badge tone="signalOutline">{M(lang, "highAlert")}</Badge>}{linked && <span className="text-micro text-ink-soft">{C.linked[lang]}</span>}</span>
         </span>
         <span className="flex shrink-0 flex-col items-end gap-0.5 text-right tabular-nums">
           <span className="text-lead font-bold">{value(m.dose, prev?.dose)}</span>
           <span className="text-small text-ink-soft">{value(m.frequency, prev?.frequency)}</span>
+          {pl !== lang && (m.dose || m.frequency || m.timing) && <span className="mt-0.5 rounded-full bg-muted px-2 py-0.5 text-micro font-semibold text-graphite">{C.originalLang(LANG_NAME[pl])[lang]}</span>}
         </span>
       </button>
       {editing ? (
@@ -421,13 +434,13 @@ function MedRow({ m, lang, pl, busy, locked, selected, linked, highAlert, by, ed
         >
           {editing === "identify" ? (
             <div className="min-[700px]:col-span-3">
-              <Field autoFocus required maxLength={120} label="Identify as (generic name)" hint="Type the generic name from the box or label. The patient's words stay on record." value={draft.generic} onChange={(e) => setDraft({ ...draft, generic: e.target.value })} />
+              <Field autoFocus required maxLength={120} label={C.identifyAs[lang]} hint={C.identifyHint[lang]} value={draft.generic} onChange={(e) => setDraft({ ...draft, generic: e.target.value })} />
             </div>
           ) : (
             <>
-              <Field autoFocus label="Generic name" maxLength={120} value={draft.generic} onChange={(e) => setDraft({ ...draft, generic: e.target.value })} />
-              <Field label="Dose" maxLength={60} value={draft.dose} onChange={(e) => setDraft({ ...draft, dose: e.target.value })} />
-              <Field label="Frequency" maxLength={60} value={draft.frequency} onChange={(e) => setDraft({ ...draft, frequency: e.target.value })} />
+              <Field autoFocus label={C.genericName[lang]} maxLength={120} value={draft.generic} onChange={(e) => setDraft({ ...draft, generic: e.target.value })} />
+              <Field label={T.dose[lang]} maxLength={60} value={draft.dose} onChange={(e) => setDraft({ ...draft, dose: e.target.value })} />
+              <Field label={T.frequency[lang]} maxLength={60} value={draft.frequency} onChange={(e) => setDraft({ ...draft, frequency: e.target.value })} />
             </>
           )}
           <div className="flex flex-wrap items-center gap-2 min-[700px]:col-span-3">
@@ -484,9 +497,9 @@ function AllergyRow({ a, lang, pl, busy, locked, selected, linked, editing, onSe
           </span>
           <span className={cls("text-small", pencil ? "text-graphite" : "text-ink-soft")}>
             <LangMorph text={T.reaction} lang={lang} />: {a.status === "edited" && strike(prev?.reaction, a.reaction)}
-            {a.reaction ? <span lang={pl} className={pencil ? "mx-pencil" : "text-ink"}>{a.reaction}</span> : <span className="mx-blank" aria-label="Not stated" />}
+            {a.reaction ? <span lang={pl} className={pencil ? "mx-pencil" : "text-ink"}>{a.reaction}</span> : <NotStated lang={lang} />}
           </span>
-          <span className="mt-1 flex flex-wrap items-center gap-2">{chip}{linked && <span className="text-micro text-ink-soft">linked to selected alert</span>}</span>
+          <span className="mt-1 flex flex-wrap items-center gap-2">{chip}{linked && <span className="text-micro text-ink-soft">{C.linked[lang]}</span>}</span>
         </span>
       </button>
       {editing ? (
@@ -501,8 +514,8 @@ function AllergyRow({ a, lang, pl, busy, locked, selected, linked, editing, onSe
           }}
           onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }}
         >
-          <Field autoFocus label="Allergen class" maxLength={80} value={draft.allergenClass} onChange={(e) => setDraft({ ...draft, allergenClass: e.target.value })} />
-          <Field label="Reaction" maxLength={120} value={draft.reaction} onChange={(e) => setDraft({ ...draft, reaction: e.target.value })} />
+          <Field autoFocus label={C.allergenClass[lang]} maxLength={80} value={draft.allergenClass} onChange={(e) => setDraft({ ...draft, allergenClass: e.target.value })} />
+          <Field label={T.reaction[lang]} maxLength={120} value={draft.reaction} onChange={(e) => setDraft({ ...draft, reaction: e.target.value })} />
           <div className="flex flex-wrap items-center gap-2 min-[700px]:col-span-2">
             <Button type="submit" variant="primary" className={sm} disabled={busy}>{M(lang, "save")}</Button>
             <Button className={sm} onClick={onCancel}>{M(lang, "cancel")}</Button>
@@ -556,6 +569,7 @@ function AlertItem({ a, lang, meds, busy, locked, selected, linked, onSelect, on
           <Button className={sm} disabled={busy} onClick={() => { setForm("false_alarm"); setNote(""); }}>{btn.false_alarm[lang]}</Button>
         </div>
       ) : null}
+      {!a.review && !locked && !form && <p className="text-micro text-graphite">{C.alertHelp[lang]}</p>}
       {form && open && (
         <form
           className="flex flex-col gap-2"
@@ -582,6 +596,7 @@ function SignOff({ lang, busy, locked, block, error, onSignOff, reconciledBy, re
   lang: Lang; busy: boolean; locked: boolean; block: ReturnType<typeof blockers>; error: string | null; onSignOff: () => void;
   reconciledBy?: string; reconciledAt?: string; reviewer: string;
 }) {
+  if (locked && !error) return null; // the receipt card replaces the bar
   return (
     <div className="sticky bottom-4 z-20">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-[28px] border border-rule/70 bg-sheet px-4 py-3 shadow-sheet-lifted">
@@ -589,7 +604,7 @@ function SignOff({ lang, busy, locked, block, error, onSignOff, reconciledBy, re
         <div className="min-w-0 flex-1 basis-64">
           {error && <p role="alert" className="text-small font-semibold text-signal">{U.refused[lang]}: {error}</p>}
           {locked ? (
-            <p className="text-small text-ink-soft"><Badge tone="teal" icon={<Icon name="check" size={14} />}>{PHARM_STATUS_LABEL.reconciled}</Badge> <span className="ml-1">{reconciledBy ?? "pharmacist"}{reconciledAt ? `, ${clock(reconciledAt)}` : ""}</span></p>
+            <p className="text-small text-ink-soft"><Badge tone="teal" icon={<Icon name="check" size={14} />}>{PHARM_STATUS_LABEL.reconciled[lang]}</Badge> <span className="ml-1">{reconciledBy ?? "pharmacist"}{reconciledAt ? `, ${clock(reconciledAt)}` : ""}</span></p>
           ) : block.length > 0 ? (
             <p id="signoff-block" role="status" className="text-small text-warn">
               <span className="font-bold">{U.blocked[lang]}: </span>{block.map((b) => b[lang]).join("; ")}.
@@ -609,14 +624,14 @@ function Provenance({ lang, audit, open, onToggle, provenance, generatedAt }: {
   return (
     <Card aria-label="Audit and provenance">
       <p lang={lang} className="text-small text-ink-soft">{U.ruleSet[lang]}</p>
-      <p className="mt-1 text-micro text-graphite">{provenance}{generatedAt ? `, summary ${clock(generatedAt)}` : ""}.</p>
+      <p className="mt-1 text-micro text-graphite">{provenance}{generatedAt ? `, ${C.summaryAt[lang]} ${clock(generatedAt)}` : ""}.</p>
       <button type="button" aria-expanded={open} aria-controls="audit-log" onClick={onToggle} className="mt-2 text-small font-semibold text-ocean underline underline-offset-4">
-        {open ? "Hide" : "Show"} audit and provenance ({audit.length} events)
+        {C.showAudit(open, audit.length)[lang]}
       </button>
       {open && (
         <ol id="audit-log" className="mt-2 max-h-48 overflow-y-auto border-t border-rule/70">
           <li lang={lang} className="border-b border-rule/70 py-1.5 text-micro text-graphite">{U.disclaimer[lang]}</li>
-          {audit.length === 0 && <li className="py-1.5 text-small text-ink-soft">No pharmacist actions recorded yet.</li>}
+          {audit.length === 0 && <li className="py-1.5 text-small text-ink-soft">{C.noPharmActions[lang]}.</li>}
           {audit.map((e) => (
             <li key={e.id} className="flex gap-3 border-b border-rule/70 py-1.5 text-small last:border-b-0">
               <span className="w-14 shrink-0 text-ink-soft">{clock(e.at)}</span>
@@ -626,5 +641,25 @@ function Provenance({ lang, audit, open, onToggle, provenance, generatedAt }: {
         </ol>
       )}
     </Card>
+  );
+}
+
+/** Teal receipt after sign-off: who, when, and what was reconciled. Mirrors the clinician approval receipt. */
+function Receipt({ session, lang }: { session: IntakeSession; lang: Lang }) {
+  const meds = medsOf(session), alg = allergiesOf(session), al = alertsOf(session);
+  const n = (st: string) => meds.filter((m) => m.status === st).length;
+  const rv = (a: string) => al.filter((x) => x.review?.action === a).length;
+  const when = new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short", hour12: false }).format(new Date(session.updatedAt));
+  return (
+    <section role="status" aria-label={C.signedOffAnnounce[lang]} className="rounded-card border border-teal/30 bg-teal-tint p-5">
+      <h2 className="flex items-center gap-2 text-lead font-bold text-teal"><Icon name="circle-check" />{C.receiptTitle[lang]}</h2>
+      <p className="mt-1 text-body text-ink">{C.receiptBy[lang]} {session.pharmacyReviewerId ?? "pharmacist"}, {when}</p>
+      <ul className="mt-3 flex flex-col gap-1 text-small text-ink-soft">
+        <li>{C.receiptMeds(meds.length, n("verified"), n("edited"), n("discontinued"))[lang]}</li>
+        <li>{C.receiptAllergies(alg.length, alg.length === 0 && hasNka(session))[lang]}</li>
+        <li>{C.receiptAlerts(al.length, rv("acknowledge"), rv("resolved"), rv("false_alarm"))[lang]}</li>
+      </ul>
+      <p className="mt-3 text-micro text-graphite">{C.receiptNote[lang]}</p>
+    </section>
   );
 }
