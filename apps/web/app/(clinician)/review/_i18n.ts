@@ -176,6 +176,8 @@ export const T = {
   triageReconfirm: L("Suggested level {n} is more urgent: re-confirm", "ระดับที่แนะนำ {n} เร่งด่วนกว่า: โปรดยืนยันใหม่", "Il livello suggerito {n} è più urgente: riconfermare"),
   news2: L("NEWS2 {n}", "NEWS2 {n}", "NEWS2 {n}"),
   vitalsLink: L("Vitals", "สัญญาณชีพ", "Parametri vitali"),
+  caseTrace: L("Case trace","เส้นทางของรายการ","Traccia del caso"),
+  caseTraceHint: L("How this case was handled: rules, model calls and human decisions","รายการนี้ถูกจัดการอย่างไร: กฎ การเรียกโมเดล และการตัดสินใจของบุคลากร","Come è stato gestito il caso: regole, chiamate al modello e decisioni umane"),
 } satisfies Record<string, Localized>;
 
 export type TKey = keyof typeof T;

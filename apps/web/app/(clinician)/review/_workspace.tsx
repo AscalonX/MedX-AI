@@ -202,6 +202,7 @@ export function Workspace({ id }: { id: string }) {
     return (
       <>
         <Link href="/review" className={cls}><Icon name="chevron-right" size={14} className="rotate-180" />{tr("navQueue", lang)}</Link>
+        <Link href={`/review/${id}/trace`} title={tr("caseTraceHint", lang)} className={cls}><Icon name="clock" size={14} />{tr("caseTrace", lang)}</Link>
         <Link href={`/review/${id}/${clinicianRole === "doctor" ? "orders" : "vitals"}`} className={cls}>
           <Icon name={clinicianRole === "doctor" ? "clipboard-list" : "activity"} size={14} />{ct(clinicianRole === "doctor" ? "orders" : "vitals", lang)}
         </Link>

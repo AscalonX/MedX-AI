@@ -203,6 +203,7 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
         </div>
         {fixture && <Badge tone="pencil" className="ml-1">{ct("fixture", lang)}</Badge>}
         {mode === "nurse" && <Link href={`/review/${id}/vitals`} className="ml-auto inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-4 text-small font-semibold text-on-primary">{ct("nextVitals", lang)}<Icon name="chevron-right" size={14} /></Link>}
+        <Link href={`/review/${id}/trace`} title={tr("caseTraceHint", lang)} className="inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean"><Icon name="clock" size={14} />{tr("caseTrace", lang)}</Link>
         <Link href={`/review/${id}`} className={`${mode === "nurse" ? "" : "ml-auto "}inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean`}>
           <Icon name="chevron-right" size={14} className="rotate-180" />{ct("backToCase", lang)}
         </Link>
