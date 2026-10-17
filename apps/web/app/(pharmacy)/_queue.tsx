@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Badge, Card, EmptyState, Icon, LangMorph, SegmentedControl, StatTile } from "@/components/ui";
 import { PrescriptionQueue } from "./_orders";
-import { L, C, LANG_NAME, PHARM_STATUS_LABEL, U, alertsOf, isAbstained, pendingOrders, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, waited } from "./_lib";
+import { L, C, LANG_NAME, PHARM_STATUS_LABEL, U, alertNeedsFollowUp, alertsOf, isAbstained, pendingOrders, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, waited } from "./_lib";
 import { usePharmacy } from "./_shell";
 
 export function Queue() {
@@ -39,10 +39,10 @@ export function Queue() {
           <ul className="flex flex-col gap-3 p-4 pt-1">
             {entries.map(({ session: s, fixture }) => {
               const abst = isAbstained(s);
-              const high = openHigh(s).length; // recorded rule alerts stay counted even when the summary abstained
+              const open = alertsOf(s).filter(alertNeedsFollowUp); // acknowledgement still needs follow-up
+              const high = open.filter((a) => a.severity === "high").length;
               const flags = openFlags(s).length;
               const flagsAll = redFlagsOf(s).length;
-              const open = alertsOf(s).filter((a) => !a.review);
               const mod = open.length - high;
               const cc = s.summary?.fields.find((f) => f.key === "chief_complaint");
               const st = pharmStatus(s);

@@ -5,7 +5,7 @@ import type { AllergyEntry, AllergyReviewAction, AuditEvent, IntakeSession, Lang
 import { Badge, Button, Card, CardHeader, EvidenceHighlight, Field, GradientHero, Icon, InkConfidence, LangMorph, PencilField, type Mark } from "@/components/ui";
 import {
   C, kindTitle, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, signOffEvent, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
-  medsOf, openHigh, pharmStatus, redFlagsOf, selEvidence, selKey, waited, type Sel,
+  medsOf, pharmStatus, redFlagsOf, selEvidence, selKey, waited, alertNeedsFollowUp, type Sel,
 } from "./_lib";
 import { ABSTAIN } from "./_lib";
 import { PrescriptionsCard } from "./_orders";
@@ -240,7 +240,7 @@ export function Workspace({ id }: { id: string }) {
                       <MedRow
                         key={m.id} m={m} lang={lang} pl={pl} busy={busy} locked={locked}
                         selected={sel?.type === "med" && sel.id === m.id} linked={linkedToSel("med", m.id)}
-                        highAlert={alerts.some((a) => a.severity === "high" && !a.review && a.medIds.includes(m.id))}
+                        highAlert={alerts.some((a) => a.severity === "high" && alertNeedsFollowUp(a) && a.medIds.includes(m.id))}
                         by={m.review?.reviewerId ?? medBy.get(m.id)} editing={edit?.id === m.id ? edit.mode : null}
                         onSelect={() => select({ type: "med", id: m.id })}
                         onEdit={(mode) => setEdit({ id: m.id, mode })} onCancel={() => setEdit(null)}
@@ -310,14 +310,14 @@ export function Workspace({ id }: { id: string }) {
           <Card padded={false}>
             <div className="flex items-center gap-3 px-5 pt-5">
               <CardHeader title={<LangMorph text={abstained ? C.safetyAlerts : T.alerts} lang={lang} />} className="mb-2" />
-              {openHigh(session).length > 0 && <Badge tone="signalOutline" className="mb-2">{C.highN(openHigh(session).length)[lang]}</Badge>}
+              {alerts.some((a) => a.severity === "high" && alertNeedsFollowUp(a)) && <Badge tone="signalOutline" className="mb-2">{C.highN(alerts.filter((a) => a.severity === "high" && alertNeedsFollowUp(a)).length)[lang]}</Badge>}
             </div>
             {abstained && <p className="px-5 pb-2 text-small text-ink-soft"><LangMorph text={C.safetyAlertsNote} lang={lang} /></p>}
             {alerts.length === 0 ? (
               <p className="px-5 pb-5 text-small text-ink-soft"><LangMorph text={U.noAlerts} lang={lang} /></p>
             ) : (
               <ul className="flex flex-col gap-3 p-4 pt-1">
-                {[...alerts].sort((a, b) => Number(!!a.review) - Number(!!b.review) || Number(b.severity === "high") - Number(a.severity === "high")).map((a) => (
+                {[...alerts].sort((a, b) => Number(alertNeedsFollowUp(b)) - Number(alertNeedsFollowUp(a)) || Number(b.severity === "high") - Number(a.severity === "high")).map((a) => (
                   <AlertItem
                     key={a.id} a={a} lang={lang} meds={meds} busy={busy} locked={locked}
                     selected={sel?.type === "alert" && sel.id === a.id} linked={!!alertLinkedToSel(a)}
@@ -565,8 +565,8 @@ function AlertItem({ a, lang, meds, busy, locked, selected, linked, onSelect, on
 }) {
   const [form, setForm] = useState<null | "resolved" | "false_alarm">(null);
   const [note, setNote] = useState("");
-  const open = !a.review;
-  const high = a.severity === "high" && open; // red only for unhandled high alerts
+  const open = alertNeedsFollowUp(a);
+  const high = a.severity === "high" && open; // acknowledged high alerts remain relevant
   const amber = a.severity === "moderate" && open;
   const linkedMeds = a.medIds.map((id) => meds.find((m) => m.id === id)).filter(Boolean) as MedicationEntry[];
   const verb = { acknowledge: L("รับทราบแล้ว", "Preso in carico", "Acknowledged"), resolved: L("จัดการแล้ว", "Risolto", "Resolved"), false_alarm: L("ระบุว่าเป็นการแจ้งเตือนผิด", "Segnato come falso allarme", "Marked false alarm") };
@@ -590,16 +590,17 @@ function AlertItem({ a, lang, meds, busy, locked, selected, linked, onSelect, on
         <p className="flex items-center gap-1.5 rounded-xl bg-warn-tint px-3 py-1.5 text-small font-semibold text-warn"><Icon name="triangle-alert" size={14} />{C.statedStopped[lang]}</p>
       )}
       <p className="text-micro text-graphite">{a.source}</p>
-      {a.review ? (
+      {a.review && (
         <p className="text-small text-ink-soft">{verb[a.review.action][lang]}, {a.review.reviewerId}, {clock(a.review.at)}.{a.review.note ? ` ${a.review.note}` : ""}</p>
-      ) : !locked && !form ? (
+      )}
+      {open && !locked && !form && (
         <div className="flex flex-wrap gap-2">
-          <Button className={sm} disabled={busy} onClick={() => onReview("acknowledge")}>{btn.acknowledge[lang]}</Button>
+          {!a.review && <Button className={sm} disabled={busy} onClick={() => onReview("acknowledge")}>{btn.acknowledge[lang]}</Button>}
           <Button className={sm} disabled={busy} onClick={() => { setForm("resolved"); setNote(""); }}>{btn.resolved[lang]}</Button>
           <Button className={sm} disabled={busy} onClick={() => { setForm("false_alarm"); setNote(""); }}>{btn.false_alarm[lang]}</Button>
         </div>
-      ) : null}
-      {!a.review && !locked && !form && <p className="text-micro text-graphite">{C.alertHelp[lang]}</p>}
+      )}
+      {open && !locked && !form && <p className="text-micro text-graphite">{C.alertHelp[lang]}</p>}
       {form && open && (
         <form
           className="flex flex-col gap-2"
@@ -640,7 +641,7 @@ function SignOff({ lang, busy, locked, block, error, onSignOff, reconciledBy, re
               <span className="font-bold">{U.blocked[lang]}: </span>{block.map((b) => b[lang]).join("; ")}.
             </p>
           ) : (
-            <p id="signoff-block" className="text-small text-ink-soft">{U.ready[lang]}. {reviewer}.</p>
+            <div id="signoff-block" className="text-small text-ink-soft"><p>{U.ready[lang]}. {reviewer}.</p><p className="mt-1 text-micro">{U.reviewScope[lang]}</p></div>
           )}
         </div>
       </div>

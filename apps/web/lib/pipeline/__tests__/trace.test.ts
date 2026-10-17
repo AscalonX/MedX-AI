@@ -58,7 +58,10 @@ describe('case trace', () => {
   });
   it('contains no raw PII', async () => {
     const id = await run('My name is Maria Rossi, phone 081 234 5678, I have chest pain');
-    const json = JSON.stringify(trace(id));
+    // Opaque UUIDs/digests can randomly contain phone-number fragments such as
+    // "081". Check all content fields while excluding those generated IDs.
+    const identifiers = new Set(['id', 'sessionId', 'turnId', 'auditIds', 'auditDigest']);
+    const json = JSON.stringify(trace(id), (key, value) => identifiers.has(key) ? undefined : value);
     expect(json).not.toMatch(/Maria|Rossi|081|5678/);
   });
   it('route: 200 for known, 404 for unknown', async () => {

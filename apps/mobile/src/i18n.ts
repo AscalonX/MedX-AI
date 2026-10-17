@@ -10,7 +10,7 @@ type S = {
   humanTitle: string; humanBody: string;
   deskTitle: (code: string) => string; deskBody: string; retry: string; deskNoCode: string;
   tabHome: string; tabVisit: string; tabHelp: string; tabNew: string; langLocked: string; offlineRed: string; offlineNote: string; chipYes: string; chipNo: string; chipUnknown: string; reviewedTitle: string; reviewedNext: string; reviewingNote: string; stepAt: (t: string) => string; micStart: string; micStop: string; listening: string; confirmTitle: string; confirmSub: string; send: string; tryAgain: string; speakToggle: string; micDenied: string; micUnavailable: string; noSpeech: string; tabLang: string; hello: string; greetSub: string; heroTitle: string; heroSub: string; start: string;
-  howTitle: string; how: [string, string][]; privacyTitle: string; pill: (n: number) => string;
+  howTitle: string; how: [string, string][]; privacyTitle: string; pill: (n: number) => string; resume: string;
   chipNone: string; chipToday: string; chipYesterday: string; chipWeek: string; chipSeverityA11y: (n: number) => string;
   helpTitle: string; helpBody: string; helpEmergency: string; stepSent: string; stepReview: string; stepReviewed: string; nextTitle: string; sentTitle: string;
   rfShow: string; atDesk: string; atDeskDone: string; rfCode: string;
@@ -24,7 +24,7 @@ export const STR: Record<Lang, S> = {
     offlineRed: "Offline: showing your last instruction.", offlineNote: "Offline: showing your last saved screen.",
     langLocked: "Language is set for this visit.",
     tabHome: "Home", tabVisit: "My visit", tabHelp: "Help", tabNew: "New intake", tabLang: "Language", hello: "Hello", greetSub: "Welcome to MedX",
-    heroTitle: "Tell us what brings you in today", heroSub: "A nurse will read it before your visit.", start: "Start",
+    heroTitle: "Tell us what brings you in today", heroSub: "A nurse will read it before your visit.", start: "Start", resume: "Resume visit",
     howTitle: "How it works", how: [["Describe", "Write in your own words."], ["A nurse reviews", "Before your visit."], ["You're called", "At the desk."]],
     privacyTitle: "Please note", pill: (n) => `${n} of up to 3`,
     chipNone: "None", chipToday: "Since today", chipYesterday: "Since yesterday", chipWeek: "This week", chipSeverityA11y: (n) => `${n} out of 10`,
@@ -57,7 +57,7 @@ export const STR: Record<Lang, S> = {
     offlineRed: "Senza connessione: la sua ultima indicazione.", offlineNote: "Senza connessione: l'ultima schermata salvata.",
     langLocked: "La lingua è impostata per questa visita.",
     tabHome: "Home", tabVisit: "Visita", tabHelp: "Aiuto", tabNew: "Nuova scheda", tabLang: "Lingua", hello: "Ciao", greetSub: "Benvenuto in MedX",
-    heroTitle: "Ci dica perché è venuto oggi", heroSub: "Un infermiere lo leggerà prima della visita.", start: "Inizia",
+    heroTitle: "Ci dica perché è venuto oggi", heroSub: "Un infermiere lo leggerà prima della visita.", start: "Inizia", resume: "Riprendi la visita",
     howTitle: "Come funziona", how: [["Descriva", "Scriva con parole sue."], ["Lo legge un infermiere", "Prima della visita."], ["La chiamano", "Al banco."]],
     privacyTitle: "Da sapere", pill: (n) => `${n} di max 3`,
     chipNone: "Nessuno", chipToday: "Da oggi", chipYesterday: "Da ieri", chipWeek: "Questa settimana", chipSeverityA11y: (n) => `${n} su 10`,
@@ -90,7 +90,7 @@ export const STR: Record<Lang, S> = {
     offlineRed: "ออฟไลน์: แสดงคำแนะนำล่าสุดของคุณ", offlineNote: "ออฟไลน์: แสดงหน้าจอที่บันทึกไว้ล่าสุด",
     langLocked: "ภาษาถูกกำหนดไว้สำหรับการมาครั้งนี้",
     tabHome: "หน้าแรก", tabVisit: "การมาพบ", tabHelp: "ช่วยเหลือ", tabNew: "เริ่มแบบฟอร์มใหม่", tabLang: "ภาษา", hello: "สวัสดี", greetSub: "ยินดีต้อนรับสู่ MedX",
-    heroTitle: "บอกเราว่าวันนี้คุณมาด้วยเรื่องอะไร", heroSub: "พยาบาลจะอ่านคำตอบของคุณก่อนเรียกตรวจ", start: "เริ่ม",
+    heroTitle: "บอกเราว่าวันนี้คุณมาด้วยเรื่องอะไร", heroSub: "พยาบาลจะอ่านคำตอบของคุณก่อนเรียกตรวจ", start: "เริ่ม", resume: "กลับไปที่การมาพบ",
     howTitle: "ทำงานอย่างไร", how: [["เล่าอาการ", "เขียนด้วยคำพูดของคุณเอง"], ["พยาบาลตรวจดู", "ก่อนเรียกตรวจ"], ["เรียกชื่อคุณ", "ที่เคาน์เตอร์"]],
     privacyTitle: "โปรดทราบ", pill: (n) => `${n} จากไม่เกิน 3`,
     chipNone: "ไม่มี", chipToday: "ตั้งแต่วันนี้", chipYesterday: "ตั้งแต่เมื่อวาน", chipWeek: "สัปดาห์นี้", chipSeverityA11y: (n) => `${n} จาก 10`,

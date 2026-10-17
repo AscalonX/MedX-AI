@@ -41,7 +41,7 @@ export function Shell({ children }: { children: ReactNode }) {
         if (esc.length) setFresh((f) => new Set([...f, ...esc]));
       })
       .catch((e: Error) => { if (mine === reqId.current) setError(e.message); })
-      .finally(() => { inflight.current = false; });
+      .finally(() => { if (mine === reqId.current) inflight.current = false; });
   }, []);
   useEffect(() => {
     const unacked = sorted?.filter((s) => fresh.has(s.id) && (s.summary?.redFlags ?? []).some((h) => !h.review)).length ?? 0;
@@ -51,7 +51,7 @@ export function Shell({ children }: { children: ReactNode }) {
     refreshQueue();
     const t = setInterval(refreshQueue, 5000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    return () => { clearInterval(t); reqId.current++; }; // cancel: results of in-flight requests are dropped
+    return () => { clearInterval(t); reqId.current++; inflight.current = false; }; // a remounted effect can load immediately
   }, [refreshQueue]);
   const urgent = sorted?.filter((s) => s.status === "escalated" && unreviewed(s.summary?.redFlags ?? []).length > 0).length;
 

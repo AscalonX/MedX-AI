@@ -195,7 +195,7 @@ export function Workspace({ id }: { id: string }) {
 
   // Patient header: the one gradient hero, replaced by a plain card while a red flag is the bold element.
   const waitText = session.status !== "approved" && now > 0 ? `${tr("waiting", lang)} ${waited(session.createdAt, now, tr("min", lang))}` : null;
-  const headerActions = (hero: boolean) => {
+  const headerActions = (hero: boolean, followingCase: IntakeSession | null = nextCase) => {
     const cls = hero
       ? "inline-flex h-10 items-center gap-2 rounded-full bg-sheet px-4 text-small font-semibold text-ocean shadow-[0_8px_16px_-10px_rgba(0,0,0,0.4)] transition-transform duration-quick ease-pen active:scale-[0.97]"
       : "inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink transition-colors duration-quick ease-pen hover:border-ocean hover:text-ocean";
@@ -203,15 +203,16 @@ export function Workspace({ id }: { id: string }) {
       <>
         <Link href="/review" className={cls}><Icon name="chevron-right" size={14} className="rotate-180" />{tr("navQueue", lang)}</Link>
         <Link href={`/review/${id}/trace`} title={tr("caseTraceHint", lang)} className={cls}><Icon name="clock" size={14} />{tr("caseTrace", lang)}</Link>
-        <Link href={`/review/${id}/${clinicianRole === "doctor" ? "orders" : "vitals"}`} className={cls}>
-          <Icon name={clinicianRole === "doctor" ? "clipboard-list" : "activity"} size={14} />{ct(clinicianRole === "doctor" ? "orders" : "vitals", lang)}
+        <Link href={`/review/${id}/vitals`} className={cls}>
+          <Icon name="activity" size={14} />{ct("vitals", lang)}
         </Link>
+        {clinicianRole === "doctor" && <Link href={`/review/${id}/orders`} className={cls}><Icon name="clipboard-list" size={14} />{ct("orders", lang)}</Link>}
         {session.status !== "approved" && session.status !== "collecting" && (
           <Link href={`/review/${id}/consult?mode=${clinicianRole}`} className={hero ? cls : "inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-4 text-small font-semibold text-on-primary shadow-[0_10px_18px_-10px_rgba(26,95,196,0.8)]"}>
             <Icon name="mic" size={14} />{ct(clinicianRole === "doctor" ? "startDoctor" : "startNurse", lang)}
           </Link>
         )}
-        {nextCase && <Link href={`/review/${nextCase.id}`} className={cls}>{tr("nextCase", lang)} {nextCase.code}<Icon name="chevron-right" size={14} /></Link>}
+        {followingCase && <Link href={`/review/${followingCase.id}`} className={cls}>{tr("nextCase", lang)} {followingCase.code}<Icon name="chevron-right" size={14} /></Link>}
         <button type="button" onClick={openDrawer} aria-expanded={drawer} aria-controls="transcript" className={`${cls} min-[1280px]:hidden`}>
           <Icon name="quote" size={14} />{tr("patientsWords", lang)}
         </button>
@@ -250,15 +251,17 @@ export function Workspace({ id }: { id: string }) {
   const approvedCount = fields.filter((f) => f.status === "approved" || f.status === "edited").length;
   const nextOpen = sorted?.find((x) => x.id !== id && (x.status === "escalated" || x.status === "awaiting_review")) ?? nextCase;
   const headerBlock = session.status === "approved" && !hasFlags ? (
-    <Card className="cl-enter flex flex-wrap items-center gap-4 border-teal/30 !bg-teal-tint">
-      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-primary-gradient text-on-primary"><Icon name="circle-check" size={24} /></span>
-      <div className="min-w-0 flex-1">
-        <h1 className="text-title font-extrabold text-teal">{tr("approvedReceipt", lang)} · <span className="tabular-nums">{session.code}</span></h1>
-        <p className="text-small text-ink-soft">{approver}, {clock(approvedEv?.at ?? session.updatedAt, lang)} · {fmt(tr("receiptFields", lang), { n: approvedCount })}</p>
+    <Card className="cl-enter flex flex-col gap-4 border-teal/30 !bg-teal-tint">
+      <div className="flex items-center gap-4">
+        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-primary-gradient text-on-primary"><Icon name="circle-check" size={24} /></span>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-title font-extrabold text-teal">{tr("approvedReceipt", lang)} · <span className="tabular-nums">{session.code}</span></h1>
+          <p className="text-small text-ink-soft">{approver}, {clock(approvedEv?.at ?? session.updatedAt, lang)} · {fmt(tr("receiptFields", lang), { n: approvedCount })}</p>
+        </div>
       </div>
+      {triageRow(false)}
       <div className="flex flex-wrap gap-2">
-        {nextOpen && <Link href={`/review/${nextOpen.id}`} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-5 text-small font-semibold text-on-primary shadow-[0_10px_18px_-10px_rgba(26,95,196,0.8)] transition-transform duration-quick ease-pen active:scale-[0.97]">{tr("nextCase", lang)} {nextOpen.code}<Icon name="chevron-right" size={14} /></Link>}
-        <Link href="/review" className="inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean">{tr("navQueue", lang)}</Link>
+        {headerActions(false, nextOpen)}
       </div>
     </Card>
   ) : hasFlags ? (
@@ -578,14 +581,14 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
 
   if (editing) {
     return (
-      <li className="grid grid-cols-[150px_minmax(0,1fr)] items-start gap-4 rounded-2xl bg-paper px-3 py-3">
+      <li className="grid grid-cols-1 items-start gap-2 rounded-2xl bg-paper px-3 py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
         {label}
-        <form onSubmit={(e) => { e.preventDefault(); if (draft.trim()) onSave(draft.trim()); }} className="flex flex-wrap items-center gap-2">
+        <form onSubmit={(e) => { e.preventDefault(); if (draft.trim()) onSave(draft.trim()); }} className="flex min-w-0 flex-wrap items-center gap-2">
           <input
             autoFocus aria-label={`Edit ${FIELD_LABEL[f.key].en}`} value={draft} maxLength={300}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }}
-            className="h-10 min-w-56 flex-1 rounded-control border border-rule-strong/60 bg-sheet px-3 text-body hover:border-ocean"
+            className="h-10 min-w-0 basis-full rounded-control border border-rule-strong/60 bg-sheet px-3 text-body hover:border-ocean"
           />
           <Button type="submit" variant="primary" className={sm} disabled={busy || !draft.trim()}>{tr("save", lang)}</Button>
           <Button className={sm} onClick={onCancel}>{tr("cancel", lang)}</Button>
@@ -607,10 +610,10 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
         aria-controls="transcript"
         onClick={(e) => { e.currentTarget.focus(); onSelect(); }} // Safari does not focus buttons on click
         onFocus={onSelect}
-        className="grid w-full grid-cols-[150px_minmax(0,1fr)] items-start gap-4 rounded-2xl px-3 py-3 text-left transition-colors duration-quick ease-pen hover:bg-paper focus-visible:-outline-offset-2"
+        className="grid w-full grid-cols-1 items-start gap-2 rounded-2xl px-3 py-3 text-left transition-colors duration-quick ease-pen hover:bg-paper focus-visible:-outline-offset-2 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4"
       >
         {label}
-        <span className="flex flex-col gap-1">
+        <span className="flex min-w-0 flex-col gap-1 break-words">
           <FieldValue field={f} lang={lang} previousValue={previous} reviewer={reviewerOf} />
           {(f.status === "supported" || f.status === "approved") && f.valueOriginal && f.valueOriginal !== current && (
             <span className="text-micro text-ink-soft">
@@ -621,7 +624,7 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
         </span>
       </button>
       {selected && canAct && (
-        <div className="flex flex-wrap items-center gap-2 pb-3 pl-[178px] pr-3">
+        <div className="flex flex-wrap items-center gap-2 px-3 pb-3 sm:pl-[178px]">
           {f.status === "supported" && <Button className={sm} variant="primary" icon={<Icon name="check" size={14} />} disabled={busy || blocked} onClick={onApprove}>{tr("approve", lang)}</Button>}
           {unsupported && <Button className={sm} variant="primary" disabled={busy || blocked} onClick={() => onSave(current)}>{tr("confirmAsWritten", lang)}</Button>}
           <Button className={sm} icon={<Icon name="pencil" size={14} />} disabled={busy} onClick={startEdit}>{tr(f.status === "missing" ? "fillIn" : "edit", lang)}</Button>
