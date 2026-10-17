@@ -68,7 +68,7 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
 <section class="slide s1">
  <div class="brand"><div class="logo">M</div>MedX Bridge</div><div class="pg">AMD Developer Hackathon ACT III · Track 2</div>
  <h1>MedX<br>Bridge</h1>
- <div class="tag">Multilingual intake that a nurse and a pharmacist can trust in 30 seconds. Every field points back to the patient's own words.</div>
+ <div class="tag">Multilingual intake for nurses and pharmacists. Every field points back to the patient's own words.</div>
  <div class="meta">Research prototype. Supports clinicians; does not diagnose.<br>Synthetic data only. github.com/KingPhuripol/medx-bridge</div>
  <img class="shot rev" src="img/review.png" style="top:130px;border:0;box-shadow:0 24px 60px rgba(0,0,0,.28)">
  <img class="phone ph" src="img/m-status.jpg" style="right:70px;top:520px;width:260px">
@@ -93,7 +93,7 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
  <h2 style="max-width:900px;font-size:60px">Three people, one intake, before the consult</h2>
  <div style="position:absolute;left:110px;top:330px;width:880px;display:flex;flex-direction:column;gap:22px">
   <div class="row"><div class="q">Patient</div>Speaks or types in Thai, Italian or English. A voice agent reads the question aloud; the patient checks and corrects the transcript before it is sent.</div>
-  <div class="row"><div class="q">Nurse</div>Reads an English summary in 30 seconds. Clicks a field to see the patient's own sentence. Approves, edits or takes over.</div>
+  <div class="row"><div class="q">Nurse</div>Reads an English summary (design goal: quick to scan). Clicks a field to see the patient's own sentence. Approves, edits or takes over.</div>
   <div class="row"><div class="q">Pharmacist</div>Reconciles the medicines the patient named, brand to generic, with alerts on duplicate paracetamol, allergy conflicts and interactions.</div>
   <div class="row"><div class="q">Clinic manager</div>Sees the queue by urgency, escalations, abstain rate and model latency.</div>
  </div>
@@ -130,7 +130,7 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
  <div class="brand"><div class="logo">M</div>MedX Bridge</div><div class="pg">5 / 8</div>
  <h2 style="font-size:60px;max-width:1000px">Safety by design, in five answers</h2>
  <div class="rows" style="width:1040px;gap:12px;margin-top:36px">
-  <div class="row"><div class="q">Wrong or unsupported answers</div>No verified quote means "needs check". Output is schema-checked; injected instructions in patient text are treated as data.</div>
+  <div class="row"><div class="q">Wrong or unsupported answers</div>No verified quote means "needs check". Output is schema-checked; quotes must match the patient's words. Injection handling is not yet evaluated end to end.</div>
   <div class="row"><div class="q">Sensitive information</div>Redaction before storage or any model call. Synthetic data only. Keys stay server-side.</div>
   <div class="row"><div class="q">Uncertain results</div>Confidence is shown on every field. Low confidence or provider failure: abstain, "needs human review".</div>
   <div class="row r"><div class="q">High-risk decisions</div>Rules run before any model. The Gemma screen is add-only, shown as "model-suggested, confirm".</div>
@@ -139,7 +139,7 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
  <img class="shot" src="img/redflag.png" style="position:absolute;left:1220px;top:210px;width:620px">
  <div style="position:absolute;left:1220px;top:610px;width:620px;font-size:26px;color:var(--soft);line-height:1.4">Thai patient, chest pain and sweating in the first message: the nurse screen is interrupted, the patient's sentence is highlighted, the nurse acknowledges or marks a false alarm with a reason. The patient phone shows a calm "go to the desk now" screen.</div>
  <img class="phone" src="img/m-red.jpg" style="position:absolute;left:1500px;top:790px;width:0;display:none">
- <div class="foot">Mechanisms and code paths: pitch/SAFETY.md. Cross-vendor review: Claude read-only reviewed the Codex engine (docs/reports/w6-engine-review.md) and QA scripts hit every route (docs/reports/w7-qa-bugs.md); the findings were fixed with regression tests.</div>
+ <div class="foot">Mechanisms and code paths: pitch/SAFETY.md. Cross-vendor review: Claude read-only reviewed the Codex engine (docs/reports/w6-engine-review.md) and QA scripts hit every route (docs/reports/w7-qa-bugs.md); findings fixed with regression tests; remaining limitations are listed in the submission.</div>
 </section>
 
 <!-- 6 -->
@@ -150,15 +150,15 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
   <div class="card" style="padding:16px 30px;flex:1.1">
    <table>
     <tr><th>What</th><th>Count</th><th>Where</th></tr>
-    <tr><td>Synthetic intake cases (TH, IT, EN, medication)</td><td class="num">52</td><td class="nb">data/cases</td></tr>
+    <tr><td>Synthetic cases (40 intake + 12 medication)</td><td class="num">52</td><td class="nb">data/cases</td></tr>
     <tr><td>Blind holdout cases, written without seeing the rules</td><td class="num">18</td><td class="nb">data/holdout</td></tr>
     <tr><td>Red-flag rules / reference tests</td><td class="num">18 / 175</td><td class="nb">docs/clinical</td></tr>
     <tr><td>Drugs in dictionary / reference tests</td><td class="num">59 / 194</td><td class="nb">docs/clinical</td></tr>
-    <tr><td>Automated tests, all passing</td><td class="num">1,041</td><td class="nb">apps/web, vitest</td></tr>
+    <tr><td>Automated tests, all passing</td><td class="num">1,043</td><td class="nb">apps/web, vitest</td></tr>
    </table>
   </div>
   <div class="card hero" style="padding:40px 46px;flex:1">
-   <div style="font-size:26px;opacity:.9">Blind holdout, keyword rules alone</div>
+   <div style="font-size:26px;opacity:.9">Small synthetic blind holdout (18 cases), keyword rules alone</div>
    <div style="font-size:120px;font-weight:700;line-height:1.1;margin-top:8px">7 of 10</div>
    <div style="font-size:28px;line-height:1.35">emergencies escalated; 3 of 8 non-emergencies raised a false alarm. Misses were lay wording that keyword lists cannot cover. That is why Gemma adds a safety screen.</div>
   </div>
@@ -173,24 +173,24 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
 <!-- 7 -->
 <section class="slide">
  <div class="brand"><div class="logo">M</div>MedX Bridge</div><div class="pg">7 / 8</div>
- <h2 style="font-size:56px;max-width:1700px">Gemma on AMD Instinct, behind one gateway</h2>
+ <h2 style="font-size:56px;max-width:1700px">Gemma via AMD Token Factory, behind one gateway</h2>
  <div style="display:flex;gap:34px;margin-top:34px;align-items:stretch">
   <div class="step" style="flex:0.8;font-size:26px"><h4>Clients</h4>Patient app (Expo), clinician, pharmacist and ops web (Next.js)</div><div class="arrow">&rarr;</div>
   <div class="step" style="flex:1;font-size:26px"><h4>API and pipeline</h4>Redact, rules, verify, audit. Provider SDKs stay inside one adapter.</div><div class="arrow">&rarr;</div>
-  <div class="step gem" style="flex:1.1;font-size:26px"><h4>AMD Token Factory</h4>Gemma on AMD Instinct (ROCm). OpenAI-compatible; endpoint and model id come from environment variables.</div>
+  <div class="step gem" style="flex:1.1;font-size:26px"><h4>AMD Token Factory</h4>Designed to run Gemma on AMD. OpenAI-compatible; endpoint and model id come from environment variables.</div>
  </div>
  <div style="display:flex;gap:44px;margin-top:34px;align-items:flex-start">
   <img class="shot" src="img/ops.png" style="width:680px;height:370px;object-fit:cover;object-position:top">
   <div style="font-size:26px;line-height:1.4;max-width:980px">
    <ul class="l">
-    <li>Three jobs for Gemma: extract and translate, add-only safety screen, next question.</li>
-    <li>Today the integration runs on a mock model; the ops screen says so ("Mock model, not AMD") instead of showing invented latency.</li>
+    <li>Three jobs for Gemma (designed): extract and translate, add-only safety screen, next question.</li>
+    <li>Current results use a mock model until the endpoint is connected; the ops screen says so ("Mock model, not AMD") instead of showing invented latency.</li>
     <li>Latency p50 / p95 per turn: <span class="pend">[pending AMD run]</span></li>
     <li>Model variant chosen on a dev split: <span class="pend">[pending AMD run]</span></li>
    </ul>
   </div>
  </div>
- <div class="foot">Gemma on AMD Instinct with ROCm is the design; the Token Factory key was still pending when this deck was built. Budget: turn p50 at most 6 s, p95 at most 12 s (docs/ai/DESIGN.md section 7), to be measured and reported either way.</div>
+ <div class="foot">Designed to run Gemma on AMD via Token Factory; the key was still pending, so current results use a mock model. Budget: turn p50 at most 6 s, p95 at most 12 s (docs/ai/DESIGN.md section 7), to be measured and reported either way.</div>
 </section>
 
 <!-- 8 -->

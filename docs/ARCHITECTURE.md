@@ -45,7 +45,7 @@ Tests for all of the above live in `apps/web/lib/pipeline/__tests__` (`npm --pre
 ## Contracts (`packages/shared`)
 
 - `types.ts`: `IntakeSession`, `IntakeSummary`, `ExtractedField` (value in TH/IT/EN, `valueOriginal`, `evidence[]`, `confidence`, `status` supported/unsupported/missing/edited/approved), `RedFlagHit`, `MedAlert`, `AuditEvent`, `OpsMetrics`.
-- `api.ts`: request/response shapes for every route: `POST /api/sessions`, `GET /api/sessions`, `GET /api/sessions/:id`, `POST .../turns`, `.../review`, `.../takeover`, `.../pharmacy-review`, `GET /api/metrics`, `GET /api/health`, `GET /api/demo/reset` (gated by `DEMO_SEED=1`).
+- `api.ts`: request/response shapes for every route: `POST /api/sessions`, `GET /api/sessions`, `GET /api/sessions/:id`, `POST .../turns`, `.../review`, `.../takeover`, `.../pharmacy-review`, `GET /api/metrics`, `GET /api/health`, `POST /api/demo/reset` (gated by `DEMO_SEED=1`, needs the `x-demo-token` header).
 - Contract changes go through the orchestrator only (see `CLAUDE.md`).
 
 ## AMD integration
@@ -53,11 +53,11 @@ Tests for all of the above live in `apps/web/lib/pipeline/__tests__` (`npm --pre
 - Endpoint: AMD Token Factory, OpenAI-compatible `POST {AMD_BASE_URL}/chat/completions`, Bearer `AMD_API_KEY`, model `AMD_MODEL` (Gemma), optional `AMD_MODEL_FALLBACK`.
 - One client, `lib/pipeline/llm.ts` (`chatJSON`): `response_format` json_schema (disable with `AMD_JSON_SCHEMA=false`), per-call timeout (`LLM_TIMEOUT_MS`, default 25 s, 8 s for next question), latency recorded in each `ModelCall`, one repair retry on schema error, one retry or fallback model on provider error, 429 handled by abstaining unless `Retry-After` is short.
 - `MODEL_PROVIDER=mock` swaps in `mock.ts` (deterministic). `GET /api/health` and the UI report the provider honestly (`mock` vs `amd-tokenfactory`).
-- Hardware label shown in the UI comes from `providerInfo()` in `config.ts`; it says AMD Instinct only when the AMD provider is configured.
+- Hardware label shown in the UI comes from `providerInfo()` in `config.ts`; it says AMD (via Token Factory) only when the AMD provider is configured; mock runs are labelled mock.
 - Unknowns at time of writing (base URL, model ids, rate limits) are env-driven, not hard-coded. Details and assumptions: [docs/ai/DESIGN.md](ai/DESIGN.md).
 
 ## Deployment
 
 - Docker: `apps/web/Dockerfile` (multi-stage, standalone output, non-root, port 3000). Build context is the repo root because the app imports `packages/shared` and `data/cases`.
 - `scripts/build-patient-web.sh` puts the Expo web build in `apps/web/public/patient`.
-- Persistence is a local JSON file: fine for one container or one VM, ephemeral on serverless platforms (the demo reseeds via `/api/demo/reset`).
+- Persistence is a local JSON file: fine for one container or one VM, ephemeral on serverless platforms (the demo reseeds via `POST /api/demo/reset` with the `x-demo-token` header).

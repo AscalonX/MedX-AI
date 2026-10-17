@@ -17,3 +17,13 @@ RISKS: ops screenshot shows mock-model tiles (37.5% auto-captured, 15.4% abstain
 OPEN QUESTIONS: add team names; once the AMD run exists, replace every [pending AMD run] in deck.html, SUBMISSION.md, VIDEO-SCRIPT.md and re-export (open deck.html in Chrome, print-to-pdf command in this report's history).
 
 NEXT ACTION: fill AMD results, re-export PDF and PNGs, record video.
+
+## Claims fix wave (MF-3 to MF-7)
+
+STATUS: done. Edited README.md, docs/ARCHITECTURE.md, pitch/SUBMISSION.md, VIDEO-SCRIPT.md, SAFETY.md, DECK-OUTLINE.md, deck.html; regenerated PDF and PNGs and viewed slides 1, 3, 5, 6, 7 (slides 2, 4, 8 unchanged apart from none of the edited text).
+- MF-3: no present-tense Instinct/ROCm/vLLM claim in README, SUBMISSION, deck, video script, outline; wording is "designed to run Gemma on AMD via the hackathon's AMD Token Factory; current results use a mock model". Tags are now Gemma, AMD, AMD Token Factory. Slide 7 title: "Gemma via AMD Token Factory, behind one gateway".
+- MF-4: "trust" and "30 seconds" removed as claims (README, deck slides 1 and 3, video, submission, outline); lead is "every field points back to the patient's own words"; slide 3 says "design goal: quick to scan".
+- MF-5: voice via Apple/Google speech services, no clinician login (self-declared reviewer id), imperfect pattern-based redaction added to SAFETY.md and the reviewer's "Limitations & safety" paragraph pasted into SUBMISSION.md.
+- MF-6: injection wording softened in SAFETY.md and deck slide 5.
+- MF-7: test count now 1,043 tests in 13 files (re-run `npx vitest run`) in README, SUBMISSION, deck, video; ARCHITECTURE reset is POST with x-demo-token; holdout phrased "small synthetic blind set (18 cases)" in video and deck; case counts 52 (40 intake + 12 medication) + 18 holdout in README, deck. Deck footnote: "findings fixed with regression tests; remaining limitations are listed in the submission."
+- Not done / left to others: MF-1 and MF-2 are product code (out of my scope). docs/DEMO.md already used POST with the token, so unchanged. A final grep of pitch/, README and docs/ARCHITECTURE.md finds Instinct/ROCm/trust/30 seconds only in this report and in the DECK-OUTLINE.md change note.

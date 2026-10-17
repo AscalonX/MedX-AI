@@ -1,6 +1,6 @@
 # MedX Bridge
 
-Multilingual pre-visit intake that a clinician can check in 30 seconds. A patient describes the problem in Thai, Italian or English; the nurse gets a one-screen summary in her own language where **every field links to the exact patient sentence it came from**, unverified fields are shown as unsupported (never as fact), missing information triggers one follow-up question back to the patient, and red flags interrupt everything. Pharmacists get the same treatment for medication lists (extraction plus deterministic drug-safety alerts). Gemma runs on AMD Instinct GPUs through AMD Token Factory.
+Multilingual pre-visit intake where **every field points back to the patient's own words**. A patient describes the problem in Thai, Italian or English; the nurse gets a one-screen summary in her own language where **every field links to the exact patient sentence it came from**, unverified fields are shown as unsupported (never as fact), missing information triggers one follow-up question back to the patient, and red flags interrupt everything. Pharmacists get the same treatment for medication lists (extraction plus deterministic drug-safety alerts). Designed to run Gemma on AMD via the hackathon's AMD Token Factory (OpenAI-compatible); current results use a mock model until the endpoint is connected.
 
 AMD Developer Hackathon ACT III, Track 2 (Health and Wellbeing).
 
@@ -25,7 +25,7 @@ flowchart LR
   R --> F["Deterministic red flags<br/>(code, no model)"]
   F -->|hit| E["Escalate to clinician<br/>zero model calls"]
   F -->|none| G
-  subgraph G["Gemma on AMD Instinct (Token Factory)"]
+  subgraph G["Gemma via AMD Token Factory (designed target)"]
     X["Extraction + translation"]
     S["Add-only safety screen"]
   end
@@ -51,7 +51,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Safety answers to the fiv
 
 ## How AMD is used
 
-All model calls (extraction, translation, safety screen, next question, medication extraction) go to **Gemma served on AMD Instinct GPUs through AMD Token Factory**, via its OpenAI-compatible `chat/completions` API (JSON-schema structured output, per-call timeout, one fallback model, one repair retry). Provider specifics live in one file, `apps/web/lib/pipeline/llm.ts`; the API key is read server-side from the environment and never reaches a client. Set `MODEL_PROVIDER=mock` to run everything offline with a deterministic stand-in (used for tests, CI and key-less demos; the UI and `/api/health` label it honestly as `mock`). Design notes: [docs/ai/DESIGN.md](docs/ai/DESIGN.md).
+All model calls (extraction, translation, safety screen, next question, medication extraction) go to **Gemma via the hackathon's AMD Token Factory** (designed target; current results use a mock model until the endpoint is connected), via its OpenAI-compatible `chat/completions` API (JSON-schema structured output, per-call timeout, one fallback model, one repair retry). Provider specifics live in one file, `apps/web/lib/pipeline/llm.ts`; the API key is read server-side from the environment and never reaches a client. Set `MODEL_PROVIDER=mock` to run everything offline with a deterministic stand-in (used for tests, CI and key-less demos; the UI and `/api/health` label it honestly as `mock`). Design notes: [docs/ai/DESIGN.md](docs/ai/DESIGN.md).
 
 ## Quick start
 
@@ -102,12 +102,12 @@ Also: `AMD_JSON_SCHEMA=false` disables `response_format` json_schema if an endpo
 ## Tests
 
 ```bash
-npm --prefix apps/web test      # vitest: 722 tests in 10 files (red flags, redaction, verifier, med rules, API, ops metrics)
+npm --prefix apps/web test      # vitest: 1,043 tests in 13 files (red flags, redaction, verifier, med rules, API, ops metrics)
 ```
 
 ## Evaluation
 
-Synthetic benchmark of 40 multilingual cases plus an 18-case blind red-flag holdout, metrics pre-declared in [docs/ai/METRICS.md](docs/ai/METRICS.md):
+Synthetic benchmark of 52 cases (40 intake + 12 medication) plus an 18-case blind red-flag holdout, metrics pre-declared in [docs/ai/METRICS.md](docs/ai/METRICS.md):
 
 ```bash
 cd apps/web && MODEL_PROVIDER=mock npx vite-node ../../eval/run.ts -- --split all

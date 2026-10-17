@@ -6,7 +6,7 @@
 Visual language: "Clinical paper" (`docs/design/DIRECTION.md`): warm off-white, ink-black type, serif display, red only for urgency, no gradients, no card grids. Every number must be cited or marked [TBD-METRIC].
 
 ## 1. MedX Bridge
-- **Message:** An intake a nurse can trust in 30 seconds.
+- **Message:** Every field points back to the patient's own words.
 - **On slide:** MedX Bridge. Multilingual pre-visit intake that supports clinicians. Research prototype, synthetic data. AMD Developer Hackathon ACT III, Track 2.
 - **Visual:** Large serif title on paper; below it one intake sheet with a single yellow highlighter stroke across a patient sentence.
 - **Notes:** We built a pre-visit intake for clinics where patient and staff do not share a language. It supports the nurse; it never diagnoses. Everything you see runs on synthetic data.
@@ -19,7 +19,7 @@ Visual language: "Clinical paper" (`docs/design/DIRECTION.md`): warm off-white, 
 
 ## 3. The nurse, the two minutes
 - **Message:** One user, one moment: the intake before the consult.
-- **On slide:** Triage nurse. Walk-in clinic. 2 to 3 minutes per intake. Patient writes in Thai, Italian or English. Nurse reads English in 30 seconds.
+- **On slide:** Triage nurse. Walk-in clinic. 2 to 3 minutes per intake. Patient writes in Thai, Italian or English. Nurse reads English (design goal: about 30 seconds).
 - **Visual:** A waiting-room line sketch; left a phone with Italian text, right a clinician sheet in English, a thin line joining them.
 - **Notes:** The user is the triage nurse or GP. The two-to-three-minute figure is our design assumption, not a cited fact. The patient fills in the intake on their phone before being seen.
 
@@ -43,8 +43,8 @@ Visual language: "Clinical paper" (`docs/design/DIRECTION.md`): warm off-white, 
 
 ## 7. Gemma on AMD
 - **Message:** AMD hardware serves every model call, behind one gateway.
-- **On slide:** Gemma on AMD Instinct (ROCm) via Token Factory. Extraction, translation, safety screen, next question. Latency p50 / p95: [TBD-METRIC].
-- **Visual:** Architecture sketch: phone and web clients, API gateway, adapter, AMD Instinct node; latency stamp box left blank on purpose.
+- **On slide:** Gemma via AMD Token Factory (design target). Extraction, translation, safety screen, next question. Latency p50 / p95: [TBD-METRIC].
+- **Visual:** Architecture sketch: phone and web clients, API gateway, adapter, AMD Token Factory endpoint; latency stamp box left blank on purpose.
 - **Notes:** All model calls go through one OpenAI-compatible client reading endpoint and model id from environment. Integration awaits our key; until then tests use a mock provider. Variant is chosen on a dev split by schema validity and latency.
 
 ## 8. What's next, and the team
