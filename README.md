@@ -1,5 +1,7 @@
 # MedX
 
+> Team handoff (Thai): see [HANDOFF.md](HANDOFF.md) for how to run, what is left before submission, and where everything lives.
+
 Live demo: [URL pending]
 
 One patient journey in one product: **patient, nurse, doctor, pharmacist**. Every field points back to the patient's own words. Fin the dolphin is the mascot: a helper, never the decider.
