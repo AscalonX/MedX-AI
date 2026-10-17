@@ -228,6 +228,9 @@ const AUD = {
     session_created: L("เริ่มการรับข้อมูล", "Accesso avviato", "Intake started"),
     turn_added: L("มีข้อความใหม่", "Messaggio aggiunto", "Turn added"),
     review: L("แพทย์/พยาบาลทบทวนช่องข้อมูล", "Revisione clinica dei campi", "Clinician field review"),
+    abstained: L("ระบบไม่สามารถสรุปได้ ต้องให้บุคลากรตรวจ", "Il sistema si è astenuto: serve revisione umana", "System abstained: needs human review"),
+    red_flag_review: L("แพทย์/พยาบาลทบทวนสัญญาณอันตราย", "Revisione clinica del segnale d'allarme", "Clinician reviewed red flag"),
+    takeover: L("แพทย์/พยาบาลรับช่วงต่อการรับข้อมูล", "Un clinico ha preso in carico l'accesso", "Clinician took over the intake"),
   } as Record<string, Localized>,
 };
 export function auditLine(e: AuditEvent, lang: Lang): string {
@@ -241,7 +244,7 @@ export function auditLine(e: AuditEvent, lang: Lang): string {
     ];
     return `${AUD.review[lang]}: ${parts.join(", ") || AUD.opened[lang]}`;
   }
-  return AUD.events[e.type]?.[lang] ?? e.type;
+  return AUD.events[e.type]?.[lang] ?? `${L("เหตุการณ์", "Evento", "Event")[lang]}: ${e.type}`;
 }
 
 /** The completed (signed-off) pharmacy_review event, the only trustworthy source for the receipt time and signer. */

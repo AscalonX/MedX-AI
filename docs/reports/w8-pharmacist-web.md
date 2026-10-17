@@ -23,3 +23,7 @@ Not verified in the browser: th and it renderings of the new strings (wording is
 - Server 409 reasons are shown verbatim after a localized "Server refused" prefix; client blockers now cover abstention, unreviewed red flags, high alerts, unmatched/unsupported meds and unverified allergies.
 - Stopped medicines: an alert whose linked medicine is discontinued or has "stopped" in its timing shows an amber "Patient says this medicine was stopped: confirm" note, independent of the engine's appended text.
 - Not verified in the browser: the server-side 409 for red flags and allergies, and the stopped-medicine note against engine output (no live example existed). Screen: docs/reports/screens/v5-pharmacy-abstained-safety-alerts.png.
+
+## Leftovers from w10 (#16, #18)
+- #16: opening the transcript drawer from a medicine, allergy or alert row records that row (last pointer-down row, falling back to the active element) as the return target; focus moves to Close, Tab and Shift+Tab are trapped inside the drawer below 1600px, Escape or Close restores focus to the row. Checked at 1024 width: focus went to Close, and after Escape returned to the warfarin row.
+- #18: every `AuditType` (including abstained, red_flag_review, takeover) is localized in th/it/en; unknown types show "Event: <type>" localized.

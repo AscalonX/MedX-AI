@@ -47,6 +47,7 @@ export function Workspace({ id }: { id: string }) {
   const [auditTick, setAuditTick] = useState(0);
   const triggerRef = useRef<HTMLElement | null>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const lastRow = useRef<HTMLElement | null>(null);
 
   useEffect(() => { setSel(null); setEdit(null); setActionError(null); setAuditOpen(false); }, [id]);
 
@@ -134,7 +135,11 @@ export function Workspace({ id }: { id: string }) {
     }));
   const announce = !sel ? "" : activeEv.length ? C.evidenceTurn(session.turns.findIndex((t) => t.id === activeEv[0].turnId) + 1)[lang] : C.noEvidence[lang];
 
-  const select = (s: Sel) => { setSel(s); setDrawer(true); };
+  // Opening from a row records that row as the return target (Safari does not focus buttons on click, so the last pointer-down row is used).
+  const select = (s: Sel) => {
+    setSel(s);
+    if (!drawer) openDrawer(lastRow.current ?? (document.activeElement as HTMLElement | null));
+  };
   const selAlert = sel?.type === "alert" ? alerts.find((a) => a.id === sel.id) : undefined;
   const linkedToSel = (kind: "med" | "allergy", itemId: string) => !!selAlert && (kind === "med" ? selAlert.medIds : selAlert.allergyIds).includes(itemId);
   const alertLinkedToSel = (a: MedAlert) => (sel?.type === "med" && a.medIds.includes(sel.id)) || (sel?.type === "allergy" && a.allergyIds.includes(sel.id));
@@ -151,7 +156,7 @@ export function Workspace({ id }: { id: string }) {
   const extract = session.summary?.modelCalls.find((c) => c.step === "extract");
 
   return (
-    <div ref={scrollRef} lang={lang} onKeyDown={moveFocus} className="flex flex-col gap-6">
+    <div ref={scrollRef} lang={lang} onPointerDownCapture={(e) => { lastRow.current = (e.target as HTMLElement).closest<HTMLElement>("[data-row], button"); }} onKeyDown={moveFocus} className="flex flex-col gap-6">
       <p aria-live="polite" className="sr-only">{announce}</p>
       <h1 className="sr-only">{C.queueTitle[lang]}: {session.code}</h1>
 
@@ -324,6 +329,14 @@ export function Workspace({ id }: { id: string }) {
 
         <aside
           id="transcript" aria-label={C.words[lang]}
+          onKeyDown={(e) => {
+            if (e.key !== "Tab" || wide() || !drawer) return;
+            const f = [...e.currentTarget.querySelectorAll<HTMLElement>("button, [href], input, [tabindex]:not([tabindex='-1'])")];
+            if (!f.length) return;
+            const first = f[0], last = f[f.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+          }}
           className={cls(
             "flex min-h-0 flex-col rounded-card border border-rule/70 bg-sheet shadow-sheet",
             "min-[1600px]:sticky min-[1600px]:top-4 min-[1600px]:max-h-[calc(100dvh-2rem)]",
