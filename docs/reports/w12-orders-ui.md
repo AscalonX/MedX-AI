@@ -24,3 +24,13 @@ apps/web/app/(orders)/{layout.tsx,_lib.ts,_fixture.ts,_bits.tsx}, review/[id]/vi
 
 ## Next
 Point at live routes when Codex lands; check returned-order flow end to end; link from the case page (`/review/[id]/vitals`, `/review/[id]/orders`).
+
+## Live verification (real routes, no fixture badge)
+Run with Playwright against :3000; screenshots v9-vitals-live.png, v9-orders-live.png.
+- Vitals: save sends `onOxygen` explicitly (false default); alerts and suggested level render from the server; confirm of a less urgent level needs a note (client guard, and server 400 "Note required for less urgent confirmation" is surfaced inline); receipt shown.
+- Orders: Augmentin 1000 mg every 8 h gives HIGH allergy_conflict (+ moderate duplicate_therapy); submit disabled with explanation until a reason is typed; submit gives status "submitted"; pharmacist return (via /pharmacy route) shows the note with "Edit and resubmit"; edit then "Update and re-check" works; paracetamol 2000 mg gives HIGH dose_range; investigation order and consult "considered" chips + guideline links work. No 4xx/5xx from the UI during the run.
+- Fixes made: consult chips de-duplicated by workup id; page title now "MedX". Copy has no "Bridge"/mascot references.
+## Observed backend issues (not mine)
+- allergy_conflict returned with empty `evidence` for B-014 although the patient said they were allergic, so no patient quote shows.
+- dose_range returns two identical HIGH alerts for one paracetamol order (single and daily?), each needing its own override reason.
+- Triage for a case with an emergency red flag says "complete NEWS2 before confirming" when ACVPU is not assessed; the form leaves ACVPU blank on purpose.

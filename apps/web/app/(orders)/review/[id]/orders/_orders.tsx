@@ -77,7 +77,7 @@ function Investigations({ id, session, consider, lang, reviewer, apply }: {
   }
 
   const withGuideline = consider.filter((c) => c.guideline && /^https:\/\//.test(c.guideline.url));
-  const chips = consider.flatMap((c) => (c.workup ?? []).map((w) => ({ c, w })));
+  const chips = consider.flatMap((c) => (c.workup ?? []).map((w) => ({ c, w }))).filter(({ w }, i, all) => all.findIndex((x) => x.w.id === w.id) === i);
   return (
     <Card>
       <CardHeader title={tr("invTitle", lang)} />
