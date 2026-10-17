@@ -1,0 +1,41 @@
+# Codex final read-only review of UI + integration — 2026-10-17 ~17:00 ICT
+
+Reviewed through `7990379`. No files modified. Focused reproductions used in-memory store, network, and lifecycle stubs.
+
+1. [apps/web/lib/pipeline/pharmacyReview.ts:74](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/lib/pipeline/pharmacyReview.ts:74>) — **P0** — Sign-off accepts unreviewed emergency flags, abstained summaries, and unsupported allergies. All three were reproduced as `reconciled`; the API omits the UI’s blockers. — Enforce those blockers server-side before saving reconciliation.
+
+2. [apps/web/lib/pipeline/pipeline.ts:157](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/lib/pipeline/pipeline.ts:157>) — **P1** — Field approval does not check for unreviewed red flags. A stale UI or direct request can mark fields `approved` while flags remain unreviewed, although session status stays `escalated`. — Reject approval until every flag is reviewed.
+
+3. [apps/web/app/(pharmacy)/_workspace.tsx:98](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/app/(pharmacy)/_workspace.tsx:98>) — **P1** — Abstention hides all medication alerts, including recorded deterministic high alerts. The pharmacy queue also suppresses their counts. — Keep recorded safety alerts visible during abstention, separately from untrusted extracted conclusions.
+
+4. [apps/mobile/src/store.tsx:56](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/mobile/src/store.tsx:56>) — **P1** — Restoration can overwrite a newly started intake because Home enables Start before `ready`. Reproduced: session `new` became saved session `old` after hydration completed. — Gate interaction on hydration and invalidate restoration when starting or resetting an intake.
+
+5. [apps/mobile/src/app/intake.tsx:60](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/mobile/src/app/intake.tsx:60>) — **P1** — A pending turn response unconditionally replaces global session state and navigates. Patients can use Home and start another intake while that request runs; its eventual response restores the previous patient’s session. — Apply responses only when the active session ID and request generation still match.
+
+6. [apps/mobile/src/api.ts:9](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/mobile/src/api.ts:9>) — **P1** — The client aborts after 20 seconds, but server processing allows 40 seconds. A valid slow request appears unsuccessful while the server continues; Retry can append the answer twice. — Align timeouts and reconcile uncertain results before retrying; add request idempotency.
+
+7. [apps/mobile/src/voice.ts:54](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/mobile/src/voice.ts:54>) — **P1** — Voice recognition has no unmount cleanup or cancellation check after permission resolves. Reproduced recognition starting after the intake component unmounted. Existing recording and fallback timers also survive navigation. — Abort recognition, clear timers, and invalidate pending starts on blur/unmount.
+
+8. [apps/mobile/src/app/index.tsx:42](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/mobile/src/app/index.tsx:42>) — **P1** — Home permits language changes while an existing session remains active. Returning through My visit changes questions/chips locally while the server continues tagging answers with the original `patientLang`. — Lock language during an intake or explicitly create a new session when changing it.
+
+9. [apps/mobile/src/app/redflag.tsx:70](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/mobile/src/app/redflag.tsx:70>) — **P1** — “I’m at the desk” only changes local state, yet the resulting message says a nurse is coming. No staff acknowledgement or notification supports that assurance. — Keep the instruction to show staff the screen; promise attendance only after a recorded staff acknowledgement.
+
+10. [apps/web/app/(pharmacy)/_shell.tsx:93](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/app/(pharmacy)/_shell.tsx:93>) — **P1** — Polls started during a POST remain valid after its completion. Reproduced a successful sign-off displaying `reconciled`, then reverting to `pending` when a delayed GET arrived. — Suspend polling during mutations and invalidate outstanding GETs again when mutations finish.
+
+11. [apps/web/app/(clinician)/review/_workspace.tsx:149](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/app/(clinician)/review/_workspace.tsx:149>) — **P1** — Transcript glosses treat clinician-edited values as translations of retained patient quotes. Editing “no allergies” to “penicillin allergy” can display the original denial pointing to the contradictory edited value. — Exclude edited values from verified glosses or explicitly identify them as clinician corrections.
+
+12. [apps/web/app/(pharmacy)/_queue.tsx:59](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/app/(pharmacy)/_queue.tsx:59>) — **P1** — Unsupported complaints receive only CSS styling. Screen-reader users hear the proposed complaint without any “unverified” qualification. — Add visible and accessible unsupported wording, using the shared `PencilField` treatment.
+
+13. [apps/web/components/ui/segments.ts:19](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/components/ui/segments.ts:19>) — **P2** — Overlapping passive and active evidence spans merge into one active span. Reproduced selecting “since yesterday” highlighting all of “Headache since yesterday.” — Split at interval boundaries and activate only the selected quote’s actual range.
+
+14. [apps/web/app/(clinician)/review/_workspace.tsx:50](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/app/(clinician)/review/_workspace.tsx:50>) — **P2** — Concurrent GETs share the same generation, allowing older responses to replace newer clinical state. Mobile completion polling similarly permits overlapping requests. — Use single-flight polling or monotonically ordered request IDs, with cancellation on cleanup.
+
+15. [apps/web/app/(clinician)/review/_shell.tsx:32](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/app/(clinician)/review/_shell.tsx:32>) — **P2** — Emergency arrival notifications consider only previously unseen session IDs. A known collecting session that becomes escalated receives neither the fresh badge nor tab-title notification. — Detect transitions into escalation, not just newly discovered sessions.
+
+16. [apps/web/app/(clinician)/review/_workspace.tsx:384](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/app/(clinician)/review/_workspace.tsx:384>) — **P2** — The narrow-screen transcript drawer opens without moving focus or announcing its expanded state; closing can hide the focused control. Pharmacy has the same pattern. — Implement consistent drawer focus entry/restoration and expanded-state semantics; use modal focus management if it overlays the workspace.
+
+17. [apps/web/app/(pharmacy)/_workspace.tsx:652](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/app/(pharmacy)/_workspace.tsx:652>) — **P2** — The reconciliation receipt uses mutable `session.updatedAt` as its signing time. A later clinician action changes the displayed pharmacy sign-off timestamp. — Read the timestamp from the completed `pharmacy_review` audit event.
+
+18. [apps/web/app/(pharmacy)/_lib.ts:216](</Users/king_phuripol/AI-Engineer/Workstreams/medx-bridge/apps/web/app/(pharmacy)/_lib.ts:216>) — **P2** — Pharmacy audit descriptions remain hard-coded English in Thai and Italian interfaces, including action verbs and sign-off descriptions. — Pass the display language into `auditLine` and localize its event/action mappings.
+
+**ready for demo: no.** Voice confirmation, explicit unsupported-value rendering, and honest mock labels are present, but server-side sign-off bypasses and session-replacement races remain submission blockers. The latest restoration fixes were included; these findings combine source tracing with focused in-memory reproductions, without browser or live-provider validation.
