@@ -328,7 +328,7 @@ export interface MedAlertReviewAction {
 export interface MedRuleFile {
   version: string;
   /** Brand/lay names in th/it/en → generic + class. Matching: lower-case NFC substring, same as red flags. */
-  drugs: { generic: string; drugClass: string; names: string[]; pregnancy?: "avoid" | "caution"; maxDailyMg?: number }[];
+  drugs: { generic: string; drugClass: string; names: string[]; pregnancy?: "avoid" | "caution"; maxDailyMg?: number; doseRange?: { maxSingleMg?: number; maxDailyMg?: number } }[];
   /** Allergy terms in th/it/en → class. */
   allergens: { allergenClass: string; names: string[] }[];
   /** Allergy class → drug classes that conflict (e.g. penicillin → [penicillin, aminopenicillin]). */
@@ -489,3 +489,6 @@ export interface InvestigationOrder {
   at: string;
   status: OrderStatus;
 }
+
+/** packages/shared/src/investigations.json (Doctor-owned) catalog. */
+export interface InvestigationCatalog { version: string; items: { id: string; category: "lab" | "imaging" | "ecg" | "other"; label: Localized }[] }
