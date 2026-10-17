@@ -13,16 +13,16 @@ export function Field(props: InputProps | AreaProps) {
   const hintId = hint ? `${id}-hint` : undefined;
   const errId = error ? `${id}-err` : undefined;
   const control = cx(
-    "w-full rounded-control border bg-sheet px-3 text-body text-ink",
-    "transition-[border-color] duration-quick ease-pen focus-visible:border-ink",
-    error ? "border-signal" : "border-rule-strong hover:border-ink-soft",
-    multiline ? "min-h-24 py-2" : "h-10",
+    "w-full rounded-control border bg-sheet px-4 text-body text-ink",
+    "transition-[border-color,box-shadow] duration-quick ease-pen focus-visible:border-ocean focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ocean/15",
+    error ? "border-signal" : "border-rule-strong/70 hover:border-ink-soft",
+    multiline ? "min-h-28 py-3" : "h-11",
     className,
   );
   const describedBy = [hintId, errId].filter(Boolean).join(" ") || undefined;
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-small font-medium text-ink-soft">
+      <label htmlFor={id} className="text-small font-semibold text-ink">
         {label}
       </label>
       {hint && (

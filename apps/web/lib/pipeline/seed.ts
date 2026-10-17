@@ -11,7 +11,7 @@ import med01 from '../../../../data/cases/MED-01.json';
 import med03 from '../../../../data/cases/MED-03.json';
 import med05 from '../../../../data/cases/MED-05.json';
 import { addTurn, createSession, PipelineError, review } from './pipeline';
-import { getAudit, getSession, withSessionLock } from './store';
+import { getAudit, getSession, resetDemoStore, withSessionLock } from './store';
 
 interface Fixture { id: string; lang: string; synthetic: boolean; turns: { role: string; text: string }[] }
 interface SeedPlan { fixture: Fixture; expectedStatus: SessionStatus; repeatLast?: boolean }
@@ -30,9 +30,10 @@ const plans: SeedPlan[] = [
 ];
 
 /** Synthetic fixture replay only; never reads gold answers or overrides the configured provider. */
-export async function seedDemo() {
+export async function seedDemo(options: { reset?: boolean } = {}) {
   if (process.env.DEMO_SEED !== '1') throw new PipelineError('Not found', 'not_found');
   return withSessionLock('dev-demo-seed', async () => {
+    if (options.reset) resetDemoStore();
     const sessions: IntakeSession[] = [];
     const mismatches: { caseId: string; expected: SessionStatus; actual: SessionStatus }[] = [];
     let created = 0;

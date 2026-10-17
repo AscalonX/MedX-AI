@@ -15,6 +15,15 @@ export function mockJSON(req: ChatRequest): unknown {
   const lang = /Patient language: (Thai|Italian)/.exec(req.user)?.[1];
   const result: ModelExtraction = { language_detected: lang === 'Thai' ? 'th' : lang === 'Italian' ? 'it' : 'en', fields: Object.fromEntries(FIELD_KEYS.map(k => [k, null])) as ModelExtraction['fields'] };
   const turns = [...req.user.matchAll(/<patient_turn id="(T\d+)">([\s\S]*?)<\/patient_turn>/g)];
+  const askedByTurn = new Map<string, FieldKey>();
+  let asked: FieldKey | undefined;
+  for (const [, role, alias, text] of req.user.matchAll(/<(patient|assistant)_turn id="([AT]\d+)">([\s\S]*?)<\/(?:patient|assistant)_turn>/g)) {
+    if (role === 'assistant') asked = FIELD_KEYS.find(k => Object.values(QUESTIONS[k]).includes(text));
+    else if (asked) { askedByTurn.set(alias, asked); asked = undefined; }
+  }
+  const context = /Asked field: (\w+); answer turn: (T\d+)/.exec(req.user);
+  if (context && FIELD_KEYS.includes(context[1] as FieldKey)) askedByTurn.set(context[2], context[1] as FieldKey);
+  let noAllergyAnswer: { turn: string; quote: string } | undefined;
   const patterns: Partial<Record<FieldKey, [RegExp, Localized][]>> = {
     chief_complaint: [
       [/(?:headache|mal di testa|ปวดหัว|ปวดศีรษะ)/i, { en: 'headache', it: 'mal di testa', th: 'ปวดหัว' }],
@@ -41,6 +50,37 @@ export function mockJSON(req: ChatRequest): unknown {
     if (severity) { const n = `${severity[1]}/10`; put('severity', severity[0], { en: n, it: n, th: `ระดับ ${n}` }); }
     const age = /(?:\b(?:I am|I'm|ho)\s+(\d{1,3})\s*(?:years old|anni)|อายุ\s*(\d{1,3})\s*ปี|\b(?:I am|I'm)\s+(?:a\s+)?(\d{1,3})(?:\s+year old|(?=,\s*(?:male|female)))|\b(?:uomo|donna) di (\d{1,3}) anni)/i.exec(safe);
     if (age) { const n = age[1] || age[2] || age[3] || age[4]; put('age', age[0], { en: `${n} years`, it: `${n} anni`, th: `${n} ปี` }); }
+    const field = askedByTurn.get(alias);
+    const answer = safe.trim();
+    // Only recognised answers are filled; unrelated or instruction text stays missing.
+    if (field === 'onset' && /^(?:yesterday|ieri|เมื่อวาน)[.!]?$/i.test(answer)) {
+      put(field, answer, { en: 'yesterday', it: 'ieri', th: 'เมื่อวาน' });
+    }
+    if (field && /^(?:no|none|ไม่|ไม่มี|ไม่ใช่)[.!]?$/i.test(answer)) {
+      const denials: Partial<Record<FieldKey, Localized>> = {
+        medications: { en: 'no medicines', it: 'nessun farmaco', th: 'ไม่ได้กินยา' },
+        allergies: { en: 'no known allergies', it: 'nessuna allergia nota', th: 'ไม่มีประวัติแพ้' },
+        associated_symptoms: { en: 'no other symptoms', it: 'nessun altro sintomo', th: 'ไม่มีอาการอื่น' },
+        pregnancy_status: { en: 'not pregnant', it: 'non in gravidanza', th: 'ไม่ตั้งครรภ์' },
+      };
+      const value = denials[field];
+      if (value) {
+        put(field, answer, value); result.fields[field]!.certainty = 'medium';
+        if (field === 'allergies') noAllergyAnswer = { turn: alias, quote: answer };
+      }
+    }
+    if (field === 'severity' && /^(?:10|[0-9])(?:[.!])?$/.test(answer)) {
+      const n = `${parseInt(answer, 10)}/10`;
+      put(field, answer, { en: n, it: n, th: `ระดับ ${n}` });
+    }
+    if (field === 'age' && /^\d{1,3}(?:[.!])?$/.test(answer) && parseInt(answer, 10) <= 120) {
+      const n = parseInt(answer, 10); put(field, answer, { en: `${n} years`, it: `${n} anni`, th: `${n} ปี` });
+    }
+    if (field === 'duration') {
+      const days = /^(?:for\s+|da\s+)?(\d+)\s*(?:days?|giorn[oi]|วัน)[.!]?$/i.exec(answer);
+      if (days) put(field, answer, { en: `${days[1]} days`, it: `${days[1]} giorni`, th: `${days[1]} วัน` });
+    }
   }
-  return { ...result, ...mockPharmacy(turns.map(([, alias, text]) => ({ alias, text }))) };
+  const pharmacy = mockPharmacy(turns.map(([, alias, text]) => ({ alias, text })));
+  return { ...result, ...pharmacy, noKnownAllergies: pharmacy.noKnownAllergies ?? noAllergyAnswer ?? null };
 }

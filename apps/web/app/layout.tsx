@@ -1,31 +1,18 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Sans_Thai, Newsreader, Noto_Serif_Thai } from "next/font/google";
+import { Anuphan, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-// Latin faces first; Thai faces load only the thai subset, so the browser falls back per glyph.
-// Italian needs only the latin subset (à è é ì ò ù); latin-ext covers names.
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
+// v2: one geometric sans. Plus Jakarta Sans for Latin (Italian needs only `latin`; latin-ext covers names),
+// Anuphan for Thai (loads only the thai subset; the browser falls back per glyph).
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin", "latin-ext"],
-  axes: ["opsz"],
   style: ["normal", "italic"],
   display: "swap",
 });
-const notoSerifThai = Noto_Serif_Thai({
-  variable: "--font-noto-serif-thai",
+const anuphan = Anuphan({
+  variable: "--font-anuphan",
   subsets: ["thai"],
-  weight: ["400", "500", "600"],
-  display: "swap",
-});
-const plexSans = IBM_Plex_Sans({
-  variable: "--font-plex-sans",
-  subsets: ["latin", "latin-ext"],
-  display: "swap",
-});
-const plexSansThai = IBM_Plex_Sans_Thai({
-  variable: "--font-plex-sans-thai",
-  subsets: ["thai"],
-  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -40,10 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${newsreader.variable} ${notoSerifThai.variable} ${plexSans.variable} ${plexSansThai.variable}`}
-    >
+    <html lang="en" className={`${jakarta.variable} ${anuphan.variable}`}>
       <body className="antialiased">{children}</body>
     </html>
   );

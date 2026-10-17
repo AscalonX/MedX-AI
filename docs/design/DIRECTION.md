@@ -1,354 +1,367 @@
-# MedX Bridge design direction: "Clinical paper"
+# MedX Bridge design direction v2: "Calm clinical banking"
 
-Owner: Design lead. Status: v1, binding for wave 2 builders.
+Owner: Design lead. Status: v2, binding from wave 4.
 Tokens: `packages/shared/src/tokens.ts`. Web mapping: `apps/web/app/globals.css`. Web primitives: `apps/web/components/ui/`.
 If this file and a screen disagree, this file wins. If this file and `CLAUDE.md` safety invariants disagree, `CLAUDE.md` wins.
 
+> **v1 superseded.** v1 "Clinical paper" (paper, ink, serif) was replaced on 17 Oct 2026, 15:00 by owner decision: a modern banking-app look (reference u-talk-ten.vercel.app), teal to ocean primary. What carries over from v1 is the meaning: red only for urgency, five honest safety states, the highlighter link to the patient's sentence, the red-flag interrupt that pushes content away, and the language morph. v1 token and utility names are kept and remapped so v1 screens re-skin without code changes (section 10).
+
 ## 1. Concept
 
-MedX Bridge is a well-kept clinical form, not a chatbot. Every surface behaves like paper in a clinic: the patient fills in a sheet, the nurse reads the same sheet with a highlighter in hand, and the ops board is the ward whiteboard. The model never appears as a character. There is no assistant avatar, no typing dots, no "AI" label as decoration. What the model produced is shown as marks on the form, and the marks tell you how far to trust them:
+A calm, friendly health app with the polish of a good banking app. You see where you stand at a glance: big clear numbers, one bold card that says what to do next, soft white cards for everything else. The model never appears as a character. There are no chat bubbles for clinical content, no avatar for "the AI", no sparkles. Model output is shown as **values with a provenance chip**, so trust is always visible:
 
-| Mark | Means | Where the metaphor comes from |
+| State (`FieldStatus`) | Looks like | Means |
 |---|---|---|
-| Ink | Backed by the patient's own words | A fact written in the chart |
-| Pencil (graphite, dashed underline) | Model suggestion with no verified quote | A provisional note you would rub out |
-| Blank form line | Not said yet | An empty box on a form |
-| Highlighter | The exact sentence this value came from | The reviewer's marker on the source |
-| Single strike + new value + initials | Clinician correction | How a chart is corrected: never erased |
-| Red | Urgency, and only urgency | Triage colour |
+| `supported` | Bold value + ocean chip "From patient's words" (quote icon) + confidence bars | Backed by a verified quote |
+| `unsupported` | Softer value in a dashed amber outline on amber tint + amber chip "Needs check" (alert icon) + amber note | Model value, no quote. Never shown as fact |
+| `missing` | Grey placeholder pill "Not mentioned yet" (minus icon) | Patient has not said it |
+| `edited` | Old value struck through in grey, new bold value + teal chip "Edited by clinician, <name>" (pencil icon) | Clinician changed it |
+| `approved` | Bold value + teal chip "Approved, <name>" (check icon) | Clinician confirmed it |
+| Red flag | Red gradient card, white text, alert icon | Urgent. Red means this and nothing else |
 
-Mood in words: quiet, exact, unhurried, trustworthy, a little tactile. Dense but calm, like a good discharge form. Nothing glows, nothing floats, nothing celebrates.
+The states differ in colour **and** shape **and** icon **and** words, so they still read correctly in greyscale and for colour-blind users.
 
-Design read: Operate mode for clinician review and ops (scan, decide, act); a calm Read/Operate mode for the patient (one question at a time, large type). Light theme only, on purpose: the use scenes are lit waiting rooms and nurse stations, and the paper metaphor depends on it.
+Mood: calm, bright, competent, kind. Rounded but not toy-like. One moment of colour per screen.
 
-What we refuse (owner bans plus our own): purple/blue gradients, glass, card grids, sparkle icons, emoji, chat bubbles, centered hero with 3 cards, default shadcn look, eyebrow labels above headings, ALL CAPS labels, coloured status dots, % confidence badges, progress rings, em dashes in UI copy, a green "success" colour (approval is an ink stamp, not green).
+Still banned: emoji UI, sparkle icons, AI-assistant chat bubbles for clinical content, a generic stock hero with 3 feature cards, red as decoration, % confidence badges, coloured status dots without words, em dashes in UI copy.
 
 ## 2. Palette
 
-Seven working colours. Red is the only accent. Highlighter and graphite are functional marks with a single meaning each.
-
-| Token | Hex | Role | Text contrast (WCAG 2.x) |
+| Token | Hex | Role | Contrast (WCAG 2.x) |
 |---|---|---|---|
-| `desk` | `#E3E1D7` | App background behind sheets (clinician, ops) | ink 12.5, inkSoft 6.7, graphite 4.9, signal 5.3 |
-| `paper` | `#EEEDE5` | Page background (patient app) | ink 13.9, inkSoft 7.5, graphite 5.5, signal 5.9 |
-| `sheet` | `#F7F6F1` | The form sheet: summary, transcript, tables, inputs | ink 15.1, inkSoft 8.1, graphite 5.9, signal 6.4 |
-| `ink` | `#1C2026` | Primary text, primary button fill, approved stamp | sheet on ink 15.1 |
-| `inkSoft` | `#464B53` | Labels, secondary text | see above |
-| `graphite` | `#5C5F65` | Pencil: unsupported values, hints, low confidence | AA on desk, paper, sheet, highlighter (4.7) |
-| `rule` | `#C9C6BB` | Hairline rules and dividers. Decorative, never the only boundary of a control | n/a |
-| `ruleStrong` | `#827F77` | Input and control borders | 3.7 on sheet, 3.05 on desk (non-text 3:1 met) |
-| `highlighter` | `#F2DE4B` | Evidence sweep. Text on it stays ink | ink on highlighter 11.9 |
-| `signal` | `#B3121B` | Red flags, escalations, emergency rows, destructive confirm | onSignal on signal 6.4 |
-| `signalTint` | `#F4DCD7` | Urgent (non-emergency) row and band background | ink on it 12.5, signal on it 5.3 |
-| `onSignal` | `#F7F6F1` | Text and outlines on a signal fill | 6.4 |
+| `desk` | `#EEF3F6` | App background (cool mist). Body adds two faint radial tints (teal top left, ocean bottom right) | ink 15.1, inkSoft 6.7, graphite 5.3 |
+| `paper` | `#F5F8FA` | Quiet surface: selected rows, inset panels, patient page | ink 15.8, graphite 5.6 |
+| `sheet` | `#FFFFFF` | Card | ink 16.9, inkSoft 7.5, graphite 5.9 |
+| `muted` | `#EDF1F5` | Missing placeholder, segmented track, skeleton | graphite 5.2 |
+| `ink` | `#0F1E2E` | Primary text, big numbers | |
+| `inkSoft` | `#45566A` | Labels, secondary text | 7.5 on card |
+| `graphite` | `#56657A` | Hints, timestamps, placeholders | 5.9 on card, 4.6 on highlighter |
+| `rule` | `#E3E9EF` | Hairlines, card borders (decorative) | n/a |
+| `ruleStrong` | `#7D8C9E` | Input borders | 3.4 on card (non-text 3:1) |
+| `primaryFrom` | `#0A8077` | Gradient start (teal) | white 4.8 |
+| `primaryTo` | `#1A5FC4` | Gradient end (ocean) | white 6.0 |
+| `teal` | `#08716A` | Brand text and icons; approved, edited, active nav | 5.9 on card, 5.1 on tealTint |
+| `ocean` | `#1A5CBF` | Links, focus ring, "From patient's words", confidence bars | 6.3 on card, 5.4 on oceanTint |
+| `tealTint` | `#E1F4F1` | Approved and edited chips, active nav | |
+| `oceanTint` | `#E5EEFB` | Verified chip, empty-state icon disc | |
+| `highlighter` | `#D2E4FF` | Evidence sweep (ocean marker); text stays ink | ink 13.1 |
+| `warn` | `#8F4508` | "Needs check" text, dashed outline | 6.9 on card, 6.3 on warnTint |
+| `warnTint` | `#FEF2D7` | Needs-check background | |
+| `signal` | `#BE1B2B` | Urgency only | 6.2 on card, white on it 6.2 |
+| `signalDeep` | `#9E1024` | Red gradient end | white 8.2 |
+| `signalTint` | `#FDEAEC` | Urgent (non-emergency) background | signal 5.4 |
+| `onPrimary` / `onSignal` | `#FFFFFF` | Text on gradients | see stops |
+
+Gradients (`tokens.gradient`): `primary` 135deg `#0A8077` to `#1A5FC4`, with one soft white radial at the bottom-right corner (decoration only, never under body text). `signal` 135deg `#C81E2C` to `#9E1024`, for red flags only.
 
 Rules:
-- Red is never decoration, never a brand colour, never a hover state. If a screen is red, something is urgent.
-- Emergency = solid `signal` fill with `onSignal` text. Urgent = `signalTint` fill, 2px `signal` rule, ink text. Routine = no colour.
-- No grey text below `graphite`. No opacity on text to fake hierarchy (it breaks contrast); use `inkSoft` or `graphite`.
-- Shadows: one, `shadow.sheet` (0 1 2, warm), on the active sheet only. `sheetLifted` only for the transcript drawer on narrow screens.
+- **One gradient hero per screen.** Everything else is a white card. The primary button is the only other gradient.
+- **Red is urgency only.** Emergency is the red gradient with white text. Urgent is `signalTint` with a red ring and red icon. Never red for errors in forms (use `signal` text only for a field error message, which is a "stop" signal), never for hover, never for decoration.
+- **Amber means "needs a human check".** Use it only for unverified values and blocked actions.
+- **Teal means "done by a clinician"** (approved, edited, signed off). Ocean means "comes from the patient's words".
 
 ## 3. Type
 
-| Role | Latin (it, en) | Thai | Where |
+| Role | Latin (it, en) | Thai (web) | Thai (mobile, patient) |
 |---|---|---|---|
-| Serif (voice) | Newsreader (variable, opsz) | Noto Serif Thai | Questions to the patient, sheet titles, red-flag headline, patient code |
-| Sans (data) | IBM Plex Sans | IBM Plex Sans Thai (web, clinician) / IBM Plex Sans Thai Looped (mobile, patient) | Everything else: field values, labels, tables, buttons |
+| Display and UI | Plus Jakarta Sans 400 to 800 | Anuphan | IBM Plex Sans Thai Looped |
 
-Why these: Newsreader is a text serif cut for screens with optical sizes, so the same family works at 13px and 64px and its italic carries patient quotes. Noto Serif Thai is the looped, traditional Thai serif that matches its contrast. Plex Sans and Plex Sans Thai were drawn as one system, so mixed Thai and Latin lines share x-height and weight; Plex has true tabular figures. Patients get the looped Thai (มีหัว) because it is easier for older readers; clinicians get loopless Plex Sans Thai for density. Italian needs only the `latin` subset (à è é ì ò ù).
+Why these:
+- **Plus Jakarta Sans** is a modern geometric grotesk with open counters and friendly round forms, and it is the reference app's face. It has true tabular figures (`tnum`), and `latin` covers Italian accents (à è é ì ò ù).
+- **Anuphan** (Cadson Demak) is a loopless modern Thai with the same geometric construction and x-height feel as Jakarta, so mixed Thai/Latin lines sit level. Web Thai clinicians read it fast.
+- **On mobile, patients get looped Thai (มีหัว), IBM Plex Sans Thai Looped**, because looped forms are easier for older and less-practised readers. It is already installed.
+- Tabular, lining numerals are set globally. Big numbers use `stat` (32px, weight 800).
 
 Loading:
-- Web: `next/font/google` in `apps/web/app/layout.tsx`. Latin faces first in the stack; Thai faces load only the `thai` subset, so the browser falls back per glyph. Stacks are `--font-serif` and `--font-sans`.
-- Mobile: `@expo-google-fonts/newsreader`, `noto-serif-thai`, `ibm-plex-sans`, `ibm-plex-sans-thai-looped` via `npx expo install` and `useFonts`. React Native has no per-glyph fallback between custom fonts, so pick the family per language with `mobileFont(role, lang, weight)` from tokens. Verify export names after install (e.g. `Newsreader_500Medium`) and correct `tokens.fontFamily.mobile` if any differ.
+- **Web:** `next/font/google` in `layout.tsx` (`--font-jakarta`, `--font-anuphan`, thai subset only).
+- **Mobile:** per language via `mobileFont(role, lang, weight)`. React Native cannot fall back per glyph.
+  - Needs `npx expo install @expo-google-fonts/plus-jakarta-sans`.
+  - Load `PlusJakartaSans_400Regular` through `800ExtraBold` plus `IBMPlexSansThaiLooped_700Bold`.
+  - Until then Latin text falls back to the system font.
+- **Roles:** `display` is new; `serif` is kept as an alias of `display` so v1 calls compile.
 
-Scale (px, major third from 15). Latin line height / Thai line height:
+Scale (px; line height Latin / Thai):
 
-| Token | Size | LH Latin | LH Thai | Use |
+| Token | Size | LH | Weight | Use |
 |---|---|---|---|---|
-| `micro` | 12 | 1.4 | 1.6 | Badges, margin notes, rule IDs |
-| `small` | 13 | 1.45 | 1.65 | Labels, table meta |
-| `body` | 15 | 1.5 | 1.7 | Clinician and ops body, field values |
-| `bodyPatient` / `lead` | 19 | 1.5 / 1.4 | 1.7 / 1.6 | Patient body and answers; clinician red-flag action |
-| `title` | 24 | 1.25 | 1.5 | Sheet titles |
-| `question` | 30 | 1.2 | 1.45 | The one question on the patient screen |
-| `display` | 38 | 1.1 | 1.4 | Red-flag headline |
-| `code` | 64 | 1.0 | 1.0 | Patient code `B-042` |
+| `micro` | 12 | 1.4 / 1.6 | 600 in chips | Chips, meta |
+| `small` | 13 | 1.45 / 1.65 | 400 to 600 | Labels, table meta |
+| `body` | 15 | 1.5 / 1.7 | 400; values 600 | Clinician body |
+| `lead` | 17 | 1.45 / 1.6 | 500 to 700 | Card titles, red-flag action |
+| `bodyPatient` | 18 | 1.5 / 1.7 | 400 | Patient body |
+| `title` | 22 | 1.25 / 1.5 | 700 to 800 | Screen titles, hero title, greeting name |
+| `question` | 26 | 1.2 / 1.45 | 700 | The one patient question |
+| `stat` | 32 | 1.1 / 1.3 | 800 | Big numbers |
+| `display` | 34 | 1.1 / 1.4 | 800 | Red-flag screen (mobile) |
+| `code` | 52 | 1.0 | 800 | Patient code B-042 |
 
-Rules: all numbers tabular and lining (set globally). Sentence case everywhere; no ALL CAPS. Weights: 400 and 500 only, 600 for the patient code. Thai: letter-spacing 0, never negative; never `line-height` below the Thai column. Measure 65 to 75ch for prose. Emphasis is weight, never colour.
+Rules: sentence case; no ALL CAPS. Negative tracking on Latin headings only; Thai tracking is always 0. Thai never gets italics (the CSS forces normal).
 
-## 4. Space, grid, shape
+## 4. Shape, elevation, spacing, grid
 
-Space: 4px base (`space` 1=4, 2=8, 3=12, 4=16, 6=24, 8=32, 12=48, 16=64). Tight inside a group, double between groups, more above a heading than below.
+Radii: `control` 14 (inputs), `card` 22, `hero` 28, `pill` 999 (buttons, chips, segmented controls, nav items, avatars). Squares are only for icons in a rounded square (brand mark, 12px).
 
-Grids:
-- Clinician: three columns `288px | minmax(560px, 1fr) | 400px`, 24px gutters, on `desk`. Below 1280px the transcript becomes a right drawer (sheetLifted) opened by selecting a field. Below 960px the queue collapses to a top select.
-- Ops: 12 columns, max 1440px, 24px gutters.
-- Patient: single column, 24px side margins, max measure 34em, bottom-anchored primary action, 48px minimum touch target.
+Elevation (diffuse, navy-tinted, offset down, never black, never a glow):
 
-Shape: paper corners. Sheets, tables, bands: radius 0. Controls (buttons, inputs, badges): radius 3. No pills, no 12 to 16px rounded cards, ever. Sheets are separated by the desk colour and one hairline, not by cards.
+| Token | Value | Use |
+|---|---|---|
+| `hairline` | 0 1 2 rgba(15,45,80,.06) | Under borders |
+| `sheet` (card) | 0 1 2 .06 + 0 8 24 -12 rgba(15,45,80,.16) | Every card |
+| `sheetLifted` | 0 18 40 -16 rgba(15,45,80,.24) | Hover lift, drawer, mobile tab bar |
+| `hero` | 0 22 40 -20 rgba(26,95,196,.55) | Gradient hero, primary button (smaller) |
+| `signal` | 0 22 40 -20 rgba(158,16,36,.55) | Red-flag card |
 
-Rows: 40px for queue and table rows. Field rows on the summary are a two-column form: label column 160px (`small`, inkSoft), value column fluid, 1px `rule` under each group (not each row).
+Cards have a 1px `rule` border at 70% plus the `sheet` shadow. Any element that already uses the `shadow-sheet` class becomes a 22px-radius card automatically.
 
-## 5. Motion language
+Space: 4px base (4, 8, 12, 16, 20, 24, 32, 40, 48, 64). Card padding is 20. The gap between cards is 16 on mobile and 24 on web.
 
-Motion only answers an action or announces urgency. Nothing loops, nothing enters on scroll, no page-load choreography.
+Grid:
+- **Web shell:** sidebar 248 | content (max 1440).
+- **Clinician content:** queue 300 | summary min 560 | transcript 400, gutter 24.
+- **Ops:** 12 columns.
+- **Mobile:** single column, 20pt side margin, a 72pt bottom tab bar with a 60pt raised centre action.
 
-| Token | ms | Easing | What moves | Why |
-|---|---|---|---|---|
-| `quick` | 120 | pen | Hover, press (`translateY(1px)`), highlight fade-out | Feedback |
-| `base` | 220 | pen | Row selection, drawer, status changes | State change |
-| `morph` | 260 | pen | Language switch | Same meaning, new words |
-| `scroll` | 360 | browser smooth | Transcript scrolls to evidence | Orientation before the mark |
-| `sweep` | 520 | marker | Highlighter across one quote | Links value to source |
-| `sweepStagger` | 140 | | Gap between quotes of one field | Read in order |
-| `interrupt` | 420 | interrupt | Red-flag band / screen | Urgency, decisive |
+## 5. Motion
 
-Easings (cubic-bezier): `pen` 0.2, 0.8, 0.2, 1 (ink settling, the default). `marker` 0.55, 0.05, 0.25, 1 (nib lands, sweeps, lifts). `interrupt` 0.7, 0, 0.2, 1 (no bounce, no overshoot). Never spring or bounce anywhere: this is a medical tool. React Native: `Easing.bezier(...tokens.easing.pen)` with Reanimated `withTiming`.
+Smooth micro-motion that answers the user. Nothing loops except the loading skeleton shimmer (static under reduced motion).
 
-Reduced motion (`prefers-reduced-motion: reduce`, RN `useReducedMotion()`): every duration becomes instant. The end state is always the same: highlights still appear, the red band still pushes, text still changes. Only the travel is removed.
+| Token | ms | Easing | What |
+|---|---|---|---|
+| `quick` | 140 | pen | Press (`scale .97`), hover colour, chip change |
+| `base` | 240 | pen | Segmented thumb, nav active, card hover lift (`translateY(-2px)` + `sheetLifted`) |
+| `morph` | 260 | pen | Language switch: fade + 3px blur + 2px rise |
+| `scroll` | 360 | browser | Transcript scrolls to the evidence |
+| `sweep` | 520 | marker | Highlighter sweep |
+| `interrupt` | 420 | interrupt | Red-flag card grows in and pushes content |
+
+Easings: `pen` (0.22, 1, 0.36, 1), an out-quint and the default. `marker` (0.55, 0.05, 0.25, 1). `interrupt` (0.7, 0, 0.2, 1). No springs or bounces on clinical content.
+
+Reduced motion: every duration becomes instant; end states are identical.
 
 ## 6. Signature interactions (implement exactly)
 
-### 6a. Highlighter sweep: summary field to the patient's sentence
+### 6a. Highlighter: summary value to the patient's sentence
+Selecting a field row (click, or Enter/Space; arrows move between rows) works as follows:
+1. Old marks fade out over `quick`.
+2. The transcript scrolls the first quote to the vertical centre.
+3. After `scroll` ms, each quote sweeps left to right in `highlighter` with a 2px ocean underline, over `sweep` ms using `marker`. Quotes are staggered by `sweepStagger` (140 ms).
+4. The mark has 6px radius and stays until another field is selected or Escape is pressed.
+5. Evidence used by other fields shows a dotted ocean underline.
+6. Safety: a quote is marked only if `text.slice(start,end) === quote` (`segments()`).
 
-Trigger: click or Enter/Space on a summary field row (the row is a `button` with `aria-controls` pointing at the transcript). Arrow Up/Down moves between rows.
-1. The selected row gets a `sheet` background change to `paper` and a 2px ink outline on focus only. No coloured left border.
-2. All previously active marks fade out (`quick`, linear).
-3. The transcript scrolls the first quote of this field to vertical center (`scrollIntoView({block: "center", behavior: "smooth"})`, `auto` under reduced motion).
-4. After `scroll` ms, each quote of the field sweeps left to right: `background-size` 0% to 100% over `sweep` ms with `marker` easing, the n-th quote delayed by `n * sweepStagger`. Multi-line quotes sweep per line simultaneously (`box-decoration-break: clone`).
-5. The mark has chisel-tip ends (angled gradient, see `.mx-mark`), sits at 58% vertical position, covers 82% of the line height, and is `highlighter` at full strength. Text on it stays ink.
-6. The mark stays until another field is selected or Escape is pressed.
-7. Every other evidence quote in the transcript (used by some other field) shows as a dotted `ruleStrong` underline, so the reviewer sees which sentences the summary relies on.
-8. Safety: a quote is marked only if `text.slice(start, end) === quote`. Otherwise it is dropped and the field is treated as having no evidence. Implementation: `segments()` in `apps/web/components/ui/segments.ts`, component `EvidenceHighlight`.
-9. Screen readers: the transcript text uses `<mark>`; announce "Evidence, turn 3" via a polite live region owned by the page.
+Component: `EvidenceHighlight`, with an unchanged API.
 
-Mobile has no highlighter view (patients do not review). If the patient later views "What you told us", their own sentences are plain text.
+### 6b. Safety states
+Use `FieldValue` for every summary value; never style a status by hand. The table in section 1 is normative.
+- `unsupported` values are excluded from "Approve supported fields" and from exports.
+- `PencilField` is the unverified renderer (the name is kept from v1).
 
-### 6b. Unsupported = pencil, not ink
+### 6c. Red-flag interrupt
+**Clinician web (`RedFlagInterrupt`, API unchanged):**
+1. A red gradient card (radius 22, signal shadow) grows at the top of its container by animating `grid-template-rows: 0fr` to `1fr` over `interrupt`. It pushes the summary down; it does not overlay it.
+2. Content:
+   - a white alert icon in a translucent circle;
+   - a small "Red flag" label;
+   - the `title` bold label;
+   - the `lead` action;
+   - the patient quote in a translucent pill;
+   - the rule ID.
+3. "Acknowledge" is a white outline pill. Afterwards the card collapses to a one-line red strip that stays for the session. The card cannot be dismissed.
+4. Urgent (not emergency) uses the `signalTint` card with a red ring and red icon disc.
 
-`status: "unsupported"` values render in `graphite`, weight 400, with a 1px dashed graphite underline offset 4px, and a margin note below in serif italic `micro`: "Not found in the patient's words. Check before use." (th/it/en in `PencilField`). They never get the ink confidence mark, are never bold, never appear in the printable/exported summary as fact, and the Approve-all action skips them: each needs its own Confirm, Edit, or Strike. Missing fields render as an empty form line (`.mx-blank`, 1px `ruleStrong` bottom border, 8em) plus "Not mentioned yet". Component: `FieldValue` switches on `FieldStatus` so every surface is identical.
+**Patient mobile:**
+1. A full-screen red gradient view slides up over `interrupt` and pushes the intake away.
+2. Top-aligned on the view:
+   - a white alert icon disc;
+   - `display` text from `patientMessage[lang]`;
+   - the patient code in a white card (`code`, ink, so staff can read it at arm's length);
+   - "Show this screen to the staff at the desk."
+3. One quiet white text button for desk directions.
+4. No way back into the intake. No timer. One haptic `notificationAsync(Error)`.
 
-### 6c. Red flag = full-bleed interrupt that pushes the summary away
+### 6d. Confidence
+Four rising bars (3px wide, 6.5 to 14px tall, pill ends) after a `supported` value:
+- filled bars are ocean;
+- empty bars are `rule`;
+- level 1 (low) fills one bar in amber and softens the value text to inkSoft.
 
-Clinician web (`RedFlagInterrupt`): the band is the first row of the summary sheet, full sheet width, edge to edge. It opens by animating `grid-template-rows: 0fr` to `1fr` over `interrupt` ms, so the summary below is physically pushed down rather than covered. Content: serif `display` label (`hit.label`), `lead` action (`hit.action`), the patient's quote in serif italic, rule ID in `micro`. Emergency = `signal` fill; urgent = `signalTint` with 2px signal rules. `role="alert"`. It cannot be closed. "Acknowledge" (writes an audit event, owned by the page) collapses it to a one-line strip that remains for the session. The queue row for that session moves to the top with a solid signal badge.
+Never a number or %. The accessible name is "Confidence: high". API is unchanged (`InkConfidence`, `inkLevel()`, alias `confidenceLevel()`).
 
-Patient mobile: the intake screen is replaced, not overlaid. A full-screen `signal` view slides up from the bottom edge over `interrupt` ms (`translateY(100%)` to 0), pushing the question sheet up and out of view. Content, top-aligned, `onSignal` on signal: serif `display` instruction from `hit.patientMessage[lang]`, the patient code at `code` size, one line "Show this screen to the staff at the desk." No buttons that resume the intake; one quiet text button "I need help finding the desk" which shows the desk location text. No auto-dismiss, no timer, no sound. `accessibilityRole="alert"` and `AccessibilityInfo.announceForAccessibility`. Haptic: one `notificationAsync(Error)` if `expo-haptics` is installed (not yet a dependency).
+### 6e. Language switch
+The language control is a `SegmentedControl` pill: muted track, white raised thumb, labels in their own language (ไทย, Italiano/IT, English/EN).
 
-### 6d. Confidence as ink density
+On change, text morphs in place: opacity 0, blur 3px, 2px down, settling over `morph`. The box never moves.
 
-`confidence` (0..1) maps to four ink levels (`inkLevel()` in tokens): <0.5 low, 0.5 moderate, 0.75 high, 0.9 very high. Two signals change together:
-- Value text colour: graphite, inkSoft, ink, ink.
-- A 12px square mark after the value: two graphite hatch strokes; four inkSoft strokes; four ink strokes cross-hatched; solid ink.
-No numbers and no % anywhere in the UI. Accessible name: "Confidence: high" (localized). Only `supported` fields get the mark. Component: `InkConfidence`.
+`LangMorph` fix (wave 4): it animates only nodes born from a real text or language change. Parent re-renders and polling no longer replay it. The clinician `_morph.tsx` memo wrapper can be removed.
 
-### 6e. Language switch morphs text in place
+Patient quotes are never translated in place.
 
-The language control is a three-option segmented control (`ไทย`, `Italiano`, `English`), each option labelled in its own language, radius 3, selected = ink fill. On switch, every localized string re-renders in place: the box does not move, the new text fades in from `opacity 0, blur(3px), letter-spacing +0.02em` to rest over `morph` ms with `pen`. No slide, no flip, no stagger. The first render never animates. Each node sets `lang` so the right font and screen-reader voice are used. Patient quotes and evidence are never translated in place; they stay in the patient's language with the translation shown beneath in `small` inkSoft. Component: `LangMorph`. Mobile: Reanimated `FadeIn.duration(260).easing(Easing.bezier(...pen))` keyed on language.
+## 7. Icons
 
-### 6f. Corrections and approval (supporting detail)
+Lucide geometry, 24 grid, 1.75 stroke, round caps, `currentColor`, 16 to 22px. Icons always come with a text label, except close/back, which get an aria-label.
+- **Now:** `components/ui/Icon.tsx` ships the needed glyphs as inline SVG (paths from Lucide, ISC licence): check, circle-check, triangle-alert, quote, pencil, circle-minus, globe, clipboard-list, user, pill, activity, bell, inbox, chevron-right, clock, home, mic.
+- **If `lucide-react` is approved:** swap `Icon` to it (same names).
+- **Mobile:** `lucide-react-native` (needs `react-native-svg`), or the Material Symbols package already installed, at the same visual weight.
 
-Edited: old value struck through once (`.mx-struck`), new value in ink, "Edited by clinician, <reviewer>". Approved: value in ink with an outline badge "Approved, <reviewer>". Nothing is ever deleted from view; the audit trail is visible on the sheet.
+Banned: emoji, sparkles, robot or brain icons, stethoscope illustrations, icons inside gradient blobs.
 
-## 7. Iconography
+## 8. Layouts
 
-Words first. An icon appears only where the action is universal and space is tight (close, back, send, microphone, external link), and always with an accessible label. Web: `@phosphor-icons/react`, weight `light` at 20px and `regular` at 16px (not yet installed; request below). Mobile: `expo-symbols` (SF Symbols, weight regular) with a text fallback on Android. No emoji, no sparkles, no robot, no stethoscope or heart illustrations, no icon inside a coloured circle.
+### 8.1 Patient mobile (Expo)
 
-## 8. Surface layouts
-
-### 8.1 Patient app (Expo)
-
-Welcome / language pick. Left-aligned, no logo lockup, no illustration. The three language options are the hero.
-
+Home and welcome:
 ```
 +--------------------------------------+
-|  MedX Bridge                         |  serif title 24, ink, on paper
+| [M] MedX Bridge              ( TH )  |  brand mark + language pill
 |                                      |
-|  Tell us why you came in today.      |  serif question 30
-|  A nurse will read it before your    |  bodyPatient 19, inkSoft
-|  visit.                              |
+| Good morning                         |  small inkSoft
+| Welcome                              |  title 22, 800
 |                                      |
-|  ------------------------------------|  rule
-|  ไทย                               > |  48px rows, each in its own language
-|  ------------------------------------|  and font
-|  Italiano                          > |
-|  ------------------------------------|
-|  English                           > |
-|  ------------------------------------|
+| +----------------------------------+ |  GRADIENT HERO (teal -> ocean), radius 28
+| | Tell us what brings you in       | |  title, white
+| | A nurse reads it before your     | |  body, white 90%
+| | visit.                           | |
+| | ( mic  Start )                   | |  white pill, ocean text
+| +----------------------------------+ |
 |                                      |
-|  This does not replace a doctor. In  |  small, graphite
-|  an emergency, go to the desk now.   |
-+--------------------------------------+
-```
-
-Intake (first answer). Not a chat. One sheet with ruled lines; the patient writes on it.
-
-```
-+--------------------------------------+
-|  B-042                     Italiano  |  code small inkSoft | language control
+| +---------------+ +----------------+ |  two white cards
+| | Your code     | | Wait           | |  small inkSoft
+| | B-042         | | ~ 15 min       | |  stat 32, 800, tabular (real data only)
+| +---------------+ +----------------+ |
 |                                      |
-|  Che cosa la porta qui oggi?         |  serif question 30
-|                                      |
-|  ____________________________________|  ruled writing lines (rule colour,
-|  Ho mal di petto da stamattina_______|  32px pitch), text bodyPatient,
-|  ____________________________________|  caret ink. Multiline TextInput.
-|  ____________________________________|
-|                                      |
-|  Write in your own words. Short is   |  small graphite hint
-|  fine.                               |
-|                                      |
-|  [            Continue             ] |  primary, ink fill, 48px, bottom
-+--------------------------------------+
-```
-
-Follow-up question. The previous answers collapse into a ledger at the top (the patient's own sentences, plain text, small, ruled), the new question is large below it. No bubbles, no left/right alignment, no avatars, no typing dots. While the next question loads, the question line shows a graphite blank line, not a spinner.
-
-```
-+--------------------------------------+
-|  B-042                     Italiano  |
-|  What you told us                    |  small inkSoft
-|  ------------------------------------|
-|  Ho mal di petto da stamattina.      |  small ink, each answer one ruled row
-|  ------------------------------------|
-|                                      |
-|  Da quanto tempo ha questo dolore?   |  serif question 30, the one question
-|                                      |
-|  ____________________________________|  ruled lines
-|  ____________________________________|
-|                                      |
-|  [ I don't know ]   [   Continue   ] |  secondary | primary
-|                                      |  step count only if real: "2 of up to 5"
+| This does not replace a doctor. In   |  small graphite
+| an emergency go to the desk now.     |
+|--------------------------------------|
+|  Home     Visit    (+)    Help   Me  |  tab bar 72pt, white, sheetLifted,
+|                    raised             |  centre 60pt gradient circle (Start/Answer)
 +--------------------------------------+
 ```
 
-Red flag (see 6c). Replaces the intake entirely.
-
+Intake and follow-up (answer cards, not chat bubbles):
 ```
-+======================================+  full-bleed signal #B3121B
++--------------------------------------+
+| <  Question 2 of up to 5     ( IT )  |  progress as words, thin ocean bar under
 |                                      |
-|  Vada subito al banco                |  serif display 38, onSignal
-|  dell'accettazione.                  |
+| Da quanto tempo ha questo dolore?    |  question 26, 700
 |                                      |
-|  Mostri questa schermata al          |  bodyPatient 19
-|  personale.                          |
+| +----------------------------------+ |  white answer card, radius 22
+| | [ text field, 3 lines           ]| |  input radius 14, ocean focus ring
+| | ( mic )                          | |
+| +----------------------------------+ |
+| ( Da stamattina ) ( 1-2 giorni )     |  quick-answer pills (only if the question
+| ( Non so )                           |  offers options)
 |                                      |
-|  B-042                               |  code 64, serif semibold
+| What you told us                     |  small inkSoft
+| +----------------------------------+ |  one white card, rows (not bubbles):
+| | Ho mal di petto da stamattina. > | |  the patient's own sentences, tap to edit
+| +----------------------------------+ |
 |                                      |
-|                                      |
-|  Non so dove si trova il banco       |  quiet text button, underlined
+| [          Continue            ]     |  primary gradient pill, 48pt
++--------------------------------------+
+```
+
+Red flag (see 6c):
+```
++======================================+  red gradient, full screen
+| (!)                                  |  white icon disc
+| Vada subito al banco                 |  display 34, 800, white
+| dell'accettazione.                   |
+| Mostri questa schermata al personale.|  bodyPatient, white
+| +----------------------------------+ |
+| |  B-042                           | |  white card, code 52 ink
+| +----------------------------------+ |
+| Dove si trova il banco?              |  quiet white underlined text button
 +======================================+
 ```
 
-Submitted / "a nurse will review this".
-
+Status ("a nurse will review this"):
 ```
 +--------------------------------------+
-|                                      |
-|  Your code                           |  small inkSoft
-|  B-042                               |  code 64, serif, ink
-|                                      |
-|  A nurse will read your answers      |  serif title 24
-|  before you are called.              |
-|  ------------------------------------|
-|  Sent            09:41               |  body, tabular, ink. Real states only:
-|  Being reviewed  .                   |  sent / being reviewed / reviewed.
-|  Reviewed        .                   |  pending = blank form line, done = time
-|  ------------------------------------|
-|  If you feel worse while you wait,   |  body ink
-|  go to the desk now.                 |
+| +----------------------------------+ |  GRADIENT HERO
+| | Your code                        | |
+| | B-042                            | |  code 52, white
+| | A nurse will read your answers   | |
+| +----------------------------------+ |
+| +----------------------------------+ |  white card, timeline rows:
+| | (v) Sent              09:41      | |  teal check disc + time (tabular)
+| | ( ) Being reviewed               | |  muted ring (pending)
+| | ( ) Reviewed                     | |
+| +----------------------------------+ |
+| If you feel worse while you wait,    |
+| go to the desk now.                  |
 +--------------------------------------+
 ```
 
-### 8.2 Clinician review (web)
-
+### 8.2 Web app shell (`AppShell`)
 ```
-desk #E3E1D7
-+----------------+--------------------------------------------+-------------------------------+
-| Queue          | B-042   Italiano   09:41        [It|Th|En]  | Patient's words               |
-| 288px, sheet   | sheet, shadow.sheet                        | sheet, 400px, scrolls alone   |
-|----------------|============================================|-------------------------------|
-| B-044  Emerg.  | Red flag: chest pain with sweating         | 09:38  Patient                |
-|   chest pain   | Assess now. Notify doctor on duty.         | Ho [mal di petto] da          |
-|----------------| Patient said: "sudo freddo"   RF-CHEST-01  |  stamattina e sudo freddo.    |
-| B-042  Urgent  | [Acknowledge]                              |  ~~~~~~~~ (dotted: used)      |
-|----------------|============================================|  I have chest pain since this |
-| B-041  Review  | Chief complaint   chest pain            [#]| morning and I'm sweating.     |
-| B-039  Needs   | Onset             this morning         [/]|  (translation, small inkSoft) |
-|   human        | Duration          ____ Not mentioned yet   |                               |
-| B-037  Approved| Severity          strong (pencil, dashed)  | 09:39  Question               |
-|                |   Not found in the patient's words.        | Da quanto tempo...            |
-| sorted by      | ----------------------------------------   |                               |
-| urgency, then  | Medications       aspirin                  |                               |
-| wait time      | Allergies         ____ Not mentioned yet   |                               |
-|                |--------------------------------------------|                               |
-|                | [Approve supported fields] [Edit] [Take    |                               |
-|                |  over]                     Audit trail  v  |                               |
-+----------------+--------------------------------------------+-------------------------------+
++------------------+-------------------------------------------------------------+
+| [M] MedX Bridge  |  Good afternoon                    (TH|IT|EN)  (AR)         |
+|                  |  Nurse A. Rossi                    language pill  avatar    |
+| (Nurse|Doctor|   |                                                             |
+|  Pharm|Ops)      |  +--------------------------------------------------------+ |
+|                  |  | GRADIENT HERO: "3 intakes need you now"  (Open next)   | |
+| (o) Queue     6  |  +--------------------------------------------------------+ |
+|  o  Pharmacy     |  page content: white cards                                  |
+|  o  Ops          |                                                             |
+|                  |                                                             |
+| Research         |                                                             |
+| prototype ...    |                                                             |
++------------------+-------------------------------------------------------------+
 ```
+- Sidebar: brand mark, a role `SegmentedControl` (Nurse/Doctor/Pharmacist/Ops), and pill nav items. The active item is `tealTint` with teal text. A red count appears only for urgent items.
+- Top bar: greeting, bold name, language pill, avatar (initials on gradient).
+- Below 1024px the sidebar stacks on top and the nav scrolls horizontally.
 
-- Queue rows: 40px, code (tabular, medium), one-line chief complaint, status badge. Emergency rows: solid signal badge "Emergency"; urgent: signalTint row; needs-human: pencil badge "Needs human review". Selected row: ink 2px outline inset.
-- The Approve button names exactly what it does: "Approve supported fields". Pencil fields need individual action.
-- Needs-human (abstained) state: the summary column shows one sentence in serif title, "This intake needs a person to review it.", the reason in plain words, the transcript, and "Take over". No partial summary.
-- Audit trail: a disclosure at the sheet foot; rows are `time  actor  action`, tabular, small.
-- Loading: the form skeleton is the real form with blank lines, no shimmer.
-
-### 8.3 Ops dashboard (web)
-
-Not a hero-metric page. One sheet like a ward board: escalations first, then the queue, then the system ledger.
-
+### 8.3 Clinician review
 ```
-desk
-+------------------------------------------------------------------------------------------+
-| Today, Sunday 18 Oct                                    [It|Th|En]   sheet title, serif|
-|==========================================================================================|
-| Escalations (2)                                                          signal band row |
-| B-044  Chest pain with sweating   RF-CHEST-01   09:38   not acknowledged 4 min   [Open]  |
-| B-031  Pregnancy bleeding         RF-OB-02      08:12   acknowledged by Nurse K          |
-|------------------------------------------------------------------------------------------|
-| Queue by urgency                                                                         |
-| Emergency  B-044                                                                         |
-| Urgent     B-042  B-040                                                                  |
-| Routine    B-041  B-039  B-038  B-036 ...            codes as tabular ink tokens, 40px   |
-| Needs human  B-035                                   pencil style                        |
-|------------------------------------------------------------------------------------------|
-| Intakes today  37     Escalated  2     Auto-captured  (value)     Abstained  (value)     |
-| Median review  (value)                     one ledger row, numbers tabular body 15     |
-|------------------------------------------------------------------------------------------|
-| Model latency                       Gemma (model) on AMD (hardware) via (provider)       |
-|  ||  | ||| |  |||  ||   |  | ||   one tick per call, height = latency, p50 and p95     |
-|  p50 ---------------  p95 - - - -   as labelled horizontal rules; failed calls in signal |
-+------------------------------------------------------------------------------------------+
+| Queue card              | Summary card                               | Patient's words card      |
+| (All)(Urgent 2)(Review) | [RED FLAG CARD pushes down when present]  | 09:38 Patient  IT         |
+| B-044 Emergency  4 min  | B-042  Italiano  ( Urgent )                | Ho [mal di petto] da ...  |
+| B-042 Urgent     9 min  | Chief complaint  chest pain [From words] ll| translation, small        |
+| B-041 Review    12 min  | Severity  [strong] (Needs check)           |                           |
+|  rows 48px, selected =  | Duration  (- Not mentioned yet)            |                           |
+|  paper + ocean ring     | ( Approve supported fields ) ( Take over ) |                           |
 ```
+The queue hero is optional. On this screen the red-flag card is the bold element when present; otherwise there is no gradient hero (the primary button carries the brand).
 
-All numbers in wireframes are layout samples; real values come from `OpsMetrics`. Show `null` as a blank form line, never 0.
+### 8.4 Ops dashboard
+```
+| GRADIENT HERO: "6 escalations today, 2 not acknowledged"  (Open oldest)              |
+| [StatTile Intakes 37] [StatTile Escalated 6 (red)] [Auto-captured ..] [Median review]|
+| Escalations card: rows on white, red Emergency chip, "Open intake" ocean link         |
+| Queue by urgency card | Model latency card (Gemma on AMD): per-call ticks, p50/p95    |
+```
+Escalation rows must be white rows with a red chip, not full red rows. Full red is reserved for the single interrupt.
+
+All numbers in wireframes are layout samples; real values come from the API. A null shows as a placeholder pill, never 0.
 
 ## 9. Copy tone
 
-Calm, plain, short. Say what happens next. Never diagnose, never reassure falsely, never blame.
+Calm, plain, friendly, short. Say what happens next. Never diagnose, never reassure falsely. Greetings are time-of-day only ("Good morning"), never chatty. Clinician copy is verb-first ("Approve supported fields", "Assess now"). No exclamation marks, no emoji, no em dashes. Italian uses formal "Lei"; Thai uses neutral polite "กรุณา".
+- **Patient keys:** "Tell us what brings you in" / "Raccontaci perché è qui oggi" / "บอกเราว่าวันนี้มาด้วยอาการอะไร". A native check is still pending.
+- **Red-flag patient text:** comes from `redflags.json` (Doctor).
 
-| Do | Don't |
-|---|---|
-| "A nurse will read this before your visit." | "Our AI will analyze your symptoms!" |
-| "Please go to the front desk now." | "You may be having a heart attack." |
-| "Not found in the patient's words. Check before use." | "Low confidence (42%)" |
-| "This intake needs a person to review it." | "Oops! Something went wrong." |
-| "Red flag: chest pain with sweating" (clinician) | "Possible MI detected" |
+## 10. Builder checklist and v1 compatibility
 
-Rules:
-- Patient copy: second person, one idea per sentence, Grade 6 reading level. Italian uses formal "Lei". Thai uses polite particles (ค่ะ/ครับ avoided in system text; use neutral polite "กรุณา").
-- Clinician copy: terse, verbs first ("Assess now", "Approve supported fields"). Use "suggests for review", "flags for clinician". Never "diagnosis".
-- Buttons name the action; the result names the same action ("Approve" then "Approved").
-- No exclamation marks, no emoji, no em dashes, no "AI" in patient-facing text beyond the required research-prototype notice.
-- Key patient strings (to be confirmed by native speakers before the demo):
-  - th: "กรุณาไปที่เคาน์เตอร์ประชาสัมพันธ์ทันที แสดงหน้าจอนี้ให้เจ้าหน้าที่ดู" / "พยาบาลจะอ่านคำตอบของคุณก่อนเรียกตรวจ"
-  - it: "Vada subito al banco dell'accettazione. Mostri questa schermata al personale." / "Un infermiere leggerà le sue risposte prima della visita."
-  - en: "Please go to the front desk now. Show this screen to the staff." / "A nurse will read your answers before you are called."
-  - Red-flag patient text itself comes from `redflags.json` `patientMessage` (Doctor owns it).
+v1 names now mean:
+- `bg-desk`: app background.
+- `bg-sheet`: white card.
+- `bg-paper`: quiet surface.
+- `text-ink`, `text-ink-soft`, `text-graphite`: text levels.
+- `border-rule`: hairline.
+- `bg-signal*`: urgency.
+- `font-serif`: the display sans.
+- `shadow-sheet`: a card, now with a 22 radius.
+- `rounded-control`: 14.
+- `.mx-*` classes: v2 looks.
 
-## 10. Builder checklist
+New utilities: `bg-primary-gradient`, `bg-signal-gradient`, `rounded-card`, `rounded-hero`, `text-stat`, `bg-teal-tint`, `bg-ocean-tint`, `bg-warn-tint`, `text-teal`, `text-ocean`, `text-warn`, `bg-muted`, `shadow-hero`, and `.mx-skeleton`.
 
-- Use tokens and the `components/ui` primitives; no raw hex, no new colours, no new radii.
-- Every localized string goes through `LangMorph` (web) or the keyed fade (mobile) and sets `lang`.
-- Every summary value goes through `FieldValue`. Every transcript turn through `EvidenceHighlight`.
-- Every state: loading (blank form lines), empty ("No intakes yet. New ones appear here."), error (says what failed and what to do), abstained.
-- Keyboard: queue and field rows are buttons; visible ink focus ring; Escape clears the highlight.
-- Test at 375px and 1440px, and with reduced motion on.
+New primitives: `Card`, `CardHeader`, `GradientHero`, `HeroAction`, `StatTile`, `SegmentedControl`, `Pill`, `AppShell`, `Avatar`, `EmptyState`, `Icon`.
+
+Checklist:
+- Use tokens and primitives only; no raw hex.
+- Use one gradient hero per screen.
+- Every state must be built: loading (skeleton), empty (`EmptyState`), error (says what failed and what to do), abstained.
+- Keyboard: visible ocean focus ring; Escape clears the highlight.
+- Test at 375px and 1440px, and with reduced motion.

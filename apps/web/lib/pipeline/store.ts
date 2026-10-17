@@ -28,6 +28,12 @@ export function appendAudit(sessionId: string, type: AuditType, actor: AuditEven
   state().audit.push(event); persist(); return structuredClone(event);
 }
 export function getAudit(id?: string): AuditEvent[] { return structuredClone(state().audit.filter(e => !id || e.sessionId === id)); }
+/** Demo-only caller must hold the seed lock. Keep the lock map across resets. */
+export function resetDemoStore() {
+  const s = state();
+  if ([...s.locks.keys()].some(id => id !== 'dev-demo-seed')) throw new Error('Store has active writes');
+  s.sessions.clear(); s.audit = []; persist();
+}
 /** Serialises patient turns and clinician writes on a session within this single process. */
 export async function withSessionLock<T>(id: string, fn: () => Promise<T> | T): Promise<T> {
   const locks = state().locks; const previous = locks.get(id) || Promise.resolve();

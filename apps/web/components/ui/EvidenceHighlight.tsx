@@ -45,7 +45,7 @@ export function EvidenceHighlight({
         s.mark ? (
           <mark
             key={i}
-            className={cx("mx-mark", !s.mark.active && "underline decoration-dotted decoration-rule-strong underline-offset-4")}
+            className={cx("mx-mark", !s.mark.active && "underline decoration-dotted decoration-ocean/60 decoration-[1.5px] underline-offset-4")}
             data-active={armed && s.mark.active}
             style={
               s.mark.active

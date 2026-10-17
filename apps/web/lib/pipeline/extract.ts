@@ -1,4 +1,4 @@
-import type { ExtractedField, IntakeSession, ModelCall, PipelineStep } from '@medx/shared';
+import type { ExtractedField, FieldKey, IntakeSession, ModelCall, PipelineStep } from '@medx/shared';
 import { emptyFields } from './config';
 import { chatJSON } from './llm';
 import type { ChatRequest, ChatResult, ModelClient } from './llm';
@@ -7,6 +7,7 @@ import { languageOK, validateExtraction } from './schema';
 import { verifyDetailed, words } from './verify';
 import { pharmacyEntries } from './pharmacyExtraction';
 export interface EngineContext {
+  askedField?: FieldKey;
   client?: ModelClient;
   trace?: (e: { step: PipelineStep; raw: unknown }) => void;
   deadline: number;
@@ -37,7 +38,7 @@ export async function invoke(req: ChatRequest, ctx: EngineContext): Promise<Chat
 }
 function failCall(call: ModelCall, error: string) { call.ok = false; call.error = error; }
 export async function extract(session: IntakeSession, ctx: EngineContext) {
-  const request: ChatRequest = { step: 'extract', system: EXTRACTION_SYSTEM, user: extractionPrompt(session), schemaName: 'intake_extraction' };
+  const request: ChatRequest = { step: 'extract', system: EXTRACTION_SYSTEM, user: extractionPrompt(session, ctx.askedField), schemaName: 'intake_extraction' };
   let result = await invoke(request, ctx);
   if (!result.call.ok && result.failure !== 'schema_error' && result.data === null) {
     const delay = result.retryAfterMs ?? 500;
@@ -64,7 +65,7 @@ export async function extract(session: IntakeSession, ctx: EngineContext) {
     proposed++;
     const verified = f.evidence.flatMap(e => {
       const id = aliasTurns.find(t => t.alias === e.turn)?.id || e.turn;
-      const hit = verifyDetailed(e.quote, session.turns, id);
+      const hit = verifyDetailed(e.quote, session.turns, id, base.key === 'severity');
       if (hit?.correctedTurn) ctx.log?.('corrected_evidence_turn', { key: base.key, from: e.turn, to: hit.evidence.turnId });
       return hit ? [hit] : [];
     });

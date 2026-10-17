@@ -1,9 +1,17 @@
+export { AppShell, type ShellNavItem, type ShellRole } from "./AppShell";
+export { Avatar } from "./Avatar";
 export { Badge } from "./Badge";
 export { Button, type ButtonProps } from "./Button";
+export { Card, CardHeader } from "./Card";
+export { EmptyState } from "./EmptyState";
 export { EvidenceHighlight } from "./EvidenceHighlight";
 export { Field } from "./Field";
+export { GradientHero, HeroAction } from "./GradientHero";
+export { Icon, type IconName } from "./Icon";
 export { InkConfidence } from "./InkConfidence";
 export { LangMorph } from "./LangMorph";
 export { FieldValue, PencilField } from "./PencilField";
 export { RedFlagInterrupt } from "./RedFlagInterrupt";
+export { Pill, SegmentedControl } from "./SegmentedControl";
 export { segments, type Mark, type Segment } from "./segments";
+export { StatTile } from "./StatTile";

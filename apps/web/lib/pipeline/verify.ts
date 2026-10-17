@@ -36,18 +36,23 @@ function boundaryCheck(text: string, lang: Lang) {
     !compounds.some(([a, b]) => (a < start && start < b) || (a < end && end < b));
 }
 export interface Verified { evidence: Evidence; matchFactor: number; correctedTurn: boolean }
-export function verifyDetailed(quote: string, turns: Turn[], turnId?: string): Verified | null {
+export function verifyDetailed(quote: string, turns: Turn[], turnId?: string, allowNumericAnswer = false): Verified | null {
   const q = norm(quote).t;
-  if (q.length < 2 || /^\s*(\[[A-Z]+_\d+\]\s*)+$/u.test(quote)) return null;
+  const singleDigit = q.length === 1 && /^[0-9]$/.test(q) && allowNumericAnswer;
+  if ((q.length < 2 && !singleDigit) || /^\s*(\[[A-Z]+_\d+\]\s*)+$/u.test(quote)) return null;
   const patients = turns.filter(t => t.role === 'patient');
   const ordered = [...patients.filter(t => t.id === turnId), ...patients.filter(t => t.id !== turnId)];
   for (const turn of ordered) {
+    // A one-digit severity quote is valid only as an exact complete answer,
+    // immediately after a question. It cannot match a digit within other prose.
+    if (singleDigit && (turn.id !== turnId || turn.text.trim() !== quote.trim() || turns[turns.indexOf(turn) - 1]?.role !== 'assistant')) continue;
     const bounded = boundaryCheck(turn.text, turn.lang);
     const result = (start: number, end: number, matchFactor: number): Verified => ({ evidence: { turnId: turn.id, quote: turn.text.slice(start, end), start, end }, matchFactor, correctedTurn: !!turnId && turn.id !== turnId });
     // Check all occurrences: an embedded first occurrence must not hide a later word.
     for (let at = turn.text.indexOf(quote); at >= 0; at = turn.text.indexOf(quote, at + 1)) {
       if (bounded(at, at + quote.length)) return result(at, at + quote.length, 1);
     }
+    if (singleDigit) continue;
     const n = norm(turn.text);
     for (let at = n.t.indexOf(q); at >= 0; at = n.t.indexOf(q, at + 1)) {
       const start = n.map[at]; const end = n.ends[at + q.length - 1];

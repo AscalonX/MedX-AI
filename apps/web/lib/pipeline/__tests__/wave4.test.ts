@@ -73,9 +73,9 @@ describe('MED extraction through mock provider and alerts', () => {
     const entries = pharmacyEntries({ medications: [{ nameOriginal: 'metformin', turn: 'T1', quote: 'I take metformin.', dose: '5000 mg', frequency: null, timing: null }], allergies: [{ allergenOriginal: 'latex', turn: 'T1', quote: 'Allergic to latex.', reaction: 'anaphylaxis' }] }, s);
     expect(entries.medications[0].status).toBe('unsupported'); expect(entries.allergies[0].status).toBe('unsupported');
   });
-  it('requires pharmacy lists in both transport schema and runtime validation', () => {
+  it('requests pharmacy lists from providers and accepts legacy fixtures at runtime', () => {
     expect(EXTRACTION_SCHEMA.required).toEqual(expect.arrayContaining(['medications', 'allergies', 'noKnownAllergies']));
-    expect(validateExtraction({ language_detected: 'en', fields: {} }).data).toBeNull();
+    expect(validateExtraction({ language_detected: 'en', fields: {} }).data).toMatchObject({ medications: [], allergies: [], noKnownAllergies: null });
     expect(validateExtraction({ language_detected: 'en', fields: {}, medications: [], allergies: [], noKnownAllergies: null }).data).not.toBeNull();
   });
   it('abstains on malformed pharmacy extraction after one repair', async () => {

@@ -12,12 +12,11 @@ export function validateExtraction(data: unknown): { data: ModelExtraction | nul
   const errors: string[] = []; const ignored: string[] = [];
   if (!object(data) || !object(data.fields) || !['th', 'it', 'en', 'mixed', 'other'].includes(String(data.language_detected))) return { data: null, errors: ['Expected fields object and language_detected enum'], ignored };
   if (Object.keys(data).some(k => !['fields', 'language_detected', 'medications', 'allergies', 'noKnownAllergies'].includes(k))) errors.push('Unexpected top-level key');
-  for (const key of ['medications', 'allergies', 'noKnownAllergies']) if (!(key in data)) errors.push(`Missing pharmacy key: ${key}`);
   const evidence = (x: Record<string, unknown>) => typeof x.turn === 'string' && /^T\d+$/.test(x.turn) && shortString(x.quote, 400);
   const nullable = (x: unknown) => x === null || shortString(x);
-  if (data.medications !== undefined && (!Array.isArray(data.medications) || data.medications.length > 40 || !data.medications.every(m => object(m) && shortString(m.nameOriginal) && ['dose', 'frequency', 'timing'].every(k => nullable(m[k])) && evidence(m) && Object.keys(m).every(k => ['nameOriginal', 'dose', 'frequency', 'timing', 'turn', 'quote'].includes(k))))) errors.push('Invalid medications');
-  if (data.allergies !== undefined && (!Array.isArray(data.allergies) || data.allergies.length > 40 || !data.allergies.every(a => object(a) && shortString(a.allergenOriginal) && nullable(a.reaction) && evidence(a) && Object.keys(a).every(k => ['allergenOriginal', 'reaction', 'turn', 'quote'].includes(k))))) errors.push('Invalid allergies');
-  if (data.noKnownAllergies !== undefined && data.noKnownAllergies !== null && (!object(data.noKnownAllergies) || !evidence(data.noKnownAllergies) || Object.keys(data.noKnownAllergies).some(k => !['turn', 'quote'].includes(k)))) errors.push('Invalid noKnownAllergies');
+  if ('medications' in data && (!Array.isArray(data.medications) || data.medications.length > 40 || !data.medications.every(m => object(m) && shortString(m.nameOriginal) && ['dose', 'frequency', 'timing'].every(k => nullable(m[k])) && evidence(m) && Object.keys(m).every(k => ['nameOriginal', 'dose', 'frequency', 'timing', 'turn', 'quote'].includes(k))))) errors.push('Invalid medications');
+  if ('allergies' in data && (!Array.isArray(data.allergies) || data.allergies.length > 40 || !data.allergies.every(a => object(a) && shortString(a.allergenOriginal) && nullable(a.reaction) && evidence(a) && Object.keys(a).every(k => ['allergenOriginal', 'reaction', 'turn', 'quote'].includes(k))))) errors.push('Invalid allergies');
+  if ('noKnownAllergies' in data && data.noKnownAllergies !== null && (!object(data.noKnownAllergies) || !evidence(data.noKnownAllergies) || Object.keys(data.noKnownAllergies).some(k => !['turn', 'quote'].includes(k)))) errors.push('Invalid noKnownAllergies');
   const fields = {} as ModelExtraction['fields'];
   for (const key of Object.keys(data.fields)) if (!FIELD_KEYS.includes(key as FieldKey)) ignored.push(key);
   for (const key of FIELD_KEYS) {
@@ -26,7 +25,7 @@ export function validateExtraction(data: unknown): { data: ModelExtraction | nul
     if (!object(f) || !shortString(f.value_original) || !localized(f.value) || !['high', 'medium', 'low'].includes(String(f.certainty)) || !Array.isArray(f.evidence) || f.evidence.length < 1 || f.evidence.length > 3 || !f.evidence.every(e => object(e) && /^T\d+$/.test(String(e.turn)) && shortString(e.quote, 400) && Object.keys(e).every(k => ['turn', 'quote'].includes(k))) || Object.keys(f).some(k => !['value_original', 'value', 'evidence', 'certainty'].includes(k))) errors.push(`Invalid field: ${key}`);
     else fields[key] = f as unknown as ModelField;
   }
-  return { data: errors.length ? null : { language_detected: data.language_detected as ModelExtraction['language_detected'], fields, medications: data.medications as ModelMedicine[] | undefined, allergies: data.allergies as ModelAllergy[] | undefined, noKnownAllergies: data.noKnownAllergies as ModelExtraction['noKnownAllergies'] }, errors, ignored };
+  return { data: errors.length ? null : { language_detected: data.language_detected as ModelExtraction['language_detected'], fields, medications: data.medications as ModelMedicine[] | undefined ?? [], allergies: data.allergies as ModelAllergy[] | undefined ?? [], noKnownAllergies: data.noKnownAllergies as ModelExtraction['noKnownAllergies'] ?? null }, errors, ignored };
 }
 const str = (maxLength: number) => ({ type: 'string', minLength: 1, maxLength });
 const loc = { type: 'object', additionalProperties: false, required: ['th', 'it', 'en'], properties: { th: str(300), it: str(300), en: str(300) } };

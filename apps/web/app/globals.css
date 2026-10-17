@@ -1,30 +1,42 @@
 @import "tailwindcss";
 
 /*
- * MedX Bridge, "Clinical paper". Source of truth: packages/shared/src/tokens.ts.
- * Spec: docs/design/DIRECTION.md. Light only, on purpose (paper world, lit clinic rooms).
- * Utilities: bg-sheet, text-ink, text-graphite, border-rule, bg-signal, font-serif,
- * text-body, ease-pen, duration-sweep, rounded-control ...
+ * MedX Bridge v2, "Calm clinical banking". Source of truth: packages/shared/src/tokens.ts.
+ * Spec: docs/design/DIRECTION.md. Light theme. v1 utility names are kept and remapped
+ * (bg-sheet = white card, bg-desk = app background, text-ink, text-graphite, bg-signal = urgency red ...),
+ * so screens built on v1 re-skin without edits.
  */
 
 @theme {
-  /* colour: mirrors tokens.color (tokens-sync.test.ts checks this) */
-  --color-desk: #E3E1D7;
-  --color-paper: #EEEDE5;
-  --color-sheet: #F7F6F1;
-  --color-ink: #1C2026;
-  --color-ink-soft: #464B53;
-  --color-graphite: #5C5F65;
-  --color-rule: #C9C6BB;
-  --color-rule-strong: #827F77;
-  --color-highlighter: #F2DE4B;
-  --color-signal: #B3121B;
-  --color-signal-tint: #F4DCD7;
-  --color-on-signal: #F7F6F1;
+  /* colour: mirrors tokens.color (ui.test.ts checks this) */
+  --color-desk: #EEF3F6;
+  --color-paper: #F5F8FA;
+  --color-sheet: #FFFFFF;
+  --color-muted: #EDF1F5;
+  --color-ink: #0F1E2E;
+  --color-ink-soft: #45566A;
+  --color-graphite: #56657A;
+  --color-rule: #E3E9EF;
+  --color-rule-strong: #7D8C9E;
+  --color-teal: #08716A;
+  --color-ocean: #1A5CBF;
+  --color-primary-from: #0A8077;
+  --color-primary-to: #1A5FC4;
+  --color-on-primary: #FFFFFF;
+  --color-teal-tint: #E1F4F1;
+  --color-ocean-tint: #E5EEFB;
+  --color-highlighter: #D2E4FF;
+  --color-warn: #8F4508;
+  --color-warn-tint: #FEF2D7;
+  --color-signal: #BE1B2B;
+  --color-signal-deep: #9E1024;
+  --color-signal-tint: #FDEAEC;
+  --color-on-signal: #FFFFFF;
 
-  /* type: Latin face first, Thai face for Thai glyphs (per-glyph fallback) */
-  --font-serif: var(--font-newsreader), var(--font-noto-serif-thai), Georgia, serif;
-  --font-sans: var(--font-plex-sans), var(--font-plex-sans-thai), system-ui, sans-serif;
+  /* type: Latin face first, Thai face for Thai glyphs. `font-serif` is a v1 alias of the display face. */
+  --font-sans: var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif;
+  --font-serif: var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif;
 
   --text-micro: 12px;
   --text-micro--line-height: 1.4;
@@ -32,48 +44,79 @@
   --text-small--line-height: 1.45;
   --text-body: 15px;
   --text-body--line-height: 1.5;
-  --text-body-patient: 19px;
+  --text-body-patient: 18px;
   --text-body-patient--line-height: 1.5;
-  --text-lead: 19px;
-  --text-lead--line-height: 1.4;
-  --text-title: 24px;
+  --text-lead: 17px;
+  --text-lead--line-height: 1.45;
+  --text-title: 22px;
   --text-title--line-height: 1.25;
-  --text-title--letter-spacing: -0.01em;
-  --text-question: 30px;
+  --text-title--letter-spacing: -0.015em;
+  --text-question: 26px;
   --text-question--line-height: 1.2;
-  --text-question--letter-spacing: -0.015em;
-  --text-display: 38px;
+  --text-question--letter-spacing: -0.02em;
+  --text-stat: 32px;
+  --text-stat--line-height: 1.1;
+  --text-stat--letter-spacing: -0.025em;
+  --text-display: 34px;
   --text-display--line-height: 1.1;
-  --text-display--letter-spacing: -0.02em;
-  --text-code: 64px;
+  --text-display--letter-spacing: -0.025em;
+  --text-code: 52px;
   --text-code--line-height: 1;
-  --text-code--letter-spacing: -0.02em;
+  --text-code--letter-spacing: -0.03em;
 
-  /* shape: paper corners */
-  --radius-control: 3px;
+  /* shape */
+  --radius-control: 14px;
+  --radius-card: 22px;
+  --radius-hero: 28px;
 
-  --shadow-sheet: 0 1px 2px rgba(60, 52, 30, 0.1);
-  --shadow-sheet-lifted: 0 6px 18px rgba(60, 52, 30, 0.14);
+  /* elevation: diffuse, navy-tinted, offset down */
+  --shadow-sheet: 0 1px 2px rgba(15, 45, 80, 0.06), 0 8px 24px -12px rgba(15, 45, 80, 0.16);
+  --shadow-sheet-lifted: 0 1px 2px rgba(15, 45, 80, 0.06), 0 18px 40px -16px rgba(15, 45, 80, 0.24);
+  --shadow-hero: 0 22px 40px -20px rgba(26, 95, 196, 0.55);
+  --shadow-signal: 0 22px 40px -20px rgba(158, 16, 36, 0.55);
 
   /* motion: mirrors tokens.easing / tokens.duration */
-  --ease-pen: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-pen: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-marker: cubic-bezier(0.55, 0.05, 0.25, 1);
   --ease-interrupt: cubic-bezier(0.7, 0, 0.2, 1);
-  --duration-quick: 120ms;
-  --duration-base: 220ms;
+  --duration-quick: 140ms;
+  --duration-base: 240ms;
   --duration-morph: 260ms;
   --duration-sweep: 520ms;
   --duration-interrupt: 420ms;
 }
 
-/* Thai needs taller lines for stacked vowels and tone marks (tokens.type[*].lineHeightThai). */
+@utility bg-primary-gradient {
+  background-color: var(--color-primary-to);
+  background-image:
+    radial-gradient(120% 90% at 100% 100%, rgba(255, 255, 255, 0.14), transparent 55%),
+    linear-gradient(135deg, var(--color-primary-from), var(--color-primary-to));
+}
+@utility bg-signal-gradient {
+  background-color: var(--color-signal);
+  background-image: linear-gradient(135deg, #C81E2C, var(--color-signal-deep));
+}
+@utility rounded-card {
+  border-radius: var(--radius-card);
+}
+@utility rounded-hero {
+  border-radius: var(--radius-hero);
+}
+
+/* v1 screens: a "sheet" with the sheet shadow is now a card. */
+.shadow-sheet,
+.shadow-sheet-lifted {
+  border-radius: var(--radius-card);
+}
+
+/* Thai: taller lines for stacked vowels and tone marks; no fake italics; no negative tracking. */
 :lang(th) {
   line-height: 1.7;
 }
 :lang(th) :is(.italic, em, i, q) {
-  font-style: normal; /* Thai has no true italic; never fake-slant it */
+  font-style: normal;
 }
-:lang(th) :is(h1, h2, h3, .text-title, .text-question, .text-display) {
+:lang(th) :is(h1, h2, h3, .text-title, .text-question, .text-display, .text-stat) {
   line-height: 1.45;
   letter-spacing: 0;
 }
@@ -86,20 +129,24 @@
     font-size: 15px;
     line-height: 1.5;
     font-variant-numeric: tabular-nums lining-nums;
-    text-rendering: optimizeLegibility;
     -webkit-text-size-adjust: 100%;
-    scrollbar-color: var(--color-rule-strong) transparent;
+    scrollbar-color: #C5D0DB transparent;
     scrollbar-width: thin;
   }
   body {
     min-height: 100dvh;
-    background: var(--color-desk);
+    background-color: var(--color-desk);
+    background-image:
+      radial-gradient(900px 600px at 0% -10%, rgba(10, 128, 119, 0.10), transparent 60%),
+      radial-gradient(900px 640px at 100% 110%, rgba(26, 95, 196, 0.10), transparent 60%);
+    background-attachment: fixed;
   }
   h1,
   h2,
   h3 {
-    font-family: var(--font-serif);
-    font-weight: 500;
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.015em;
     text-wrap: balance;
   }
   p {
@@ -111,16 +158,15 @@
   }
   input,
   textarea {
-    caret-color: var(--color-ink);
+    caret-color: var(--color-ocean);
   }
   a {
     text-underline-offset: 3px;
     text-decoration-thickness: 1px;
   }
   :focus-visible {
-    outline: 2px solid var(--color-ink);
+    outline: 2px solid var(--color-ocean);
     outline-offset: 2px;
-    border-radius: var(--radius-control);
   }
   ::placeholder {
     color: var(--color-graphite);
@@ -128,70 +174,69 @@
   }
 }
 
-/* ---------- Signature marks (see DIRECTION.md section 6) ---------- */
+/* ---------- Signature marks (DIRECTION.md section 6) ---------- */
 
-/* (a) Highlighter. Chisel-tip ends via the angled gradient; the sweep animates background-size. */
+/* (a) Highlighter: an ocean marker that sweeps left to right. */
 .mx-mark {
   color: inherit;
   background-color: transparent;
-  background-image: linear-gradient(
-    100deg,
-    transparent 0.18em,
-    color-mix(in srgb, var(--color-highlighter) 92%, transparent) 0.3em,
-    var(--color-highlighter) calc(100% - 0.3em),
-    transparent calc(100% - 0.12em)
-  );
+  background-image: linear-gradient(var(--color-highlighter), var(--color-highlighter));
   background-repeat: no-repeat;
-  background-position: 0 58%;
-  background-size: 0% 82%;
+  background-position: 0 50%;
+  background-size: 0% 100%;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone;
-  padding-inline: 0.12em;
-  margin-inline: -0.12em;
-  border-radius: 1px;
+  padding: 0.05em 0.25em;
+  margin: 0 -0.25em;
+  border-radius: 6px;
 }
 .mx-mark[data-active="true"] {
-  background-size: 100% 82%;
-  transition: background-size var(--duration-sweep) var(--ease-marker);
+  background-size: 100% 100%;
+  box-shadow: inset 0 -2px 0 var(--color-ocean);
+  transition:
+    background-size var(--duration-sweep) var(--ease-marker),
+    box-shadow var(--duration-quick) linear;
   transition-delay: var(--mx-sweep-delay, 0ms);
 }
 .mx-mark[data-active="false"] {
   transition: background-size var(--duration-quick) linear;
 }
 
-/* (b) Pencil: graphite, lighter weight, a broken pencil underline. */
+/* (b) Unverified model value: dashed amber outline, softer text. Never looks like a confirmed value. */
 .mx-pencil {
-  color: var(--color-graphite);
-  font-weight: 400;
-  text-decoration-line: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: color-mix(in srgb, var(--color-graphite) 70%, transparent);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
+  color: var(--color-ink-soft);
+  font-weight: 500;
+  outline: 1.5px dashed var(--color-warn);
+  outline-offset: 2px;
+  border-radius: 8px;
+  padding: 0 0.35em;
+  background: var(--color-warn-tint);
 }
 
-/* Blank form line for a missing field. */
+/* Missing value / skeleton: soft grey placeholder pill. */
 .mx-blank {
   display: inline-block;
-  min-width: 8em;
-  border-bottom: 1px solid var(--color-rule-strong);
-  height: 1.1em;
-  vertical-align: baseline;
+  min-width: 7em;
+  height: 1.3em;
+  border-radius: 999px;
+  background: var(--color-muted);
+  vertical-align: middle;
 }
 
-/* (e) Language morph: new text settles like ink. */
+/* (e) Language morph: new text fades and settles. */
 @keyframes mx-ink-in {
   from {
     opacity: 0;
     filter: blur(3px);
-    letter-spacing: 0.02em;
+    transform: translateY(2px);
   }
 }
 .mx-morph {
+  display: inline-block;
   animation: mx-ink-in var(--duration-morph) var(--ease-pen) both;
 }
 
-/* (c) Red-flag band: grows its grid row, which pushes the summary down. */
+/* (c) Red-flag band grows its grid row, which pushes the content below it down. */
 .mx-interrupt {
   display: grid;
   grid-template-rows: 0fr;
@@ -205,12 +250,24 @@
   overflow: hidden;
 }
 
-/* Edited value: single-line strike through the old value, like a chart correction. */
+/* Edited: old value struck once. */
 .mx-struck {
   text-decoration-line: line-through;
-  text-decoration-thickness: 1px;
-  text-decoration-color: var(--color-ink);
-  color: var(--color-ink-soft);
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: var(--color-graphite);
+  color: var(--color-graphite);
+}
+
+/* Skeleton shimmer for loading cards (static under reduced motion). */
+@keyframes mx-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+.mx-skeleton {
+  border-radius: 12px;
+  background: linear-gradient(90deg, var(--color-muted) 30%, #F6F9FB 50%, var(--color-muted) 70%) 0 0 / 200% 100%;
+  animation: mx-shimmer 1.4s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -69,7 +69,7 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
     mergePharmacy(session, pharmacyEntries(mockPharmacy(aliases(session).filter(t => t.role === 'patient')), session), previous);
     return escalate();
   }
-  const ctx: EngineContext = { client: opts.client, trace: opts.trace, deadline, modelCalls: summary.modelCalls, log: (event, detail) => audit('summary_generated', { event, ...detail }) };
+  const ctx: EngineContext = { askedField: previous?.nextQuestion?.field, client: opts.client, trace: opts.trace, deadline, modelCalls: summary.modelCalls, log: (event, detail) => audit('summary_generated', { event, ...detail }) };
   const [extracted, modelFlags] = await Promise.all([extract(session, ctx), redFlagScreen(session, ctx)]);
   summary.fields = applyRequiredFields(preserveReviewed(previous?.fields || [], extracted.fields));
   mergePharmacy(session, extracted.pharmacy || { medications: [], allergies: [], noKnownAllergiesEvidence: [] }, previous);

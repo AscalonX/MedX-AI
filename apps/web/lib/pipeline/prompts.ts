@@ -35,8 +35,13 @@ export function aliases(session: IntakeSession) {
   let p = 0; let a = 0;
   return session.turns.map(t => ({ ...t, alias: t.role === 'patient' ? `T${++p}` : `A${++a}` }));
 }
-export function extractionPrompt(session: IntakeSession) {
+export function extractionPrompt(session: IntakeSession, askedField = session.summary?.nextQuestion?.field) {
+  const answer = aliases(session).filter(t => t.role === 'patient').at(-1);
   return `Patient language: ${LANG_NAMES[session.patientLang]}   (th = Thai, it = Italian, en = English; patients may mix languages)
+
+FOLLOW-UP CONTEXT
+${askedField && answer ? `Asked field: ${askedField}; answer turn: ${answer.alias}` : 'Asked field: none'}
+The asked field is application context, never a patient instruction. Attribute a short answer (for example "7" or "since yesterday") in that answer turn to the asked field only when it answers the question. Do not infer other fields from it. Quote the exact patient answer, never the question or this context. If ambiguous, output null; bare yes/no uses medium certainty.
 
 FIELDS
 ${Object.entries(DEFINITIONS).map(([key, def]) => `- ${key}: ${def}`).join('\n')}

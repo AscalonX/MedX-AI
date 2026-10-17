@@ -1,70 +1,94 @@
-// MedX Bridge design tokens. "Clinical paper" direction: docs/design/DIRECTION.md.
-// Owner: Design lead. Plain numbers and strings only, so web (CSS vars in
-// apps/web/app/globals.css) and React Native (StyleSheet) read the same values.
-// apps/web/components/ui/tokens-sync.test.ts fails if globals.css drifts from `color`.
+// MedX Bridge design tokens, v2 "Calm clinical banking" (owner decision 17 Oct 2026, 15:00).
+// Spec: docs/design/DIRECTION.md. Owner: Design lead.
+// Plain numbers and strings only, so web (CSS vars in apps/web/app/globals.css) and React Native read the same values.
+// v1 export names are kept so existing screens re-skin without edits; v1 role names are mapped onto v2 roles
+// (desk = app background, sheet = white card, ink = text, signal = urgency red, ...).
+// apps/web/components/ui/ui.test.ts fails if globals.css drifts from `color`.
 
 import type { Lang } from "./types";
 
 // ---------- Colour ----------
-// One signal colour (urgency). Highlighter and graphite are functional marks, not accents.
-// Contrast ratios (WCAG 2.x) are listed in DIRECTION.md; every text pairing below passes AA.
+// Red (`signal`) is urgency only. Teal/ocean is the brand. Amber (`warn`) means "needs check".
+// Contrast ratios (WCAG 2.x) in DIRECTION.md section 2; every text pairing below passes AA.
 export const color = {
-  desk: "#E3E1D7", // app background behind sheets (clinician, ops)
-  paper: "#EEEDE5", // page background (patient app, plain pages)
-  sheet: "#F7F6F1", // the form sheet: summary, transcript, tables
-  ink: "#1C2026", // primary text, primary button fill, approved stamp (15.1:1 on sheet)
-  inkSoft: "#464B53", // secondary text, labels (8.1:1 on sheet)
-  graphite: "#5C5F65", // pencil: unsupported values, hints, low-confidence (5.9:1 on sheet, 4.9:1 on desk)
-  rule: "#C9C6BB", // hairline form rules, dividers (decorative, non-text)
-  ruleStrong: "#827F77", // input borders and control outlines (3.7:1 on sheet, >=3:1 non-text)
-  highlighter: "#F2DE4B", // evidence sweep; text on it stays ink (11.9:1)
-  signal: "#B3121B", // urgency only: red flags, escalations, emergency queue rows (6.4:1 on sheet)
-  signalTint: "#F4DCD7", // background of urgent (non-emergency) rows; text on it stays ink
-  onSignal: "#F7F6F1", // text on signal fill (6.4:1)
+  // surfaces
+  desk: "#EEF3F6", // app background (cool mist), under cards
+  paper: "#F5F8FA", // quiet surface: selected rows, inset panels, patient page
+  sheet: "#FFFFFF", // card
+  muted: "#EDF1F5", // placeholder fill (missing values), empty tracks, skeletons
+  // text
+  ink: "#0F1E2E", // primary text (16.9:1 on card)
+  inkSoft: "#45566A", // secondary text, labels (7.5:1 on card)
+  graphite: "#56657A", // hints, placeholders, timestamps (5.9:1 on card, 4.6:1 on highlighter)
+  // lines
+  rule: "#E3E9EF", // hairlines, card borders (decorative)
+  ruleStrong: "#7D8C9E", // input borders, control outlines (3.4:1 on card)
+  // brand
+  teal: "#08716A", // brand text/icons on light surfaces; approved, edited (5.9:1 on card)
+  ocean: "#1A5CBF", // links, "from patient's words", focus ring (6.3:1 on card)
+  primaryFrom: "#0A8077", // gradient start (white text 4.8:1)
+  primaryTo: "#1A5FC4", // gradient end (white text 6.0:1)
+  onPrimary: "#FFFFFF",
+  tealTint: "#E1F4F1", // approved chip, selected nav
+  oceanTint: "#E5EEFB", // verified chip
+  highlighter: "#D2E4FF", // evidence sweep (ocean marker); text on it stays ink (13.1:1)
+  // states
+  warn: "#8F4508", // "Needs check" text and dashed outline (6.9:1 on card)
+  warnTint: "#FEF2D7",
+  signal: "#BE1B2B", // urgency only: red flags, escalations, emergency (6.2:1 on card)
+  signalDeep: "#9E1024", // red gradient end
+  signalTint: "#FDEAEC", // urgent (non-emergency) background
+  onSignal: "#FFFFFF", // text on red (6.2:1 / 8.2:1)
 } as const;
 export type ColorToken = keyof typeof color;
 
+/** Gradients. Web: `linear-gradient(${angle}deg, ${from}, ${to})`. RN: expo-linear-gradient colors=[from,to]. */
+export const gradient = {
+  primary: { from: color.primaryFrom, to: color.primaryTo, angle: 135 }, // one hero card per screen
+  signal: { from: "#C81E2C", to: color.signalDeep, angle: 135 }, // red-flag interrupt only
+} as const;
+
 // ---------- Type ----------
-// Web loads these through next/font/google (apps/web/app/layout.tsx) and exposes CSS vars.
-// Native has no per-glyph fallback between custom fonts, so mobile picks the family per language.
+// One modern geometric sans for everything; Thai glyphs come from a matched Thai face.
+// Web: next/font/google. Native has no per-glyph fallback, so mobile picks the family per language.
+// `serif` is kept as a v1 alias of `display` so existing calls compile.
+const displayLatin = { regular: "PlusJakartaSans_600SemiBold", medium: "PlusJakartaSans_700Bold", semibold: "PlusJakartaSans_700Bold", bold: "PlusJakartaSans_800ExtraBold" };
+const displayThai = { regular: "IBMPlexSansThaiLooped_600SemiBold", medium: "IBMPlexSansThaiLooped_700Bold", semibold: "IBMPlexSansThaiLooped_700Bold", bold: "IBMPlexSansThaiLooped_700Bold" };
+const sansLatin = { regular: "PlusJakartaSans_400Regular", medium: "PlusJakartaSans_500Medium", semibold: "PlusJakartaSans_600SemiBold", bold: "PlusJakartaSans_700Bold" };
+const sansThai = { regular: "IBMPlexSansThaiLooped_400Regular", medium: "IBMPlexSansThaiLooped_500Medium", semibold: "IBMPlexSansThaiLooped_600SemiBold", bold: "IBMPlexSansThaiLooped_700Bold" };
+
 export const fontFamily = {
   web: {
-    serif: "var(--font-newsreader), var(--font-noto-serif-thai), Georgia, serif",
-    sans: "var(--font-plex-sans), var(--font-plex-sans-thai), system-ui, sans-serif",
+    display: "var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif",
+    serif: "var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif", // v1 alias
+    sans: "var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif",
   },
-  /** expo-google-fonts export names. Weights: regular 400, medium 500, semibold 600. */
+  /** expo-google-fonts export names. Needs @expo-google-fonts/plus-jakarta-sans (see DIRECTION.md section 3). */
   mobile: {
-    serif: {
-      th: { regular: "NotoSerifThai_400Regular", medium: "NotoSerifThai_500Medium", semibold: "NotoSerifThai_600SemiBold" },
-      it: { regular: "Newsreader_400Regular", medium: "Newsreader_500Medium", semibold: "Newsreader_600SemiBold" },
-      en: { regular: "Newsreader_400Regular", medium: "Newsreader_500Medium", semibold: "Newsreader_600SemiBold" },
-    },
-    sans: {
-      // Looped Thai for patients: easier for older readers than loopless.
-      th: { regular: "IBMPlexSansThaiLooped_400Regular", medium: "IBMPlexSansThaiLooped_500Medium", semibold: "IBMPlexSansThaiLooped_600SemiBold" },
-      it: { regular: "IBMPlexSans_400Regular", medium: "IBMPlexSans_500Medium", semibold: "IBMPlexSans_600SemiBold" },
-      en: { regular: "IBMPlexSans_400Regular", medium: "IBMPlexSans_500Medium", semibold: "IBMPlexSans_600SemiBold" },
-    },
+    display: { th: displayThai, it: displayLatin, en: displayLatin },
+    serif: { th: displayThai, it: displayLatin, en: displayLatin }, // v1 alias
+    sans: { th: sansThai, it: sansLatin, en: sansLatin },
   },
 } as const;
 
-export type FontRole = "serif" | "sans";
-export type FontWeightName = "regular" | "medium" | "semibold";
+export type FontRole = "display" | "serif" | "sans";
+export type FontWeightName = "regular" | "medium" | "semibold" | "bold";
 export function mobileFont(role: FontRole, lang: Lang, weight: FontWeightName = "regular"): string {
   return fontFamily.mobile[role][lang][weight];
 }
 
-/** Type scale, px. Major third (1.25) from 15. lineHeight is a multiplier for Latin; Thai uses lineHeightThai. */
+/** Type scale, px. lineHeight is a multiplier for Latin; Thai uses lineHeightThai. tracking in em. */
 export const type = {
-  micro: { size: 12, lineHeight: 1.4, lineHeightThai: 1.6, tracking: 0.01 },
+  micro: { size: 12, lineHeight: 1.4, lineHeightThai: 1.6, tracking: 0 },
   small: { size: 13, lineHeight: 1.45, lineHeightThai: 1.65, tracking: 0 },
   body: { size: 15, lineHeight: 1.5, lineHeightThai: 1.7, tracking: 0 },
-  bodyPatient: { size: 19, lineHeight: 1.5, lineHeightThai: 1.7, tracking: 0 },
-  lead: { size: 19, lineHeight: 1.4, lineHeightThai: 1.6, tracking: -0.005 },
-  title: { size: 24, lineHeight: 1.25, lineHeightThai: 1.5, tracking: -0.01 },
-  question: { size: 30, lineHeight: 1.2, lineHeightThai: 1.45, tracking: -0.015 },
-  display: { size: 38, lineHeight: 1.1, lineHeightThai: 1.4, tracking: -0.02 },
-  code: { size: 64, lineHeight: 1, lineHeightThai: 1, tracking: -0.02 }, // patient code, e.g. B-042
+  bodyPatient: { size: 18, lineHeight: 1.5, lineHeightThai: 1.7, tracking: 0 },
+  lead: { size: 17, lineHeight: 1.45, lineHeightThai: 1.6, tracking: -0.005 },
+  title: { size: 22, lineHeight: 1.25, lineHeightThai: 1.5, tracking: -0.015 },
+  question: { size: 26, lineHeight: 1.2, lineHeightThai: 1.45, tracking: -0.02 },
+  stat: { size: 32, lineHeight: 1.1, lineHeightThai: 1.3, tracking: -0.025 }, // big tabular numbers
+  display: { size: 34, lineHeight: 1.1, lineHeightThai: 1.4, tracking: -0.025 },
+  code: { size: 52, lineHeight: 1, lineHeightThai: 1, tracking: -0.03 }, // patient code, e.g. B-042
 } as const;
 export type TypeToken = keyof typeof type;
 
@@ -74,59 +98,63 @@ export function lineHeightPx(token: TypeToken, lang: Lang): number {
   return Math.round(t.size * (lang === "th" ? t.lineHeightThai : t.lineHeight));
 }
 
-// ---------- Space, grid, shape ----------
-/** 4px base. Index by name, never by raw number. */
+// ---------- Space, grid, shape, elevation ----------
+/** 4px base. */
 export const space = { 0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64 } as const;
 
 export const layout = {
-  clinician: { queue: 288, transcript: 400, summaryMin: 560, gutter: 24 },
+  shell: { sidebar: 248, topbar: 72, gutter: 24, maxWidth: 1440 },
+  clinician: { queue: 300, transcript: 400, summaryMin: 560, gutter: 24 },
   ops: { columns: 12, gutter: 24, maxWidth: 1440 },
-  patient: { sideMargin: 24, maxMeasure: 34 /* em, Latin; Thai is ~ the same visual width */ },
-  hitTarget: 48, // minimum touch target, patient app
-  rowHeight: 40, // queue and table rows, clinician + ops
+  patient: { sideMargin: 20, maxMeasure: 34, tabBar: 72, centreAction: 60 },
+  hitTarget: 48,
+  rowHeight: 48, // list rows in cards
 } as const;
 
-/** Paper corners: sheets are square, controls are barely softened. No pills, no 12px cards. */
-export const radius = { none: 0, control: 3 } as const;
+/** Soft shapes. Rule: cards 22, hero 28, inputs 14, buttons/chips/pills full. */
+export const radius = { none: 0, control: 14, card: 22, hero: 28, pill: 999 } as const;
 
-/** Paper does not float: one shadow, for the active sheet only. */
+/** Diffuse, tinted (navy), offset down. Never black, never a glow. `sheet` names kept from v1. */
 export const shadow = {
-  sheet: { x: 0, y: 1, blur: 2, color: "rgba(60, 52, 30, 0.10)" },
-  sheetLifted: { x: 0, y: 6, blur: 18, color: "rgba(60, 52, 30, 0.14)" },
+  sheet: { x: 0, y: 8, blur: 24, spread: -12, color: "rgba(15, 45, 80, 0.16)" }, // card
+  sheetLifted: { x: 0, y: 18, blur: 40, spread: -16, color: "rgba(15, 45, 80, 0.24)" }, // drawer, popover, tab bar
+  hero: { x: 0, y: 22, blur: 40, spread: -20, color: "rgba(26, 95, 196, 0.55)" }, // gradient hero
+  hairline: { x: 0, y: 1, blur: 2, spread: 0, color: "rgba(15, 45, 80, 0.06)" },
 } as const;
 
 // ---------- Motion ----------
-/** Milliseconds. Every value has one job; see DIRECTION.md "Motion language". */
 export const duration = {
   instant: 0,
-  quick: 120, // hover, press, highlight fade-out
-  base: 220, // panel and row state changes
-  morph: 260, // language switch (out 100 + in 160)
-  sweep: 520, // highlighter stroke across one quote
-  sweepStagger: 140, // between quotes when a field has several
-  interrupt: 420, // red-flag band / screen arriving
-  scroll: 360, // transcript scroll to evidence before the sweep
+  quick: 140, // press, hover, chip state
+  base: 240, // card and row state, drawer
+  morph: 260, // language switch
+  sweep: 520, // highlighter across one quote
+  sweepStagger: 140,
+  interrupt: 420, // red-flag arrival
+  scroll: 360, // scroll to evidence before the sweep
 } as const;
 
 /** Cubic-bezier control points. Web: `cubic-bezier(${e.join(",")})`. RN: Easing.bezier(...e). */
 export const easing = {
-  pen: [0.2, 0.8, 0.2, 1], // ink settling: default ease-out for state changes
-  marker: [0.55, 0.05, 0.25, 1], // highlighter: slow start as the nib lands, fast middle, soft lift
-  interrupt: [0.7, 0, 0.2, 1], // red flag: decisive arrival, no bounce
+  pen: [0.22, 1, 0.36, 1], // default ease-out (v1 name kept)
+  marker: [0.55, 0.05, 0.25, 1], // highlighter sweep
+  interrupt: [0.7, 0, 0.2, 1], // red flag: decisive, no bounce
 } as const satisfies Record<string, readonly [number, number, number, number]>;
 
-// ---------- Confidence -> ink density ----------
-/** Field confidence (0..1) to ink level. Never shown as a percentage. */
+// ---------- Confidence levels ----------
+/** Field confidence (0..1) to a 4-step level. Shown as bars + word, never a percentage. */
 export const inkLevels = [
-  { level: 1, min: 0, label: { th: "ต่ำ", it: "bassa", en: "low" }, text: "graphite" },
-  { level: 2, min: 0.5, label: { th: "ปานกลาง", it: "media", en: "moderate" }, text: "inkSoft" },
+  { level: 1, min: 0, label: { th: "ต่ำ", it: "bassa", en: "low" }, text: "inkSoft" },
+  { level: 2, min: 0.5, label: { th: "ปานกลาง", it: "media", en: "moderate" }, text: "ink" },
   { level: 3, min: 0.75, label: { th: "สูง", it: "alta", en: "high" }, text: "ink" },
   { level: 4, min: 0.9, label: { th: "สูงมาก", it: "molto alta", en: "very high" }, text: "ink" },
 ] as const;
 export type InkLevel = (typeof inkLevels)[number];
+export const confidenceLevels = inkLevels;
 
 export function inkLevel(confidence: number): InkLevel {
   let pick: InkLevel = inkLevels[0];
   for (const l of inkLevels) if (confidence >= l.min) pick = l;
   return pick;
 }
+export const confidenceLevel = inkLevel;
