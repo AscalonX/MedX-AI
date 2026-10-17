@@ -116,3 +116,59 @@ Data I created (please reset before recording):
 - P1 · app/(pharmacy) · High is amber here but red in Orders; "Dose outside usual range" is wrong for an unchecked dose; the queue hides the High alert.
 - P1 · staff fixtures · doctor and pharmacist both named M. Bianchi.
 - P1 · lib/pipeline mock · English "sore throat" and "fever" not recognised.
+
+---
+
+## Re-verify (after the fix wave, Sat 17 Oct 2026 22:05 to 22:16 ICT)
+
+**Run:** web at 1440, patient app `/patient/` at 375x812. Mock provider, data freshly reset.
+**Data I created:** B-012, an English sore throat case. Nurse consult, vitals NEWS2 8, triage level 2 confirmed. Doctor consult with one consideration kept, note signed. Augmentin ordered with an override and submitted. Pharmacist returned it with a note. Doctor edited it to azithromycin and resubmitted. Pharmacist verified.
+**Screenshots:** `docs/reports/screens/final2-*.png`.
+
+### Verdicts (w16 → re-verify)
+
+| # | Step | w16 | Now | Evidence |
+|---|---|---|---|---|
+| 1 | Patient types or speaks | PASS-WITH-FIXES | **PASS** | English "sore throat and fever" is recognised. Next question asked is severity, then pregnancy, then medicines. Allergies is no longer asked, because the penicillin allergy was captured. |
+| 2 | Nurse consult | PASS-WITH-FIXES | **PASS** | The summary shows "penicillin (rash) · From patient's words", and there is a "Next: vitals" link. Small issue: typed lines are still labelled "Spoken (speech-to-text)". |
+| 3 | Vitals and triage | PASS | **PASS** | The case header now shows "Triage level 2 confirmed" and "NEWS2 8" chips. ACVPU wraps, and the history table has On O2 and ACVPU columns. |
+| 4 | Doctor consult and sign | FAIL | **PASS-WITH-FIXES** | Signed by "Dr. Somchai Chaiyo" / "Dr. Marco Bianchi", with no redaction. Considerations show one complaint-first item, with "Keep in note" and "Not relevant" buttons. The signed note is titled "Signed visit note" and offers a "Write orders" button. Two problems: the kept consideration is missing from the signed note, and plain sore throat plus fever gives no considerations (see P1 below). |
+| 5 | Orders: allergy alert and override | PASS-WITH-FIXES | **FAIL (P0)** | "Write orders" and the case-page "Orders" link both open Orders as **Nurse Anna Rossi**, with "Prescribing and ordering are for doctors…". The doctor must re-pick Doctor on every Orders visit. The read-only nurse view itself works. |
+| 6 | Pharmacist returns order | PASS-WITH-FIXES | **PASS** | "Pharmacist Laura Conti". The High alert is red, the dose alert is titled "Dose not checked", and the queue shows a "1 high" chip. The banner reads "Returned to Dr. Marco Bianchi by Pharmacist Laura Conti". |
+| 7 | Doctor edits and resubmits | FAIL | **PASS** (once on Doctor) | Queue badge "Returned by pharmacist". The case page shows "A pharmacist returned a medication order" with an "Open orders" button. "Edit prescription" opens a pre-filled form with the pharmacist note above it. I changed it to azithromycin 500 mg once daily for 3 days, re-checked, and submitted. |
+| 8 | Pharmacist verifies | PASS-WITH-FIXES | **PASS** | Receipt: "Order verified · By Pharmacist Laura Conti, 22:15". |
+| 9 | Ops | PASS | **PASS-WITH-FIXES** | Ops still shows the **old "M MedX" logo**, while every other surface shows the new Echo X logo. The greeting says "Good afternoon" at 22:15. |
+| 10 | Thai red flag | PASS | PASS (not re-walked) | Nothing in this wave touched it. |
+
+### Status of the w16 P0/P1 items
+
+| Item | Status | Evidence |
+|---|---|---|
+| P0 staff names redacted to "[NAME_1]" | **FIXED** | "Prescribed by Dr. Marco Bianchi, 22:12" and "Returned to Dr. Marco Bianchi by Pharmacist Laura Conti". |
+| P0 "Edit and resubmit" resends the order unchanged | **FIXED** | A pre-filled form, then "Update and re-check", then a new draft, then Submit. `final2-edit-returned-prefilled.png`. |
+| P0 role resets to Nurse on Orders; nurse can prescribe | **PARTIAL → still P0** | The nurse can no longer prescribe (FIXED). But on a clean `localStorage`, with Doctor chosen on `/review`, the Orders page always opens as Nurse: from "Write orders" on the signed note, from the case "Orders" link, and from the returned banner's "Open orders". After each load `medx.role` and `medx.clinicianRole` read `nurse`. **Likely cause:** `app/(clinician)/_frame.tsx:60` writes the default `clinicianRole` ("nurse") to `ROLE_STORAGE_KEY` on first render, before the restore effect (line 42) applies the stored role. `(orders)/_bits.tsx` `useIdentity` then reads "nurse" and writes it back. Guard line 60 until the role has been restored. `final2-p0-write-orders-opens-as-nurse-readonly.png`. |
+| P1 Allergies field not synced | **FIXED** | Case and consult both show "penicillin (rash)". |
+| P1 considerations over-fire | **FIXED**, with a new gap | Capped and complaint-first. But plain "sore throat and fever since yesterday", even with HR 112 and RR 24, now gives **zero** considerations ("Nothing to consider yet"). The video's Considerations beat needs a qualifier phrase from the patient. One that works: "It is worse on one side and I can't open my mouth fully" → "Peritonsillar abscess". |
+| P1 "Consider… Consider" copy, "AI suggestion" label, no "Keep in note" | **FIXED** | Card reads "Peritonsillar abscess" with "From MedX rule list, for clinician judgement. Not a diagnosis." and "Keep in note / Not relevant". The Orders page still prints the old "Consider for clinician review: Consider peritonsillar abscess" (P2). |
+| P1 signed note says "Draft" / no "Write orders" / raw "Patient report: No" | **FIXED** | "Signed visit note · Signed. This note is read only." plus "Write orders". Presenting complaint is "sore throat". |
+| P1 no returned-by-pharmacist signal | **FIXED** | Queue badge plus case-page banner. `final2-returned-badge-queue.png`, `final2-returned-banner-case.png`. |
+| P1 pharmacy amber High, "Dose outside usual range", queue hides High | **FIXED** | Red High card, "Dose not checked", "1 high" chip. `final2-pharmacy-red-high-names.png`. |
+| P1 doctor and pharmacist share a name | **FIXED** | Dr. Marco Bianchi / Pharmacist Laura Conti. |
+| P1 English mock coverage | **FIXED** | "sore throat" captured as the chief complaint. |
+
+### New regressions and remaining issues
+
+1. **P0 · role resets to Nurse on Orders** (above). This breaks the 1:05 to 2:05 beats unless the presenter re-clicks Doctor on Orders every time.
+2. **P1 · "Keep in note" does not reach the note.** I kept "Peritonsillar abscess" before drafting. The draft and the signed note both have no Considerations section. The voice-over says considerations are "dropped from the note unless the doctor keeps them", so on camera this looks broken. The cause is likely in `app/(clinician)` consult draft/sign or in `lib/pipeline` note assembly. `final2-p1-signed-note-missing-kept-consideration.png`.
+3. **P1 · Ops still uses the old logo**, plus the "Good afternoon" greeting at night. The `app/(ops)` shell does not use the new brand mark. `final2-p1-ops-old-logo-good-afternoon.png`.
+4. **P2 · the patient's added line is ignored in the note.** "Worse on one side, can't open my mouth fully" is not in the note's history. The matching question is still listed under "Open questions".
+5. **P2 · typed consult lines are labelled "Spoken (speech-to-text)"** (`lib/pipeline/consult.ts:207` `inputMode: 'voice'`).
+6. **P2 · the edited order loses its history.** After the doctor edits the returned order, the Augmentin card and the pharmacist's note disappear from both the Orders view and the pharmacist view. Only the azithromycin order remains, so the "return → change → verify" trail is not visible on screen. It may still be in the audit log.
+7. **P2 · ACVPU radios are announced as "on"**, as are the vitals radios "no" and "yes". The review queue tiles show "No data yet" pills while loading instead of skeletons.
+8. **P2 · patient status stays "Waiting for a nurse"** after triage, a signed note and verified orders, because the intake fields were never approved. Expected with the current model, but it looks odd if the phone is on screen at the end.
+
+### Remaining P0/P1, one line each
+- P0 · `app/(clinician)/_frame.tsx:60` + `app/(orders)/_bits.tsx` · Orders always opens as Nurse (read-only) even after choosing Doctor; this breaks prescribe, override and edit unless Doctor is re-selected on the Orders page.
+- P1 · `app/(clinician)` consult / `lib/pipeline` note · a consideration marked "Keep in note" is missing from the draft and the signed note.
+- P1 · `lib/pipeline` consult rules (recording note) · plain sore throat + fever gives no considerations; script the patient's qualifier line ("worse on one side, can't open my mouth fully").
+- P1 · `app/(ops)` · old "M MedX" logo and "Good afternoon" at 22:15.
