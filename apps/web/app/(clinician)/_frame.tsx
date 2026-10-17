@@ -3,7 +3,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Lang } from "@medx/shared";
 import { AppShell, Icon, type ShellRole } from "@/components/ui";
-import { REVIEWERS } from "./review/_lib";
+import { REVIEWERS, reviewersFor } from "./review/_lib";
 import { tr } from "./review/_i18n";
 
 interface Frame { clinicianRole: "nurse" | "doctor"; setClinicianRole: (r: "nurse" | "doctor") => void; lang: Lang; setLang: (l: Lang) => void; reviewer: string; setReviewer: (r: string) => void; now: number }
@@ -47,6 +47,12 @@ export function ClinicianFrame({ active, urgent, children }: { active: "home" | 
 
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
+  // The identity list follows the role: nurse names in nurse mode, doctor names in doctor mode.
+  const names = reviewersFor(clinicianRole);
+  useEffect(() => {
+    if (!names.includes(reviewer)) { setReviewerState(names[0]); store.set("medx.reviewer", names[0]); }
+  }, [names, reviewer]);
+
   const hour = now ? new Date(now).getHours() : -1;
   const greeting = tr(hour < 0 ? "hello" : hour < 12 ? "greetMorning" : hour < 18 ? "greetAfternoon" : "greetEvening", lang);
   const role: ShellRole = path?.startsWith("/pharmacy") ? "pharmacist" : path?.startsWith("/ops") ? "ops" : clinicianRole;
@@ -84,7 +90,7 @@ export function ClinicianFrame({ active, urgent, children }: { active: "home" | 
               className="h-9 rounded-full border border-rule-strong/60 bg-sheet px-3 text-small font-semibold text-ink"
               aria-label={tr("signedInAs", lang)}
             >
-              {REVIEWERS.map((r) => <option key={r}>{r}</option>)}
+              {names.map((r) => <option key={r}>{r}</option>)}
             </select>
           </label>
         }

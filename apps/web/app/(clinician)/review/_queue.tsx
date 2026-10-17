@@ -91,7 +91,7 @@ export function QueueCard({ activeId, compact = false }: { activeId?: string; co
     const isEmpty = (s: IntakeSession) => !s.turns.some((t) => t.role === "patient");
     const empties = sorted.filter(isEmpty);
     const shown = sorted.filter((s) => (showEmpty || !isEmpty(s)) && (filter === "all" || (filter === "escalated" ? s.status === "escalated" : ["awaiting_review", "needs_human"].includes(s.status))));
-    if (!shown.length && !empties.length) return <EmptyState icon={<Icon name="inbox" size={22} />} title={tr("queueEmpty", lang)} />;
+    if (!shown.length && !empties.length) return <EmptyState mascot="pointing" title={tr("queueEmpty", lang)} />;
     return (
       <>
         {error && <p role="status" className="px-1 text-small text-signal">{tr("queueStale", lang)}: {error}.</p>}

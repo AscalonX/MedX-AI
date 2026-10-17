@@ -26,3 +26,7 @@ From about 20:00 the dev server on :3000 returned 500 for every page and API rou
 - Screenshots: `docs/reports/screens/v6-consult-nurse.png`, `v6-consult-doctor.png` (headless Chrome, full page).
 - Case header now links "Vitals" (nurse) and "Orders" (doctor) to `/review/[id]/vitals` and `/orders`.
 - Not exercised: Web Speech (the pane has no usable microphone). Note: the shared browser pane is driven by several agents; I worked in my own background tab.
+
+## Mali and role-aware identity
+- Landing hero uses `mascot="wave"` (`screens/v8-landing-mali.png`); the empty queue state uses `mascot="pointing"`. No mascot on red-flag, alert, error, consult suggestion, considerations or note areas.
+- The "Signed in as" selector follows the role: nurse names in nurse mode, doctors (Dr. M. Bianchi, Dr. S. Chaiyo) in doctor mode; switching role moves the identity to the first name of the new list. Verified in doctor-mode consult: options are the two doctors and the note signer uses the selected doctor.

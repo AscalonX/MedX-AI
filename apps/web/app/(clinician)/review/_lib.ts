@@ -11,7 +11,10 @@ export const LANG_OPTIONS: { lang: Lang; label: string }[] = [
 export const LANG_NAME: Record<Lang, string> = { th: "ไทย", it: "Italiano", en: "English" };
 
 /** Local stand-in for sign-in. Prototype only: no authentication. */
-export const REVIEWERS = ["Nurse A. Rossi", "Nurse K. Suwan", "Dr. M. Bianchi"];
+export const NURSES = ["Nurse A. Rossi", "Nurse K. Suwan"];
+export const DOCTORS = ["Dr. M. Bianchi", "Dr. S. Chaiyo"];
+export const REVIEWERS = [...NURSES, ...DOCTORS];
+export const reviewersFor = (role: "nurse" | "doctor") => (role === "doctor" ? DOCTORS : NURSES);
 
 export const L = (th: string, it: string, en: string): Localized => ({ th, it, en });
 

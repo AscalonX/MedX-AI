@@ -39,6 +39,7 @@ function Landing() {
   return (
     <div className="mx-auto flex max-w-[1100px] flex-col gap-6">
       <GradientHero
+        mascot="wave"
         className="cl-enter"
         title={<span className="text-[28px] font-extrabold">{tr("landTitle", lang)}</span>}
         subtitle={tr("landSub", lang)}
