@@ -20,13 +20,14 @@ Use "suggests for review", "flags for clinician", "decision support". Synthetic 
 | Path | Owner |
 |---|---|
 | `packages/shared/` (contracts, i18n, tokens) | orchestrator only — request changes in your report |
-| `docs/clinical/` | Doctor |
+| `docs/clinical/`, `packages/shared/src/redflags.json`, `packages/shared/src/medrules.json` | Doctor |
 | `docs/research/`, `data/cases/` | Medical researcher |
 | `docs/ai/`, `eval/` | AI researcher |
 | `docs/design/`, `apps/web/components/ui/`, `apps/web/app/globals.css` | Design lead |
 | `apps/web/lib/pipeline/`, `apps/web/app/api/`, `Dockerfile` | AI engineer (Codex) |
 | `apps/web/app/(clinician)/` | Clinician web builder |
 | `apps/web/app/(ops)/` | Ops dashboard builder (Codex) |
+| `apps/web/app/(pharmacy)/` | Pharmacist web builder |
 | `apps/mobile/` | Patient mobile builder |
 | `pitch/` | Pitch lead |
 
