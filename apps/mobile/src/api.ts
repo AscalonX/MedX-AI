@@ -20,5 +20,5 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 
 export const createSession = (patientLang: Lang) =>
   post<IntakeSession>("/api/sessions", { patientLang } satisfies CreateSessionReq);
-export const addTurn = (id: string, text: string) =>
-  post<IntakeSession>(`/api/sessions/${id}/turns`, { text } satisfies AddTurnReq);
+export const addTurn = (id: string, text: string, inputMode: "text" | "voice" = "text") =>
+  post<IntakeSession>(`/api/sessions/${id}/turns`, { text, inputMode } satisfies AddTurnReq);

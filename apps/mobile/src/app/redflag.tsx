@@ -1,5 +1,7 @@
 import { color, duration, easing, gradient, radius, space } from "@medx/shared";
 import * as Haptics from "expo-haptics";
+import * as Speech from "expo-speech";
+import { LOCALE } from "@/voice";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { AccessibilityInfo, Alert, Platform, Pressable, useWindowDimensions, View } from "react-native";
@@ -19,7 +21,7 @@ function splitFirst(m: string, thai: boolean): [string, string] {
 }
 
 export default function RedFlag() {
-  const { lang, session, reset } = useStore();
+  const { lang, session, speak, reset } = useStore();
   const s = STR[lang];
   const reduced = useReducedMotion();
   const { height } = useWindowDimensions();
@@ -33,13 +35,14 @@ export default function RedFlag() {
     y.value = withTiming(0, { duration: reduced ? 0 : duration.interrupt, easing: Easing.bezier(...easing.interrupt) });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {}); // one haptic, no repeat
     AccessibilityInfo.announceForAccessibility(message);
+    if (speak) Speech.speak(message, { language: LOCALE[lang], rate: 0.9 }); // calm, once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const slide = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
   if (!session) return null;
   // Staff-only (demo): long-press the code for 2 s. The patient has no path out of this screen.
   const endIntake = () => {
-    const end = () => { reset(); router.replace("/"); };
+    const end = () => { Speech.stop(); reset(); router.replace("/"); };
     if (Platform.OS === "web") { if (window.confirm("Staff: end this intake?")) end(); return; }
     Alert.alert("Staff: end this intake?", "Demo staff only. This clears the red-flag screen.", [{ text: "Cancel", style: "cancel" }, { text: "End intake", style: "destructive", onPress: end }]);
   };

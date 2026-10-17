@@ -3,14 +3,14 @@ import type { Href } from "expo-router";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 type Ctx = {
-  lang: Lang; session: IntakeSession | null;
-  set: (p: Partial<Pick<Ctx, "lang" | "session">>) => void; reset: () => void;
+  lang: Lang; session: IntakeSession | null; speak: boolean;
+  set: (p: Partial<Pick<Ctx, "lang" | "session" | "speak">>) => void; reset: () => void;
 };
 const C = createContext<Ctx>(null as never);
 export const useStore = () => useContext(C);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [s, setS] = useState<Pick<Ctx, "lang" | "session">>({ lang: "en", session: null });
+  const [s, setS] = useState<Pick<Ctx, "lang" | "session" | "speak">>({ lang: "en", session: null, speak: false });
   const value: Ctx = {
     ...s,
     set: (p) => setS((o) => ({ ...o, ...p })),

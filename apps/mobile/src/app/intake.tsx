@@ -2,9 +2,13 @@ import { color, radius, scbxFont, space, type as scale } from "@medx/shared";
 import type React from "react";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { TextInput, View } from "react-native";
+import * as Speech from "expo-speech";
+import { Pressable, TextInput, View } from "react-native";
 import Animated, { Easing, FadeIn, useReducedMotion } from "react-native-reanimated";
 import { addTurn } from "@/api";
+import { Speaker } from "@/components/icons";
+import { LevelBars, MicButton } from "@/components/mic";
+import { LOCALE, useVoice } from "@/voice";
 import { Badge, Card, Chip, Page, Pill, sh, T } from "@/components/ui";
 import { friendly, STR } from "@/i18n";
 import { screenFor, useStore } from "@/store";
@@ -12,17 +16,27 @@ import { screenFor, useStore } from "@/store";
 const MAX = 3;
 
 export default function Intake() {
-  const { lang, session, set } = useStore();
+  const { lang, session, speak, set } = useStore();
   const s = STR[lang];
   const reduced = useReducedMotion();
-  const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const [focus, setFocus] = useState(false);
+  const [fromVoice, setFromVoice] = useState(false);
+  const [text, setText] = useState("");
+  const v = useVoice(lang, (t) => { setText(t); setFromVoice(true); });
+  const [speakTouched, setSpeakTouched] = useState(false);
   const input = useRef<React.ComponentRef<typeof TextInput>>(null);
   const answered = session?.turns.filter((t) => t.role === "patient").length ?? 0;
   useEffect(() => { if (!busy && !failed) input.current?.focus(); }, [busy, failed, answered]);
   useEffect(() => { if (!session) router.replace("/"); }, [session]);
+  const qText = session ? (answered === 0 ? s.q1 : session.summary?.nextQuestion?.text[lang] ?? "") : "";
+  useEffect(() => {
+    if (!speak || !qText || busy) return;
+    Speech.stop();
+    Speech.speak(qText, { language: LOCALE[lang], rate: 0.95 });
+    return () => { Speech.stop(); };
+  }, [speak, qText, busy, lang]);
   if (!session) return null;
 
   // Ledger = redacted patient turns returned by the API, never the raw text typed.
@@ -36,13 +50,14 @@ export default function Intake() {
     : [];
 
   async function submit() {
+    const mode = fromVoice ? "voice" : "text";
     const t = text.trim();
     if (!t || busy || !session) return;
     setFailed(false); setBusy(true);
     try {
-      const nx = await addTurn(session.id, t);
+      const nx = await addTurn(session.id, t, mode);
       set({ session: nx });
-      setText("");
+      setText(""); setFromVoice(false); v.reset();
       router.replace(screenFor(nx));
     } catch {
       setFailed(true);
@@ -71,8 +86,13 @@ export default function Intake() {
         </Card>
       ) : (
         <Animated.View key={question} entering={fade}>
-          <Card>
-            <T lang={lang} token="question" weight="bold" accessibilityRole="header">{question}</T>
+          <Card style={{ flexDirection: "row", gap: space[3], alignItems: "flex-start" }}>
+            <View style={{ flex: 1 }}><T lang={lang} token="question" weight="bold" accessibilityRole="header">{question}</T></View>
+            <Pressable accessibilityRole="switch" accessibilityLabel={s.speakToggle} accessibilityState={{ checked: speak }} hitSlop={4}
+              onPress={() => { setSpeakTouched(true); if (speak) Speech.stop(); set({ speak: !speak }); }}
+              style={{ width: 44, height: 44, borderRadius: radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: speak ? color.tealTint : color.muted }}>
+              <Speaker color={speak ? color.teal : color.graphite} off={!speak} />
+            </Pressable>
           </Card>
         </Animated.View>
       )}
@@ -91,8 +111,9 @@ export default function Intake() {
           <Card>
             <TextInput
               ref={input}
-              value={text}
+              value={v.phase === "listening" ? v.transcript : text}
               onChangeText={setText}
+              editable={v.phase !== "listening"}
               multiline
               autoCorrect={false}
               spellCheck={false}
@@ -105,9 +126,28 @@ export default function Intake() {
               selectionColor={color.ocean}
               style={{ fontFamily: scbxFont.light, fontSize: scale.bodyPatient.size, lineHeight: Math.round(scale.bodyPatient.size * (lang === "th" ? 1.7 : 1.5)), color: color.ink, minHeight: 108, padding: space[3], borderRadius: radius.control, borderWidth: focus ? 2 : 1.5, borderColor: focus ? color.ocean : color.ruleStrong, backgroundColor: color.paper, outlineStyle: "none" } as object}
             />
-            <T lang={lang} token="small" tone="graphite" style={{ marginTop: space[3] }}>{answered === 0 ? s.hint : s.hintFollow}</T>
+            {v.phase === "confirm" ? (
+              <View accessibilityRole="alert" style={{ marginTop: space[3] }}>
+                <T lang={lang} token="body" weight="bold">{s.confirmTitle}</T>
+                <T lang={lang} token="small" tone="inkSoft">{s.confirmSub}</T>
+              </View>
+            ) : (
+              <View style={{ alignItems: "center", marginTop: space[3] }}>
+                <View style={{ minHeight: 28, justifyContent: "center" }}>{v.phase === "listening" && <LevelBars level={v.level} />}</View>
+                <MicButton listening={v.phase === "listening"} level={v.level} label={v.phase === "listening" ? s.micStop : s.micStart}
+                  onPress={() => {
+                    if (v.phase === "listening") { v.stop(); return; }
+                    Speech.stop();
+                    if (!speakTouched && !speak) set({ speak: true }); // voice mode: questions are read aloud by default
+                    setText(""); setFromVoice(false); v.start();
+                  }} />
+                <T lang={lang} token="small" weight="bold" tone={v.phase === "listening" ? "ocean" : "inkSoft"} accessibilityLiveRegion="polite">{v.phase === "listening" ? `${s.listening}…` : s.micStart}</T>
+                {v.issue && <T lang={lang} token="small" tone="warn" accessibilityRole="alert" style={{ marginTop: space[2], textAlign: "center" }}>{v.issue === "denied" ? s.micDenied : v.issue === "nospeech" ? s.noSpeech : s.micUnavailable}</T>}
+                <T lang={lang} token="small" tone="graphite" style={{ marginTop: space[2], alignSelf: "flex-start" }}>{answered === 0 ? s.hint : s.hintFollow}</T>
+              </View>
+            )}
           </Card>
-          {chips.length > 0 && (
+          {chips.length > 0 && v.phase !== "confirm" && v.phase !== "listening" && (
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2], marginTop: space[3] }} accessibilityRole="radiogroup">
               {chips.map((c) => (
                 <Chip key={c} lang={lang} label={c} selected={text === c} onPress={() => { setText(c); }} />
@@ -115,7 +155,14 @@ export default function Intake() {
             </View>
           )}
           <View style={{ height: space[5] }} />
-          <Pill lang={lang} label={s.cont} onPress={submit} disabled={!text.trim()} />
+          {v.phase === "confirm" ? (
+            <View style={{ gap: space[3] }}>
+              <Pill lang={lang} label={s.send} onPress={submit} disabled={!text.trim()} />
+              <Pill lang={lang} variant="quiet" label={s.tryAgain} onPress={() => { v.reset(); setText(""); setFromVoice(false); }} />
+            </View>
+          ) : (
+            <Pill lang={lang} label={s.cont} onPress={submit} disabled={!text.trim() || v.phase === "listening"} />
+          )}
         </>
       ) : null}
 
