@@ -71,6 +71,8 @@ export const C = {
   noConsiderations: L("Nothing to consider yet.", "ยังไม่มีข้อพิจารณา", "Nulla da considerare per ora."),
   keepInNote: L("Keep in note", "เก็บไว้ในบันทึก", "Mantieni nella nota"),
   droppedUnlessKept: L("Dropped at signing unless kept.", "จะถูกตัดออกเมื่อลงนาม เว้นแต่เลือกเก็บไว้", "Eliminate alla firma se non mantenute."),
+  vitals: L("Vitals", "สัญญาณชีพ", "Parametri vitali"),
+  orders: L("Orders", "คำสั่งการรักษา", "Ordini"),
 } satisfies Record<string, Localized>;
 export type CKey = keyof typeof C;
 export const ct = (k: CKey, lang: Lang) => C[k][lang];

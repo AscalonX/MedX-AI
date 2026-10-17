@@ -202,6 +202,9 @@ export function Workspace({ id }: { id: string }) {
     return (
       <>
         <Link href="/review" className={cls}><Icon name="chevron-right" size={14} className="rotate-180" />{tr("navQueue", lang)}</Link>
+        <Link href={`/review/${id}/${clinicianRole === "doctor" ? "orders" : "vitals"}`} className={cls}>
+          <Icon name={clinicianRole === "doctor" ? "clipboard-list" : "activity"} size={14} />{ct(clinicianRole === "doctor" ? "orders" : "vitals", lang)}
+        </Link>
         {session.status !== "approved" && session.status !== "collecting" && (
           <Link href={`/review/${id}/consult?mode=${clinicianRole}`} className={hero ? cls : "inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-4 text-small font-semibold text-on-primary shadow-[0_10px_18px_-10px_rgba(26,95,196,0.8)]"}>
             <Icon name="mic" size={14} />{ct(clinicianRole === "doctor" ? "startDoctor" : "startNurse", lang)}
