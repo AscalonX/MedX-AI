@@ -6,6 +6,35 @@ Team: Team MedX. Built by a human lead orchestrating Claude (Opus/Sonnet) and Op
 
 Track 2, Health and Wellbeing. Research prototype, synthetic data only. Items marked [pending AMD run] are filled from `eval/REPORT.md` after the Gemma-on-AMD run; do not publish a number that is not in that report. Repo: https://github.com/KingPhuripol/MedX-AI
 
+## lablab form (copy-paste, fits the form limits)
+
+**Submission Title** (≤50): MedX: Every word, understood
+
+**Short Description** (≤255, 251 chars):
+
+MedX turns a multilingual patient conversation into an evidence-linked case: patient app with voice, nurse and doctor consult assistant, prescribing checks and pharmacist verification. Every field points back to the patient's own words. People decide.
+
+**Long Description** (600–2000, 1871 chars):
+
+Problem: when patient and clinic do not share a language, communication errors become safety events. In six US hospitals, adverse events in limited-English patients caused physical harm in 49.1% of cases vs 29.5% for English speakers (Divi 2007), and 13-59% of admission medication lists contain unintended errors.
+
+MedX follows one patient journey across four roles:
+- Patient (Thai, Italian or English) answers a guided intake by voice or text and confirms the voice transcript before sending.
+- Nurse: a consult assistant listens during history-taking, keeps a live summary where every field links to the patient's own sentence, and suggests "ask next" and "rule out" questions. Vitals give a NEWS2-based triage suggestion that the nurse confirms.
+- Doctor: doctor-only considerations from a fixed rule list (not a diagnosis) with guideline links, an evidence-linked draft note to sign, and orders with deterministic checks (allergy, interaction, duplicate, pregnancy, dose range). Overriding a high alert needs a written reason.
+- Pharmacist verifies or returns each prescription and reconciles the patient's medicines.
+Every case has a Case trace: the executed graph of rule checks, model calls and human decisions, exportable as JSON.
+
+AMD: designed to run Gemma via the AMD Token Factory (OpenAI-compatible) for extraction, translation, an add-only red-flag screen and follow-up questions. Current results use a mock model until the endpoint is connected.
+
+Safety: 18 deterministic red-flag rules run before any model and cannot be cleared by it; fields without a verified patient quote show "needs check"; failures go to human review; the AI never diagnoses, orders, prescribes or confirms triage. 1,872 automated tests, 52 synthetic cases and an 18-case blind holdout.
+
+Research prototype with synthetic data only; not clinically validated, not a medical device.
+
+**Participation Mode:** Online · **Track:** Health and Wellbeing (Track 2) · **Technologies:** Gemma, AMD, Next.js, TypeScript, React Native, Expo, Docker
+
+---
+
 ## Title
 
 **MedX** (mascot: Fin the dolphin)
@@ -28,9 +57,9 @@ One patient journey, patient to pharmacist. The patient speaks or types; the nur
 
 **Gemma via AMD.** Designed to run Gemma on AMD via the hackathon's AMD Token Factory (OpenAI-compatible, behind one gateway) for extraction and translation, an add-only red-flag safety screen, suggested questions to ask, and the next question. Safety checks are plain code. Current results use a mock model until the endpoint is connected; latency and accuracy are [pending AMD run].
 
-**Safety.** Red-flag rules (18, deterministic) run before any model and no model can clear them. Fields without a verified patient quote show as "needs check". Low confidence or provider failure means abstain and "needs human review". The AI never diagnoses, orders, prescribes or confirms triage; clinicians do these in MedX, with deterministic checks and an audit trail. Nothing is final until a clinician approves. The nurse's triage level is a NEWS2-based suggestion she confirms; the AI never proposes drugs or doses; the doctor's "consider" items come only from a fixed, curated rule list, are doctor-only, and are dropped from the signed note unless the doctor keeps them.
+**Safety.** Red-flag rules (18, deterministic) run before any model and no model can clear them. Fields without a verified patient quote show as "needs check". Low confidence or provider failure means abstain and "needs human review". The AI never diagnoses, orders, prescribes or confirms triage; clinicians do these in MedX, with deterministic checks and an audit trail. Nothing is final until a clinician approves. The nurse's triage level is a NEWS2-based suggestion the nurse confirms; the AI never proposes drugs or doses; the doctor's "consider" items come only from a fixed, curated rule list, are doctor-only, and are dropped from the signed note unless the doctor keeps them.
 
-**Evidence (synthetic, small n).** 52 synthetic cases (40 intake + 12 medication) and an 18-case blind holdout; 175 red-flag reference tests; 194 medication-rule tests; 1,382 automated tests passing. On the blind holdout, keyword rules alone caught 7 of 10 emergencies with 3 of 8 false alarms, which is why we added the Gemma screen. With the screen: [pending AMD run].
+**Evidence (synthetic, small n).** 52 synthetic cases (40 intake + 12 medication) and an 18-case blind holdout; 175 red-flag reference tests; 194 medication-rule tests; 1,872 automated tests passing. On the blind holdout, keyword rules alone caught 7 of 10 emergencies with 3 of 8 false alarms, which is why we added the Gemma screen. With the screen: [pending AMD run].
 
 **Business case.** Buyers: private hospitals and clinics with international patients, and tourist-area clinics. Pains: interpreter cost and throughput (CEO/CFO), documentation time (head nurse), verifiable AI (doctors), medication errors (quality team). Next step: a measured pilot at one clinic; we claim no savings figure.
 
