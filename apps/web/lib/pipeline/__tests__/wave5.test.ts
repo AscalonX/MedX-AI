@@ -32,8 +32,8 @@ describe('case-insensitive name triggers with case-sensitive name boundaries', (
     expect(redact(text).text).toBe('[NAME_1]');
     expect(redact(text).replaced).toEqual([{ type: 'NAME', count: 1 }]);
   });
-  it('caps Thai names at one token and does not use the bare ชื่อ trigger', () => {
-    expect(redact('ฉันชื่อสมหญิง ใจดี').text).toBe('[NAME_1] ใจดี');
+  it('redacts two Thai name tokens and does not use the bare ชื่อ trigger', () => {
+    expect(redact('ฉันชื่อสมหญิง ใจดี').text).toBe('[NAME_1]');
     expect(redact('ชื่อสมหญิง ใจดี').text).toBe('ชื่อสมหญิง ใจดี');
   });
   it.each(['Sono stanco', 'sono stanco', 'SONO stanco', 'Sono molto stanco', "I'm tired", "i'm 30", 'non sono incinta'])('retains clinical prose: %s', text => {
@@ -189,7 +189,7 @@ describe('demo reset endpoint', () => {
     vi.stubEnv('DEMO_SEED', '1'); const stale = createSession('en');
     const response = await reset(); expect(response.status).toBe(200);
     expect(response.headers.get('Cache-Control')).toBe('no-store');
-    expect(response.headers.has('Access-Control-Allow-Origin')).toBe(false); expect(OPTIONS().status).toBe(204);
+    expect(response.headers.has('Access-Control-Allow-Origin')).toBe(false); expect(OPTIONS(new Request('http://localhost/api/demo/reset')).status).toBe(204);
     const body = await response.json(); expect(body.created).toBe(11); expect(body.reused).toBe(0);
     expect(getSessions()).toHaveLength(11); expect(getSession(stale.id)).toBeUndefined(); expect(getAudit(stale.id)).toEqual([]);
     const stored = JSON.parse(readFileSync(path.join(dir, 'store.json'), 'utf8'));

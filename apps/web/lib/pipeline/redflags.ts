@@ -2,15 +2,15 @@ import rules from '@medx/shared/src/redflags.json';
 import type { ExtractedField, RedFlagHit, RedFlagRuleFile, Turn } from '@medx/shared';
 import { isPresent } from './config';
 
-function normalise(text: string) {
+function normalise(text: string, compactThai = false) {
   // Same text as the clinical reference's norm(), with UTF-16 source offsets.
   let t = ' '; const map: number[] = [0]; const ends: number[] = [0]; let offset = 0;
-  const lower = text.normalize('NFC').toLowerCase(); let normalisedOffset = 0;
+  const lower = text.normalize('NFKC').toLowerCase(); let normalisedOffset = 0;
   for (const segment of new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(text)) {
     const cp = segment.segment;
-    const length = cp.normalize('NFC').toLowerCase().length;
+    const length = cp.normalize('NFKC').toLowerCase().length;
     // Lower-case the whole text first, including context-sensitive Unicode casing.
-    for (const c of lower.slice(normalisedOffset, normalisedOffset + length).replace(/[’‘]/g, "'")) {
+    for (const c of lower.slice(normalisedOffset, normalisedOffset + length).replace(/[’‘]/g, "'").replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/[\p{Dash_Punctuation}\u2212]/gu, ' ')) {
       if (/\s/u.test(c)) {
         if (t.endsWith(' ')) { ends[ends.length - 1] = offset + cp.length; continue; }
         t += ' '; map.push(offset); ends.push(offset + cp.length);
@@ -21,23 +21,36 @@ function normalise(text: string) {
     offset += cp.length;
   }
   if (t.length > 1 && t.endsWith(' ')) { t = t.slice(0, -1); map.pop(); ends.pop(); }
+  if (compactThai) {
+    // Thai and normalized punctuation are BMP; iterate UTF-16 indices so
+    // supplementary characters before a match do not shift evidence offsets.
+    const removed = new Set([...t.matchAll(/(?<=\p{Script=Thai}) (?=\p{Script=Thai})/gu)].map(m => m.index!));
+    const indices = Array.from({ length: t.length }, (_, i) => i).filter(i => !removed.has(i));
+    return { t: indices.map(i => t[i]).join(''), map: indices.map(i => map[i]), ends: indices.map(i => ends[i]) };
+  }
   return { t, map, ends };
 }
-function clause(before: string) {
+export function clause(before: string) {
   let cut = 0;
   for (const p of [',', '.', ';', ':', '!', '?', '\n']) cut = Math.max(cut, before.lastIndexOf(p) + 1);
   for (const word of [' but ', ' ma ', ' però ', ' pero ', 'แต่']) {
-    const i = before.lastIndexOf(word);
+    const i = before.toLowerCase().lastIndexOf(word);
     if (i !== -1) cut = Math.max(cut, i + word.length - (word.endsWith(' ') ? 1 : 0));
   }
   return before.slice(cut);
+}
+/** Shared clinical window and clause boundaries for pharmacy mention actions. */
+export function negatedBefore(before: string, extraCues: string[] = []) {
+  const text = normalise(before, true).t + (/\s$/u.test(before) ? ' ' : '');
+  const preceding = clause(text.slice(-rules.negationWindowChars));
+  return [...rules.negationCues, ...extraCues].some(cue => preceding.includes(cue));
 }
 export function checkRedFlags(input: string | Turn[], fields?: ExtractedField[], ruleFile: RedFlagRuleFile = rules as RedFlagRuleFile): RedFlagHit[] {
   const turns = typeof input === 'string' ? [{ id: 'T1', text: input, role: 'patient' as const, lang: 'en' as const, at: '' }] : input.filter(t => t.role === 'patient');
   // Concatenation permits an AND group to be satisfied in a later patient turn.
   const segments: { turn: Turn; base: number }[] = []; let joined = '';
   for (const turn of turns) { if (joined) joined += '.\n'; segments.push({ turn, base: joined.length }); joined += turn.text; }
-  const domains = [{ text: joined, segments }, ...turns.map(turn => ({ text: turn.text, segments: [{ turn, base: 0 }] }))].map(d => ({ ...d, n: normalise(d.text) }));
+  const domains = [{ text: joined, segments }, ...turns.map(turn => ({ text: turn.text, segments: [{ turn, base: 0 }] }))].flatMap(d => [false, true].map(compactThai => ({ ...d, compactThai, n: normalise(d.text, compactThai) })));
   return ruleFile.rules.flatMap(rule => {
     if (fields && rule.requires && !Object.entries(rule.requires).every(([key, value]) => fields.some(f => f.key === key && isPresent(f) && Object.values(f.value || {}).some(v => v.normalize('NFC').toLowerCase() === value?.normalize('NFC').toLowerCase())))) return [];
     if (!rule.match.length || rule.match.some(g => !g.length)) return [];
@@ -46,7 +59,7 @@ export function checkRedFlags(input: string | Turn[], fields?: ExtractedField[],
       for (const group of rule.match) {
       let found: { start: number; end: number } | undefined;
       for (const term of group) {
-        const needle = normalise(term).t.slice(1); if (!needle) continue;
+        const needle = normalise(term, domain.compactThai).t.slice(1); if (!needle) continue;
         let from = 0;
         while (from <= n.t.length) {
           const at = n.t.indexOf(needle, from); if (at < 0) break;

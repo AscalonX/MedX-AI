@@ -1,3 +1,10 @@
+import redFlagRules from '@medx/shared/src/redflags.json';
+
+// Keep name boundaries aligned with the clinical vocabulary, including stems
+// such as ปาก/แขน used by multi-part red-flag rules.
+const thaiClinicalStops = [...new Set(redFlagRules.rules.flatMap(r => r.match.flat()).filter(t => /^\p{Script=Thai}/u.test(t)).flatMap(t => [t, t.replace(/\s+/g, '')]))];
+const thaiClinicalPattern = thaiClinicalStops.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+
 /** Redaction is the only entry point for patient text. Never retains the original. */
 export function redact(input: string) {
   let text = input.normalize('NFC');
@@ -18,7 +25,8 @@ export function redact(input: string) {
   replace('EMAIL', /[\p{L}\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu);
   replace('ID', /(?<!\d)(?:\d{13}|\d-\d{4}-\d{5}-\d{2}-\d)(?!\d)/g);
   replace('ID', /\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b/gi);
-  replace('DOB', /(?:date\s+of\s+birth|dob|born\s+on|data\s+di\s+nascita|nat[oa]\s+il|วันเกิด|เกิดวันที่|เกิดเมื่อ)\s*[:：]?\s*(?:\d{1,4}[\/.-]\d{1,2}[\/.-]\d{1,4}|\d{1,2}\s+[\p{L}.]+\s+\d{2,4})/giu);
+  replace('DOB', /(?:date\s+of\s+birth|dob|born(?:\s+on)?|data\s+di\s+nascita|nat[oa]\s+il|วันเกิด|เกิดวันที่|เกิดเมื่อ)\s*(?:is\s*)?[:：]?\s*(?:\d{1,4}[\/.-]\d{1,2}[\/.-]\d{1,4}|\d{1,2}\s+[\p{L}.]+\s+\d{2,4})/giu);
+  replace('ADDRESS', /\b\d+[a-z]?(?:\/\d+)?\s+(?:[\p{Script=Latin}\p{M}'’-]+\s+){1,5}(?:street|st\.?|road|rd\.?|avenue|ave\.?|lane|ln\.?|drive|dr\.?|boulevard|blvd\.?)\b|\b(?:via|viale|piazza)\s+(?:[\p{Script=Latin}\p{M}'’-]+\s+){1,4}\d+[a-z]?(?:\/\d+)?|บ้านเลขที่\s*\d+(?:[\/-]\d+)*|(?:ซอย|ถนน)\s*[\p{Script=Thai}\p{N}]+(?:[ \t]+\d+(?:\/\d+)*)?/giu);
   replace('PHONE', /(?<![\d_])(?:\+\d{1,3}[\s().-]*(?:\d[\s().-]*){7,12}\d|0\d{1,2}[\s.-]*\d{3}[\s.-]*\d{4}|3\d{2}[\s.-]*\d{3}[\s.-]*\d{4})(?!\d)/gu);
   replace('PHONE', /\b(?:phone|telephone|telefono)\s*[:：]?\s*\d{3}[ .-]\d{4}\b/giu);
   replace('ID', /\b(?:passport|passaporto)\s*[:：]?\s*(?=[A-Z0-9]*\d)[A-Z0-9]{6,12}\b/giu);
@@ -46,6 +54,10 @@ export function redact(input: string) {
   for (const span of spans.reverse()) {
     replaceSpan(span.start, span.end, 'NAME');
   }
-  replace('NAME', /(?:ดิฉันชื่อ|ฉันชื่อ|ผมชื่อ|สวัสดี(?:ค่ะ|ครับ)\s+ชื่อ)\s*(?:(?!(?:เจ็บ|ปวด|หายใจ|เหงื่อ|แพ้|ไข้|ไอ|แน่น|เวียน|หมดสติ|ไม่|กินยา|ตั้งครรภ์))[\p{Script=Thai}]){1,20}/gu);
+  // Strong symptom stems also stop an unspaced introduction. Short stems
+  // such as ชา are checked only at the start of a token (สมชาย is a name).
+  const strongThaiStops = 'เจ็บ|ปวด|หายใจ|เหงื่อ|แพ้|ไข้|แน่น|เวียน|หมดสติ|ไม่|กินยา|ตั้งครรภ์|อายุ|อ่อนแรง|เลือด|อาเจียน|หอบ|บวม|ผื่น|หน้ามืด|เป็นลม|ซึม|สับสน|กลืน|พูด|เดิน|ตามัว|มองเห็น|คอแข็ง|ฆ่าตัว|อยากตาย';
+  const thaiToken = `(?!(?:${thaiClinicalPattern}|${strongThaiStops}|ไอ|ชา|ชัก|มีอาการ|ท้อง|และ|แต่|ครับ|ค่ะ))(?:(?!(?:${strongThaiStops}))[\\p{Script=Thai}]){1,20}`;
+  replace('NAME', new RegExp(`(?:ดิฉันชื่อ|ฉันชื่อ|ผมชื่อ|สวัสดี(?:ค่ะ|ครับ)[ \\t]+ชื่อ)\\s*${thaiToken}(?:[ \\t]+${thaiToken})?`, 'gu'));
   return { text, positions, replaced: [...counts].map(([type, count]) => ({ type, count })) };
 }

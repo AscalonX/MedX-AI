@@ -3,6 +3,7 @@ import { lookupAllergen, lookupDrug, MEDRULES, medNorm, refreshMedAlerts, stable
 import type { ModelAllergy, ModelExtraction, ModelMedicine } from './schema';
 import { verifyDetailed, words } from './verify';
 import { redact } from './redact';
+import { allergyDenials, pharmacyContext, stoppedTiming } from './pharmacyContext';
 
 /** Offline demo only: split dictionary mentions first, classify allergy context,
  * then map each entry independently. Never uses fixture IDs or gold answers. */
@@ -11,8 +12,7 @@ export function mockPharmacy(turns: { alias: string; text: string }[]): Pick<Mod
   let noKnownAllergies: ModelExtraction['noKnownAllergies'] = null;
   for (const { alias: turn, text } of turns) {
     const safe = text.split(/(?<=[.!?\n])/).filter(s => !/ignore|output|say I|mark this|istruzion|คำสั่ง/i.test(s)).join('');
-    const denial = /no (?:known )?allergies(?: at all)?|nessuna allergia|non sono allergico a nulla|ไม่มีประวัติแพ้|ไม่แพ้ยา/ig;
-    const negative = [...safe.matchAll(denial)];
+    const negative = allergyDenials(safe);
     if (negative.length) noKnownAllergies = { turn, quote: negative.at(-1)![0] };
     const candidates: { start: number; end: number; name: string }[] = [];
     const lower = safe.normalize('NFC').toLowerCase().replace(/[’‘]/g, "'");
@@ -38,10 +38,9 @@ export function mockPharmacy(turns: { alias: string; text: string }[]): Pick<Mod
     for (let i = 0; i < chosen.length; i++) {
       const c = chosen[i];
       if (negative.some(n => c.start >= n.index! && c.start < n.index! + n[0].length)) continue;
-      const before = safe.slice(Math.max(0, c.start - 100), c.start);
-      const allergyCue = [...before.matchAll(/allergic\w*\s*(?:to|a[il]?)?\s*|allergia\s*(?:a)?\s*|แพ้/ig)].at(-1)?.index ?? -1;
-      const takingCue = [...before.matchAll(/\btake\b|\btaking\b|\bprend\w*|\bgave\b|กิน|จ่าย|ทา|ต้ม|แต่/ig)].at(-1)?.index ?? -1;
-      const isAllergy = allergyCue >= 0 && allergyCue > takingCue && !/[.!?]/.test(before.slice(allergyCue));
+      const context = pharmacyContext(safe, c.start);
+      if (context.negated) continue;
+      const { isAllergy } = context;
       const nextStart = chosen[i + 1]?.start ?? safe.length;
       const end = Math.min(nextStart, c.end + 150);
       const tail = safe.slice(c.end, end).split(/[.!?]|\b(?:and|but)\b|แต่/)[0];
@@ -58,9 +57,8 @@ export function mockPharmacy(turns: { alias: string; text: string }[]): Pick<Mod
       } else if (lookupDrug(c.name) || /ยาสมุนไพร|ยาหม่อง|pill|tablet|one|muscoril|san giovanni|wort/i.test(c.name)) {
         const dose = /\b\d+(?:\.\d+)?\s*(?:mg|g|ml|tablets?|sachets?)\b|\b(?:da\s+)?\d{3,4}\b|\d+\s*(?:เม็ด|มก\.)/i.exec(tail)?.[0] ?? null;
         const frequency = /(?:twice|three times|once)\s+a\s+day|every\s+(?:morning|evening|night)|at night|(?:tre|due) volte al giorno|ogni mattina|la sera|เช้า-เย็น|ทุก(?:เช้า|เย็น|คืน)|วันละ[^\s,.]+/i.exec(tail)?.[0] ?? null;
-        const stopped = /(?:smesso di prendere|stopped(?: taking)?|หยุด(?:กิน)?ยา?)/i.exec(before);
-        const timing = stopped?.[0] ?? null;
-        if (stopped) quote = safe.slice(c.start - before.length + stopped.index, last ? last.index + last.segment.length : quoteEnd).trim().slice(0, 400);
+        const timing = context.stopped?.text ?? null;
+        if (context.stopped) quote = safe.slice(context.stopped.start, last ? last.index + last.segment.length : quoteEnd).trim().slice(0, 400);
         medications.push({ nameOriginal: c.name, dose, frequency, timing, turn, quote });
       }
     }
@@ -77,18 +75,39 @@ export function pharmacyEntries(model: Pick<ModelExtraction, 'medications' | 'al
     return hit ? [hit.evidence] : [];
   };
   const safe = (s: string | null) => s === null ? null : redact(s).text;
-  const medications: MedicationEntry[] = (model.medications || []).map(m => {
-    const ev = evidence(m); const d = lookupDrug(m.nameOriginal);
+  const contextFor = (ev: MedicationEntry['evidence'], name: string, alias: string) => {
+    const e = ev[0]; const turn = e && session.turns.find(t => t.id === e.turnId);
+    const index = e?.quote.indexOf(name) ?? -1;
+    if (turn && index >= 0) return pharmacyContext(turn.text, e.start + index);
+    // Even a rejected quote must not leave a denied named allergy/medicine
+    // as an unsupported row. This fallback can only omit, never verify data.
+    const original = session.turns.filter(t => t.role === 'patient')[Number(alias.slice(1)) - 1];
+    const at = original?.text.indexOf(name) ?? -1;
+    return original && at >= 0 ? pharmacyContext(original.text, at) : null;
+  };
+  const medications: MedicationEntry[] = (model.medications || []).flatMap(m => {
+    let ev = evidence(m); const d = lookupDrug(m.nameOriginal);
+    const context = contextFor(ev, m.nameOriginal, m.turn);
+    if (context?.negated) return [];
+    const timing = context?.stopped?.text ?? m.timing;
+    if (context?.stopped && ev.length) {
+      const turn = session.turns.find(t => t.id === ev[0].turnId)!;
+      const start = Math.min(context.stopped.start, ev[0].start);
+      ev = [{ ...ev[0], start, quote: turn.text.slice(start, ev[0].end) }];
+    }
     // Name must also occur in the verified quote; a real unrelated quote is insufficient.
-    const supported = ev.length > 0 && ev[0].quote.includes(m.nameOriginal) && [m.dose, m.frequency, m.timing].every(v => v === null || ev[0].quote.includes(v));
-    return { id: stableId('med', supported ? [ev[0].turnId, String(ev[0].start + ev[0].quote.indexOf(m.nameOriginal)), d?.generic || medNorm(m.nameOriginal)] : [medNorm(m.nameOriginal)]), nameOriginal: safe(m.nameOriginal)!, generic: d?.generic ?? null, drugClass: d?.drugClass ?? null, dose: safe(m.dose), frequency: safe(m.frequency), timing: safe(m.timing), evidence: supported ? ev : [], confidence: supported ? 0.9 : 0, status: !supported ? 'unsupported' : !d || d.generic.endsWith('(unspecified)') ? 'unmatched' : 'supported' };
+    const supported = ev.length > 0 && ev[0].quote.includes(m.nameOriginal) && [m.dose, m.frequency, timing].every(v => v === null || ev[0].quote.includes(v));
+    return [{ id: stableId('med', supported ? [ev[0].turnId, String(ev[0].start + ev[0].quote.indexOf(m.nameOriginal)), d?.generic || medNorm(m.nameOriginal)] : [medNorm(m.nameOriginal)]), nameOriginal: safe(m.nameOriginal)!, generic: d?.generic ?? null, drugClass: d?.drugClass ?? null, dose: safe(m.dose), frequency: safe(m.frequency), timing: safe(timing), evidence: supported ? ev : [], confidence: supported ? 0.9 : 0, status: !supported ? 'unsupported' as const : stoppedTiming(timing) ? 'discontinued' as const : !d || d.generic.endsWith('(unspecified)') ? 'unmatched' as const : 'supported' as const }];
   });
-  const allergies: AllergyEntry[] = (model.allergies || []).map(a => {
+  const allergies: AllergyEntry[] = (model.allergies || []).flatMap(a => {
     const ev = evidence(a); const d = lookupAllergen(a.allergenOriginal);
+    if (contextFor(ev, a.allergenOriginal, a.turn)?.negated) return [];
     const supported = ev.length > 0 && ev[0].quote.includes(a.allergenOriginal) && (a.reaction === null || ev[0].quote.includes(a.reaction));
-    return { id: stableId('allergy', [medNorm(a.allergenOriginal)]), allergenOriginal: safe(a.allergenOriginal)!, allergenClass: d?.allergenClass ?? null, reaction: safe(a.reaction), evidence: supported ? ev : [], status: !supported ? 'unsupported' : d ? 'supported' : 'unmatched' };
+    return [{ id: stableId('allergy', [medNorm(a.allergenOriginal)]), allergenOriginal: safe(a.allergenOriginal)!, allergenClass: d?.allergenClass ?? null, reaction: safe(a.reaction), evidence: supported ? ev : [], status: !supported ? 'unsupported' as const : d ? 'supported' as const : 'unmatched' as const }];
   });
-  return { medications, allergies, noKnownAllergiesEvidence: model.noKnownAllergies ? evidence(model.noKnownAllergies) : [] };
+  const denial = model.noKnownAllergies;
+  const globalDenial = denial && (allergyDenials(denial.quote).length > 0 || /^(?:none|no|nessun[oa]?|niente|nulla|ไม่มี)[.!]?$/iu.test(denial.quote.trim()));
+  return { medications, allergies, noKnownAllergiesEvidence: denial && globalDenial ? evidence(denial) : [] };
 }
 
 export function mergePharmacy(session: IntakeSession, next: ReturnType<typeof pharmacyEntries>, previous: IntakeSummary | null) {
@@ -108,6 +127,15 @@ export function mergePharmacy(session: IntakeSession, next: ReturnType<typeof ph
   summary.medications = merge(previous?.medications || [], next.medications);
   summary.allergies = merge(previous?.allergies || [], next.allergies);
   summary.noKnownAllergiesEvidence = next.noKnownAllergiesEvidence;
+  // Shared by mock, real-provider and deterministic escalation paths. Only
+  // verified pharmacy entries may supply a missing clinician summary field.
+  const field = summary.fields.find(f => f.key === 'medications');
+  const supported = summary.medications.filter(m => ['supported', 'discontinued'].includes(m.status) && m.evidence.length);
+  if (field?.status === 'missing' && supported.length) {
+    const label = (m: MedicationEntry, thai = false) => `${thai ? m.nameOriginal : m.generic || m.nameOriginal}${m.timing ? ` (${m.timing})` : ''}`;
+    const value = supported.map(m => label(m)).join(', ');
+    Object.assign(field, { valueOriginal: supported.map(m => label(m, true)).join(', '), value: { en: value, it: value, th: `ยาที่แจ้ง: ${supported.map(m => label(m, true)).join(', ')}` }, evidence: supported.flatMap(m => m.evidence), confidence: Math.min(...supported.map(m => m.confidence)), status: 'supported' });
+  }
   refreshMedAlerts(summary, previous?.medAlerts);
   if (summary.medications.length || summary.allergies.length) {
     const changed = JSON.stringify([summary.medications, summary.allergies, summary.medAlerts, summary.noKnownAllergiesEvidence]) !== JSON.stringify([previous?.medications, previous?.allergies, previous?.medAlerts, previous?.noKnownAllergiesEvidence]);

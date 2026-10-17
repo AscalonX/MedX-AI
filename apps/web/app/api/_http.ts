@@ -9,7 +9,7 @@ export function cors(request?: Request): Record<string, string> {
   if (origin && allowed.includes(origin)) headers['Access-Control-Allow-Origin'] = origin;
   return headers;
 }
-export function OPTIONS(request?: Request) { return new Response(null, { status: 204, headers: cors(request) }); }
+export function OPTIONS(request: Request) { return new Response(null, { status: 204, headers: cors(request) }); }
 export function json(data: unknown, status = 200, request?: Request) { return Response.json(data, { status, headers: { ...cors(request), 'Cache-Control': 'no-store' } }); }
 export async function handle(fn: () => unknown | Promise<unknown>, status = 200, request?: Request) {
   try { return json(await fn(), status, request); }

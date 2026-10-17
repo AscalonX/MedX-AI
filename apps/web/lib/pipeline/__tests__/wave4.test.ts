@@ -107,7 +107,7 @@ describe('pharmacy review endpoint', () => {
     expect(response.status).toBe(200); expect(response.headers.has('Access-Control-Allow-Origin')).toBe(false);
     expect((await response.json()).pharmacyStatus).toBe('reconciled');
     expect(getAudit(s.id).at(-1)).toMatchObject({ type: 'pharmacy_review', actorId: 'pharmacist-1', payload });
-    expect(OPTIONS().status).toBe(204);
+    expect(OPTIONS(new Request('http://localhost/api/test')).status).toBe(204);
   });
   it('blocks unmatched and unsupported medicines until reviewed', async () => {
     const s = await addTurn(createSession('en').id, 'I take a white pill every morning.');

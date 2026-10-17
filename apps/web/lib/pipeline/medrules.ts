@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { AllergyEntry, IntakeSummary, MedicationEntry, MedAlert, MedAlertKind, MedRuleFile } from '@medx/shared';
 import dictionary from '@medx/shared/src/medrules.json';
+import { stoppedTiming } from './pharmacyContext';
 
 export const MEDRULES = dictionary as MedRuleFile;
 // Exact port of check-medrules.mjs. Spaces in dictionary terms are intentional;
@@ -27,7 +28,7 @@ const SOURCES: Partial<Record<MedAlertKind, string>> = {
 /** Pure deterministic decision support; no model can remove or review an alert. */
 export function checkMedRules(medications: MedicationEntry[], allergies: AllergyEntry[], pregnancy?: string): MedAlert[] {
   const out = new Map<string, MedAlert>();
-  const meds = medications.filter(m => m.status !== 'discontinued').map(m => {
+  const meds = medications.filter(m => m.status !== 'discontinued' && !stoppedTiming(m.timing)).map(m => {
     const d = MEDRULES.drugs.find(d => d.generic === m.generic) ?? (m.review ? lookupDrug(m.generic || '') : lookupDrug(m.nameOriginal));
     return { m, d, tokens: new Set(d ? [d.drugClass, ...ingredients(d.generic)] : []) };
   });
@@ -55,13 +56,16 @@ export function checkMedRules(medications: MedicationEntry[], allergies: Allergy
   return [...out.values()].sort((a, b) => Number(b.severity === 'high') - Number(a.severity === 'high') || a.id.localeCompare(b.id));
 }
 
-/** Historical alerts remain visible after edits/discontinuation; decisions live in review. */
+/** Retain clinician-reviewed history; rebuild unreviewed alerts from current entries. */
 export function refreshMedAlerts(summary: IntakeSummary, previous: MedAlert[] = summary.medAlerts || []) {
   const pregnancyField = summary.fields.find(f => f.key === 'pregnancy_status');
   const text = pregnancyField && ['supported', 'approved', 'edited'].includes(pregnancyField.status) ? pregnancyField.value?.en.toLowerCase() || '' : '';
   const pregnancy = /not pregnant|non.*pregnan/.test(text) ? 'no' : /possib|maybe|late period/.test(text) ? 'possible' : /pregnan/.test(text) ? 'pregnant' : undefined;
   const next = checkMedRules(summary.medications || [], summary.allergies || [], pregnancy);
-  const merged = new Map(previous.map(a => [a.id, a]));
+  const current = new Set(next.map(a => a.id));
+  const medIds = new Set((summary.medications || []).map(m => m.id));
+  const allergyIds = new Set((summary.allergies || []).map(a => a.id));
+  const merged = new Map(previous.filter(a => (a.review || current.has(a.id)) && a.medIds.every(id => medIds.has(id)) && a.allergyIds.every(id => allergyIds.has(id))).map(a => [a.id, a]));
   for (const a of next) merged.set(a.id, { ...a, ...(merged.get(a.id)?.review ? { review: merged.get(a.id)!.review } : {}) });
   summary.medAlerts = [...merged.values()].sort((a, b) => Number(b.severity === 'high') - Number(a.severity === 'high') || a.id.localeCompare(b.id));
 }

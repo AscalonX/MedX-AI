@@ -168,22 +168,22 @@ it('all template questions use formal Italian, neutral Thai and no em dashes', (
 it.each(['', 'AMD Instinct test host'])('mock hardware stays neutral with configured label %s', async label => {
   vi.stubEnv('AMD_HARDWARE_LABEL', label);
   expect(providerInfo().hardware).toBe('\u2014');
-  expect((await health().json()).hardware).toBe('\u2014');
-  expect((await (await metricsRoute()).json()).provider.hardware).toBe('\u2014');
+  expect((await health(new Request('http://localhost/api/health')).json()).hardware).toBe('\u2014');
+  expect((await (await metricsRoute(new Request('http://localhost/api/metrics'))).json()).provider.hardware).toBe('\u2014');
   expect(metrics().provider.hardware).toBe('\u2014');
 });
 it('AMD health and metrics use the configured hardware label', async () => {
   vi.stubEnv('MODEL_PROVIDER', 'amd'); vi.stubEnv('AMD_HARDWARE_LABEL', 'Confirmed AMD host');
   expect(providerInfo().hardware).toBe('Confirmed AMD host');
-  expect((await health().json()).hardware).toBe('Confirmed AMD host');
-  expect((await (await metricsRoute()).json()).provider.hardware).toBe('Confirmed AMD host');
+  expect((await health(new Request('http://localhost/api/health')).json()).hardware).toBe('Confirmed AMD host');
+  expect((await (await metricsRoute(new Request('http://localhost/api/metrics'))).json()).provider.hardware).toBe('Confirmed AMD host');
 });
 
 it('queues omit abandoned starts while preserving addressable sessions', async () => {
   const empty = createSession('en');
   const active = await runTurn(createSession('en'), 'I have a headache.'); saveSession(active);
   expect(listSessions().map(s => s.id)).toEqual([active.id]);
-  expect((await (await queue()).json()).map((s: IntakeSession) => s.id)).toEqual([active.id]);
+  expect((await (await queue(new Request('http://localhost/api/sessions'))).json()).map((s: IntakeSession) => s.id)).toEqual([active.id]);
   expect(getSession(empty.id)).toBeDefined();
 });
 

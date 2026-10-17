@@ -65,11 +65,11 @@ export async function pharmacyReview(sessionId: string, value: unknown) {
         allergy.status = 'edited'; allergy.review = { reviewerId, at, previous };
       } else { allergy.status = 'verified'; allergy.review = { ...allergy.review, reviewerId, at }; }
     }
-    refreshMedAlerts(summary);
     for (const a of value.alertActions) {
       const alert = summary.medAlerts?.find(x => x.id === a.alertId); if (!alert) invalid('Unknown medication alert');
       alert.review = { action: a.action, reviewerId, at, ...(a.note !== undefined ? { note: a.note } : {}) };
     }
+    refreshMedAlerts(summary);
     if (value.complete) {
       const blockers = [
         ...(summary.medAlerts || []).filter(a => a.severity === 'high' && !a.review).map(a => `high alert ${a.ruleId} requires review`),

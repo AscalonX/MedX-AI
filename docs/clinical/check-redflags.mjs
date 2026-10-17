@@ -7,7 +7,7 @@ const root = new URL("../../", import.meta.url);
 const rules = JSON.parse(readFileSync(new URL("packages/shared/src/redflags.json", root), "utf8"));
 const md = readFileSync(new URL("docs/clinical/REDFLAG-TESTS.md", root), "utf8");
 
-const norm = (t) => " " + t.normalize("NFC").toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, " ").trim();
+const norm = (t) => " " + t.normalize("NFKC").toLowerCase().replace(/[’‘]/g, "'").replace(/[\u200B-\u200D\uFEFF]/g, "").replace(/[\p{Dash_Punctuation}\u2212]/gu, " ").replace(/\s+/g, " ").trim().replace(/(?<=\p{Script=Thai}) (?=\p{Script=Thai})/gu, "");
 
 // Negation never crosses a clause boundary (v1.1): keep only the window text after the last
 // punctuation mark or contrast word. Word boundaries keep their trailing space so " non " still matches.

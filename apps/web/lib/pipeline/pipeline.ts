@@ -23,8 +23,7 @@ export function createSession(patientLang: Lang, opts: { persist?: boolean; now?
   const at = opts.now?.() || new Date().toISOString();
   const used = new Set(opts.persist === false ? [] : getSessions().map(s => s.code));
   let code = '';
-  for (let n = 1; n <= 1000; n++) { const candidate = `B-${String(n % 1000).padStart(3, '0')}`; if (!used.has(candidate)) { code = candidate; break; } }
-  if (!code) throw new PipelineError('Session code capacity reached', 'bad_request');
+  for (let n = 1; n <= used.size + 1; n++) { const candidate = `B-${String(n).padStart(3, '0')}`; if (!used.has(candidate)) { code = candidate; break; } }
   const session: IntakeSession = { id: randomUUID(), code, patientLang, status: 'collecting', turns: [], summary: null, createdAt: at, updatedAt: at };
   if (opts.persist !== false) { saveSession(session); appendAudit(session.id, 'session_created', 'patient', { patientLang, ...(opts.demoCaseId ? { demoCaseId: opts.demoCaseId } : {}) }, undefined, at); }
   return session;
@@ -64,7 +63,7 @@ function unsupportedLanguage(text: string, modelLang: string | undefined, lang: 
 }
 export async function runTurn(input: IntakeSession, rawText: string, opts: RunOptions = {}): Promise<IntakeSession> {
   const deadline = Date.now() + 40000;
-  if (typeof rawText !== 'string' || !rawText.trim() || rawText.length > 4000) throw new PipelineError('Text must contain 1–4000 characters', 'bad_request');
+  if (typeof rawText !== 'string' || !rawText.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() || rawText.length > 4000) throw new PipelineError('Text must contain 1–4000 characters', 'bad_request');
   if (['approved', 'taken_over'].includes(input.status)) throw new PipelineError(input.status === 'taken_over' ? 'A clinician has taken over this session' : 'Session no longer accepts patient turns', 'bad_request', 409);
   if (input.turns.filter(t => t.role === 'patient').length >= 20) throw new PipelineError('Patient turn limit reached', 'bad_request', 409);
   if (opts.inputMode !== undefined && !['text', 'voice'].includes(opts.inputMode)) throw new PipelineError('Invalid inputMode', 'bad_request');
@@ -183,14 +182,19 @@ export async function review(sessionId: string, reviewerId: string, actions: Rev
 export async function takeover(sessionId: string, reviewerId: string, reason?: string) {
   return withSessionLock(sessionId, () => {
     if (!reviewerId?.trim() || reviewerId.length > 200 || (reason !== undefined && (typeof reason !== 'string' || reason.length > 2000))) throw new PipelineError('Invalid takeover request', 'bad_request');
-    const session = requireSession(sessionId); session.status = 'taken_over'; session.updatedAt = new Date().toISOString();
+    const session = requireSession(sessionId);
+    if (session.status === 'approved') throw new PipelineError('Approved session cannot be taken over', 'bad_request', 409);
+    session.status = 'taken_over'; session.updatedAt = new Date().toISOString();
     if (session.summary) session.summary.nextQuestion = null;
     saveSession(session); appendAudit(sessionId, 'takeover', 'clinician', { reason: reason ? redact(reason).text : undefined }, redact(reviewerId).text); return session;
   });
 }
 export function listSessions() { return getSessions().filter(s => s.turns.some(t => t.role === 'patient')).sort((a, b) => Number(b.status === 'escalated') - Number(a.status === 'escalated') || b.createdAt.localeCompare(a.createdAt)); }
 export function metrics(): OpsMetrics {
-  const sessions = getSessions(); const audit = getAudit(); const today = new Date().toISOString().slice(0, 10);
+  // Ops uses exactly the queue's visibility filter: empty abandoned starts
+  // stay addressable by ID, but are excluded from every metric and audit sample.
+  const sessions = listSessions(); const visible = new Set(sessions.map(s => s.id));
+  const audit = getAudit().filter(e => visible.has(e.sessionId)); const today = new Date().toISOString().slice(0, 10);
   const byStatus = Object.fromEntries(['collecting', 'escalated', 'awaiting_review', 'needs_human', 'approved', 'taken_over'].map(s => [s, sessions.filter(x => x.status === s).length])) as Record<SessionStatus, number>;
   const summaries = sessions.flatMap(s => s.summary ? [s.summary] : []);
   const generated = sessions.flatMap(s => { const firstReview = audit.findIndex(a => a.sessionId === s.id && a.type === 'review'); const beforeReview = firstReview < 0 ? audit : audit.slice(0, firstReview); const e = beforeReview.filter(a => a.sessionId === s.id && a.type === 'summary_generated' && typeof a.payload.autoCaptured === 'number').at(-1); return e ? [e] : []; });

@@ -17,7 +17,7 @@ import * as resetRoute from '../../../app/api/demo/reset/route';
 import { POST as seed } from '../../../app/api/dev/seed/route';
 import { body, OPTIONS } from '../../../app/api/_http';
 import { POST as addTurnRoute } from '../../../app/api/sessions/[id]/turns/route';
-import { appendAudit, getAudit, getSession } from '../store';
+import { appendAudit, getAudit, getSession, saveSession } from '../store';
 
 let dir: string;
 beforeEach(() => {
@@ -163,6 +163,7 @@ describe('P2 turn limits and input mode', () => {
 });
 it('P2 metrics count calls once and time review from first awaiting_review', () => {
   const s = createSession('en');
+  s.turns.push(turn('headache')); saveSession(s);
   const call = { step: 'extract', provider: 'mock', model: 'test', ok: true, latencyMs: 10 };
   appendAudit(s.id, 'summary_generated', 'system', { status: 'collecting', modelCalls: [call] }, undefined, '2026-10-17T00:00:00Z');
   appendAudit(s.id, 'summary_generated', 'system', { event: 'screen_completed', modelCalls: [{ ...call, latencyMs: 10000 }] });

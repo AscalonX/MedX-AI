@@ -36,8 +36,7 @@ export function mockJSON(req: ChatRequest): unknown {
     ],
     onset: [[/(?:since today|da oggi|ตั้งแต่วันนี้)/i, { en: 'since today', it: 'da oggi', th: 'ตั้งแต่วันนี้' }], [/(?:this week|questa settimana|สัปดาห์นี้)/i, { en: 'this week', it: 'questa settimana', th: 'สัปดาห์นี้' }], [/(?:since yesterday|started yesterday|da ieri|ตั้งแต่เมื่อวาน|เริ่มเมื่อวาน)/i, { en: 'since yesterday', it: 'da ieri', th: 'ตั้งแต่เมื่อวาน' }], [/(?:for two days|da due giorni)/i, { en: 'two days ago', it: 'da due giorni', th: 'สองวันก่อน' }], [/yesterday evening/i, { en: 'yesterday evening', it: 'ieri sera', th: 'เมื่อวานตอนเย็น' }], [/da stamattina/i, { en: 'this morning', it: 'da stamattina', th: 'เช้าวันนี้' }]],
     associated_symptoms: [[/(?:no other symptoms|nessun altro sintomo|ไม่มีอาการอื่น)/i, { en: 'no other symptoms', it: 'nessun altro sintomo', th: 'ไม่มีอาการอื่น' }], [/(?:nausea|คลื่นไส้)/i, { en: 'nausea', it: 'nausea', th: 'คลื่นไส้' }]],
-    medications: [[/(?:no (?:medicines|medications)|don't take any medication|nessun farmaco|non prendo farmaci|ไม่มียาที่ใช้|ไม่ได้กินยา)/i, { en: 'no medicines', it: 'nessun farmaco', th: 'ไม่ได้กินยา' }], [/(?:paracetamol(?:o)?|พาราเซตามอล)/i, { en: 'paracetamol', it: 'paracetamolo', th: 'พาราเซตามอล' }], [/daily multivitamin/i, { en: 'daily multivitamin', it: 'multivitaminico giornaliero', th: 'วิตามินรวมทุกวัน' }]],
-    allergies: [[/(?:no (?:known )?allergies|nessuna allergia|non sono allergico a nulla|ไม่มีประวัติแพ้|ไม่แพ้ยา)/i, { en: 'no known allergies', it: 'nessuna allergia nota', th: 'ไม่มีประวัติแพ้' }]],
+    medications: [[/(?:no (?:medicines|medications)|don't take any medication|nessun farmaco|non prendo farmaci|ไม่มียาที่ใช้|ไม่ได้กินยา(?=$|[\s.,!?]))/i, { en: 'no medicines', it: 'nessun farmaco', th: 'ไม่ได้กินยา' }], [/daily multivitamin/i, { en: 'daily multivitamin', it: 'multivitaminico giornaliero', th: 'วิตามินรวมทุกวัน' }]],
     pregnancy_status: [[/(?:not pregnant|non sono incinta|ไม่ตั้งครรภ์|ไม่ได้ตั้งครรภ์)/i, { en: 'not pregnant', it: 'non in gravidanza', th: 'ไม่ตั้งครรภ์' }], [/(?:possibly pregnant|might be pregnant|maybe pregnant|late period|forse incinta|อาจตั้งครรภ์)/i, { en: 'possibly pregnant', it: 'possibile gravidanza', th: 'อาจตั้งครรภ์' }], [/(?:sono incinta|I am pregnant|I'm pregnant|ตั้งครรภ์)/i, { en: 'pregnant', it: 'in gravidanza', th: 'ตั้งครรภ์' }]],
     sex: [[/\b(?:male|man|uomo)\b/i, { en: 'male', it: 'maschio', th: 'ชาย' }], [/\b(?:female|woman|donna)\b/i, { en: 'female', it: 'femmina', th: 'หญิง' }]],
   };
@@ -66,5 +65,10 @@ export function mockJSON(req: ChatRequest): unknown {
     }
   }
   const pharmacy = mockPharmacy(turns.map(([, alias, text]) => ({ alias, text })));
+  if (pharmacy.noKnownAllergies) result.fields.allergies = {
+    value_original: pharmacy.noKnownAllergies.quote,
+    value: { en: 'no known allergies', it: 'nessuna allergia nota', th: 'ไม่มีประวัติแพ้' },
+    evidence: [pharmacy.noKnownAllergies], certainty: 'high',
+  };
   return { ...result, ...pharmacy, noKnownAllergies: pharmacy.noKnownAllergies ?? result.noKnownAllergies ?? null };
 }

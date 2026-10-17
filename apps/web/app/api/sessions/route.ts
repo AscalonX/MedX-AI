@@ -4,7 +4,7 @@ import { body, handle, keys } from '../_http';
 export { OPTIONS } from '../_http';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export function GET(request?: Request) { return handle(listSessions, 200, request); }
+export function GET(request: Request) { return handle(listSessions, 200, request); }
 export function POST(request: Request) {
   return handle(async () => {
     const value = await body(request); keys(value, ['patientLang']);
