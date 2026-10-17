@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "pitch/cover/cover-v3.html"
+        ],
+        "createdAt": "2026-10-17T13:20:39.954Z",
+        "reason": "design lead: static cover; .shot frames intentionally clip cropped screenshots, no tooltips or popovers"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "pitch/cover/cover-v4.html"
+        ],
+        "createdAt": "2026-10-17T13:56:17.771Z",
+        "reason": "design lead: bottom underline on the quote is the evidence-highlighter signature (DIRECTION.md 6a), not a side-tab card accent"
+      }
+    ]
+  }
+}

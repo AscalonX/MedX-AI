@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MedX cover v4 poster</title>
+<!--
+  Key-visual poster. Words on image: MedX / Every word, understood. / Thai · Italiano · English / Gemma on AMD / "chest pain"  (12).
+  Render from repo root (headless Chrome):
+    1600x900:  --window-size=1600,900  file://.../pitch/cover/cover-v4.html          -> cover-v4.png
+    1080x1080: --window-size=1080,1080 file://.../pitch/cover/cover-v4.html#square   -> cover-v4-square.png
+  Fin: pitch/cover/img/fin-wave-poster.svg (node pitch/cover/img/build-fin.mjs, from packages/shared/src/mascot.ts).
+  Phone: pitch/cover/img/patient-home-fin.png (real patient app at 375x812 @3x, rendered from /patient/).
+-->
+<style>
+@font-face{font-family:"SCBXBeta2";src:url("../../apps/web/app/fonts/SCBXBeta2-Regular.otf");font-weight:400}
+@font-face{font-family:"SCBXBeta2";src:url("../../apps/web/app/fonts/SCBXBeta2-Bold.otf");font-weight:700}
+*{margin:0;box-sizing:border-box}
+body{width:1600px;height:900px;overflow:hidden;position:relative;font-family:"SCBXBeta2",system-ui,sans-serif;color:#fff;
+  background:linear-gradient(128deg,#0B8A7F 0%,#0A8077 18%,#1468B4 58%,#1A5FC4 74%,#123F8E 100%)}
+/* depth: large soft shapes and sea curves (no spotlight) */
+.blob{position:absolute;border-radius:50%}
+.b1{width:900px;height:900px;left:-360px;top:-520px;background:rgba(255,255,255,.06)}
+.b2{width:620px;height:620px;right:-180px;top:-260px;background:rgba(255,255,255,.05)}
+.waves{position:absolute;left:0;right:0;bottom:0;height:340px}
+.bubble{position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(255,255,255,.08)}
+.bubble::after{content:"";position:absolute;width:28%;height:28%;left:20%;top:18%;border-radius:50%;background:rgba(255,255,255,.75)}
+
+.copy{position:absolute;left:110px;top:210px}
+h1{font-size:236px;line-height:.86;font-weight:700;letter-spacing:-.045em}
+.line{margin-top:34px;font-size:66px;line-height:1.05;font-weight:700;letter-spacing:-.02em}
+.line span{opacity:.9;font-weight:400}
+.chips{position:absolute;left:110px;bottom:72px;display:flex;gap:14px}
+.chip{height:50px;padding:0 22px;border-radius:999px;display:inline-flex;align-items:center;gap:10px;font-size:22px;font-weight:700;color:#0F1E2E;background:#fff;box-shadow:0 14px 26px -16px rgba(0,0,0,.4)}
+.chip svg{width:22px;height:22px;fill:none;stroke:#1A5CBF;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+.phone{position:absolute;left:1092px;top:92px;width:312px;height:676px;border-radius:50px;padding:11px;background:#0E1B2C;transform:rotate(7deg);
+  box-shadow:0 60px 90px -40px rgba(0,0,0,.55),inset 0 0 0 2px rgba(255,255,255,.12)}
+.phone .screen{width:100%;height:100%;border-radius:40px;overflow:hidden;background:#EEF3F6}
+.phone img{width:100%;display:block}
+.phone .notch{position:absolute;left:50%;top:22px;width:96px;height:28px;margin-left:-48px;border-radius:20px;background:#0E1B2C}
+
+.card{position:absolute;left:1236px;top:566px;white-space:nowrap;transform:rotate(-4deg);display:flex;align-items:center;gap:12px;padding:16px 20px 16px 16px;border-radius:22px;background:#fff;color:#0F1E2E;
+  box-shadow:0 34px 50px -26px rgba(0,0,0,.5)}
+.card .q{width:42px;height:42px;border-radius:50%;background:#E5EEFB;display:grid;place-items:center}
+.card .q svg{width:20px;height:20px;fill:none;stroke:#1A5CBF;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card .hl{font-size:32px;font-weight:700;padding:2px 10px;border-radius:8px;background:#D2E4FF;box-shadow:inset 0 -3px 0 #1A5CBF}
+.card .ok{width:36px;height:36px;border-radius:50%;background:#08716A;display:grid;place-items:center}
+.card .ok svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+
+.fin{position:absolute;left:760px;top:330px;width:480px;
+  filter:drop-shadow(5px 0 0 #fff) drop-shadow(-5px 0 0 #fff) drop-shadow(0 5px 0 #fff) drop-shadow(0 -5px 0 #fff) drop-shadow(0 40px 40px rgba(0,0,0,.38))}
+
+/* ---------- square ---------- */
+body.sq{width:1080px;height:1080px}
+.sq .b1{left:-420px;top:-560px}
+.sq .copy{left:80px;top:96px}
+.sq h1{font-size:200px}
+.sq .line{margin-top:26px;font-size:58px}
+.sq .chips{left:80px;bottom:60px}
+.sq .phone{left:704px;top:420px;width:286px;height:620px;transform:rotate(8deg)}
+.sq .card{left:640px;top:318px}
+.sq .fin{left:270px;top:470px;width:450px}
+.sq .waves{height:300px}
+</style>
+</head>
+<body>
+<span class="blob b1"></span><span class="blob b2"></span>
+<svg class="waves" viewBox="0 0 1600 340" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 150C220 90 420 200 660 150C900 100 1100 40 1340 90C1460 115 1540 140 1600 130V340H0Z" fill="rgba(255,255,255,.07)"/>
+  <path d="M0 220C260 170 470 260 760 220C1040 180 1240 140 1600 200V340H0Z" fill="rgba(255,255,255,.07)"/>
+  <path d="M0 280C300 250 560 310 880 280C1160 254 1380 250 1600 270V340H0Z" fill="rgba(8,30,80,.28)"/>
+</svg>
+
+<span class="bubble" style="left:742px;top:300px;width:34px;height:34px"></span>
+<span class="bubble" style="left:710px;top:236px;width:20px;height:20px"></span>
+<span class="bubble" style="left:772px;top:190px;width:14px;height:14px"></span>
+<span class="bubble" style="left:1470px;top:110px;width:26px;height:26px"></span>
+<span class="bubble" style="left:1512px;top:66px;width:14px;height:14px"></span>
+<span class="bubble" style="left:640px;top:720px;width:22px;height:22px"></span>
+
+<div class="copy">
+  <h1>MedX</h1>
+  <p class="line">Every word,<br><span>understood.</span></p>
+</div>
+
+<div class="phone"><div class="screen"><img src="img/patient-home-fin.png" alt=""></div><span class="notch"></span></div>
+
+<div class="card" aria-hidden="true">
+  <span class="q"><svg viewBox="0 0 24 24"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/></svg></span>
+  <span class="hl">“chest pain”</span>
+  <span class="ok"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+</div>
+
+<img class="fin" src="img/fin-wave-poster.svg" alt="">
+
+<div class="chips">
+  <span class="chip"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>Thai · Italiano · English</span>
+  <span class="chip"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M9 2v2M15 20v2M9 20v2M20 9h2M20 14h2M2 9h2M2 14h2"/></svg>Gemma on AMD</span>
+</div>
+<script>if (location.hash === "#square") document.body.classList.add("sq");</script>
+</body>
+</html>
