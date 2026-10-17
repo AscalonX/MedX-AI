@@ -2,7 +2,7 @@
 
 > **MOCK PROVIDER — NOT EVIDENCE.** Deterministic regex mock (`deterministic-mock`), not Gemma and not AMD. These numbers only prove the harness runs end to end; they say nothing about model quality.
 
-Run `2026-10-17T07-37-25-632Z` · 2026-10-17T07:37:25.632Z · split **all** · git 6daba50 (uncommitted changes) · METRICS.md sha256 08761e8218be · prompts sha256 3a4eb9fbae33 · rules v1.1 sha256 f8a45feeec3b
+Run `2026-10-17T08-03-39-740Z` · 2026-10-17T08:03:39.740Z · split **all** · git 38e88e2 (uncommitted changes) · METRICS.md sha256 08761e8218be · prompts sha256 2564fc3764b5 · rules v1.1 sha256 f8a45feeec3b
 Cases: 40 (excluded from field metrics because escalated: 13; errors: 0) · holdout: 18. Synthetic data, research prototype. Metrics pre-declared in docs/ai/METRICS.md.
 
 ## Headline
@@ -18,7 +18,7 @@ Cases: 40 (excluded from field metrics because escalated: 13; errors: 0) · hold
 | M4 red-flag false alarms (40 cases) | 6.9% (2/29; CI 2–22%) | ≤ 10% | met |
 | **M11 holdout recall, rules v1.1 + model** | 70.0% (7/10; CI 40–89%) | ≥ 9/10 | **NOT MET** |
 | **M11 holdout false alarms, rules v1.1 + model** | 37.5% (3/8; CI 14–69%) | ≤ v1.1 + 1 | met |
-| M8 turn latency p50 / p95 | 62 / 116 ms (n=30) | ≤ 6000 / ≤ 12000 ms | met |
+| M8 turn latency p50 / p95 | 19 / 26 ms (n=30) | ≤ 6000 / ≤ 12000 ms | met |
 
 ## M11 red-flag arms — blind holdout (headline, independent)
 
@@ -130,7 +130,7 @@ Screen items: {"verifiedNonLow":0,"discardedUnverified":0,"lowCertainty":0}; fal
 
 ## M8 latency
 
-- Turn (turns with ≥ 1 model call): p50 62 ms, p95 116 ms, n=30
+- Turn (turns with ≥ 1 model call): p50 19 ms, p95 26 ms, n=30
 - extract {"p50":0,"p95":1,"n":30} · next_question {"p50":0,"p95":0,"n":24} · red_flags {"p50":0,"p95":0,"n":30}
 - Failed calls: 3 {"next_question: Next-question schema or language check failed; static fallback":3}
 
@@ -163,6 +163,11 @@ Screen items: {"verifiedNonLow":0,"discardedUnverified":0,"lowCertainty":0}; fal
 | 2026-10-17T07-23-25-282Z | mock | deterministic-mock | all | 6073e85 (dirty) |
 | 2026-10-17T07-33-01-805Z | mock | deterministic-mock | all | 01c6e5e (dirty) |
 | 2026-10-17T07-37-25-632Z | mock | deterministic-mock | all | 6daba50 (dirty) |
+| 2026-10-17T07-47-14-374Z | mock | deterministic-mock | all | 89c55a6 (dirty) |
+| 2026-10-17T07-50-36-435Z | mock | deterministic-mock | all | 89c55a6 (dirty) |
+| 2026-10-17T07-58-39-087Z | mock | deterministic-mock | all | 68ab9e5 (dirty) |
+| 2026-10-17T08-01-41-410Z | mock | deterministic-mock | all | 68ab9e5 (dirty) |
+| 2026-10-17T08-03-39-740Z | mock | deterministic-mock | all | 38e88e2 (dirty) |
 
 ## Limitations
 

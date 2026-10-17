@@ -21,7 +21,7 @@ export function mockJSON(req: ChatRequest): unknown {
     if (role === 'assistant') asked = FIELD_KEYS.find(k => Object.values(QUESTIONS[k]).includes(text));
     else if (asked) { askedByTurn.set(alias, asked); asked = undefined; }
   }
-  const context = /Asked field: (\w+); answer turn: (T\d+)/.exec(req.user);
+  const context = /^Patient language: [^\n]*\n\nFOLLOW-UP CONTEXT\nAsked field: (\w+); answer turn: (T\d+)\n/.exec(req.user);
   if (context && FIELD_KEYS.includes(context[1] as FieldKey)) askedByTurn.set(context[2], context[1] as FieldKey);
   let noAllergyAnswer: { turn: string; quote: string } | undefined;
   const patterns: Partial<Record<FieldKey, [RegExp, Localized][]>> = {
