@@ -143,7 +143,7 @@ Also: `AMD_JSON_SCHEMA=false` disables `response_format` json_schema if an endpo
 ## Tests and evaluation
 
 ```bash
-npm --prefix apps/web test      # vitest: 1,863 tests in 21 files
+npm --prefix apps/web test      # vitest: 1,863 tests in 22 files
 node docs/clinical/check-redflags.mjs   # 175 red-flag reference tests (also check-medrules, check-consultrules)
 cd apps/web && MODEL_PROVIDER=mock npx vite-node ../../eval/run.ts -- --split all
 ```
