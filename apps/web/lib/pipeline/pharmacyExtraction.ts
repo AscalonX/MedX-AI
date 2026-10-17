@@ -3,7 +3,7 @@ import { lookupAllergen, lookupDrug, MEDRULES, medNorm, refreshMedAlerts, stable
 import type { ModelAllergy, ModelExtraction, ModelMedicine } from './schema';
 import { verifyDetailed, words } from './verify';
 import { redact } from './redact';
-import { allergyDenials, pharmacyContext, stoppedTiming } from './pharmacyContext';
+import { allergyDenials, pharmacyContext } from './pharmacyContext';
 
 /** Offline demo only: split dictionary mentions first, classify allergy context,
  * then map each entry independently. Never uses fixture IDs or gold answers. */
@@ -93,11 +93,12 @@ export function pharmacyEntries(model: Pick<ModelExtraction, 'medications' | 'al
     if (context?.stopped && ev.length) {
       const turn = session.turns.find(t => t.id === ev[0].turnId)!;
       const start = Math.min(context.stopped.start, ev[0].start);
-      ev = [{ ...ev[0], start, quote: turn.text.slice(start, ev[0].end) }];
+      const end = Math.max(ev[0].end, context.stopped.start + context.stopped.text.length);
+      ev = [{ ...ev[0], start, end, quote: turn.text.slice(start, end) }];
     }
     // Name must also occur in the verified quote; a real unrelated quote is insufficient.
     const supported = ev.length > 0 && ev[0].quote.includes(m.nameOriginal) && [m.dose, m.frequency, timing].every(v => v === null || ev[0].quote.includes(v));
-    return [{ id: stableId('med', supported ? [ev[0].turnId, String(ev[0].start + ev[0].quote.indexOf(m.nameOriginal)), d?.generic || medNorm(m.nameOriginal)] : [medNorm(m.nameOriginal)]), nameOriginal: safe(m.nameOriginal)!, generic: d?.generic ?? null, drugClass: d?.drugClass ?? null, dose: safe(m.dose), frequency: safe(m.frequency), timing: safe(timing), evidence: supported ? ev : [], confidence: supported ? 0.9 : 0, status: !supported ? 'unsupported' as const : stoppedTiming(timing) ? 'discontinued' as const : !d || d.generic.endsWith('(unspecified)') ? 'unmatched' as const : 'supported' as const }];
+    return [{ id: stableId('med', supported ? [ev[0].turnId, String(ev[0].start + ev[0].quote.indexOf(m.nameOriginal)), d?.generic || medNorm(m.nameOriginal)] : [medNorm(m.nameOriginal)]), nameOriginal: safe(m.nameOriginal)!, generic: d?.generic ?? null, drugClass: d?.drugClass ?? null, dose: safe(m.dose), frequency: safe(m.frequency), timing: safe(timing), evidence: supported ? ev : [], confidence: supported ? 0.9 : 0, status: !supported ? 'unsupported' as const : !d || d.generic.endsWith('(unspecified)') ? 'unmatched' as const : 'supported' as const }];
   });
   const allergies: AllergyEntry[] = (model.allergies || []).flatMap(a => {
     const ev = evidence(a); const d = lookupAllergen(a.allergenOriginal);

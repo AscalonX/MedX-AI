@@ -28,7 +28,7 @@ const SOURCES: Partial<Record<MedAlertKind, string>> = {
 /** Pure deterministic decision support; no model can remove or review an alert. */
 export function checkMedRules(medications: MedicationEntry[], allergies: AllergyEntry[], pregnancy?: string): MedAlert[] {
   const out = new Map<string, MedAlert>();
-  const meds = medications.filter(m => m.status !== 'discontinued' && !stoppedTiming(m.timing)).map(m => {
+  const meds = medications.filter(m => m.status !== 'discontinued').map(m => {
     const d = MEDRULES.drugs.find(d => d.generic === m.generic) ?? (m.review ? lookupDrug(m.generic || '') : lookupDrug(m.nameOriginal));
     return { m, d, tokens: new Set(d ? [d.drugClass, ...ingredients(d.generic)] : []) };
   });
@@ -36,7 +36,15 @@ export function checkMedRules(medications: MedicationEntry[], allergies: Allergy
     const medIds = ms.map(m => m.id).sort(); const id = stableId(ruleId, medIds);
     const existing = out.get(id);
     if (existing) { existing.allergyIds = [...new Set([...existing.allergyIds, ...als.map(a => a.id)])]; return; }
-    out.set(id, { id, ruleId, kind, severity, ...MEDRULES.messages[kind], medIds, allergyIds: als.map(a => a.id), evidence: ms.flatMap(m => m.evidence), source });
+    const copy = structuredClone(MEDRULES.messages[kind]);
+    if (ms.some(m => stoppedTiming(m.timing))) {
+      const suffix = { en: 'patient says stopped — confirm', it: 'il paziente riferisce di aver interrotto — confermare', th: 'ผู้ป่วยแจ้งว่าหยุดยาแล้ว — โปรดยืนยัน' };
+      for (const lang of ['en', 'it', 'th'] as const) {
+        copy.message[lang] += ` (${suffix[lang]})`;
+        copy.action[lang] += ` (${suffix[lang]})`;
+      }
+    }
+    out.set(id, { id, ruleId, kind, severity, ...copy, medIds, allergyIds: als.map(a => a.id), evidence: ms.flatMap(m => m.evidence), source });
   };
   for (const { m, d, tokens } of meds) {
     if (!d || d.generic.endsWith('(unspecified)')) add('MR-UNKNOWN-01', 'unknown_medication', 'moderate', [m]);

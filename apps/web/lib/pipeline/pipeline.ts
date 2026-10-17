@@ -14,6 +14,8 @@ import { mergePharmacy, mockPharmacy, pharmacyEntries } from './pharmacyExtracti
 import { aliases } from './prompts';
 import { quickAnswer } from './quickAnswers';
 export type { ModelClient } from './llm';
+export const TURN_TIMEOUT_MS = 40000;
+type InternalTurn = IntakeSession['turns'][number] & { clientTurnId?: string };
 
 export class PipelineError extends Error {
   constructor(message: string, public code: 'bad_request' | 'not_found', public status?: number) { super(message); }
@@ -62,7 +64,7 @@ function unsupportedLanguage(text: string, modelLang: string | undefined, lang: 
   return thaiRatio < 0.2 && tokens.filter(w => stops.has(w)).length < 2 && tokens.length >= 6;
 }
 export async function runTurn(input: IntakeSession, rawText: string, opts: RunOptions = {}): Promise<IntakeSession> {
-  const deadline = Date.now() + 40000;
+  const deadline = Date.now() + TURN_TIMEOUT_MS;
   if (typeof rawText !== 'string' || !rawText.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() || rawText.length > 4000) throw new PipelineError('Text must contain 1–4000 characters', 'bad_request');
   if (['approved', 'taken_over'].includes(input.status)) throw new PipelineError(input.status === 'taken_over' ? 'A clinician has taken over this session' : 'Session no longer accepts patient turns', 'bad_request', 409);
   if (input.turns.filter(t => t.role === 'patient').length >= 20) throw new PipelineError('Patient turn limit reached', 'bad_request', 409);
@@ -136,10 +138,14 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
   return session;
 }
 function requireSession(id: string) { const session = getSession(id); if (!session) throw new PipelineError('Session not found', 'not_found'); return session; }
-export async function addTurn(sessionId: string, rawText: string, inputMode?: 'text' | 'voice') {
+export async function addTurn(sessionId: string, rawText: string, inputMode?: 'text' | 'voice', clientTurnId?: string) {
+  if (clientTurnId !== undefined && (typeof clientTurnId !== 'string' || !clientTurnId.trim() || clientTurnId.length > 200)) throw new PipelineError('Invalid clientTurnId', 'bad_request');
   return withSessionLock(sessionId, async () => {
+    const current = requireSession(sessionId);
+    if (clientTurnId !== undefined && (current.turns as InternalTurn[]).some(t => t.clientTurnId === clientTurnId)) return current;
     const events: { type: AuditEvent['type']; payload: Record<string, unknown> }[] = [];
-    const session = await runTurn(requireSession(sessionId), rawText, { inputMode, audit: (type, payload) => events.push({ type, payload }) });
+    const session = await runTurn(current, rawText, { inputMode, audit: (type, payload) => events.push({ type, payload }) });
+    if (clientTurnId !== undefined) (session.turns.find(t => t.role === 'patient' && !current.turns.some(old => old.id === t.id)) as InternalTurn).clientTurnId = clientTurnId;
     saveSession(session);
     for (const e of events) appendAudit(sessionId, e.type, 'system', e.payload);
     return session;
@@ -151,6 +157,8 @@ export async function review(sessionId: string, reviewerId: string, actions: Rev
     if (typeof reviewerId !== 'string' || !reviewerId.trim() || reviewerId.length > 200 || !Array.isArray(actions) || !Array.isArray(redFlagActions) || (!actions.length && !redFlagActions.length) || actions.length > 24 || redFlagActions.length > 18 || actions.some(a => !a || !FIELD_KEYS.includes(a.fieldKey) || !['approve', 'edit', 'reject'].includes(a.action) || (a.action === 'edit' && (typeof a.newValue !== 'string' || !a.newValue.trim() || a.newValue.length > 300))) || redFlagActions.some(a => !a || typeof a.ruleId !== 'string' || !['acknowledge', 'false_alarm'].includes(a.action) || (a.note !== undefined && (typeof a.note !== 'string' || a.note.length > 2000)) || (a.action === 'false_alarm' && !a.note?.trim()))) throw new PipelineError('Invalid review actions', 'bad_request');
     if (!session.summary) throw new PipelineError('Session has no summary to review', 'bad_request');
     if (redFlagActions.some(a => !session.summary!.redFlags.some(f => f.ruleId === a.ruleId))) throw new PipelineError('Unknown red flag', 'bad_request');
+    const unreviewed = session.summary.redFlags.filter(f => !f.review && !redFlagActions.some(a => a.ruleId === f.ruleId));
+    if (actions.some(a => a.action === 'approve' || a.action === 'edit') && unreviewed.length) throw new PipelineError(`Cannot approve or edit: red flags require review: ${unreviewed.map(f => f.ruleId).join('; ')}`, 'bad_request', 409);
     for (const action of actions) {
       const f = session.summary.fields.find(f => f.key === action.fieldKey);
       if (!f) throw new PipelineError('Unknown field', 'bad_request');

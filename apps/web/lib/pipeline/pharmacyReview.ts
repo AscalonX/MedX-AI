@@ -69,10 +69,14 @@ export async function pharmacyReview(sessionId: string, value: unknown) {
       const alert = summary.medAlerts?.find(x => x.id === a.alertId); if (!alert) invalid('Unknown medication alert');
       alert.review = { action: a.action, reviewerId, at, ...(a.note !== undefined ? { note: a.note } : {}) };
     }
+    const recordedAlerts = summary.medAlerts || [];
     refreshMedAlerts(summary);
     if (value.complete) {
       const blockers = [
-        ...(summary.medAlerts || []).filter(a => a.severity === 'high' && !a.review).map(a => `high alert ${a.ruleId} requires review`),
+        ...summary.redFlags.filter(f => !f.review).map(f => `red flag ${f.ruleId} requires review`),
+        ...(summary.abstained ? ['summary abstained; needs human review'] : []),
+        ...(summary.allergies || []).filter(a => ['unmatched', 'unsupported'].includes(a.status) && !a.review).map(a => `allergy ${a.id} requires review`),
+        ...[...new Map([...recordedAlerts, ...(summary.medAlerts || [])].map(a => [a.id, a])).values()].filter(a => a.severity === 'high' && !a.review).map(a => `high alert ${a.ruleId} requires review`),
         ...(summary.medications || []).filter(m => ['unmatched', 'unsupported'].includes(m.status) && !m.review).map(m => `medication ${m.id} requires review`),
       ];
       if (blockers.length) throw new PipelineError(`Cannot reconcile: ${blockers.join('; ')}`, 'bad_request', 409);

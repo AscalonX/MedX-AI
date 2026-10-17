@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Lang, MedicationEntry } from '@medx/shared';
+import type { Lang } from '@medx/shared';
 import redFlagRules from '@medx/shared/src/redflags.json';
 import { addTurn, createSession, listSessions, metrics, runTurn, takeover } from '../pipeline';
 import { getAudit, getSession, saveSession } from '../store';
@@ -118,15 +118,14 @@ describe('P1-2 medications: negated, stopped, and span-local timing', () => {
     ['หยุดกินวาร์ฟาริน กินไอบูโพรเฟน', 'หยุดกิน'],
   ])('stopped timing stays attached to warfarin: %s', async (text, timing) => {
     const s = await runTurn(createSession('en', { persist: false }), text);
-    expect(s.summary!.medications?.find(m => m.generic === 'warfarin')).toMatchObject({ status: 'discontinued', timing });
+    expect(s.summary!.medications?.find(m => m.generic === 'warfarin')).toMatchObject({ status: 'supported', timing: expect.stringContaining(timing) });
     expect(s.summary!.medications?.find(m => m.generic === 'ibuprofen')).toMatchObject({ status: 'supported', timing: null });
-    expect(s.summary!.medAlerts?.some(a => a.kind === 'interaction')).toBe(false);
+    expect(s.summary!.medAlerts?.some(a => a.kind === 'interaction')).toBe(true);
   });
-  it('excludes stopped medicines from duplicate/max-dose/pregnancy rules too', async () => {
+  it('checks patient-stopped medicines for duplicate/max-dose/pregnancy rules too', async () => {
     const s = await runTurn(createSession('en', { persist: false }), 'I stopped taking paracetamol. I take Tylenol. I stopped taking ibuprofen. I am pregnant.');
-    expect(s.summary!.medAlerts).toEqual([]);
-    const historical = s.summary!.medications!.map(m => ({ ...m, status: 'supported', timing: m.status === 'discontinued' ? 'stopped' : null })) as MedicationEntry[];
-    expect(checkMedRules(historical, [], 'pregnant')).toEqual([]);
+    expect(s.summary!.medAlerts?.some(a => a.kind === 'max_dose_risk')).toBe(true);
+    expect(checkMedRules(s.summary!.medications!, [], 'pregnant').some(a => a.kind === 'pregnancy_caution')).toBe(true);
   });
   it('does not infer discontinued status from a negated stopping action', async () => {
     const s = await runTurn(createSession('en', { persist: false }), 'I have not stopped taking warfarin. I take ibuprofen.');
@@ -137,12 +136,12 @@ describe('P1-2 medications: negated, stopped, and span-local timing', () => {
     const extracted = mockPharmacy([{ alias: 'T1', text: 'เมื่อเช้ากินซาร่าไป 2 เม็ด พอตอนบ่ายยังไม่หาย เลยกินทิฟฟี่เพิ่มอีก 2 เม็ด' }]);
     expect(extracted.medications).toHaveLength(2);
   });
-  it('removes an unreviewed interaction after a later stopped-medication statement', async () => {
+  it('retains an unreviewed interaction after a later stopped-medication statement', async () => {
     const first = await runTurn(createSession('en', { persist: false }), 'Headache. I take warfarin. I take ibuprofen.');
     expect(first.summary!.medAlerts?.some(a => a.kind === 'interaction')).toBe(true);
     const next = await runTurn(first, 'I stopped taking warfarin last week.');
-    expect(next.summary!.medications?.find(m => m.generic === 'warfarin')?.status).toBe('discontinued');
-    expect(next.summary!.medAlerts?.some(a => a.kind === 'interaction')).toBe(false);
+    expect(next.summary!.medications?.find(m => m.generic === 'warfarin')?.status).toBe('supported');
+    expect(next.summary!.medAlerts?.some(a => a.kind === 'interaction')).toBe(true);
   });
 });
 

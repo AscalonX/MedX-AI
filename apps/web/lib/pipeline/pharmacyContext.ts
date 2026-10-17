@@ -3,7 +3,7 @@ import { clause, negatedBefore } from './redflags';
 // Use the clinical negation window/cues, plus Thai pharmacy verbs' prefixes.
 // Thai does not have the Latin word boundaries present in the clinical cues.
 const PHARMACY_NEGATION = ['ไม่', 'ไม่ได้', 'ไม่เคย'];
-export const stoppedTiming = (timing: string | null) => !!timing && /\b(?:stop(?:ped)?|smesso|interrott\w*)\b|หยุด/i.test(timing);
+export const stoppedTiming = (timing: string | null) => !!timing && /\b(?:stopped|smesso|interrott\w*)\b|หยุด/i.test(timing) && !/\b(?:not|never|haven't|hasn't)\s+(?:\w+\s+){0,2}stopped\b|ไม่(?:ได้|เคย)?หยุด/i.test(timing);
 
 /** Classify the action attached to one mention, never the whole transcript. */
 export function pharmacyContext(text: string, start: number) {
@@ -16,14 +16,14 @@ export function pharmacyContext(text: string, start: number) {
   // Check at the action as well as at the mention: "never been allergic to"
   // must retain its denial even when the allergen follows a long preposition.
   const denied = (s: string) => negatedBefore(s) || PHARMACY_NEGATION.some(cue => s.trimEnd().endsWith(cue));
-  const stopped = [...before.matchAll(/smesso di prendere|stop(?:ped)?(?: taking)?|หยุด(?:กิน)?(?:ยา)?/ig)].at(-1);
+  const stopped = [...before.matchAll(/smesso di prendere|\bstopped(?: taking)?\b|หยุด(?:กิน)?(?:ยา)?/ig)].at(-1);
   const stopNegated = !!stopped && denied(before.slice(0, stopped.index));
   // A later taking action belongs to the current mention, not the stopped one.
   const localStop = stopped && (!taking || taking.index! < stopped.index! + stopped[0].length);
   return {
     isAllergy,
     negated: stopNegated && localStop ? false : cue ? denied(before.slice(0, cue.index)) || denied(before.slice(cue.index! + cue[0].length)) : denied(before),
-    stopped: localStop && !stopNegated ? { text: stopped[0], start: base + stopped.index! } : null,
+    stopped: localStop && !stopNegated ? { text: text.slice(base + stopped.index!).split(/[.!?\n]|\b(?:but|and)\b|แต่/i)[0].trim().slice(0, 400), start: base + stopped.index! } : null,
   };
 }
 
