@@ -36,7 +36,12 @@ function boundaryCheck(text: string, lang: Lang) {
     !compounds.some(([a, b]) => (a < start && start < b) || (a < end && end < b));
 }
 export interface Verified { evidence: Evidence; matchFactor: number; correctedTurn: boolean }
-export function verifyDetailed(quote: string, turns: Turn[], turnId?: string, allowNumericAnswer = false): Verified | null {
+const negation = /^(?:no|not|n't|never|without|non|nessun[oa]?|niente|senza|mai|ไม่|ไม่มี|ไม่ได้|ไม่เคย)$/u;
+function negations(text: string, lang: Lang) {
+  return [...words(text, lang).map(w => w.segment).filter(w => negation.test(w) || /n't$/.test(w)), ...text.matchAll(/ไม่ได้|ไม่มี|ไม่เคย|ไม่/gu)].map(x => typeof x === 'string' ? x : x[0]).sort().join('|');
+}
+export function verifyDetailed(quote: string, turns: Turn[], turnId?: string, allowNumericAnswer = false, allowTolerant = true): Verified | null {
+  quote = quote.normalize('NFC');
   const q = norm(quote).t;
   const singleDigit = q.length === 1 && /^[0-9]$/.test(q) && allowNumericAnswer;
   if ((q.length < 2 && !singleDigit) || /^\s*(\[[A-Z]+_\d+\]\s*)+$/u.test(quote)) return null;
@@ -47,22 +52,31 @@ export function verifyDetailed(quote: string, turns: Turn[], turnId?: string, al
     // immediately after a question. It cannot match a digit within other prose.
     if (singleDigit && (turn.id !== turnId || turn.text.trim() !== quote.trim() || turns[turns.indexOf(turn) - 1]?.role !== 'assistant')) continue;
     const bounded = boundaryCheck(turn.text, turn.lang);
+    const safeContext = (start: number) => {
+      // A quote starting at the subject can omit an immediately preceding denial.
+      const prefix = turn.text.slice(0, start).split(/[.!?;,:\n]/).at(-1) || '';
+      const before = words(norm(prefix).t, turn.lang).slice(-3).map(w => w.segment).join(' ');
+      return !/^(?:i|ho|sono|take|prendo|allergic|pregnant|แพ้|กิน)/iu.test(quote) || !negations(before, turn.lang) || !!negations(q, turn.lang);
+    };
     const result = (start: number, end: number, matchFactor: number): Verified => ({ evidence: { turnId: turn.id, quote: turn.text.slice(start, end), start, end }, matchFactor, correctedTurn: !!turnId && turn.id !== turnId });
     // Check all occurrences: an embedded first occurrence must not hide a later word.
     for (let at = turn.text.indexOf(quote); at >= 0; at = turn.text.indexOf(quote, at + 1)) {
-      if (bounded(at, at + quote.length)) return result(at, at + quote.length, 1);
+      if (bounded(at, at + quote.length) && safeContext(at)) return result(at, at + quote.length, 1);
     }
     if (singleDigit) continue;
     const n = norm(turn.text);
     for (let at = n.t.indexOf(q); at >= 0; at = n.t.indexOf(q, at + 1)) {
       const start = n.map[at]; const end = n.ends[at + q.length - 1];
-      if (bounded(start, end)) return result(start, end, 0.95);
+      if (bounded(start, end) && safeContext(start)) return result(start, end, 0.95);
     }
+    if (!allowTolerant) continue;
     const qt = words(q, turn.lang).map(x => x.segment);
     if (qt.length < 3) continue;
     const tt = words(n.t, turn.lang); let best = 0; let span: [number, number] | undefined;
     for (let size = qt.length; size <= qt.length + 2; size++) {
       for (let i = 0; i + size <= tt.length; i++) {
+        const window = tt.slice(i, i + size).map(w => w.segment).join(' ');
+        if (negations(q, turn.lang) !== negations(window, turn.lang)) continue;
         const counts = new Map<string, number>();
         for (const w of qt) counts.set(w, (counts.get(w) || 0) + 1);
         let matches = 0;
@@ -70,7 +84,7 @@ export function verifyDetailed(quote: string, turns: Turn[], turnId?: string, al
         const overlap = matches / qt.length;
         const last = tt[i + size - 1];
         const candidate: [number, number] = [tt[i].index, last.index + last.segment.length];
-        if (overlap > best && bounded(n.map[candidate[0]], n.ends[candidate[1] - 1])) { best = overlap; span = candidate; }
+        if (overlap > best && bounded(n.map[candidate[0]], n.ends[candidate[1] - 1]) && safeContext(n.map[candidate[0]])) { best = overlap; span = candidate; }
       }
     }
     if (best >= 0.8 && span) return result(n.map[span[0]], n.ends[span[1] - 1], 0.8);

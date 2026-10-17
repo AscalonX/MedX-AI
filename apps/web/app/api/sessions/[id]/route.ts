@@ -10,5 +10,5 @@ export function GET(_request: Request, context: RouteContext) {
     const { id } = await context.params; const session = getSession(id);
     if (!session) throw new PipelineError('Session not found', 'not_found');
     return { session, audit: getAudit(id) };
-  });
+  }, 200, _request);
 }

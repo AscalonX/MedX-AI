@@ -7,7 +7,8 @@ services:
     ports: ["3000:3000"]
     environment:
       MODEL_PROVIDER: ${MODEL_PROVIDER:-mock}
-      DEMO_SEED: ${DEMO_SEED:-1}
+      DEMO_SEED: ${DEMO_SEED:-0}
+      DEMO_TOKEN: ${DEMO_TOKEN:-}
       AMD_BASE_URL: ${AMD_BASE_URL:-}
       AMD_API_KEY: ${AMD_API_KEY:-}
       AMD_MODEL: ${AMD_MODEL:-}

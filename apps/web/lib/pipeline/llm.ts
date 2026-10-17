@@ -11,6 +11,30 @@ export interface ChatRequest {
 export interface ChatResult { data: unknown | null; call: ModelCall; raw?: unknown; failure?: 'provider_error' | 'schema_error'; retryAfterMs?: number }
 export type ModelClient = (request: ChatRequest) => Promise<ChatResult>;
 const schemaCapabilities = new Map<string, { enabled: boolean; expires: number }>();
+const compatibilityCapabilities = new Map<string, { format: 'json_schema' | 'json_object' | 'none'; noSystem: boolean }>();
+// Demo seed calls share one paced lane, including retries/compatibility attempts.
+let seedPacing = false;
+let pacingTail = Promise.resolve();
+let lastSeedCall = 0;
+export function paceSeedCalls(enabled: boolean) { seedPacing = enabled; }
+async function pace(signal: AbortSignal) {
+  if (!seedPacing) return;
+  const previous = pacingTail;
+  let release!: () => void;
+  pacingTail = new Promise<void>(resolve => { release = resolve; });
+  await previous;
+  try {
+    const delay = Math.max(0, lastSeedCall + 2100 - Date.now());
+    if (delay) await new Promise<void>((resolve, reject) => {
+      const abort = () => { clearTimeout(timer); reject(new Error('Aborted')); };
+      const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); }, delay);
+      signal.addEventListener('abort', abort, { once: true });
+      if (signal.aborted) abort();
+    });
+    if (signal.aborted) throw new Error('Aborted');
+    lastSeedCall = Date.now();
+  } finally { release(); }
+}
 async function supportsSchema(model: string, signal: AbortSignal): Promise<boolean> {
   // Optional explicit override for gateways with an inaccessible /models endpoint.
   if (process.env.AMD_JSON_SCHEMA !== undefined) return process.env.AMD_JSON_SCHEMA === 'true';
@@ -48,34 +72,37 @@ export async function chatJSON(req: ChatRequest): Promise<ChatResult> {
   req.signal?.addEventListener('abort', abort, { once: true });
   if (req.signal?.aborted) controller.abort();
   const timer = setTimeout(abort, timeout);
-  let noFormat = false; let noSystem = false;
   try {
     if (!process.env.AMD_BASE_URL || !process.env.AMD_API_KEY || model === 'unconfigured') {
       const call = makeCall(false, performance.now() - started, 'Provider is not configured'); req.onCall?.(call); return { data: null, call, failure: 'provider_error' };
     }
     const useSchema = await supportsSchema(model, controller.signal);
-    for (let compatibility = 0; compatibility < 3; compatibility++) {
+    const key = `${process.env.AMD_BASE_URL}/${model}/${req.step}/${process.env.AMD_JSON_SCHEMA ?? 'auto'}`;
+    const capability = compatibilityCapabilities.get(key) || { format: useSchema ? 'json_schema' as const : 'json_object' as const, noSystem: false };
+    compatibilityCapabilities.set(key, capability);
+    for (let compatibility = 0; compatibility < 4; compatibility++) {
       const attempt = performance.now();
       try {
         if (!process.env.AMD_BASE_URL || !process.env.AMD_API_KEY || model === 'unconfigured') throw new Error('Provider is not configured');
-        const messages: { role: string; content: string }[] = noSystem ? [{ role: 'user', content: `### INSTRUCTIONS\n${req.system}\n\n${req.user}` }] : [{ role: 'system', content: req.system }, { role: 'user', content: req.user }];
+        const messages: { role: string; content: string }[] = capability.noSystem ? [{ role: 'user', content: `### INSTRUCTIONS\n${req.system}\n\n${req.user}` }] : [{ role: 'system', content: req.system }, { role: 'user', content: req.user }];
         if (req.repair) {
           messages.push({ role: 'assistant', content: (typeof req.repair.raw === 'string' ? req.repair.raw : JSON.stringify(req.repair.raw)).slice(0, 4000) });
           messages.push({ role: 'user', content: `Your previous output was not valid. Problems: ${req.repair.errors.slice(0, 10).join('\n')}. Return only the corrected JSON object with the same content and the exact required shape. Do not add fields or values that were not in the transcript.` });
         }
-        const format = useSchema ? { type: 'json_schema', json_schema: { name: req.schemaName, schema: req.step === 'red_flags' ? SCREEN_SCHEMA : req.step === 'next_question' ? QUESTION_SCHEMA : EXTRACTION_SCHEMA, strict: true } } : { type: 'json_object' };
+        const format = capability.format === 'json_schema' ? { type: 'json_schema', json_schema: { name: req.schemaName, schema: req.step === 'red_flags' ? SCREEN_SCHEMA : req.step === 'next_question' ? QUESTION_SCHEMA : EXTRACTION_SCHEMA, strict: true } } : { type: 'json_object' };
+        await pace(controller.signal);
         const response = await fetch(`${process.env.AMD_BASE_URL.replace(/\/$/, '')}/chat/completions`, {
           method: 'POST', signal: controller.signal,
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.AMD_API_KEY}` },
-          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: req.step === 'red_flags' ? 400 : req.step === 'next_question' ? 250 : 3000, ...(!noFormat ? { response_format: format } : {}) }),
+          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: req.step === 'red_flags' ? 400 : req.step === 'next_question' ? 250 : 3000, ...(capability.format !== 'none' ? { response_format: format } : {}) }),
         });
         if (!response.ok) {
           // Inspect gateway diagnostics only for compatibility; never persist response bodies.
           const diagnostic = (await response.text()).slice(0, 2000);
           const error = `HTTP ${response.status}`;
           const call = makeCall(false, performance.now() - attempt, error); req.onCall?.(call);
-          if (response.status === 400 && !noSystem && /system.{0,40}(unsupported|not supported|not allowed)|(?:unsupported|not supported).{0,40}system/i.test(diagnostic)) { noSystem = true; continue; }
-          if (response.status >= 400 && response.status < 500 && ![401, 403, 429].includes(response.status) && !noFormat) { noFormat = true; continue; }
+          if (response.status === 400 && !capability.noSystem && /system.{0,40}(unsupported|not supported|not allowed)|(?:unsupported|not supported).{0,40}system/i.test(diagnostic)) { capability.noSystem = true; continue; }
+          if (response.status >= 400 && response.status < 500 && ![401, 403, 429].includes(response.status) && capability.format !== 'none') { capability.format = capability.format === 'json_schema' ? 'json_object' : 'none'; continue; }
           const retry = response.headers.get('Retry-After');
           const retryAfterMs = response.status === 429 ? retry ? (/^\d+(?:\.\d+)?$/.test(retry) ? Number(retry) * 1000 : Math.max(0, Date.parse(retry) - Date.now())) : 500 : undefined;
           return { data: null, call, failure: 'provider_error', retryAfterMs };

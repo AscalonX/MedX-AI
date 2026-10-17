@@ -7,7 +7,11 @@ export interface ModelExtraction { language_detected: 'th' | 'it' | 'en' | 'mixe
 export const object = (x: unknown): x is Record<string, unknown> => !!x && typeof x === 'object' && !Array.isArray(x);
 export const shortString = (x: unknown, max = 300): x is string => typeof x === 'string' && x.trim().length > 0 && x.length <= max;
 export const localized = (x: unknown): x is Localized => object(x) && ['th', 'it', 'en'].every(l => shortString(x[l])) && Object.keys(x).every(k => ['th', 'it', 'en'].includes(k));
-export function languageOK(value: Localized) { return /\p{Script=Thai}/u.test(value.th) && !/\p{Script=Thai}/u.test(value.en + value.it); }
+export function languageOK(value: Localized) {
+  const numericUnits = /^[\p{N}\s.,/%+−-]+(?:\s*(?:°\s*[CF]|mg|g|kg|ml|mmHg|bpm))?$/iu;
+  const neutral = numericUnits.test(value.th) || [value.en, value.it].every(v => v.trim().normalize('NFC') === value.th.trim().normalize('NFC'));
+  return (neutral || /\p{Script=Thai}/u.test(value.th)) && !/\p{Script=Thai}/u.test(value.en + value.it);
+}
 export function validateExtraction(data: unknown): { data: ModelExtraction | null; errors: string[]; ignored: string[] } {
   const errors: string[] = []; const ignored: string[] = [];
   if (!object(data) || !object(data.fields) || !['th', 'it', 'en', 'mixed', 'other'].includes(String(data.language_detected))) return { data: null, errors: ['Expected fields object and language_detected enum'], ignored };

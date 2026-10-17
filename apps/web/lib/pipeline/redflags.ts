@@ -36,13 +36,13 @@ export function checkRedFlags(input: string | Turn[], fields?: ExtractedField[],
   const turns = typeof input === 'string' ? [{ id: 'T1', text: input, role: 'patient' as const, lang: 'en' as const, at: '' }] : input.filter(t => t.role === 'patient');
   // Concatenation permits an AND group to be satisfied in a later patient turn.
   const segments: { turn: Turn; base: number }[] = []; let joined = '';
-  for (const turn of turns) { if (joined) joined += '\n'; segments.push({ turn, base: joined.length }); joined += turn.text; }
+  for (const turn of turns) { if (joined) joined += '.\n'; segments.push({ turn, base: joined.length }); joined += turn.text; }
+  const domains = [{ text: joined, segments }, ...turns.map(turn => ({ text: turn.text, segments: [{ turn, base: 0 }] }))].map(d => ({ ...d, n: normalise(d.text) }));
   return ruleFile.rules.flatMap(rule => {
     if (fields && rule.requires && !Object.entries(rule.requires).every(([key, value]) => fields.some(f => f.key === key && isPresent(f) && Object.values(f.value || {}).some(v => v.normalize('NFC').toLowerCase() === value?.normalize('NFC').toLowerCase())))) return [];
     if (!rule.match.length || rule.match.some(g => !g.length)) return [];
-    const domains = [{ text: joined, segments }, ...turns.map(turn => ({ text: turn.text, segments: [{ turn, base: 0 }] }))];
     for (const domain of domains) {
-      const n = normalise(domain.text); const evidence = []; let all = true;
+      const n = domain.n; const evidence = []; let all = true;
       for (const group of rule.match) {
       let found: { start: number; end: number } | undefined;
       for (const term of group) {

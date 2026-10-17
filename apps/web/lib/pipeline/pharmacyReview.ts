@@ -20,7 +20,8 @@ export function validatePharmacyReview(value: unknown): asserts value is Pharmac
     if (!Array.isArray(xs) || xs.length > 100) invalid(`Invalid ${list.key}`);
     const ids = new Set<string>();
     for (const a of xs) {
-      if (!object(a) || !shortString(a[list.id], 200) || ids.has(a[list.id] as string) || !list.actions.includes(String(a.action)) || Object.keys(a).some(k => ![list.id, 'action', ...list.optional].includes(k)) || list.optional.some(k => a[k] !== undefined && !shortString(a[k], k === 'note' ? 2000 : 300))) invalid(`Invalid ${list.key} action`);
+      if (!object(a) || !shortString(a[list.id], 200) || ids.has(a[list.id] as string) || !list.actions.includes(String(a.action)) || Object.keys(a).some(k => ![list.id, 'action', ...list.optional].includes(k)) || list.optional.some(k => a[k] !== undefined && !(a[k] === '' && ['dose', 'frequency', 'reaction'].includes(k)) && !shortString(a[k], k === 'note' ? 2000 : 300))) invalid(`Invalid ${list.key} action`);
+      if (a.action === 'false_alarm' && (typeof a.note !== 'string' || !a.note.trim())) invalid('False alarm requires a note');
       if (a.action === 'edit' && !list.optional.some(k => a[k] !== undefined)) invalid('Edit requires a corrected value');
       if (a.action !== 'edit' && list.optional.filter(k => k !== 'note').some(k => a[k] !== undefined)) invalid('Corrections require edit');
       ids.add(a[list.id] as string); count++;
@@ -29,7 +30,8 @@ export function validatePharmacyReview(value: unknown): asserts value is Pharmac
   if (!count && value.complete !== true) invalid('No pharmacy action supplied');
   // Accepted audit payloads are byte-for-value identical to the request actions.
   // Reject PII rather than silently rewriting a pharmacist's signed decision.
-  const check = (x: unknown): void => { if (typeof x === 'string' && redact(x).text !== x) invalid('Remove personal data from pharmacy review'); else if (Array.isArray(x)) x.forEach(check); else if (object(x)) Object.values(x).forEach(check); };
+  const freeText = new Set(['reviewerId', 'note', 'generic', 'dose', 'frequency', 'allergenClass', 'reaction']);
+  const check = (x: unknown): void => { if (Array.isArray(x)) x.forEach(check); else if (object(x)) for (const [key, v] of Object.entries(x)) { if (freeText.has(key) && typeof v === 'string' && redact(v).text !== v) invalid('Remove personal data from pharmacy review'); if (typeof v === 'object') check(v); } };
   check(value);
 }
 
@@ -49,8 +51,8 @@ export async function pharmacyReview(sessionId: string, value: unknown) {
           const d = MEDRULES.drugs.find(d => d.generic === a.generic) || lookupDrug(a.generic);
           m.generic = d?.generic ?? a.generic; m.drugClass = d?.drugClass ?? null;
         }
-        if (a.dose !== undefined) m.dose = a.dose;
-        if (a.frequency !== undefined) m.frequency = a.frequency;
+        if (a.dose !== undefined) m.dose = a.dose === '' ? null : a.dose;
+        if (a.frequency !== undefined) m.frequency = a.frequency === '' ? null : a.frequency;
         m.status = 'edited'; m.review = { reviewerId, at, previous };
       } else { m.status = a.action === 'verify' ? 'verified' : 'discontinued'; m.review = { ...m.review, reviewerId, at }; }
     }
@@ -59,7 +61,7 @@ export async function pharmacyReview(sessionId: string, value: unknown) {
       if (a.action === 'edit') {
         const previous = allergy.review?.previous || { allergenClass: allergy.allergenClass, reaction: allergy.reaction };
         if (a.allergenClass !== undefined) allergy.allergenClass = a.allergenClass;
-        if (a.reaction !== undefined) allergy.reaction = a.reaction;
+        if (a.reaction !== undefined) allergy.reaction = a.reaction === '' ? null : a.reaction;
         allergy.status = 'edited'; allergy.review = { reviewerId, at, previous };
       } else { allergy.status = 'verified'; allergy.review = { ...allergy.review, reviewerId, at }; }
     }
@@ -77,7 +79,7 @@ export async function pharmacyReview(sessionId: string, value: unknown) {
     }
     session.pharmacyStatus = value.complete ? 'reconciled' : 'in_review';
     session.pharmacyReviewerId = reviewerId; session.updatedAt = at;
-    const { reviewerId: _reviewer, ...payload } = value;
+    const payload = { ...value } as Record<string, unknown>; delete payload.reviewerId;
     saveSession(session); appendAudit(sessionId, 'pharmacy_review', 'clinician', payload, reviewerId, at);
     return session;
   });

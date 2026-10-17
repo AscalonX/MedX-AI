@@ -15,10 +15,10 @@ import { POST as review } from '../../../app/api/sessions/[id]/review/route';
 import { POST as takeover } from '../../../app/api/sessions/[id]/takeover/route';
 import { GET as metrics } from '../../../app/api/metrics/route';
 const complete = 'I have a headache since yesterday. It is 4/10. No other symptoms. No medicines. No allergies. I am not pregnant. I am 28 years old.';
-let dir = '';
+let dir = ''; let transportTest = 0;
 beforeEach(() => {
   dir = mkdtempSync(path.join(tmpdir(), 'medx-api-')); vi.stubEnv('MEDX_STORE_PATH', path.join(dir, 'store.json')); vi.stubEnv('MODEL_PROVIDER', 'amd');
-  vi.stubEnv('AMD_BASE_URL', 'https://synthetic.invalid/v1'); vi.stubEnv('AMD_API_KEY', 'synthetic-key-do-not-log'); vi.stubEnv('AMD_MODEL', 'synthetic-model');
+  vi.stubEnv('AMD_BASE_URL', `https://synthetic-${++transportTest}.invalid/v1`); vi.stubEnv('AMD_API_KEY', 'synthetic-key-do-not-log'); vi.stubEnv('AMD_MODEL', 'synthetic-model');
   vi.stubEnv('AMD_JSON_SCHEMA', 'false');
 });
 afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
@@ -28,7 +28,7 @@ describe('AMD client transport', () => {
   it('sends compatible parameters, parses fenced JSON, records latency', async () => {
     const fetcher = vi.fn().mockResolvedValue(envelope('```json\n{"fields":{}}\n```')); vi.stubGlobal('fetch', fetcher);
     const result = await chatJSON(req); expect(result.data).toEqual({ fields: {} }); expect(result.call.ok).toBe(true); expect(result.call.provider).toBe('amd-tokenfactory'); expect(result.call.latencyMs).toBeGreaterThanOrEqual(0);
-    const [url, init] = fetcher.mock.calls[0]; expect(url).toBe('https://synthetic.invalid/v1/chat/completions'); expect(init.headers.Authorization).toBe('Bearer synthetic-key-do-not-log');
+    const [url, init] = fetcher.mock.calls[0]; expect(url).toBe(`${process.env.AMD_BASE_URL}/chat/completions`); expect(init.headers.Authorization).toBe('Bearer synthetic-key-do-not-log');
     expect(JSON.parse(init.body)).toMatchObject({ model: 'synthetic-model', temperature: 0, top_p: 1, max_tokens: 3000, stream: false, response_format: { type: 'json_object' } });
   });
   it('retries without response_format after 400, recording both attempts', async () => {
@@ -48,7 +48,7 @@ describe('AMD client transport', () => {
     delete process.env.AMD_JSON_SCHEMA;
     const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ data: [{ id: 'synthetic-model', json_output: true }] })).mockResolvedValueOnce(envelope('{}')); vi.stubGlobal('fetch', fetcher);
     await chatJSON(req);
-    expect(fetcher.mock.calls[0][0]).toBe('https://synthetic.invalid/v1/models');
+    expect(fetcher.mock.calls[0][0]).toBe(`${process.env.AMD_BASE_URL}/models`);
     expect(JSON.parse(fetcher.mock.calls[1][1].body).response_format.type).toBe('json_schema');
   });
   it('returns parse failure for repair without throwing or leaking output', async () => {
@@ -99,7 +99,7 @@ const context = (id: string) => ({ params: Promise.resolve({ id }) });
 describe('HTTP contracts and CORS', () => {
   beforeEach(() => vi.stubEnv('MODEL_PROVIDER', 'mock'));
   it('returns health metadata without credentials and permits preflight', async () => {
-    const h = health(); expect(await h.json()).toEqual({ provider: 'mock', model: 'deterministic-mock' }); expect(h.headers.get('Access-Control-Allow-Origin')).toBe('*'); expect(OPTIONS().status).toBe(204);
+    const h = health(); expect(await h.json()).toEqual({ provider: 'mock', model: 'deterministic-mock' }); expect(h.headers.has('Access-Control-Allow-Origin')).toBe(false); expect(OPTIONS().status).toBe(204);
   });
   it('creates, lists, gets, adds turns, reviews and returns metrics', async () => {
     const created = await create(post({ patientLang: 'en' })); expect(created.status).toBe(201); const s = await created.json();
@@ -111,7 +111,7 @@ describe('HTTP contracts and CORS', () => {
     expect((await takeover(post({ reviewerId: 'reviewer', reason: 'manual' }), context(s.id))).status).toBe(200);
   });
   it.each([{ patientLang: 'fr' }, { patientLang: 'en', secret: 'extra' }, null, [], {}])('rejects invalid create body %j', async value => {
-    const response = await create(post(value)); expect(response.status).toBe(400); expect((await response.json()).code).toBe('bad_request'); expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    const response = await create(post(value)); expect(response.status).toBe(400); expect((await response.json()).code).toBe('bad_request'); expect(response.headers.has('Access-Control-Allow-Origin')).toBe(false);
   });
   it('rejects malformed JSON, nonstring turns, invalid reviews and unknown sessions', async () => {
     const bad = await create(new Request('http://localhost', { method: 'POST', body: '{' })); expect(bad.status).toBe(400);

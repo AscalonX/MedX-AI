@@ -10,12 +10,14 @@ import type { ModelClient } from '../llm';
 import { validateExtraction } from '../schema';
 import { getAudit, getSession, getSessions, withSessionLock } from '../store';
 import { verifyDetailed } from '../verify';
-import { GET as reset, OPTIONS } from '../../../app/api/demo/reset/route';
+import { POST as resetPost, OPTIONS } from '../../../app/api/demo/reset/route';
+const reset = () => resetPost(new Request('http://localhost:3000/api/demo/reset', { method: 'POST', headers: { 'x-demo-token': 'test-demo-token' } }));
 
 let dir: string;
 beforeEach(() => {
   dir = mkdtempSync(path.join(tmpdir(), 'medx-w5-'));
   vi.stubEnv('MODEL_PROVIDER', 'mock'); vi.stubEnv('MEDX_STORE_PATH', path.join(dir, 'store.json'));
+  vi.stubEnv('DEMO_TOKEN', 'test-demo-token');
 });
 afterEach(() => { vi.unstubAllEnvs(); rmSync(dir, { recursive: true, force: true }); });
 
@@ -26,10 +28,13 @@ describe('case-insensitive name triggers with case-sensitive name boundaries', (
     "I'm called Jane Doe", "i'm CALLED Jane Doe", "I am called Jane Doe",
     'mi chiamo Marco Rossi', 'Mi Chiamo Marco Rossi', 'MI CHIAMO Marco Rossi',
     'sono Marco Rossi', 'Sono Marco Rossi', 'SONO Marco Rossi', 'SoNo Marco Luigi Rossi',
-    'ฉันชื่อสมหญิง ใจดี', 'ผมชื่อสมชาย ใจดี', 'ดิฉันชื่อสมหญิง ใจดี', 'ชื่อสมหญิง ใจดี',
   ])('redacts %s', text => {
     expect(redact(text).text).toBe('[NAME_1]');
     expect(redact(text).replaced).toEqual([{ type: 'NAME', count: 1 }]);
+  });
+  it('caps Thai names at one token and does not use the bare ชื่อ trigger', () => {
+    expect(redact('ฉันชื่อสมหญิง ใจดี').text).toBe('[NAME_1] ใจดี');
+    expect(redact('ชื่อสมหญิง ใจดี').text).toBe('ชื่อสมหญิง ใจดี');
   });
   it.each(['Sono stanco', 'sono stanco', 'SONO stanco', 'Sono molto stanco', "I'm tired", "i'm 30", 'non sono incinta'])('retains clinical prose: %s', text => {
     expect(redact(text).text).toBe(text);
@@ -184,7 +189,7 @@ describe('demo reset endpoint', () => {
     vi.stubEnv('DEMO_SEED', '1'); const stale = createSession('en');
     const response = await reset(); expect(response.status).toBe(200);
     expect(response.headers.get('Cache-Control')).toBe('no-store');
-    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*'); expect(OPTIONS().status).toBe(204);
+    expect(response.headers.has('Access-Control-Allow-Origin')).toBe(false); expect(OPTIONS().status).toBe(204);
     const body = await response.json(); expect(body.created).toBe(11); expect(body.reused).toBe(0);
     expect(getSessions()).toHaveLength(11); expect(getSession(stale.id)).toBeUndefined(); expect(getAudit(stale.id)).toEqual([]);
     const stored = JSON.parse(readFileSync(path.join(dir, 'store.json'), 'utf8'));

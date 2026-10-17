@@ -56,7 +56,7 @@ export async function extract(session: IntakeSession, ctx: EngineContext) {
     validation = validateExtraction(result.data);
   }
   if (!validation.data) { failCall(result.call, 'Extraction schema validation failed after repair'); return { fields: emptyFields(), reason: 'schema_error' as const, proposed: 0, failed: 0, language: undefined }; }
-  if (validation.ignored.length) ctx.log?.('unknown_field_keys', { keys: validation.ignored });
+  if (validation.ignored.length) ctx.log?.('unknown_field_keys', { count: validation.ignored.length });
   const model = validation.data;
   let proposed = 0; let failed = 0;
   const aliasTurns = aliases(session);
@@ -65,7 +65,7 @@ export async function extract(session: IntakeSession, ctx: EngineContext) {
     proposed++;
     const verified = f.evidence.flatMap(e => {
       const id = aliasTurns.find(t => t.alias === e.turn)?.id || e.turn;
-      const hit = verifyDetailed(e.quote, session.turns, id, base.key === 'severity');
+      const hit = verifyDetailed(e.quote, session.turns, id, base.key === 'severity', !['allergies', 'medications', 'pregnancy_status'].includes(base.key));
       if (hit?.correctedTurn) ctx.log?.('corrected_evidence_turn', { key: base.key, from: e.turn, to: hit.evidence.turnId });
       return hit ? [hit] : [];
     });

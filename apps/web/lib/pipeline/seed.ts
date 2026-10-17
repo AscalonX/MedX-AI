@@ -12,6 +12,7 @@ import med03 from '../../../../data/cases/MED-03.json';
 import med05 from '../../../../data/cases/MED-05.json';
 import { addTurn, createSession, PipelineError, review } from './pipeline';
 import { getAudit, getSession, resetDemoStore, withSessionLock } from './store';
+import { paceSeedCalls } from './llm';
 
 interface Fixture { id: string; lang: string; synthetic: boolean; turns: { role: string; text: string }[] }
 interface SeedPlan { fixture: Fixture; expectedStatus: SessionStatus; repeatLast?: boolean }
@@ -28,11 +29,25 @@ const plans: SeedPlan[] = [
   { fixture: med05, expectedStatus: 'collecting' },
   { fixture: med03, expectedStatus: 'needs_human' },
 ];
+type SeedJob = { id: string; status: 'running' | 'done' | 'failed'; completed: number; total: number; result?: Awaited<ReturnType<typeof seedDemo>>; error?: string };
+let job: SeedJob | undefined;
+export function demoSeedProgress() { return job || { status: 'idle', completed: 0, total: plans.length }; }
+export function startDemoSeed(options: { reset?: boolean } = {}) {
+  if (job?.status === 'running') return { id: job.id, status: job.status, progressUrl: '/api/dev/seed' };
+  const current: SeedJob = { id: crypto.randomUUID(), status: 'running', completed: 0, total: plans.length };
+  job = current;
+  // Single long-lived Node process demo only. Errors are surfaced via guarded polling.
+  void Promise.resolve().then(() => seedDemo(options)).then(result => { current.result = result; current.status = 'done'; }, () => { current.status = 'failed'; current.error = 'Demo seed failed; inspect configuration and retry'; });
+  return { id: current.id, status: current.status, progressUrl: '/api/dev/seed' };
+}
 
 /** Synthetic fixture replay only; never reads gold answers or overrides the configured provider. */
 export async function seedDemo(options: { reset?: boolean } = {}) {
   if (process.env.DEMO_SEED !== '1') throw new PipelineError('Not found', 'not_found');
   return withSessionLock('dev-demo-seed', async () => {
+    const amd = process.env.MODEL_PROVIDER !== 'mock';
+    paceSeedCalls(amd);
+    try {
     if (options.reset) resetDemoStore();
     const sessions: IntakeSession[] = [];
     const mismatches: { caseId: string; expected: SessionStatus; actual: SessionStatus }[] = [];
@@ -48,6 +63,7 @@ export async function seedDemo(options: { reset?: boolean } = {}) {
         // Reuse the final vague answer for a third clarification attempt; no invented patient text.
         const replay = repeatLast ? [...turns, turns[turns.length - 1]] : turns;
         for (const turn of replay) {
+          if (amd) await new Promise(resolve => setTimeout(resolve, 50));
           session = await addTurn(session.id, turn.text);
           if (['escalated', 'needs_human'].includes(session.status)) break;
         }
@@ -57,9 +73,11 @@ export async function seedDemo(options: { reset?: boolean } = {}) {
         }
       }
       sessions.push(session);
+      if (job?.status === 'running') job.completed = sessions.length;
       if (session.status !== expectedStatus) mismatches.push({ caseId: fixture.id, expected: expectedStatus, actual: session.status });
     }
     const byStatus = Object.fromEntries(['collecting', 'escalated', 'awaiting_review', 'needs_human', 'approved', 'taken_over'].map(status => [status, sessions.filter(s => s.status === status).length])) as Record<SessionStatus, number>;
     return { created, reused: sessions.length - created, sessions, byStatus, mismatches };
+    } finally { paceSeedCalls(false); }
   });
 }

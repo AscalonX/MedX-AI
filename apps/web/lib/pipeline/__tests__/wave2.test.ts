@@ -7,9 +7,11 @@ import { applyRequiredFields, emptyFields, REQUIRED_FIELDS } from '../config';
 import { addTurn, createSession, review, runTurn } from '../pipeline';
 import { getAudit, getSession, getSessions, saveSession } from '../store';
 import { mockJSON } from '../mock';
-import { seedDemo } from '../seed';
+import { seedDemo, demoSeedProgress } from '../seed';
 import { POST as reviewRoute } from '../../../app/api/sessions/[id]/review/route';
-import { POST as seedRoute } from '../../../app/api/dev/seed/route';
+import { POST as seedPost } from '../../../app/api/dev/seed/route';
+import { POST as resetPost } from '../../../app/api/demo/reset/route';
+const seedRoute = () => seedPost(new Request('http://localhost:3000/api/dev/seed', { method: 'POST', headers: { 'x-demo-token': 'test-demo-token' } }));
 
 let dir: string;
 beforeEach(() => {
@@ -17,8 +19,9 @@ beforeEach(() => {
   vi.stubEnv('MEDX_STORE_PATH', path.join(dir, 'store.json'));
   vi.stubEnv('MODEL_PROVIDER', 'mock');
   vi.stubEnv('DEMO_SEED', '1');
+  vi.stubEnv('DEMO_TOKEN', 'test-demo-token');
 });
-afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.restoreAllMocks(); rmSync(dir, { recursive: true, force: true }); });
 const post = (body: unknown) => new Request('http://localhost/api/test', { method: 'POST', body: JSON.stringify(body) });
 const context = (id: string) => ({ params: Promise.resolve({ id }) });
 const demographics = (age?: string, sex?: string, status: ExtractedField['status'] = 'supported') => applyRequiredFields(emptyFields().map(f => {
@@ -151,23 +154,31 @@ describe('demo fixture replay', () => {
     expect(getAudit(approved.id).at(-1)).toMatchObject({ type: 'review', actor: 'clinician', actorId: 'demo-clinician' });
   });
   it('uses the configured AMD transport and records actual provider calls', async () => {
+    vi.useFakeTimers();
     vi.stubEnv('MODEL_PROVIDER', 'amd'); vi.stubEnv('AMD_BASE_URL', 'https://synthetic.invalid/v1'); vi.stubEnv('AMD_API_KEY', 'synthetic-key'); vi.stubEnv('AMD_MODEL', 'seed-transport-test'); vi.stubEnv('AMD_JSON_SCHEMA', 'false');
+    const arrivals: number[] = [];
     const fetcher = vi.fn(async (_url: string, init: RequestInit) => {
+      arrivals.push(Date.now());
       const payload = JSON.parse(init.body as string);
       const user = payload.messages[1].content;
       const data = mockJSON({ step: user.startsWith('Missing information:') ? 'next_question' : payload.messages[0].content.startsWith('You are a safety screen') ? 'red_flags' : 'extract', schemaName: 'seed_transport_test', system: payload.messages[0].content, user });
       return Response.json({ choices: [{ message: { content: JSON.stringify(data) } }] });
     });
     vi.stubGlobal('fetch', fetcher);
-    const response = await seedRoute(); expect(response.status).toBe(200);
-    const result = await response.json(); expect(result.mismatches).toEqual([]); expect(fetcher).toHaveBeenCalled();
+    const response = await resetPost(new Request('http://localhost:3000/api/demo/reset', { method: 'POST', headers: { 'x-demo-token': 'test-demo-token' } })); expect(response.status).toBe(202);
+    const sameJob = await seedRoute(); expect(sameJob.status).toBe(202); expect((await sameJob.json()).id).toBe((await response.json()).id);
+    await vi.runAllTimersAsync();
+    const progress = demoSeedProgress(); expect(progress.status).toBe('done');
+    const result = 'result' in progress ? progress.result : undefined; expect(result?.mismatches).toEqual([]); expect(fetcher).toHaveBeenCalled();
+    expect(arrivals.slice(1).every((at, i) => at - arrivals[i] >= 2100)).toBe(true);
     const calls = getAudit().flatMap(e => Array.isArray(e.payload.modelCalls) ? e.payload.modelCalls : []);
     expect(calls.length).toBeGreaterThan(0); expect(calls.every(c => c.provider === 'amd-tokenfactory' && c.model === 'seed-transport-test')).toBe(true);
   });
   it('reports provider failures honestly and never fabricates approvals or switches to mock', async () => {
+    vi.useFakeTimers();
     vi.stubEnv('MODEL_PROVIDER', 'amd'); vi.stubEnv('AMD_BASE_URL', 'https://synthetic.invalid/v1'); vi.stubEnv('AMD_API_KEY', 'synthetic-key'); vi.stubEnv('AMD_MODEL', 'seed-failure'); vi.stubEnv('AMD_JSON_SCHEMA', 'false');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Synthetic failure', { status: 500, headers: { 'Retry-After': '3' } })));
-    const result = await seedDemo();
+    const pending = seedDemo(); await vi.runAllTimersAsync(); const result = await pending;
     expect(result.created).toBe(11); expect(result.byStatus.escalated).toBe(2); expect(result.byStatus.needs_human).toBe(9); expect(result.byStatus.approved).toBe(0);
     expect(result.mismatches).toHaveLength(7);
     expect(result.sessions.filter(s => s.status === 'needs_human').every(s => s.summary?.abstainReason === 'provider_error' && s.summary.fields.every(f => f.status !== 'supported'))).toBe(true);

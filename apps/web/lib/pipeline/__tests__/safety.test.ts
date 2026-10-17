@@ -13,7 +13,7 @@ describe('redaction', () => {
     ['ID', '1234567890123'], ['ID', '1-2345-67890-12-3'], ['ID', 'RSSMRA85T10A562S'],
     ['DOB', 'DOB: 21/10/1985'], ['DOB', 'nato il 21-10-1985'], ['DOB', 'เกิดวันที่ 21/10/2528'],
     ['NAME', 'my name is Jane Smith'], ['NAME', "I'm called Jane"], ['NAME', 'mi chiamo Mario Rossi'], ['NAME', 'sono Mario Rossi'],
-    ['NAME', 'ฉันชื่อ สมชาย'], ['NAME', 'ผมชื่อ สมชาย'], ['NAME', 'ดิฉันชื่อ สมหญิง'], ['NAME', 'ชื่อ สมชาย'],
+    ['NAME', 'ฉันชื่อ สมชาย'], ['NAME', 'ผมชื่อ สมชาย'], ['NAME', 'ดิฉันชื่อ สมหญิง'],
   ])('redacts %s: %s', (type, input) => {
     const result = redact(input); expect(result.text).toBe(`[${type}_1]`); expect(result.replaced).toEqual([{ type, count: 1 }]);
   });

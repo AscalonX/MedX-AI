@@ -62,7 +62,7 @@ describe('pipeline', () => {
   it('takes over and pins escalated sessions first', async () => {
     const s = await addTurn(createSession('en').id, 'chest pain and cannot breathe'); const other = createSession('it');
     expect(listSessions()[0].id).toBe(s.id); const taken = await takeover(other.id, 'reviewer', 'Manual intake'); expect(taken.status).toBe('taken_over');
-    await expect(addTurn(other.id, 'more text')).rejects.toThrow('taken over'); expect(metrics().provider.hardware).toBe('mock');
+    await expect(addTurn(other.id, 'more text')).rejects.toThrow('taken over'); expect(metrics().provider.hardware).toBe('AMD (via Token Factory)');
   });
   it('serialises concurrent patient writes without losing either turn', async () => {
     const s = createSession('en'); await Promise.all([addTurn(s.id, 'I have a headache'), addTurn(s.id, 'No allergies')]);

@@ -104,7 +104,7 @@ describe('pharmacy review endpoint', () => {
     expect(getSession(s.id)).toEqual(s); expect(getAudit(s.id)).toEqual(before);
     const payload = { medActions: [], alertActions: s.summary!.medAlerts!.map(a => ({ alertId: a.id, action: 'acknowledge' })), allergyActions: [], complete: true };
     const response = await POST(request({ reviewerId: 'pharmacist-1', ...payload }), context(s.id));
-    expect(response.status).toBe(200); expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(response.status).toBe(200); expect(response.headers.has('Access-Control-Allow-Origin')).toBe(false);
     expect((await response.json()).pharmacyStatus).toBe('reconciled');
     expect(getAudit(s.id).at(-1)).toMatchObject({ type: 'pharmacy_review', actorId: 'pharmacist-1', payload });
     expect(OPTIONS().status).toBe(204);

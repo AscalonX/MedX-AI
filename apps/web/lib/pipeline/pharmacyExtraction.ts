@@ -73,7 +73,7 @@ export function mockPharmacy(turns: { alias: string; text: string }[]): Pick<Mod
 export function pharmacyEntries(model: Pick<ModelExtraction, 'medications' | 'allergies' | 'noKnownAllergies'>, session: IntakeSession) {
   const evidence = (e: { turn: string; quote: string }) => {
     const patients = session.turns.filter(t => t.role === 'patient');
-    const hit = verifyDetailed(e.quote, session.turns, patients[Number(e.turn.slice(1)) - 1]?.id);
+    const hit = verifyDetailed(e.quote, session.turns, patients[Number(e.turn.slice(1)) - 1]?.id, false, false);
     return hit ? [hit.evidence] : [];
   };
   const safe = (s: string | null) => s === null ? null : redact(s).text;
@@ -81,7 +81,7 @@ export function pharmacyEntries(model: Pick<ModelExtraction, 'medications' | 'al
     const ev = evidence(m); const d = lookupDrug(m.nameOriginal);
     // Name must also occur in the verified quote; a real unrelated quote is insufficient.
     const supported = ev.length > 0 && ev[0].quote.includes(m.nameOriginal) && [m.dose, m.frequency, m.timing].every(v => v === null || ev[0].quote.includes(v));
-    return { id: stableId('med', [medNorm(m.nameOriginal)]), nameOriginal: safe(m.nameOriginal)!, generic: d?.generic ?? null, drugClass: d?.drugClass ?? null, dose: safe(m.dose), frequency: safe(m.frequency), timing: safe(m.timing), evidence: supported ? ev : [], confidence: supported ? 0.9 : 0, status: !supported ? 'unsupported' : !d || d.generic.endsWith('(unspecified)') ? 'unmatched' : 'supported' };
+    return { id: stableId('med', supported ? [ev[0].turnId, String(ev[0].start + ev[0].quote.indexOf(m.nameOriginal)), d?.generic || medNorm(m.nameOriginal)] : [medNorm(m.nameOriginal)]), nameOriginal: safe(m.nameOriginal)!, generic: d?.generic ?? null, drugClass: d?.drugClass ?? null, dose: safe(m.dose), frequency: safe(m.frequency), timing: safe(m.timing), evidence: supported ? ev : [], confidence: supported ? 0.9 : 0, status: !supported ? 'unsupported' : !d || d.generic.endsWith('(unspecified)') ? 'unmatched' : 'supported' };
   });
   const allergies: AllergyEntry[] = (model.allergies || []).map(a => {
     const ev = evidence(a); const d = lookupAllergen(a.allergenOriginal);
@@ -92,15 +92,22 @@ export function pharmacyEntries(model: Pick<ModelExtraction, 'medications' | 'al
 }
 
 export function mergePharmacy(session: IntakeSession, next: ReturnType<typeof pharmacyEntries>, previous: IntakeSummary | null) {
-  const merge = <T extends { id: string; review?: unknown }>(old: T[], fresh: T[]) => {
-    const entries = new Map(old.map(m => [m.id, m]));
-    for (const m of fresh) { const prev = entries.get(m.id); entries.set(m.id, prev?.review ? prev : m); }
-    return [...entries.values()];
+  const merge = <T extends { id: string; review?: unknown; generic?: string | null; nameOriginal?: string; allergenOriginal?: string; evidence: MedicationEntry['evidence'] }>(old: T[], fresh: T[]) => {
+    const entries = old.filter(m => m.review);
+    const spans = (m: T) => m.evidence.flatMap(e => { const name = m.nameOriginal || m.allergenOriginal || ''; const i = e.quote.indexOf(name); return name && i >= 0 ? [{ turnId: e.turnId, start: e.start + i, end: e.start + i + name.length }] : []; });
+    const product = (m: T) => medNorm(m.nameOriginal || m.allergenOriginal || '').replace(/(?<!\p{L})\d+(?:\.\d+)?(?:\s*(?:mg|g|ml))?/gu, '').trim();
+    const sameMention = (a: T, b: T) => a.id === b.id || (!!product(a) && product(a) === product(b)) || spans(a).some(e => spans(b).some(f => e.turnId === f.turnId && e.start < f.end && f.start < e.end && (a.review || !a.generic || !b.generic || a.generic === b.generic)));
+    for (const m of fresh) if (!entries.some(p => sameMention(p, m))) {
+      // Keep row/alert identity across repeated mentions, rebuilding all unreviewed content.
+      const prior = old.find(p => sameMention(p, m));
+      entries.push(prior ? { ...m, id: prior.id } : m);
+    }
+    return entries;
   };
   const summary = session.summary!;
   summary.medications = merge(previous?.medications || [], next.medications);
   summary.allergies = merge(previous?.allergies || [], next.allergies);
-  summary.noKnownAllergiesEvidence = next.noKnownAllergiesEvidence.length ? next.noKnownAllergiesEvidence : previous?.noKnownAllergiesEvidence || [];
+  summary.noKnownAllergiesEvidence = next.noKnownAllergiesEvidence;
   refreshMedAlerts(summary, previous?.medAlerts);
   if (summary.medications.length || summary.allergies.length) {
     const changed = JSON.stringify([summary.medications, summary.allergies, summary.medAlerts, summary.noKnownAllergiesEvidence]) !== JSON.stringify([previous?.medications, previous?.allergies, previous?.medAlerts, previous?.noKnownAllergiesEvidence]);
