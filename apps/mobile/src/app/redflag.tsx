@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { AccessibilityInfo, Alert, Platform, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from "react-native-reanimated";
 import { LinearGradient } from "expo-linear-gradient";
+import { Alert as AlertIcon } from "@/components/icons";
 import { Page, Pill, T } from "@/components/ui";
 import { STR } from "@/i18n";
 import { useStore } from "@/store";
@@ -49,7 +50,7 @@ export default function RedFlag() {
       <LinearGradient colors={[gradient.signal.from, gradient.signal.to]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
         <Page bg="transparent" tabs={false}>
           <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: color.sheet, alignItems: "center", justifyContent: "center", marginBottom: space[5] }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-            <T lang="en" token="title" weight="bold" tone="signal">!</T>
+            <AlertIcon color={color.signal} size={26} />
           </View>
           <T lang={lang} token="display" weight="bold" tone="onSignal" accessibilityRole="header">{head}</T>
           {!!rest && <T lang={lang} token="lead" tone="onSignal" style={{ marginTop: space[4] }}>{rest}</T>}

@@ -9,6 +9,7 @@ export function SegmentedControl<T extends string>({
   onChange,
   ariaLabel,
   size = "md",
+  layout = "inline",
   className,
 }: {
   options: { value: T; label: ReactNode; lang?: string }[];
@@ -16,10 +17,12 @@ export function SegmentedControl<T extends string>({
   onChange: (v: T) => void;
   ariaLabel: string;
   size?: "sm" | "md";
+  /** "grid2" lays options out in two columns (narrow sidebars). */
+  layout?: "inline" | "grid2";
   className?: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={ariaLabel} className={cx("inline-flex rounded-full bg-muted p-1", className)}>
+    <div role="radiogroup" aria-label={ariaLabel} className={cx(layout === "grid2" ? "grid w-full grid-cols-2 gap-0.5 rounded-2xl" : "inline-flex rounded-full", "bg-muted p-1", className)}>
       {options.map((o) => {
         const on = o.value === value;
         return (

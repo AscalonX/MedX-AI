@@ -1,11 +1,11 @@
-import { color, radius, space, type as scale } from "@medx/shared";
+import { color, radius, scbxFont, space, type as scale } from "@medx/shared";
 import type React from "react";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import Animated, { Easing, FadeIn, useReducedMotion } from "react-native-reanimated";
 import { addTurn } from "@/api";
-import { Badge, Card, Chip, fontLight, Page, Pill, sh, T } from "@/components/ui";
+import { Badge, Card, Chip, Page, Pill, sh, T } from "@/components/ui";
 import { friendly, STR } from "@/i18n";
 import { screenFor, useStore } from "@/store";
 
@@ -103,7 +103,7 @@ export default function Intake() {
               onBlur={() => setFocus(false)}
               cursorColor={color.ocean}
               selectionColor={color.ocean}
-              style={{ fontFamily: fontLight, fontSize: scale.bodyPatient.size, lineHeight: Math.round(scale.bodyPatient.size * (lang === "th" ? 1.7 : 1.5)), color: color.ink, minHeight: 108, padding: space[3], borderRadius: radius.control, borderWidth: focus ? 2 : 1.5, borderColor: focus ? color.ocean : color.ruleStrong, backgroundColor: color.paper, outlineStyle: "none" } as object}
+              style={{ fontFamily: scbxFont.light, fontSize: scale.bodyPatient.size, lineHeight: Math.round(scale.bodyPatient.size * (lang === "th" ? 1.7 : 1.5)), color: color.ink, minHeight: 108, padding: space[3], borderRadius: radius.control, borderWidth: focus ? 2 : 1.5, borderColor: focus ? color.ocean : color.ruleStrong, backgroundColor: color.paper, outlineStyle: "none" } as object}
             />
             <T lang={lang} token="small" tone="graphite" style={{ marginTop: space[3] }}>{answered === 0 ? s.hint : s.hintFollow}</T>
           </Card>

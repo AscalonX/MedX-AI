@@ -2,6 +2,7 @@ import { color, space } from "@medx/shared";
 import { router } from "expo-router";
 import { useEffect } from "react";
 import { View } from "react-native";
+import { Check } from "@/components/icons";
 import { Card, GradientHero, Page, T } from "@/components/ui";
 import { STR } from "@/i18n";
 import { useStore } from "@/store";
@@ -27,7 +28,7 @@ export default function Done() {
         {steps.map(([label, st], i) => (
           <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: space[3] }} accessible accessibilityLabel={`${label}${st === "done" ? "" : ""}`}>
             <View style={{ width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: st === "done" ? color.teal : "transparent", borderWidth: st === "done" ? 0 : 2, borderColor: color.ruleStrong }}>
-              {st === "done" && <T lang="en" token="micro" weight="bold" tone="onPrimary" importantForAccessibility="no">{"✓"}</T>}
+              {st === "done" && <Check color={color.onPrimary} size={14} />}
             </View>
             <T lang={lang} weight={st === "done" ? "bold" : "regular"} tone={st === "done" ? "ink" : "graphite"}>{label}</T>
           </View>

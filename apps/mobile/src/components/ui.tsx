@@ -1,14 +1,11 @@
-import { color, gradient, layout, lineHeightPx, radius, shadow, space, type as scale } from "@medx/shared";
+import { color, gradient, layout, lineHeightPx, mobileFont, radius, scbxFont, shadow, space, type as scale } from "@medx/shared";
 import type { FontWeightName, Lang, TypeToken } from "@medx/shared";
 import { LinearGradient } from "expo-linear-gradient";
 import type { ReactNode } from "react";
 import { Pressable, ScrollView, Text, View, type TextProps, type ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-// SCBXBeta2 for every language (owner decision). Registered in _layout.tsx under these exact names.
-const FONT = { light: "SCBXBeta2-Light", regular: "SCBXBeta2-Regular", bold: "SCBXBeta2-Bold" };
-const weightFont = (w: FontWeightName) => (w === "regular" ? FONT.regular : FONT.bold);
-export const fontLight = FONT.light;
+export const fontLight = scbxFont.light;
 
 export const sh = (s: { x: number; y: number; blur: number; spread: number; color: string }) =>
   `${s.x}px ${s.y}px ${s.blur}px ${s.spread}px ${s.color}`;
@@ -24,7 +21,7 @@ export function T({ lang, token = "bodyPatient", weight = "regular", tone = "ink
       {...p}
       accessibilityLanguage={lang}
       maxFontSizeMultiplier={1.6}
-      style={[{ fontFamily: light ? FONT.light : weightFont(weight), fontSize: t.size, lineHeight: lineHeightPx(token, lang), letterSpacing: t.tracking * t.size, color: color[tone] }, style]}
+      style={[{ fontFamily: mobileFont("sans", lang, light ? "light" : weight), fontSize: t.size, lineHeight: lineHeightPx(token, lang), letterSpacing: t.tracking * t.size, color: color[tone] }, style]}
     />
   );
 }

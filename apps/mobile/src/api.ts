@@ -1,6 +1,8 @@
+import { Platform } from "react-native";
 import type { AddTurnReq, CreateSessionReq, IntakeSession, Lang } from "@medx/shared";
 
-const BASE = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
+// Web (served under /patient by the Next app) defaults to same-origin; native defaults to the local API.
+const BASE = process.env.EXPO_PUBLIC_API_URL ?? (Platform.OS === "web" ? "" : "http://localhost:3000");
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const ctl = new AbortController();

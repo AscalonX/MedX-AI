@@ -1,4 +1,4 @@
-import { color, gradient, radius, space } from "@medx/shared";
+import { color, gradient, space } from "@medx/shared";
 import { router } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
@@ -64,17 +64,19 @@ export default function Home() {
       </Card>
 
       <T lang={lang} token="body" weight="bold" style={{ marginTop: space[6], marginBottom: space[3] }}>{s.howTitle}</T>
-      <View style={{ flexDirection: "row", gap: space[3] }}>
+      <Card style={{ gap: space[4] }}>
         {s.how.map(([t, d], i) => (
-          <Card key={i} style={{ flex: 1, padding: space[3], borderRadius: radius.card }}>
-            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: color.tealTint, alignItems: "center", justifyContent: "center", marginBottom: space[2] }}>
+          <View key={i} style={{ flexDirection: "row", alignItems: "flex-start", gap: space[3] }}>
+            <View style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: color.tealTint, alignItems: "center", justifyContent: "center" }}>
               <T lang="en" token="small" weight="bold" tone="teal">{i + 1}</T>
             </View>
-            <T lang={lang} token="small" weight="bold">{t}</T>
-            <T lang={lang} token="micro" tone="inkSoft">{d}</T>
-          </Card>
+            <View style={{ flex: 1 }}>
+              <T lang={lang} token="body" weight="bold">{t}</T>
+              <T lang={lang} token="small" tone="inkSoft">{d}</T>
+            </View>
+          </View>
         ))}
-      </View>
+      </Card>
 
       <View style={{ flexGrow: 1, minHeight: space[6] }} />
       <T lang={lang} token="small" tone="graphite">{s.disclaimer}</T>
