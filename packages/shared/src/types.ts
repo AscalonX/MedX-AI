@@ -39,6 +39,12 @@ export interface IntakeSession {
   summary: IntakeSummary | null;
   /** Pharmacist reconciliation state. */
   pharmacyStatus?: "pending" | "in_review" | "reconciled";
+  /** Nurse-recorded vital signs, newest last. */
+  vitals?: VitalSigns[];
+  /** Deterministic triage suggestion; only `confirmed` is the clinical decision. */
+  triage?: TriageAssessment;
+  /** Doctor orders (medications + investigations). */
+  orders?: { medications: MedicationOrder[]; investigations: InvestigationOrder[] };
   pharmacyReviewerId?: string;
   createdAt: string;
   updatedAt: string;
@@ -172,6 +178,11 @@ export type AuditType =
   | "consult_turn"
   | "consult_suggestion"
   | "consult_note_signed"
+  | "vitals_recorded"
+  | "triage_confirmed"
+  | "order_drafted"
+  | "order_submitted"
+  | "order_pharmacy_action"
   | "takeover";
 
 export interface AuditEvent {
@@ -275,6 +286,7 @@ export interface AllergyReviewAction {
 }
 
 export type MedAlertKind =
+  | "dose_range" // prescribed dose outside the dictionary's single/daily range
   | "allergy_conflict" // med class matches a stated allergy class
   | "duplicate_therapy" // two meds with the same active ingredient/class
   | "pregnancy_caution" // med flagged for pregnancy and pregnancy_status pregnant/possible
@@ -336,6 +348,10 @@ export type ConsultSuggestionKind =
 
 export interface ConsultSuggestion {
   id: string; // stable across refreshes (kind + ruleId/field + key)
+  /** "consider" items: investigations worth considering (from consultrules.json) — doctor chooses. */
+  workup?: { id: string; label: Localized }[];
+  /** "consider" items: guideline to read — never a drug or dose. */
+  guideline?: { title: string; url: string };
   kind: ConsultSuggestionKind;
   mode: ConsultMode[]; // which modes may show it
   text: Localized; // the question to ask, or "Consider: …"
@@ -383,7 +399,93 @@ export interface ConsultRuleFile {
     match: string[][];
     questions: { id: string; text: Localized; why: Localized; modes: ConsultMode[] }[];
     /** Doctor-mode "consider" items: condition names framed for review, never diagnoses. */
-    considerations?: { id: string; text: Localized; why: Localized }[];
+    considerations?: { id: string; text: Localized; why: Localized; workup?: string[]; guideline?: { title: string; url: string } }[];
     source: string;
   }[];
+}
+
+// ---------- Vitals + triage (nurse) ----------
+
+export type Consciousness = "alert" | "voice" | "pain" | "unresponsive" | "new_confusion";
+
+export interface VitalSigns {
+  id: string;
+  at: string;
+  recordedBy: string;
+  heartRate?: number; // bpm
+  systolicBP?: number; // mmHg
+  diastolicBP?: number;
+  respRate?: number; // /min
+  tempC?: number;
+  spo2?: number; // %
+  onOxygen?: boolean;
+  painScore?: number; // 0-10
+  consciousness?: Consciousness;
+}
+
+export interface VitalAlert {
+  id: string;
+  ruleId: string; // vitalrules.json
+  vital: keyof VitalSigns;
+  severity: "high" | "moderate";
+  message: Localized;
+}
+
+export interface TriageAssessment {
+  /** Suggested level 1 (most urgent) … 5, from red flags + vitals rules (vitalrules.json). */
+  suggestedLevel: 1 | 2 | 3 | 4 | 5;
+  reasons: Localized[];
+  /** Early-warning style aggregate score from vitals, when computable. */
+  warningScore?: number;
+  vitalAlerts: VitalAlert[];
+  confirmed?: { level: 1 | 2 | 3 | 4 | 5; by: string; at: string; note?: string };
+}
+
+/** packages/shared/src/vitalrules.json (Doctor-owned). */
+export interface VitalRuleFile {
+  version: string;
+  /** Per-vital bands → score points and optional alert (NEWS2-style). */
+  bands: { vital: string; min?: number; max?: number; points: number; alert?: { ruleId: string; severity: "high" | "moderate"; message: Localized } }[];
+  /** Score / red-flag → suggested triage level mapping, first match wins. */
+  levels: { level: 1 | 2 | 3 | 4 | 5; when: { anyEmergencyRedFlag?: boolean; anyUrgentRedFlag?: boolean; minScore?: number; anySingleBandPoints?: number }; reason: Localized }[];
+  source: string;
+}
+
+// ---------- Orders (doctor) + prescription checks (pharmacy) ----------
+
+export type OrderStatus = "draft" | "submitted" | "verified" | "returned" | "cancelled";
+
+export interface MedicationOrder {
+  id: string;
+  /** Doctor's entry as typed; matched to the drug dictionary. */
+  drugText: string;
+  generic: string | null;
+  drugClass: string | null;
+  dose: string; // e.g. "500 mg"
+  doseMg?: number;
+  route: string; // "oral"
+  frequency: string; // "every 6 hours"
+  timesPerDay?: number;
+  duration?: string;
+  orderedBy: string;
+  at: string;
+  status: OrderStatus;
+  /** Prescribing alerts against allergies, current meds, other new orders, pregnancy, dose limits. Deterministic. */
+  checks: MedAlert[];
+  /** Doctor's documented reason for proceeding despite an alert (required for high alerts). */
+  overrides: { alertId: string; reason: string; by: string; at: string }[];
+  pharmacist?: { action: "verify" | "return"; by: string; at: string; note?: string };
+}
+
+export interface InvestigationOrder {
+  id: string;
+  code: string; // catalog id from packages/shared/src/investigations.json
+  label: Localized;
+  category: "lab" | "imaging" | "ecg" | "other";
+  reason?: string;
+  /** Set when the order came from a consult "consider" suggestion. */
+  fromSuggestionId?: string;
+  orderedBy: string;
+  at: string;
+  status: OrderStatus;
 }

@@ -54,3 +54,19 @@ export interface ConsultSuggestionReq { reviewerId: string; status: "asked" | "d
 /** POST /api/sessions/:id/consult/note — regenerate (action "draft") or sign (action "sign", with line edits). */
 export interface ConsultNoteReq { reviewerId: string; mode: ConsultMode; action: "draft" | "sign"; edits?: { lineId: string; text: string }[] }
 export type ConsultNoteRes = ConsultState;
+
+/** POST /api/sessions/:id/vitals — nurse records a set; returns session with recomputed triage. */
+export interface VitalsReq { recordedBy: string; vitals: Omit<import("./types").VitalSigns, "id" | "at" | "recordedBy"> }
+/** POST /api/sessions/:id/triage/confirm */
+export interface TriageConfirmReq { reviewerId: string; level: 1 | 2 | 3 | 4 | 5; note?: string }
+
+/** POST /api/sessions/:id/orders/medications — create/update a draft; server runs prescribing checks and returns the session. */
+export interface MedicationOrderReq { orderedBy: string; orderId?: string; drugText: string; dose: string; route: string; frequency: string; duration?: string }
+/** POST /api/sessions/:id/orders/medications/:orderId/submit — 409 unless every high alert has an override reason. */
+export interface SubmitOrderReq { orderedBy: string; overrides: { alertId: string; reason: string }[] }
+/** POST /api/sessions/:id/orders/medications/:orderId/pharmacy — pharmacist verifies or returns to the doctor with a note. */
+export interface PharmacyOrderActionReq { reviewerId: string; action: "verify" | "return"; note?: string }
+/** POST /api/sessions/:id/orders/medications/:orderId/cancel */
+export interface CancelOrderReq { orderedBy: string; reason?: string }
+/** POST /api/sessions/:id/orders/investigations */
+export interface InvestigationOrderReq { orderedBy: string; code: string; reason?: string; fromSuggestionId?: string }

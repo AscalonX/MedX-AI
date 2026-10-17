@@ -47,6 +47,7 @@ export const KIND_LABEL: Record<MedAlertKind, Localized> = {
   interaction: L("ปฏิกิริยาระหว่างยา", "Interazione", "Interaction"),
   max_dose_risk: L("เสี่ยงเกินขนาดสูงสุด", "Rischio dose massima", "Maximum dose risk"),
   unknown_medication: L("ยาที่ไม่รู้จัก", "Farmaco non riconosciuto", "Unknown medicine"),
+  dose_range: L("ขนาดยานอกช่วงปกติ", "Dose fuori intervallo", "Dose outside usual range"),
 };
 export const PHARM_STATUS_LABEL = {
   pending: L("รอดำเนินการ", "In attesa", "Pending"),
