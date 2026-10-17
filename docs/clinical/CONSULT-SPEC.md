@@ -1,4 +1,4 @@
-# MedX Bridge: consult assistant spec (Doctor, consultrules v1.0, Sat 17 Oct 2026)
+# MedX Bridge: consult assistant spec (Doctor, consultrules v1.1, vitalrules v1.0, investigations v1.0)
 
 Ambient assistant for the nurse's history-taking and the doctor's consult: speech-to-text of the conversation → pop-up questions, don't-miss "rule out" questions, doctor-only "consider" items, and an evidence-linked draft note the doctor edits and signs.
 Contracts: `ConsultMode`, `ConsultSuggestion`, `ConsultNote`, `ConsultNoteLine`, `ConsultState`, `ConsultRuleFile` (`packages/shared/src/types.ts`). Rules: `packages/shared/src/consultrules.json`. Check: `node docs/clinical/check-consultrules.mjs` (cases in §8).
@@ -135,3 +135,45 @@ Sections, in order: **presenting_complaint · history · medications · allergie
 | CR-GI-01 | en | no | I have not been vomiting |
 | CR-COUGH-01 | th | no | กินไอบูโพรเฟนเพราะปวดเข่า |
 | CR-BACK-01 | th | fire | ปวดหลังเท้าเวลาเดิน |
+
+## 9. Nurse vitals and triage suggestion (`vitalrules.json`, check: `node docs/clinical/check-vitalrules.mjs`)
+
+- **NEWS2 (RCP 2017), SpO2 scale 1, adults 16+ only.** Not for pregnancy (use an obstetric score) or for SpO2 scale-2 patients unless a clinician sets it.
+- The engine computes a **suggestion**; only `TriageAssessment.confirmed` (the nurse's level) is the clinical decision. The UI label reads "Suggested level — nurse confirms".
+- Band semantics: `min`/`max` are inclusive, applied to values rounded to the recorded resolution (integers; temperature to 0.1 °C). There are no gaps; the checker verifies coverage.
+- Encodings: `onOxygen` true = 1, false = 0. `consciousness` ordinal: alert 0 · new_confusion 1 · voice 2 · pain 3 · unresponsive 4. Any value ≥ 1 scores 3 (ACVPU).
+- `warningScore` is reported only when all 7 parameters are present.
+- Levels, first match wins:
+
+| Condition | Level |
+|---|---|
+| Emergency red flag | 1 |
+| Urgent red flag | 2 |
+| NEWS2 ≥ 7 | 2 |
+| NEWS2 5–6 | 2 |
+| Any single parameter scoring 3 | 2 |
+| NEWS2 1–4 | 3 |
+| Otherwise | 4 |
+
+  - No level 5: "routine admin" is not a clinical triage output.
+- **Incomplete vitals never yield level 4**. With vitals missing, the result is level 3 plus the engine constant reason "Vitals incomplete — complete NEWS2 before confirming" (th "สัญญาณชีพยังไม่ครบ — วัดให้ครบก่อนยืนยัน", it "Parametri incompleti — completare il NEWS2 prima di confermare") (CR-12).
+- Band alerts: every 3-point band raises a **high** alert, every 2-point band a **moderate** one.
+- The level mapping is MedX Bridge's own, not an RCP or ESI scale.
+
+## 10. Investigations (`investigations.json`, `InvestigationCatalog`)
+
+- 34 common walk-in/ED investigations, shaped `{ id, category: lab | imaging | ecg | other, label: {th,it,en} }`.
+- Consult "consider" items list `workup` ids from this catalog: **investigations worth considering, for the doctor to choose**. Nothing is ordered automatically. An `InvestigationOrder` records `fromSuggestionId` when the doctor orders from a suggestion.
+- `guideline` links to a public guideline page, checked to load this wave (NICE guidance pages, WHO, PubMed for journal guidelines). It is omitted where no verifiable page was found.
+- The checker enforces that every workup id exists, every guideline has a title and an https URL, and that consideration text contains no dose, mg or "give/start/prescribe" wording.
+
+## 11. Doctor orders and prescribing checks
+
+- `MedicationOrder.checks` reuse the pharmacy engine (PHARMACY-SPEC §5) against allergies, current meds, other new orders and pregnancy, plus **dose_range**:
+  - MR-DOSE-01: single dose > `doseRange.maxSingleMg`;
+  - MR-DOSE-02: dose × timesPerDay > `doseRange.maxDailyMg`;
+  - both high; wording "Dose is outside the usual adult range — check".
+- A drug that is unknown or has no `doseRange` gets no dose alert (and the unknown drug gets `unknown_medication`).
+- High alerts need a documented doctor override reason. The pharmacist then verifies or returns the order.
+- The AI never proposes a drug, dose, route or frequency. Considerations carry guideline links only.
+

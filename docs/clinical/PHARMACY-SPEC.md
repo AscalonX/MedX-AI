@@ -87,3 +87,8 @@ The system never recommends a new drug, a dose, a substitution, or stopping a dr
 | CR-7 | Add `ruleId`, `severity` and `source` to each `messages[kind]` entry (or a `kindRules` table) | MAXDOSE / DUP / PREG / UNKNOWN alerts currently need engine-side constants (§3) for `MedAlert.source` |
 | CR-8 | Optional `ingredients: string[]` on drug entries instead of the `+`-joined `generic` convention | Makes combinations explicit; today the engine must split `generic` on `+` |
 | CR-9 | `pregnancy_status` needs a "possible" value from extraction (late period, "maybe") | Pregnancy caution should fire on possible pregnancy, not only confirmed |
+
+## 8. v1.1 addition: dose range on doctor orders
+
+`drugs[].doseRange { maxSingleMg, maxDailyMg }` is set for 31 common oral drugs. These are adult usual maxima (BNF; metformin and naproxen daily max from the FDA labels), recorded in `doseRangeSource`. Two alerts use them: MR-DOSE-01 (single dose) and MR-DOSE-02 (daily dose), kind `dose_range`, severity high, "Dose is outside the usual adult range — check". They are not dosing advice. They do not adjust for kidney or liver function, weight or children, and some indications legitimately exceed them (the doctor documents the reason). Tests: MEDRULES-TESTS "Dose range".
+

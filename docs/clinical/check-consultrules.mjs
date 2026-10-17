@@ -34,6 +34,13 @@ for (const r of C.rules) {
   for (const q of r.questions) for (const l of ["th", "it", "en"]) if (!q.text[l] || !q.why[l]) { fail++; console.log("FAIL missing text", q.id, l); }
   for (const c of r.considerations ?? []) if (!c.text.en.startsWith("Consider ")) { fail++; console.log("FAIL consider wording", c.id); }
 }
+// v1.1: workup ids must exist in investigations.json; guideline needs a title and an https URL; no drug/dose text in considerations.
+const INV = new Set(JSON.parse(readFileSync(new URL("packages/shared/src/investigations.json", root), "utf8")).items.map((i) => i.id));
+for (const r of C.rules) for (const c of r.considerations ?? []) {
+  for (const w of c.workup ?? []) if (!INV.has(w)) { fail++; console.log("FAIL unknown workup id", c.id, w); }
+  if (c.guideline && !(c.guideline.title && /^https:\/\//.test(c.guideline.url))) { fail++; console.log("FAIL guideline", c.id); }
+  if (/\b\d+\s?mg\b|\bdose\b|\bgive\b|\bstart\b|\bprescribe/i.test(JSON.stringify([c.text, c.why]))) { fail++; console.log("FAIL treatment wording", c.id); }
+}
 const byId = Object.fromEntries(C.rules.map((r) => [r.id, r]));
 for (const line of md.split("\n")) {
   const m = line.match(/^\| (CR-[A-Z]+-\d+) \| (en|it|th) \| (fire|no) \| (.+) \|$/);

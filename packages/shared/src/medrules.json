@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "drugs": [
     {
       "generic": "paracetamol",
@@ -19,7 +19,11 @@
         "ไทลินอล",
         "พานาดอล"
       ],
-      "maxDailyMg": 4000
+      "maxDailyMg": 4000,
+      "doseRange": {
+        "maxSingleMg": 1000,
+        "maxDailyMg": 4000
+      }
     },
     {
       "generic": "paracetamol+chlorphenamine+phenylephrine",
@@ -64,7 +68,11 @@
         "บรูเฟน",
         "นูโรเฟน"
       ],
-      "pregnancy": "caution"
+      "pregnancy": "caution",
+      "doseRange": {
+        "maxSingleMg": 800,
+        "maxDailyMg": 2400
+      }
     },
     {
       "generic": "diclofenac",
@@ -77,7 +85,11 @@
         "ไดโคลฟีแน็ค",
         "โวลทาเรน"
       ],
-      "pregnancy": "caution"
+      "pregnancy": "caution",
+      "doseRange": {
+        "maxSingleMg": 75,
+        "maxDailyMg": 150
+      }
     },
     {
       "generic": "naproxen",
@@ -89,7 +101,11 @@
         "momendol",
         "นาพรอกเซน"
       ],
-      "pregnancy": "caution"
+      "pregnancy": "caution",
+      "doseRange": {
+        "maxSingleMg": 1000,
+        "maxDailyMg": 1250
+      }
     },
     {
       "generic": "mefenamic acid",
@@ -101,7 +117,11 @@
         "พอนสแตน",
         "มีเฟนามิก"
       ],
-      "pregnancy": "caution"
+      "pregnancy": "caution",
+      "doseRange": {
+        "maxSingleMg": 500,
+        "maxDailyMg": 1500
+      }
     },
     {
       "generic": "ketoprofen",
@@ -145,7 +165,11 @@
         "aspirinetta",
         "แอสไพริน",
         "ยาแอส"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 1000,
+        "maxDailyMg": 4000
+      }
     },
     {
       "generic": "amoxicillin",
@@ -159,7 +183,11 @@
         "อะม็อกซี",
         "อะมอกซี",
         "อม็อกซี"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 1000,
+        "maxDailyMg": 3000
+      }
     },
     {
       "generic": "amoxicillin+clavulanic acid",
@@ -196,7 +224,11 @@
         "cefalessina",
         "keflex",
         "เซฟาเล็กซิน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 1500,
+        "maxDailyMg": 6000
+      }
     },
     {
       "generic": "azithromycin",
@@ -207,7 +239,11 @@
         "zithromax",
         "zitromax",
         "อะซิโธรมัยซิน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 1000,
+        "maxDailyMg": 1000
+      }
     },
     {
       "generic": "clarithromycin",
@@ -218,7 +254,11 @@
         "klacid",
         "klaricid",
         "คลาริโธรมัยซิน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 500,
+        "maxDailyMg": 1000
+      }
     },
     {
       "generic": "ciprofloxacin",
@@ -230,7 +270,11 @@
         "ซิโปรฟลอกซาซิน",
         "ไซโปรฟลอกซาซิน"
       ],
-      "pregnancy": "avoid"
+      "pregnancy": "avoid",
+      "doseRange": {
+        "maxSingleMg": 750,
+        "maxDailyMg": 1500
+      }
     },
     {
       "generic": "co-trimoxazole",
@@ -258,7 +302,11 @@
         "ด็อกซีไซคลิน",
         "ดอกซีไซคลิน"
       ],
-      "pregnancy": "avoid"
+      "pregnancy": "avoid",
+      "doseRange": {
+        "maxSingleMg": 200,
+        "maxDailyMg": 200
+      }
     },
     {
       "generic": "metronidazole",
@@ -267,7 +315,11 @@
         "metronidazol",
         "flagyl",
         "เมโทรนิดาโซล"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 2000,
+        "maxDailyMg": 2000
+      }
     },
     {
       "generic": "warfarin",
@@ -328,7 +380,11 @@
         "glucophage",
         "metforal",
         "เมทฟอร์มิน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 1000,
+        "maxDailyMg": 2550
+      }
     },
     {
       "generic": "gliclazide",
@@ -362,7 +418,11 @@
         "enapren",
         "อีนาลาพริล"
       ],
-      "pregnancy": "avoid"
+      "pregnancy": "avoid",
+      "doseRange": {
+        "maxSingleMg": 40,
+        "maxDailyMg": 40
+      }
     },
     {
       "generic": "ramipril",
@@ -372,7 +432,11 @@
         "triatec",
         "tritace"
       ],
-      "pregnancy": "avoid"
+      "pregnancy": "avoid",
+      "doseRange": {
+        "maxSingleMg": 10,
+        "maxDailyMg": 10
+      }
     },
     {
       "generic": "losartan",
@@ -383,7 +447,11 @@
         "lortaan",
         "โลซาร์แทน"
       ],
-      "pregnancy": "avoid"
+      "pregnancy": "avoid",
+      "doseRange": {
+        "maxSingleMg": 100,
+        "maxDailyMg": 100
+      }
     },
     {
       "generic": "amlodipine",
@@ -393,7 +461,11 @@
         "norvasc",
         "อัมโลดิปีน",
         "แอมโลดิปีน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 10,
+        "maxDailyMg": 10
+      }
     },
     {
       "generic": "spironolactone",
@@ -429,7 +501,11 @@
         "อะทอร์วาสแตติน",
         "อะโทวาสแตติน"
       ],
-      "pregnancy": "avoid"
+      "pregnancy": "avoid",
+      "doseRange": {
+        "maxSingleMg": 80,
+        "maxDailyMg": 80
+      }
     },
     {
       "generic": "simvastatin",
@@ -440,7 +516,11 @@
         "sivastin",
         "ซิมวาสแตติน"
       ],
-      "pregnancy": "avoid"
+      "pregnancy": "avoid",
+      "doseRange": {
+        "maxSingleMg": 80,
+        "maxDailyMg": 80
+      }
     },
     {
       "generic": "statin (unspecified)",
@@ -468,7 +548,11 @@
         "miracid",
         "omeprazen",
         "โอเมพราโซล"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 40,
+        "maxDailyMg": 80
+      }
     },
     {
       "generic": "salbutamol",
@@ -506,7 +590,11 @@
         "codeina",
         "โคเดอีน"
       ],
-      "pregnancy": "caution"
+      "pregnancy": "caution",
+      "doseRange": {
+        "maxSingleMg": 60,
+        "maxDailyMg": 240
+      }
     },
     {
       "generic": "tramadol",
@@ -517,7 +605,11 @@
         "contramal",
         "ทรามาดอล"
       ],
-      "pregnancy": "caution"
+      "pregnancy": "caution",
+      "doseRange": {
+        "maxSingleMg": 100,
+        "maxDailyMg": 400
+      }
     },
     {
       "generic": "cetirizine",
@@ -527,7 +619,11 @@
         "zyrtec",
         "zirtec",
         "เซทิริซีน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 10,
+        "maxDailyMg": 10
+      }
     },
     {
       "generic": "loratadine",
@@ -537,7 +633,11 @@
         "clarityne",
         "claritin",
         "ลอราทาดีน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 10,
+        "maxDailyMg": 10
+      }
     },
     {
       "generic": "chlorphenamine",
@@ -549,7 +649,11 @@
         " cpm ",
         "คลอเฟนิรามีน",
         "ซีพีเอ็ม"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 4,
+        "maxDailyMg": 24
+      }
     },
     {
       "generic": "levothyroxine",
@@ -583,7 +687,11 @@
         "sertralin",
         "zoloft",
         "เซอร์ทราลีน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 200,
+        "maxDailyMg": 200
+      }
     },
     {
       "generic": "fluoxetine",
@@ -592,7 +700,11 @@
         "fluoxetin",
         "prozac",
         "ฟลูออกซิทีน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 60,
+        "maxDailyMg": 60
+      }
     },
     {
       "generic": "sildenafil",
@@ -602,7 +714,11 @@
         "viagra",
         "ไวอากร้า",
         "ไวอากรา"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 100,
+        "maxDailyMg": 100
+      }
     },
     {
       "generic": "tadalafil",
@@ -649,7 +765,11 @@
         "motilium",
         "peridon",
         "ดอมเพอริโดน"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 10,
+        "maxDailyMg": 30
+      }
     },
     {
       "generic": "loperamide",
@@ -658,7 +778,11 @@
         "loperamid",
         "imodium",
         "โลเพอราไมด์"
-      ]
+      ],
+      "doseRange": {
+        "maxSingleMg": 4,
+        "maxDailyMg": 16
+      }
     },
     {
       "generic": "misoprostol",
@@ -1253,6 +1377,19 @@
         "it": "Chiedere di vedere la confezione o una foto; identificare principio attivo e dose. Nessun controllo di sicurezza è stato eseguito.",
         "en": "Ask to see the pack or photo; identify the generic and dose. No safety checks were run on it."
       }
+    },
+    "dose_range": {
+      "message": {
+        "th": "ขนาดยาอยู่นอกช่วงปกติสำหรับผู้ใหญ่ — โปรดตรวจสอบ",
+        "it": "La dose è fuori dall'intervallo abituale per l'adulto — verificare.",
+        "en": "Dose is outside the usual adult range — check."
+      },
+      "action": {
+        "th": "ตรวจสอบขนาดยา ความถี่ และหน่วย เทียบกับน้ำหนัก การทำงานของไตและตับ และข้อบ่งใช้ หากตั้งใจสั่งให้บันทึกเหตุผล",
+        "it": "Verificare dose, frequenza e unità rispetto a peso, funzione renale ed epatica e indicazione; documentare il motivo se è voluto.",
+        "en": "Check the dose, frequency and units against the patient's weight, kidney and liver function, and the indication; document the reason if it is intended."
+      }
     }
-  }
+  },
+  "doseRangeSource": "Adult oral maximum single and daily doses from BNF (British National Formulary, current edition) dose sections; metformin 2550 mg/day and naproxen 1250 mg/day from FDA prescribing information. Usual adult ceilings for a deterministic 'check' alert only: not dosing advice, no renal/hepatic/weight/paediatric adjustment, some indications legitimately exceed them (doctor documents the reason)."
 }

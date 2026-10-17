@@ -335,6 +335,7 @@ export interface MedRuleFile {
   allergyConflicts: { allergenClass: string; drugClasses: string[]; ruleId: string; severity: "high" | "moderate"; source: string }[];
   interactions: { a: string; b: string; ruleId: string; severity: "high" | "moderate"; message: Localized; source: string }[];
   messages: Record<MedAlertKind, { message: Localized; action: Localized }>;
+  doseRangeSource?: string;
 }
 
 // ---------- Consult assistant (ambient listening for nurse / doctor) ----------
@@ -445,9 +446,9 @@ export interface TriageAssessment {
 export interface VitalRuleFile {
   version: string;
   /** Per-vital bands → score points and optional alert (NEWS2-style). */
-  bands: { vital: string; min?: number; max?: number; points: number; alert?: { ruleId: string; severity: "high" | "moderate"; message: Localized } }[];
+  bands: { vital: string; min?: number; max?: number; /** exact match for categorical vitals (onOxygen, consciousness) */ equals?: string | boolean; points: number; alert?: { ruleId: string; severity: "high" | "moderate"; message: Localized } }[];
   /** Score / red-flag → suggested triage level mapping, first match wins. */
-  levels: { level: 1 | 2 | 3 | 4 | 5; when: { anyEmergencyRedFlag?: boolean; anyUrgentRedFlag?: boolean; minScore?: number; anySingleBandPoints?: number }; reason: Localized }[];
+  levels: { level: 1 | 2 | 3 | 4 | 5; when: { anyEmergencyRedFlag?: boolean; anyUrgentRedFlag?: boolean; minScore?: number; anySingleBandPoints?: number; /** vitals set missing required values: never suggest a reassuring level */ incompleteVitals?: boolean }; reason: Localized }[];
   source: string;
 }
 

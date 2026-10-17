@@ -1,0 +1,382 @@
+{
+  "version": "1.0",
+  "bands": [
+    {
+      "vital": "respRate",
+      "max": 8,
+      "points": 3,
+      "alert": {
+        "ruleId": "VR-RR-LOW",
+        "severity": "high",
+        "message": {
+          "th": "อัตราการหายใจ ≤ 8 ครั้ง/นาที",
+          "it": "Frequenza respiratoria ≤ 8/min",
+          "en": "Respiratory rate ≤ 8/min"
+        }
+      }
+    },
+    {
+      "vital": "respRate",
+      "min": 9,
+      "max": 11,
+      "points": 1
+    },
+    {
+      "vital": "respRate",
+      "min": 12,
+      "max": 20,
+      "points": 0
+    },
+    {
+      "vital": "respRate",
+      "min": 21,
+      "max": 24,
+      "points": 2,
+      "alert": {
+        "ruleId": "VR-RR-HIGH2",
+        "severity": "moderate",
+        "message": {
+          "th": "อัตราการหายใจ 21–24 ครั้ง/นาที",
+          "it": "Frequenza respiratoria 21–24/min",
+          "en": "Respiratory rate 21–24/min"
+        }
+      }
+    },
+    {
+      "vital": "respRate",
+      "min": 25,
+      "points": 3,
+      "alert": {
+        "ruleId": "VR-RR-HIGH3",
+        "severity": "high",
+        "message": {
+          "th": "อัตราการหายใจ ≥ 25 ครั้ง/นาที",
+          "it": "Frequenza respiratoria ≥ 25/min",
+          "en": "Respiratory rate ≥ 25/min"
+        }
+      }
+    },
+    {
+      "vital": "spo2",
+      "max": 91,
+      "points": 3,
+      "alert": {
+        "ruleId": "VR-SPO2-LOW3",
+        "severity": "high",
+        "message": {
+          "th": "SpO2 ≤ 91%",
+          "it": "SpO2 ≤ 91%",
+          "en": "SpO2 ≤ 91%"
+        }
+      }
+    },
+    {
+      "vital": "spo2",
+      "min": 92,
+      "max": 93,
+      "points": 2,
+      "alert": {
+        "ruleId": "VR-SPO2-LOW2",
+        "severity": "moderate",
+        "message": {
+          "th": "SpO2 92–93%",
+          "it": "SpO2 92–93%",
+          "en": "SpO2 92–93%"
+        }
+      }
+    },
+    {
+      "vital": "spo2",
+      "min": 94,
+      "max": 95,
+      "points": 1
+    },
+    {
+      "vital": "spo2",
+      "min": 96,
+      "points": 0
+    },
+    {
+      "vital": "onOxygen",
+      "min": 1,
+      "max": 1,
+      "points": 2,
+      "alert": {
+        "ruleId": "VR-O2",
+        "severity": "moderate",
+        "message": {
+          "th": "ได้รับออกซิเจนเสริม",
+          "it": "In ossigenoterapia",
+          "en": "On supplemental oxygen"
+        }
+      }
+    },
+    {
+      "vital": "onOxygen",
+      "min": 0,
+      "max": 0,
+      "points": 0
+    },
+    {
+      "vital": "systolicBP",
+      "max": 90,
+      "points": 3,
+      "alert": {
+        "ruleId": "VR-SBP-LOW3",
+        "severity": "high",
+        "message": {
+          "th": "ความดันซิสโตลิก ≤ 90 มม.ปรอท",
+          "it": "PA sistolica ≤ 90 mmHg",
+          "en": "Systolic BP ≤ 90 mmHg"
+        }
+      }
+    },
+    {
+      "vital": "systolicBP",
+      "min": 91,
+      "max": 100,
+      "points": 2,
+      "alert": {
+        "ruleId": "VR-SBP-LOW2",
+        "severity": "moderate",
+        "message": {
+          "th": "ความดันซิสโตลิก 91–100 มม.ปรอท",
+          "it": "PA sistolica 91–100 mmHg",
+          "en": "Systolic BP 91–100 mmHg"
+        }
+      }
+    },
+    {
+      "vital": "systolicBP",
+      "min": 101,
+      "max": 110,
+      "points": 1
+    },
+    {
+      "vital": "systolicBP",
+      "min": 111,
+      "max": 219,
+      "points": 0
+    },
+    {
+      "vital": "systolicBP",
+      "min": 220,
+      "points": 3,
+      "alert": {
+        "ruleId": "VR-SBP-HIGH",
+        "severity": "high",
+        "message": {
+          "th": "ความดันซิสโตลิก ≥ 220 มม.ปรอท",
+          "it": "PA sistolica ≥ 220 mmHg",
+          "en": "Systolic BP ≥ 220 mmHg"
+        }
+      }
+    },
+    {
+      "vital": "heartRate",
+      "max": 40,
+      "points": 3,
+      "alert": {
+        "ruleId": "VR-HR-LOW",
+        "severity": "high",
+        "message": {
+          "th": "ชีพจร ≤ 40 ครั้ง/นาที",
+          "it": "Frequenza cardiaca ≤ 40/min",
+          "en": "Heart rate ≤ 40/min"
+        }
+      }
+    },
+    {
+      "vital": "heartRate",
+      "min": 41,
+      "max": 50,
+      "points": 1
+    },
+    {
+      "vital": "heartRate",
+      "min": 51,
+      "max": 90,
+      "points": 0
+    },
+    {
+      "vital": "heartRate",
+      "min": 91,
+      "max": 110,
+      "points": 1
+    },
+    {
+      "vital": "heartRate",
+      "min": 111,
+      "max": 130,
+      "points": 2,
+      "alert": {
+        "ruleId": "VR-HR-HIGH2",
+        "severity": "moderate",
+        "message": {
+          "th": "ชีพจร 111–130 ครั้ง/นาที",
+          "it": "Frequenza cardiaca 111–130/min",
+          "en": "Heart rate 111–130/min"
+        }
+      }
+    },
+    {
+      "vital": "heartRate",
+      "min": 131,
+      "points": 3,
+      "alert": {
+        "ruleId": "VR-HR-HIGH3",
+        "severity": "high",
+        "message": {
+          "th": "ชีพจร ≥ 131 ครั้ง/นาที",
+          "it": "Frequenza cardiaca ≥ 131/min",
+          "en": "Heart rate ≥ 131/min"
+        }
+      }
+    },
+    {
+      "vital": "consciousness",
+      "min": 0,
+      "max": 0,
+      "points": 0
+    },
+    {
+      "vital": "consciousness",
+      "min": 1,
+      "max": 4,
+      "points": 3,
+      "alert": {
+        "ruleId": "VR-ACVPU",
+        "severity": "high",
+        "message": {
+          "th": "สับสนใหม่หรือไม่รู้สึกตัวดี (ACVPU)",
+          "it": "Nuova confusione o non vigile (ACVPU)",
+          "en": "New confusion or not fully alert (ACVPU)"
+        }
+      }
+    },
+    {
+      "vital": "tempC",
+      "max": 35.0,
+      "points": 3,
+      "alert": {
+        "ruleId": "VR-TEMP-LOW",
+        "severity": "high",
+        "message": {
+          "th": "อุณหภูมิ ≤ 35.0 °C",
+          "it": "Temperatura ≤ 35,0 °C",
+          "en": "Temperature ≤ 35.0 °C"
+        }
+      }
+    },
+    {
+      "vital": "tempC",
+      "min": 35.1,
+      "max": 36.0,
+      "points": 1
+    },
+    {
+      "vital": "tempC",
+      "min": 36.1,
+      "max": 38.0,
+      "points": 0
+    },
+    {
+      "vital": "tempC",
+      "min": 38.1,
+      "max": 39.0,
+      "points": 1
+    },
+    {
+      "vital": "tempC",
+      "min": 39.1,
+      "points": 2,
+      "alert": {
+        "ruleId": "VR-TEMP-HIGH",
+        "severity": "moderate",
+        "message": {
+          "th": "อุณหภูมิ ≥ 39.1 °C",
+          "it": "Temperatura ≥ 39,1 °C",
+          "en": "Temperature ≥ 39.1 °C"
+        }
+      }
+    }
+  ],
+  "levels": [
+    {
+      "level": 1,
+      "when": {
+        "anyEmergencyRedFlag": true
+      },
+      "reason": {
+        "th": "มีสัญญาณอันตรายระดับฉุกเฉิน",
+        "it": "Presente un segnale d'allarme di emergenza",
+        "en": "Emergency red flag present"
+      }
+    },
+    {
+      "level": 2,
+      "when": {
+        "anyUrgentRedFlag": true
+      },
+      "reason": {
+        "th": "มีสัญญาณอันตรายระดับเร่งด่วน",
+        "it": "Presente un segnale d'allarme urgente",
+        "en": "Urgent red flag present"
+      }
+    },
+    {
+      "level": 2,
+      "when": {
+        "minScore": 7
+      },
+      "reason": {
+        "th": "คะแนน NEWS2 ตั้งแต่ 7 ขึ้นไป",
+        "it": "Punteggio NEWS2 pari o superiore a 7",
+        "en": "NEWS2 score 7 or more"
+      }
+    },
+    {
+      "level": 2,
+      "when": {
+        "minScore": 5
+      },
+      "reason": {
+        "th": "คะแนน NEWS2 5–6",
+        "it": "Punteggio NEWS2 5–6",
+        "en": "NEWS2 score 5–6"
+      }
+    },
+    {
+      "level": 2,
+      "when": {
+        "anySingleBandPoints": 3
+      },
+      "reason": {
+        "th": "มีสัญญาณชีพตัวใดตัวหนึ่งได้ 3 คะแนน (NEWS2)",
+        "it": "Un singolo parametro vitale ha punteggio 3 (NEWS2)",
+        "en": "A single vital sign scores 3 (NEWS2)"
+      }
+    },
+    {
+      "level": 3,
+      "when": {
+        "minScore": 1
+      },
+      "reason": {
+        "th": "คะแนน NEWS2 1–4",
+        "it": "Punteggio NEWS2 1–4",
+        "en": "NEWS2 score 1–4"
+      }
+    },
+    {
+      "level": 4,
+      "when": {},
+      "reason": {
+        "th": "ไม่มีสัญญาณอันตรายและคะแนน NEWS2 เท่ากับ 0",
+        "it": "Nessun segnale d'allarme e punteggio NEWS2 0",
+        "en": "No red flag and NEWS2 score 0"
+      }
+    }
+  ],
+  "source": "Royal College of Physicians. National Early Warning Score (NEWS) 2 (2017), SpO2 scale 1. SUGGESTION FOR NURSE CONFIRMATION ONLY: adults (16+) only; not for pregnancy (use an obstetric early-warning score) or for patients needing SpO2 scale 2 (hypercapnic respiratory failure) unless a clinician sets it. Level mapping is MedX Bridge's own, not part of NEWS2."
+}

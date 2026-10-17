@@ -1,4 +1,4 @@
-# Medication-rule test cases (medrules v1.0)
+# Medication-rule test cases (medrules v1.1)
 
 For: AI engineer (unit tests for the pharmacist-view engine). Rules: `packages/shared/src/medrules.json`. Semantics: `docs/clinical/PHARMACY-SPEC.md` §5.
 Run the reference check: `node docs/clinical/check-medrules.mjs` (exit 0 = all rows pass).
@@ -218,3 +218,20 @@ Medicines and allergies are given **already split** (one entry per medicine/alle
 | A | th | MR-UNKNOWN-01 | ยาแก้อักเสบ | - | - |
 | A | th | MR-UNKNOWN-01 | ยาแก้ไอ | - | - |
 | A | it | !MR-UNKNOWN-01 | Tachipirina | - | - |
+
+## Dose range (doctor medication orders, v1.1)
+
+`| D | lang | expect | drug as typed | dose mg | times per day |`. MR-DOSE-01 = single dose above `doseRange.maxSingleMg`; MR-DOSE-02 = dose × times/day above `doseRange.maxDailyMg`. Severity high (doctor documents an override reason; pharmacist verifies or returns). Wording is "outside the usual adult range — check", never an instruction.
+
+| D | lang | expect | drug | mg | per day |
+|---|---|---|---|---|---|
+| D | en | !MR-DOSE-01 | Paracetamol | 1000 | 4 |
+| D | en | !MR-DOSE-02 | Paracetamol | 1000 | 4 |
+| D | en | MR-DOSE-02 | Tylenol | 1000 | 6 |
+| D | it | MR-DOSE-01 | Tachipirina | 2000 | 1 |
+| D | th | MR-DOSE-02 | ไอบูโพรเฟน | 800 | 4 |
+| D | it | !MR-DOSE-02 | Brufen | 400 | 3 |
+| D | en | MR-DOSE-01 | amlodipine | 20 | 1 |
+| D | en | MR-DOSE-02 | tramadol | 100 | 6 |
+| D | th | !MR-DOSE-01 | วาร์ฟาริน | 5 | 1 |
+| D | en | !MR-DOSE-01 | vitamin D | 5000 | 1 |

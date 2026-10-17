@@ -1,0 +1,311 @@
+{
+  "version": "1.0",
+  "items": [
+    {
+      "id": "ecg",
+      "category": "ecg",
+      "label": {
+        "th": "คลื่นไฟฟ้าหัวใจ 12 ลีด",
+        "it": "ECG a 12 derivazioni",
+        "en": "12-lead ECG"
+      }
+    },
+    {
+      "id": "troponin",
+      "category": "lab",
+      "label": {
+        "th": "โทรโปนิน (ความไวสูง)",
+        "it": "Troponina ad alta sensibilità",
+        "en": "Troponin (high-sensitivity)"
+      }
+    },
+    {
+      "id": "fbc",
+      "category": "lab",
+      "label": {
+        "th": "ความสมบูรณ์ของเม็ดเลือด (CBC)",
+        "it": "Emocromo completo",
+        "en": "Full blood count (FBC/CBC)"
+      }
+    },
+    {
+      "id": "crp",
+      "category": "lab",
+      "label": {
+        "th": "ซีอาร์พี (CRP)",
+        "it": "Proteina C reattiva (PCR)",
+        "en": "C-reactive protein (CRP)"
+      }
+    },
+    {
+      "id": "esr",
+      "category": "lab",
+      "label": {
+        "th": "อัตราการตกตะกอนของเม็ดเลือดแดง (ESR)",
+        "it": "VES",
+        "en": "ESR"
+      }
+    },
+    {
+      "id": "ue",
+      "category": "lab",
+      "label": {
+        "th": "ยูเรีย อิเล็กโทรไลต์ และครีเอตินิน",
+        "it": "Urea, elettroliti e creatinina",
+        "en": "Urea, electrolytes and creatinine"
+      }
+    },
+    {
+      "id": "glucose",
+      "category": "lab",
+      "label": {
+        "th": "น้ำตาลในเลือด",
+        "it": "Glicemia",
+        "en": "Blood glucose"
+      }
+    },
+    {
+      "id": "ketones",
+      "category": "lab",
+      "label": {
+        "th": "คีโตนในเลือด",
+        "it": "Chetonemia",
+        "en": "Blood ketones"
+      }
+    },
+    {
+      "id": "lactate",
+      "category": "lab",
+      "label": {
+        "th": "แลคเตต",
+        "it": "Lattato",
+        "en": "Lactate"
+      }
+    },
+    {
+      "id": "vbg",
+      "category": "lab",
+      "label": {
+        "th": "ก๊าซในเลือดดำ",
+        "it": "Emogasanalisi venosa",
+        "en": "Venous blood gas"
+      }
+    },
+    {
+      "id": "blood_culture",
+      "category": "lab",
+      "label": {
+        "th": "เพาะเชื้อจากเลือด",
+        "it": "Emocolture",
+        "en": "Blood cultures"
+      }
+    },
+    {
+      "id": "lft",
+      "category": "lab",
+      "label": {
+        "th": "การทำงานของตับ",
+        "it": "Test di funzionalità epatica",
+        "en": "Liver function tests"
+      }
+    },
+    {
+      "id": "lipase",
+      "category": "lab",
+      "label": {
+        "th": "ไลเปส",
+        "it": "Lipasi",
+        "en": "Lipase"
+      }
+    },
+    {
+      "id": "coag",
+      "category": "lab",
+      "label": {
+        "th": "การแข็งตัวของเลือด (PT/INR, APTT)",
+        "it": "Coagulazione (PT/INR, aPTT)",
+        "en": "Coagulation screen (PT/INR, APTT)"
+      }
+    },
+    {
+      "id": "d_dimer",
+      "category": "lab",
+      "label": {
+        "th": "ดี-ไดเมอร์",
+        "it": "D-dimero",
+        "en": "D-dimer"
+      }
+    },
+    {
+      "id": "bnp",
+      "category": "lab",
+      "label": {
+        "th": "NT-proBNP",
+        "it": "NT-proBNP",
+        "en": "NT-proBNP"
+      }
+    },
+    {
+      "id": "group_save",
+      "category": "lab",
+      "label": {
+        "th": "หมู่เลือดและเตรียมเลือด",
+        "it": "Gruppo sanguigno e prove crociate",
+        "en": "Group and save"
+      }
+    },
+    {
+      "id": "urinalysis",
+      "category": "lab",
+      "label": {
+        "th": "ตรวจปัสสาวะ",
+        "it": "Esame urine (stick)",
+        "en": "Urine dipstick / urinalysis"
+      }
+    },
+    {
+      "id": "urine_culture",
+      "category": "lab",
+      "label": {
+        "th": "เพาะเชื้อจากปัสสาวะ",
+        "it": "Urinocoltura",
+        "en": "Urine culture"
+      }
+    },
+    {
+      "id": "upt",
+      "category": "lab",
+      "label": {
+        "th": "ตรวจการตั้งครรภ์ (hCG ปัสสาวะหรือเลือด)",
+        "it": "Test di gravidanza (hCG urinario o sierico)",
+        "en": "Pregnancy test (urine or serum hCG)"
+      }
+    },
+    {
+      "id": "dengue_ns1",
+      "category": "lab",
+      "label": {
+        "th": "ตรวจไข้เลือดออก NS1 / ภูมิคุ้มกัน",
+        "it": "Antigene NS1 / sierologia dengue",
+        "en": "Dengue NS1 antigen / serology"
+      }
+    },
+    {
+      "id": "malaria_test",
+      "category": "lab",
+      "label": {
+        "th": "ตรวจมาลาเรีย (ฟิล์มเลือดหรือชุดตรวจเร็ว)",
+        "it": "Test malaria (striscio o test rapido)",
+        "en": "Malaria test (blood film or rapid test)"
+      }
+    },
+    {
+      "id": "throat_swab",
+      "category": "lab",
+      "label": {
+        "th": "ป้ายคอ",
+        "it": "Tampone faringeo",
+        "en": "Throat swab"
+      }
+    },
+    {
+      "id": "sputum_afb",
+      "category": "lab",
+      "label": {
+        "th": "ตรวจเสมหะหาวัณโรค (AFB / อณูชีววิทยา)",
+        "it": "Espettorato per TBC (BAAR / test molecolare)",
+        "en": "Sputum for TB (AFB / molecular test)"
+      }
+    },
+    {
+      "id": "cxr",
+      "category": "imaging",
+      "label": {
+        "th": "เอกซเรย์ทรวงอก",
+        "it": "Radiografia del torace",
+        "en": "Chest X-ray"
+      }
+    },
+    {
+      "id": "ct_head",
+      "category": "imaging",
+      "label": {
+        "th": "ซีทีสมอง",
+        "it": "TC encefalo",
+        "en": "CT head"
+      }
+    },
+    {
+      "id": "ctpa",
+      "category": "imaging",
+      "label": {
+        "th": "ซีทีหลอดเลือดปอด",
+        "it": "Angio-TC polmonare",
+        "en": "CT pulmonary angiogram"
+      }
+    },
+    {
+      "id": "ct_aorta",
+      "category": "imaging",
+      "label": {
+        "th": "ซีทีหลอดเลือดแดงใหญ่",
+        "it": "Angio-TC aorta",
+        "en": "CT aortogram"
+      }
+    },
+    {
+      "id": "ct_abdomen",
+      "category": "imaging",
+      "label": {
+        "th": "ซีทีช่องท้องและอุ้งเชิงกราน",
+        "it": "TC addome e pelvi",
+        "en": "CT abdomen and pelvis"
+      }
+    },
+    {
+      "id": "us_abdomen",
+      "category": "imaging",
+      "label": {
+        "th": "อัลตราซาวด์ช่องท้อง",
+        "it": "Ecografia addominale",
+        "en": "Abdominal ultrasound"
+      }
+    },
+    {
+      "id": "us_pelvis",
+      "category": "imaging",
+      "label": {
+        "th": "อัลตราซาวด์อุ้งเชิงกราน / ทางช่องคลอด",
+        "it": "Ecografia pelvica / transvaginale",
+        "en": "Pelvic / transvaginal ultrasound"
+      }
+    },
+    {
+      "id": "mri_spine",
+      "category": "imaging",
+      "label": {
+        "th": "เอ็มอาร์ไอกระดูกสันหลัง",
+        "it": "RM colonna",
+        "en": "MRI spine"
+      }
+    },
+    {
+      "id": "lumbar_puncture",
+      "category": "other",
+      "label": {
+        "th": "เจาะน้ำไขสันหลัง",
+        "it": "Rachicentesi",
+        "en": "Lumbar puncture"
+      }
+    },
+    {
+      "id": "orthostatic_bp",
+      "category": "other",
+      "label": {
+        "th": "วัดความดันท่านอนและท่ายืน",
+        "it": "Pressione clino-ortostatica",
+        "en": "Lying and standing blood pressure"
+      }
+    }
+  ]
+}

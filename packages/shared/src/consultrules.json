@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "rules": [
     {
       "id": "CR-CHEST-01",
@@ -138,6 +138,14 @@
             "th": "สาเหตุที่ห้ามพลาดของเจ็บหน้าอก โอกาสสูงขึ้นเมื่อเจ็บตอนออกแรง เหงื่อออก ร้าว และมีปัจจัยเสี่ยง",
             "it": "Causa da non perdere di dolore toracico; più probabile con dolore da sforzo, sudorazione, irradiazione e fattori di rischio.",
             "en": "Can't-miss cause of chest pain; probability rises with exertional pain, sweating, radiation and risk factors."
+          },
+          "workup": [
+            "ecg",
+            "troponin"
+          ],
+          "guideline": {
+            "title": "NICE CG95: Recent-onset chest pain of suspected cardiac origin: assessment and diagnosis",
+            "url": "https://www.nice.org.uk/guidance/cg95"
           }
         },
         {
@@ -151,7 +159,11 @@
             "th": "ปวดรุนแรงเฉียบพลันแบบฉีกร้าวไปหลัง อาจสับสนกับหัวใจขาดเลือด",
             "it": "Dolore improvviso, intenso, lacerante irradiato alla schiena; può essere confuso con SCA.",
             "en": "Sudden severe tearing pain radiating to the back; can be mistaken for ACS."
-          }
+          },
+          "workup": [
+            "ecg",
+            "ct_aorta"
+          ]
         },
         {
           "id": "CR-CHEST-01-C3",
@@ -164,6 +176,15 @@
             "th": "เจ็บเวลาหายใจร่วมกับหอบ หรือมีปัจจัยเสี่ยงลิ่มเลือด",
             "it": "Dolore pleuritico con dispnea o fattori di rischio tromboembolico.",
             "en": "Pleuritic pain with breathlessness or venous thromboembolism risk factors."
+          },
+          "workup": [
+            "ecg",
+            "d_dimer",
+            "ctpa"
+          ],
+          "guideline": {
+            "title": "NICE NG158: Venous thromboembolic diseases: diagnosis, management and thrombophilia testing",
+            "url": "https://www.nice.org.uk/guidance/ng158"
           }
         }
       ],
@@ -299,6 +320,15 @@
             "th": "หอบเฉียบพลัน เจ็บเวลาหายใจ หรือมีปัจจัยเสี่ยงลิ่มเลือด",
             "it": "Dispnea improvvisa, dolore pleuritico o fattori di rischio TEV.",
             "en": "Sudden breathlessness, pleuritic pain or VTE risk factors."
+          },
+          "workup": [
+            "d_dimer",
+            "ctpa",
+            "ecg"
+          ],
+          "guideline": {
+            "title": "NICE NG158: Venous thromboembolic diseases: diagnosis, management and thrombophilia testing",
+            "url": "https://www.nice.org.uk/guidance/ng158"
           }
         },
         {
@@ -312,6 +342,15 @@
             "th": "นอนราบไม่ได้ หอบกลางคืน ขาบวม",
             "it": "Ortopnea, dispnea notturna, edemi declivi.",
             "en": "Orthopnoea, night breathlessness, leg swelling."
+          },
+          "workup": [
+            "ecg",
+            "bnp",
+            "cxr"
+          ],
+          "guideline": {
+            "title": "NICE CG187: Acute heart failure: diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/cg187"
           }
         },
         {
@@ -325,7 +364,11 @@
             "th": "มีโรคทางเดินหายใจเดิมและยาพ่นประจำไม่ช่วย",
             "it": "Malattia delle vie aeree nota che non risponde all'inalatore abituale.",
             "en": "Known airway disease not responding to usual inhaler."
-          }
+          },
+          "workup": [
+            "vbg",
+            "cxr"
+          ]
         },
         {
           "id": "CR-SOB-01-C4",
@@ -338,6 +381,15 @@
             "th": "ไข้ ไอมีเสมหะ และหอบ",
             "it": "Febbre, tosse produttiva e dispnea.",
             "en": "Fever, productive cough and breathlessness."
+          },
+          "workup": [
+            "cxr",
+            "crp",
+            "fbc"
+          ],
+          "guideline": {
+            "title": "NICE CG191: Pneumonia in adults: diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/cg191"
           }
         }
       ],
@@ -460,6 +512,14 @@
             "th": "ปวดหัวเฉียบพลันรุนแรงที่สุดในชีวิตและแรงสุดภายในชั่วโมง",
             "it": "Cefalea improvvisa, la peggiore di sempre, al massimo entro un'ora.",
             "en": "Sudden, worst-ever headache peaking within an hour."
+          },
+          "workup": [
+            "ct_head",
+            "lumbar_puncture"
+          ],
+          "guideline": {
+            "title": "NICE NG228: Subarachnoid haemorrhage caused by a ruptured aneurysm: diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/ng228"
           }
         },
         {
@@ -473,6 +533,16 @@
             "th": "ปวดหัวร่วมกับไข้ คอแข็ง ผื่น หรือสับสน",
             "it": "Cefalea con febbre, rigidità nucale, eruzione o confusione.",
             "en": "Headache with fever, neck stiffness, rash or confusion."
+          },
+          "workup": [
+            "blood_culture",
+            "fbc",
+            "crp",
+            "lumbar_puncture"
+          ],
+          "guideline": {
+            "title": "NICE NG240: Meningitis (bacterial) and meningococcal disease: recognition, diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/ng240"
           }
         },
         {
@@ -486,6 +556,15 @@
             "th": "ปวดหัวร่วมกับอาการทางระบบประสาท ใช้ยาละลายลิ่มเลือด หรือศีรษะกระแทก",
             "it": "Cefalea con deficit focale, anticoagulanti o trauma cranico.",
             "en": "Headache with focal deficit, anticoagulant use or head injury."
+          },
+          "workup": [
+            "ct_head",
+            "glucose",
+            "coag"
+          ],
+          "guideline": {
+            "title": "NICE NG128: Stroke and transient ischaemic attack in over 16s: diagnosis and initial management",
+            "url": "https://www.nice.org.uk/guidance/ng128"
           }
         },
         {
@@ -499,7 +578,12 @@
             "th": "ปวดหัวใหม่ในอายุเกิน 50 ร่วมกับปวดกรามเวลาเคี้ยวหรือตามัว เสี่ยงตาบอด",
             "it": "Cefalea nuova oltre i 50 anni con claudicatio mandibolare o disturbi visivi: rischio di perdita della vista.",
             "en": "New headache over 50 with jaw claudication or visual symptoms risks sight loss."
-          }
+          },
+          "workup": [
+            "esr",
+            "crp",
+            "fbc"
+          ]
         }
       ],
       "source": "NICE CG150 Headaches in over 12s: diagnosis and management; Godwin SA et al. ACEP Clinical Policy: Acute Headache. Ann Emerg Med 2019;74:e41-e74. doi:10.1016/j.annemergmed.2019.07.009 (PMID 31543134); Perry JJ et al. Ottawa SAH Rule. JAMA 2013;310:1248-55 (PMID 24065011)"
@@ -627,6 +711,16 @@
             "th": "ปวดท้องร่วมกับประจำเดือนขาดหรือเลือดออก อาการอาจไม่ชัดเจน",
             "it": "Dolore addominale con ritardo mestruale o sanguinamento; può essere atipica.",
             "en": "Abdominal pain with a missed period or bleeding; can present atypically."
+          },
+          "workup": [
+            "upt",
+            "us_pelvis",
+            "fbc",
+            "group_save"
+          ],
+          "guideline": {
+            "title": "NICE NG126: Ectopic pregnancy and miscarriage: diagnosis and initial management",
+            "url": "https://www.nice.org.uk/guidance/ng126"
           }
         },
         {
@@ -640,7 +734,13 @@
             "th": "ปวดย้ายไปท้องน้อยขวา ปวดมากขึ้นเวลาขยับ",
             "it": "Dolore che migra in fossa iliaca destra, peggiore al movimento.",
             "en": "Pain migrating to the right lower abdomen, worse on movement."
-          }
+          },
+          "workup": [
+            "fbc",
+            "crp",
+            "upt",
+            "us_abdomen"
+          ]
         },
         {
           "id": "CR-ABD-01-C3",
@@ -653,7 +753,12 @@
             "th": "อาเจียน ไม่ผายลม หรือปวดตลอดร่วมกับท้องแข็ง",
             "it": "Vomito, alvo chiuso o dolore continuo con peritonismo.",
             "en": "Vomiting, no flatus, or constant pain with peritonism."
-          }
+          },
+          "workup": [
+            "ct_abdomen",
+            "ue",
+            "lactate"
+          ]
         },
         {
           "id": "CR-ABD-01-C4",
@@ -666,6 +771,14 @@
             "th": "ปวดท้องหรือหลังร่วมกับหมดสติหรือเคยรู้ว่ามีโป่งพอง",
             "it": "Dolore addominale o lombare con collasso o aneurisma noto.",
             "en": "Abdominal or back pain with collapse or known aneurysm."
+          },
+          "workup": [
+            "us_abdomen",
+            "ct_aorta"
+          ],
+          "guideline": {
+            "title": "NICE NG156: Abdominal aortic aneurysm: diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/ng156"
           }
         }
       ],
@@ -788,6 +901,17 @@
             "th": "ไข้ร่วมกับสับสน หายใจเร็ว หรือความดันต่ำ",
             "it": "Febbre con confusione, tachipnea o ipotensione.",
             "en": "Fever with confusion, fast breathing or low blood pressure."
+          },
+          "workup": [
+            "lactate",
+            "blood_culture",
+            "fbc",
+            "crp",
+            "ue"
+          ],
+          "guideline": {
+            "title": "NICE NG51: Suspected sepsis: recognition, diagnosis and early management",
+            "url": "https://www.nice.org.uk/guidance/ng51"
           }
         },
         {
@@ -801,6 +925,14 @@
             "th": "ไข้ร่วมกับคอแข็งหรือผื่นกดไม่จาง",
             "it": "Febbre con rigidità nucale o eruzione che non scompare alla pressione.",
             "en": "Fever with neck stiffness or a non-blanching rash."
+          },
+          "workup": [
+            "blood_culture",
+            "lumbar_puncture"
+          ],
+          "guideline": {
+            "title": "NICE NG240: Meningitis (bacterial) and meningococcal disease: recognition, diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/ng240"
           }
         },
         {
@@ -814,6 +946,15 @@
             "th": "เป็นโรคประจำถิ่นในไทยและพบบ่อยในผู้เดินทาง",
             "it": "Endemiche in Thailandia e frequenti nei viaggiatori di rientro.",
             "en": "Endemic in Thailand and common in returning travellers."
+          },
+          "workup": [
+            "dengue_ns1",
+            "malaria_test",
+            "fbc"
+          ],
+          "guideline": {
+            "title": "WHO fact sheet: Dengue and severe dengue",
+            "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue"
           }
         }
       ],
@@ -948,6 +1089,14 @@
             "th": "หมดสติตอนออกแรงหรือนอน ใจสั่น ญาติเสียชีวิตกะทันหัน",
             "it": "Sincope da sforzo o supina, palpitazioni, familiarità per morte improvvisa.",
             "en": "Exertional or supine syncope, palpitations, family history of sudden death."
+          },
+          "workup": [
+            "ecg",
+            "orthostatic_bp"
+          ],
+          "guideline": {
+            "title": "NICE CG109: Transient loss of consciousness ('blackouts') in over 16s",
+            "url": "https://www.nice.org.uk/guidance/cg109"
           }
         },
         {
@@ -961,6 +1110,14 @@
             "th": "เวียนหัวร่วมกับอาการทางระบบประสาทหรือเดินไม่ได้",
             "it": "Vertigine con qualsiasi segno neurologico o incapacità a camminare.",
             "en": "Dizziness with any neurological sign or inability to walk."
+          },
+          "workup": [
+            "ct_head",
+            "glucose"
+          ],
+          "guideline": {
+            "title": "NICE NG128: Stroke and transient ischaemic attack in over 16s: diagnosis and initial management",
+            "url": "https://www.nice.org.uk/guidance/ng128"
           }
         },
         {
@@ -974,6 +1131,15 @@
             "th": "จะเป็นลมร่วมกับถ่ายดำ เลือดออก หรืออาจตั้งครรภ์",
             "it": "Presincope con feci nere, sanguinamento o possibile gravidanza.",
             "en": "Presyncope with black stools, bleeding or possible pregnancy."
+          },
+          "workup": [
+            "fbc",
+            "upt",
+            "group_save"
+          ],
+          "guideline": {
+            "title": "NICE CG141: Acute upper gastrointestinal bleeding in over 16s: management",
+            "url": "https://www.nice.org.uk/guidance/cg141"
           }
         }
       ],
@@ -1094,6 +1260,13 @@
             "th": "ชาบริเวณก้น ปัสสาวะหรืออุจจาระผิดปกติ อาการที่ขาสองข้าง",
             "it": "Anestesia a sella, disturbi vescicali o intestinali, sintomi bilaterali.",
             "en": "Saddle numbness, bladder or bowel change, bilateral leg symptoms."
+          },
+          "workup": [
+            "mri_spine"
+          ],
+          "guideline": {
+            "title": "NICE NG59: Low back pain and sciatica in over 16s: assessment and management",
+            "url": "https://www.nice.org.uk/guidance/ng59"
           }
         },
         {
@@ -1107,6 +1280,15 @@
             "th": "เคยเป็นมะเร็ง ไข้ น้ำหนักลด ปวดกลางคืน",
             "it": "Storia di tumore, febbre, calo di peso, dolore notturno.",
             "en": "Cancer history, fever, weight loss, night pain."
+          },
+          "workup": [
+            "mri_spine",
+            "fbc",
+            "crp"
+          ],
+          "guideline": {
+            "title": "NICE NG234: Spinal metastases and metastatic spinal cord compression",
+            "url": "https://www.nice.org.uk/guidance/ng234"
           }
         },
         {
@@ -1120,6 +1302,14 @@
             "th": "ปวดหลังหรือท้องรุนแรงเฉียบพลันในอายุเกิน 50",
             "it": "Dolore improvviso e intenso lombare o addominale oltre i 50 anni.",
             "en": "Sudden severe back or abdominal pain over 50."
+          },
+          "workup": [
+            "us_abdomen",
+            "ct_aorta"
+          ],
+          "guideline": {
+            "title": "NICE NG156: Abdominal aortic aneurysm: diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/ng156"
           }
         }
       ],
@@ -1239,6 +1429,18 @@
             "th": "ไข้ หนาวสั่น หรือปวดเอวร่วมกับอาการทางปัสสาวะ",
             "it": "Febbre, brividi o dolore lombare con sintomi urinari.",
             "en": "Fever, rigors or loin pain with urinary symptoms."
+          },
+          "workup": [
+            "urinalysis",
+            "urine_culture",
+            "blood_culture",
+            "ue",
+            "fbc",
+            "crp"
+          ],
+          "guideline": {
+            "title": "NICE NG111: Pyelonephritis (acute): antimicrobial prescribing",
+            "url": "https://www.nice.org.uk/guidance/ng111"
           }
         },
         {
@@ -1252,7 +1454,10 @@
             "th": "มีตกขาวหรือคู่นอนใหม่ร่วมกับปัสสาวะแสบ",
             "it": "Perdite o nuovo partner con disuria.",
             "en": "Discharge or new partner with dysuria."
-          }
+          },
+          "workup": [
+            "urinalysis"
+          ]
         },
         {
           "id": "CR-URINE-01-C3",
@@ -1265,6 +1470,14 @@
             "th": "อาการทางปัสสาวะร่วมกับไข้หรือปวดฝีเย็บในผู้ชาย",
             "it": "Sintomi urinari con febbre o dolore perineale nell'uomo.",
             "en": "Urinary symptoms with fever or perineal pain in men."
+          },
+          "workup": [
+            "urinalysis",
+            "urine_culture"
+          ],
+          "guideline": {
+            "title": "NICE NG110: Prostatitis (acute): antimicrobial prescribing",
+            "url": "https://www.nice.org.uk/guidance/ng110"
           }
         }
       ],
@@ -1372,6 +1585,15 @@
             "th": "ไข้ หอบ เจ็บเวลาหายใจร่วมกับไอ",
             "it": "Febbre, dispnea, dolore pleuritico con tosse.",
             "en": "Fever, breathlessness, pleuritic pain with cough."
+          },
+          "workup": [
+            "cxr",
+            "crp",
+            "fbc"
+          ],
+          "guideline": {
+            "title": "NICE CG191: Pneumonia in adults: diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/cg191"
           }
         },
         {
@@ -1385,6 +1607,14 @@
             "th": "ไอนาน เหงื่อออกกลางคืน น้ำหนักลด หรือมีผู้สัมผัส",
             "it": "Tosse prolungata, sudorazioni notturne, calo di peso o contatto.",
             "en": "Prolonged cough, night sweats, weight loss or contact."
+          },
+          "workup": [
+            "cxr",
+            "sputum_afb"
+          ],
+          "guideline": {
+            "title": "NICE NG33: Tuberculosis",
+            "url": "https://www.nice.org.uk/guidance/ng33"
           }
         },
         {
@@ -1398,6 +1628,13 @@
             "th": "เกณฑ์สงสัยมะเร็งของ NICE",
             "it": "Criteri NICE di sospetto oncologico.",
             "en": "NICE suspected-cancer criteria."
+          },
+          "workup": [
+            "cxr"
+          ],
+          "guideline": {
+            "title": "NICE NG12: Suspected cancer: recognition and referral",
+            "url": "https://www.nice.org.uk/guidance/ng12"
           }
         }
       ],
@@ -1504,6 +1741,10 @@
             "th": "น้ำลายไหล หายใจมีเสียง เสียงอู้อี้ กลืนน้ำลายไม่ได้",
             "it": "Scialorrea, stridore, voce ovattata, impossibilità a deglutire la saliva.",
             "en": "Drooling, stridor, muffled voice, unable to swallow saliva."
+          },
+          "guideline": {
+            "title": "NICE NG84: Sore throat (acute): antimicrobial prescribing",
+            "url": "https://www.nice.org.uk/guidance/ng84"
           }
         },
         {
@@ -1517,6 +1758,14 @@
             "th": "ปวดข้างเดียวรุนแรง อ้าปากไม่ขึ้น ลิ้นไก่เบี้ยว",
             "it": "Dolore intenso monolaterale, trisma, deviazione dell'ugola.",
             "en": "Severe one-sided pain, trismus, uvula deviation."
+          },
+          "workup": [
+            "fbc",
+            "crp"
+          ],
+          "guideline": {
+            "title": "NICE NG84: Sore throat (acute): antimicrobial prescribing",
+            "url": "https://www.nice.org.uk/guidance/ng84"
           }
         },
         {
@@ -1530,7 +1779,10 @@
             "th": "เจ็บคอมีไข้ขณะใช้ยาเหล่านี้ต้องตรวจความสมบูรณ์ของเม็ดเลือด",
             "it": "Mal di gola con febbre in questi farmaci richiede un emocromo.",
             "en": "Sore throat with fever on these drugs needs a blood count."
-          }
+          },
+          "workup": [
+            "fbc"
+          ]
         }
       ],
       "source": "NICE NG84 Sore throat (acute): antimicrobial prescribing (FeverPAIN/Centor; red flags for quinsy and epiglottitis)"
@@ -1652,6 +1904,16 @@
             "th": "ไข้ร่วมกับผื่นกดไม่จาง",
             "it": "Febbre con eruzione che non scompare alla pressione.",
             "en": "Fever with a non-blanching rash."
+          },
+          "workup": [
+            "blood_culture",
+            "fbc",
+            "crp",
+            "coag"
+          ],
+          "guideline": {
+            "title": "NICE NG240: Meningitis (bacterial) and meningococcal disease: recognition, diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/ng240"
           }
         },
         {
@@ -1665,6 +1927,15 @@
             "th": "ตุ่มน้ำ มีแผลในเยื่อบุ เริ่มยาใหม่ภายใน 8 สัปดาห์",
             "it": "Bolle, coinvolgimento mucoso, nuovo farmaco entro 8 settimane.",
             "en": "Blisters, mucosal involvement, new drug within 8 weeks."
+          },
+          "workup": [
+            "fbc",
+            "ue",
+            "lft"
+          ],
+          "guideline": {
+            "title": "UK guidelines for the management of Stevens-Johnson syndrome/toxic epidermal necrolysis in adults 2016 (PubMed)",
+            "url": "https://pubmed.ncbi.nlm.nih.gov/27317286/"
           }
         },
         {
@@ -1678,6 +1949,14 @@
             "th": "ไข้ ปวดกล้ามเนื้อ ปวดกระบอกตา จุดเลือดออก ในพื้นที่ระบาด",
             "it": "Febbre, mialgie, dolore retro-orbitale, petecchie in area endemica.",
             "en": "Fever, myalgia, retro-orbital pain, petechiae in an endemic area."
+          },
+          "workup": [
+            "dengue_ns1",
+            "fbc"
+          ],
+          "guideline": {
+            "title": "WHO fact sheet: Dengue and severe dengue",
+            "url": "https://www.who.int/news-room/fact-sheets/detail/dengue-and-severe-dengue"
           }
         }
       ],
@@ -1802,6 +2081,14 @@
             "th": "อาเจียนต่อเนื่อง ปัสสาวะน้อย ลุกแล้วหน้ามืด",
             "it": "Vomito persistente, oliguria, capogiri posturali.",
             "en": "Persistent vomiting, little urine, postural dizziness."
+          },
+          "workup": [
+            "ue",
+            "urinalysis"
+          ],
+          "guideline": {
+            "title": "NICE NG148: Acute kidney injury: prevention, detection and management",
+            "url": "https://www.nice.org.uk/guidance/ng148"
           }
         },
         {
@@ -1815,6 +2102,16 @@
             "th": "อาเจียน ปวดท้อง หายใจเร็วในผู้เป็นเบาหวาน",
             "it": "Vomito, dolore addominale, tachipnea nel diabete.",
             "en": "Vomiting, abdominal pain, fast breathing in diabetes."
+          },
+          "workup": [
+            "glucose",
+            "ketones",
+            "vbg",
+            "ue"
+          ],
+          "guideline": {
+            "title": "NICE NG17: Type 1 diabetes in adults: diagnosis and management",
+            "url": "https://www.nice.org.uk/guidance/ng17"
           }
         },
         {
@@ -1828,7 +2125,12 @@
             "th": "ปวดรุนแรงตลอด ท้องอืดโต อาเจียนสีเขียว",
             "it": "Dolore intenso continuo, distensione, vomito biliare.",
             "en": "Severe constant pain, distension, bilious vomiting."
-          }
+          },
+          "workup": [
+            "ct_abdomen",
+            "lactate",
+            "fbc"
+          ]
         }
       ],
       "source": "NICE CKS Gastroenteritis; JBDS-IP (Joint British Diabetes Societies) Management of diabetic ketoacidosis in adults; NICE CG141 Acute upper GI bleeding"

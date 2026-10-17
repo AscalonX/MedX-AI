@@ -45,6 +45,15 @@ export function alerts(medNames, allergyNames, pregnancy) {
   return out;
 }
 
+/** dose_range (MedicationOrder): MR-DOSE-01 single dose > maxSingleMg; MR-DOSE-02 doseMg × timesPerDay > maxDailyMg. Unknown drug or no doseRange → no dose alert. */
+export function doseAlerts(drugText, doseMg, timesPerDay) {
+  const r = lookup(drugText, R.drugs)?.doseRange, out = new Set();
+  if (!r) return out;
+  if (r.maxSingleMg != null && doseMg > r.maxSingleMg) out.add("MR-DOSE-01");
+  if (r.maxDailyMg != null && timesPerDay != null && doseMg * timesPerDay > r.maxDailyMg) out.add("MR-DOSE-02");
+  return out;
+}
+
 let pass = 0, fail = 0;
 const split = (s) => (s.trim() === "-" ? [] : s.split(";").map((x) => x.trim()).filter(Boolean));
 for (const line of md.split("\n")) {
@@ -58,6 +67,12 @@ for (const line of md.split("\n")) {
   if (m) {
     const got = lookup(m[2], R.allergens)?.allergenClass ?? "(none)";
     if (got === m[3]) pass++; else { fail++; console.log(`FAIL allergen ${m[1]} "${m[2]}" expected=${m[3]} got=${got}`); }
+    continue;
+  }
+  m = line.match(/^\| D \| (en|it|th) \| (!?MR-DOSE-0[12]) \| (.+?) \| ([\d.]+) \| ([\d.]+) \|$/);
+  if (m) {
+    const got = doseAlerts(m[3], Number(m[4]), Number(m[5])), want = !m[2].startsWith("!"), id = m[2].replace("!", "");
+    if (got.has(id) === want) pass++; else { fail++; console.log(`FAIL dose ${m[1]} expected ${m[2]} got [${[...got].join(", ")}] :: ${m[3]} ${m[4]} mg x${m[5]}`); }
     continue;
   }
   m = line.match(/^\| A \| (en|it|th) \| (!?MR-[A-Z0-9-]+) \| (.+?) \| (.+?) \| (pregnant|possible|no|-) \|$/);
