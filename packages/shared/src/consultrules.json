@@ -1,0 +1,1837 @@
+{
+  "version": "1.0",
+  "rules": [
+    {
+      "id": "CR-CHEST-01",
+      "match": [
+        [
+          "chest pain",
+          "chest tight",
+          "tight chest",
+          "chest pressure",
+          "pressure in my chest",
+          "pain in my chest",
+          "pain in the chest",
+          "chest hurts",
+          "chest is tight",
+          "chest feels tight",
+          "crushing",
+          "dolore al petto",
+          "dolore toracico",
+          "male al petto",
+          "dolori al petto",
+          "dolore forte al petto",
+          "forte dolore al petto",
+          "peso sul petto",
+          "oppressione al petto",
+          "fitta al petto",
+          "mi fa male il petto",
+          "dolore al torace",
+          "เจ็บหน้าอก",
+          "แน่นหน้าอก",
+          "ปวดหน้าอก",
+          "เจ็บอก",
+          "แน่นอก",
+          "จุกอก",
+          "เจ็บกลางอก",
+          "แน่นกลางอก",
+          "หน้าอกเจ็บ",
+          "หน้าอกแน่น",
+          "เจ็บที่หน้าอก"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-CHEST-01-Q1",
+          "text": {
+            "th": "เจ็บร้าวไปที่แขน กราม คอ หรือหลังไหม",
+            "it": "Il dolore si irradia al braccio, alla mandibola, al collo o alla schiena?",
+            "en": "Does the pain spread to your arm, jaw, neck or back?"
+          },
+          "why": {
+            "th": "อาการร้าวบ่งชี้หัวใจขาดเลือด ถ้าปวดฉีกไปหลังให้นึกถึงหลอดเลือดแดงใหญ่ฉีกขาด",
+            "it": "L'irradiazione suggerisce ischemia cardiaca; dolore lacerante alla schiena suggerisce dissezione aortica.",
+            "en": "Radiation suggests cardiac ischaemia; tearing pain to the back suggests aortic dissection."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-CHEST-01-Q2",
+          "text": {
+            "th": "เจ็บเวลาออกแรงและดีขึ้นเมื่อพักไหม",
+            "it": "Compare sotto sforzo e migliora a riposo?",
+            "en": "Does it come on with exertion and ease with rest?"
+          },
+          "why": {
+            "th": "อาการสัมพันธ์กับการออกแรงชี้ไปทางหัวใจขาดเลือด",
+            "it": "Un andamento da sforzo orienta verso angina o sindrome coronarica acuta.",
+            "en": "An exertional pattern points to angina or acute coronary syndrome."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-CHEST-01-Q3",
+          "text": {
+            "th": "มีเหงื่อออก หอบ คลื่นไส้ หรือจะเป็นลมร่วมด้วยไหม",
+            "it": "Ha sudorazione, fiato corto, nausea o senso di svenimento insieme al dolore?",
+            "en": "Are you sweating, short of breath, sick or faint with it?"
+          },
+          "why": {
+            "th": "อาการร่วมเหล่านี้เพิ่มโอกาสเป็นกลุ่มอาการหัวใจขาดเลือดเฉียบพลัน",
+            "it": "Sintomi autonomici e associati aumentano la probabilità di sindrome coronarica acuta.",
+            "en": "Autonomic and associated symptoms raise the probability of acute coronary syndrome."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-CHEST-01-Q4",
+          "text": {
+            "th": "มีโรคหัวใจ เบาหวาน ความดัน ไขมันสูง สูบบุหรี่ หรือมีญาติเป็นโรคหัวใจตั้งแต่อายุน้อยไหม",
+            "it": "Ha malattie cardiache, diabete, pressione o colesterolo alti, fuma, o ha familiari con malattie cardiache precoci?",
+            "en": "Do you have heart disease, diabetes, high blood pressure or cholesterol, smoke, or have family with early heart disease?"
+          },
+          "why": {
+            "th": "ปัจจัยเสี่ยงหัวใจและหลอดเลือดเปลี่ยนโอกาสเป็นโรคก่อนตรวจ",
+            "it": "I fattori di rischio cardiovascolare modificano la probabilità pre-test.",
+            "en": "Cardiovascular risk factors change pre-test probability."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-CHEST-01-Q5",
+          "text": {
+            "th": "ช่วงนี้เดินทางไกล ผ่าตัด ขาบวม หรือไอเป็นเลือดไหม",
+            "it": "Viaggi lunghi, interventi recenti, gamba gonfia o tosse con sangue?",
+            "en": "Any recent long journey, surgery, leg swelling, or coughing blood?"
+          },
+          "why": {
+            "th": "คัดกรองปัจจัยเสี่ยงลิ่มเลือดอุดหลอดเลือดปอด",
+            "it": "Ricerca fattori di rischio per embolia polmonare.",
+            "en": "Screens for pulmonary embolism risk factors."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-CHEST-01-C1",
+          "text": {
+            "th": "พิจารณากลุ่มอาการหัวใจขาดเลือดเฉียบพลัน",
+            "it": "Considerare sindrome coronarica acuta",
+            "en": "Consider acute coronary syndrome"
+          },
+          "why": {
+            "th": "สาเหตุที่ห้ามพลาดของเจ็บหน้าอก โอกาสสูงขึ้นเมื่อเจ็บตอนออกแรง เหงื่อออก ร้าว และมีปัจจัยเสี่ยง",
+            "it": "Causa da non perdere di dolore toracico; più probabile con dolore da sforzo, sudorazione, irradiazione e fattori di rischio.",
+            "en": "Can't-miss cause of chest pain; probability rises with exertional pain, sweating, radiation and risk factors."
+          }
+        },
+        {
+          "id": "CR-CHEST-01-C2",
+          "text": {
+            "th": "พิจารณาหลอดเลือดแดงใหญ่ฉีกขาด",
+            "it": "Considerare dissezione aortica",
+            "en": "Consider aortic dissection"
+          },
+          "why": {
+            "th": "ปวดรุนแรงเฉียบพลันแบบฉีกร้าวไปหลัง อาจสับสนกับหัวใจขาดเลือด",
+            "it": "Dolore improvviso, intenso, lacerante irradiato alla schiena; può essere confuso con SCA.",
+            "en": "Sudden severe tearing pain radiating to the back; can be mistaken for ACS."
+          }
+        },
+        {
+          "id": "CR-CHEST-01-C3",
+          "text": {
+            "th": "พิจารณาลิ่มเลือดอุดหลอดเลือดปอด",
+            "it": "Considerare embolia polmonare",
+            "en": "Consider pulmonary embolism"
+          },
+          "why": {
+            "th": "เจ็บเวลาหายใจร่วมกับหอบ หรือมีปัจจัยเสี่ยงลิ่มเลือด",
+            "it": "Dolore pleuritico con dispnea o fattori di rischio tromboembolico.",
+            "en": "Pleuritic pain with breathlessness or venous thromboembolism risk factors."
+          }
+        }
+      ],
+      "source": "Gulati M et al. 2021 AHA/ACC Chest Pain Guideline. Circulation 2021;144:e368-e454. doi:10.1161/CIR.0000000000001029 (PMID 34709879); Byrne RA et al. 2023 ESC Guidelines for ACS. Eur Heart J 2023;44:3720-3826. doi:10.1093/eurheartj/ehad191 (PMID 37622654); NICE CG95"
+    },
+    {
+      "id": "CR-SOB-01",
+      "match": [
+        [
+          "short of breath",
+          "shortness of breath",
+          "breathless",
+          "out of breath",
+          "can't breathe",
+          "hard to breathe",
+          "trouble breathing",
+          "difficulty breathing",
+          "wheez",
+          "fiato corto",
+          "senza fiato",
+          "respiro corto",
+          "affann",
+          "fatica a respirare",
+          "difficoltà a respirare",
+          "difficolta a respirare",
+          "non riesco a respirare",
+          "manca l'aria",
+          "หายใจลำบาก",
+          "หายใจเหนื่อย",
+          "เหนื่อยหอบ",
+          "หอบเหนื่อย",
+          "หายใจหอบ",
+          "หายใจไม่อิ่ม",
+          "หายใจไม่ออก",
+          "หายใจไม่ทัน"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-SOB-01-Q1",
+          "text": {
+            "th": "เริ่มเป็นทันทีทันใดไหม นอนราบหรือตอนกลางคืนแล้วแย่ลงไหม",
+            "it": "È iniziato all'improvviso? Peggiora in posizione sdraiata o di notte?",
+            "en": "Did it start suddenly? Is it worse lying flat or at night?"
+          },
+          "why": {
+            "th": "เป็นทันทีนึกถึงลิ่มเลือดที่ปอดหรือลมรั่วในช่องอก นอนราบแล้วหอบนึกถึงหัวใจล้มเหลว",
+            "it": "Esordio improvviso: EP o pneumotorace; ortopnea: scompenso cardiaco.",
+            "en": "Sudden onset suggests PE or pneumothorax; orthopnoea suggests heart failure."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-SOB-01-Q2",
+          "text": {
+            "th": "มีเจ็บหน้าอก ไอเป็นเลือด หรือขาบวมเจ็บไหม",
+            "it": "Dolore al petto, tosse con sangue o una gamba gonfia e dolente?",
+            "en": "Any chest pain, coughing blood, or a swollen painful leg?"
+          },
+          "why": {
+            "th": "อาการของลิ่มเลือดอุดหลอดเลือดปอด",
+            "it": "Segni di embolia polmonare.",
+            "en": "Features of pulmonary embolism."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-SOB-01-Q3",
+          "text": {
+            "th": "ช่วงนี้เดินทางไกล ผ่าตัด เป็นมะเร็ง กินยาฮอร์โมน หรือตั้งครรภ์ไหม",
+            "it": "Viaggi lunghi, interventi, tumore, pillola ormonale o gravidanza di recente?",
+            "en": "Recent long journey, surgery, cancer, hormone pills, or pregnancy?"
+          },
+          "why": {
+            "th": "ปัจจัยเสี่ยงลิ่มเลือดดำ (Wells)",
+            "it": "Fattori di rischio tromboembolico (Wells).",
+            "en": "Venous thromboembolism risk factors (Wells)."
+          },
+          "modes": [
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-SOB-01-Q4",
+          "text": {
+            "th": "มีหอบหืด ถุงลมโป่งพอง หรือโรคหัวใจไหม ยาพ่นที่ใช้ประจำช่วยไหม",
+            "it": "Ha asma, BPCO o problemi cardiaci? L'inalatore abituale aiuta?",
+            "en": "Do you have asthma, COPD or a heart condition? Is your usual inhaler helping?"
+          },
+          "why": {
+            "th": "ช่วยบอกการกำเริบและความรุนแรง",
+            "it": "Identifica una riacutizzazione e la sua gravità.",
+            "en": "Identifies an exacerbation and its severity."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-SOB-01-Q5",
+          "text": {
+            "th": "มีไข้ หรือเสมหะมีสีไหม",
+            "it": "Febbre o catarro colorato?",
+            "en": "Any fever or coloured phlegm?"
+          },
+          "why": {
+            "th": "บ่งชี้ปอดอักเสบ",
+            "it": "Suggerisce polmonite.",
+            "en": "Suggests pneumonia."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-SOB-01-C1",
+          "text": {
+            "th": "พิจารณาลิ่มเลือดอุดหลอดเลือดปอด",
+            "it": "Considerare embolia polmonare",
+            "en": "Consider pulmonary embolism"
+          },
+          "why": {
+            "th": "หอบเฉียบพลัน เจ็บเวลาหายใจ หรือมีปัจจัยเสี่ยงลิ่มเลือด",
+            "it": "Dispnea improvvisa, dolore pleuritico o fattori di rischio TEV.",
+            "en": "Sudden breathlessness, pleuritic pain or VTE risk factors."
+          }
+        },
+        {
+          "id": "CR-SOB-01-C2",
+          "text": {
+            "th": "พิจารณาภาวะหัวใจล้มเหลวเฉียบพลัน",
+            "it": "Considerare scompenso cardiaco acuto",
+            "en": "Consider acute heart failure"
+          },
+          "why": {
+            "th": "นอนราบไม่ได้ หอบกลางคืน ขาบวม",
+            "it": "Ortopnea, dispnea notturna, edemi declivi.",
+            "en": "Orthopnoea, night breathlessness, leg swelling."
+          }
+        },
+        {
+          "id": "CR-SOB-01-C3",
+          "text": {
+            "th": "พิจารณาหอบหืดหรือถุงลมโป่งพองกำเริบรุนแรง",
+            "it": "Considerare riacutizzazione grave di asma o BPCO",
+            "en": "Consider severe asthma or COPD exacerbation"
+          },
+          "why": {
+            "th": "มีโรคทางเดินหายใจเดิมและยาพ่นประจำไม่ช่วย",
+            "it": "Malattia delle vie aeree nota che non risponde all'inalatore abituale.",
+            "en": "Known airway disease not responding to usual inhaler."
+          }
+        },
+        {
+          "id": "CR-SOB-01-C4",
+          "text": {
+            "th": "พิจารณาปอดอักเสบ",
+            "it": "Considerare polmonite",
+            "en": "Consider pneumonia"
+          },
+          "why": {
+            "th": "ไข้ ไอมีเสมหะ และหอบ",
+            "it": "Febbre, tosse produttiva e dispnea.",
+            "en": "Fever, productive cough and breathlessness."
+          }
+        }
+      ],
+      "source": "Konstantinides SV et al. 2019 ESC Guidelines on acute pulmonary embolism. Eur Heart J 2020;41:543-603. doi:10.1093/eurheartj/ehz405 (PMID 31504429); NICE NG158 Venous thromboembolic diseases; BTS/SIGN British guideline on the management of asthma"
+    },
+    {
+      "id": "CR-HEAD-01",
+      "match": [
+        [
+          "headache",
+          "head hurts",
+          "head pain",
+          "pain in my head",
+          "migraine",
+          "mal di testa",
+          "cefalea",
+          "emicrania",
+          "dolore alla testa",
+          "ปวดหัว",
+          "ปวดศีรษะ",
+          "เจ็บหัว",
+          "ไมเกรน"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-HEAD-01-Q1",
+          "text": {
+            "th": "ปวดขึ้นทันทีและแรงสุดภายในนาทีเดียวไหม เป็นการปวดหัวที่แย่ที่สุดในชีวิตไหม",
+            "it": "È iniziato all'improvviso, al massimo entro un minuto? È il peggior mal di testa della sua vita?",
+            "en": "Did it start suddenly and peak within a minute? Is it the worst headache of your life?"
+          },
+          "why": {
+            "th": "ปวดแบบฟ้าผ่าใช้คัดกรองเลือดออกใต้เยื่อหุ้มสมอง",
+            "it": "L'esordio a rombo di tuono ricerca l'emorragia subaracnoidea.",
+            "en": "Thunderclap onset screens for subarachnoid haemorrhage."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-HEAD-01-Q2",
+          "text": {
+            "th": "มีไข้ คอแข็ง หรือมีผื่นไหม",
+            "it": "Febbre, collo rigido o eruzione cutanea?",
+            "en": "Any fever, stiff neck, or a rash?"
+          },
+          "why": {
+            "th": "คัดกรองเยื่อหุ้มสมองอักเสบ",
+            "it": "Ricerca meningite.",
+            "en": "Screens for meningitis."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-HEAD-01-Q3",
+          "text": {
+            "th": "มีอ่อนแรง ชา พูดลำบาก ตามัว หรือสับสนไหม",
+            "it": "Debolezza, intorpidimento, difficoltà a parlare, disturbi della vista o confusione?",
+            "en": "Any weakness, numbness, trouble speaking, vision change or confusion?"
+          },
+          "why": {
+            "th": "อาการทางระบบประสาทบ่งชี้หลอดเลือดสมองหรือรอยโรคในสมอง",
+            "it": "Un deficit neurologico suggerisce ictus o lesione intracranica.",
+            "en": "A neurological deficit suggests stroke or an intracranial lesion."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-HEAD-01-Q4",
+          "text": {
+            "th": "กินยาละลายลิ่มเลือด หรือศีรษะกระแทกไหม",
+            "it": "Prende anticoagulanti o ha battuto la testa?",
+            "en": "Do you take blood thinners, or did you hit your head?"
+          },
+          "why": {
+            "th": "เพิ่มความเสี่ยงเลือดออกในสมอง",
+            "it": "Aumenta il rischio di emorragia intracranica.",
+            "en": "Raises the risk of intracranial haemorrhage."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-HEAD-01-Q5",
+          "text": {
+            "th": "ปวดมากตอนตื่นนอนหรือเวลาไอไหม ตั้งครรภ์หรือเพิ่งคลอดไหม เคี้ยวแล้วปวดกรามไหม (อายุเกิน 50)",
+            "it": "Peggiora al risveglio o tossendo? È in gravidanza o ha partorito da poco? Dolore alla mandibola masticando (oltre 50 anni)?",
+            "en": "Is it worse on waking or when coughing? Are you pregnant or recently gave birth? Any jaw pain on chewing (over 50)?"
+          },
+          "why": {
+            "th": "ความดันในกะโหลกสูง ครรภ์เป็นพิษหรือลิ่มเลือดในโพรงเลือดดำสมอง หลอดเลือดแดงอักเสบ",
+            "it": "Ipertensione endocranica, preeclampsia o trombosi dei seni venosi, arterite a cellule giganti.",
+            "en": "Raised intracranial pressure, pre-eclampsia or venous sinus thrombosis, giant cell arteritis."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-HEAD-01-C1",
+          "text": {
+            "th": "พิจารณาเลือดออกใต้เยื่อหุ้มสมอง",
+            "it": "Considerare emorragia subaracnoidea",
+            "en": "Consider subarachnoid haemorrhage"
+          },
+          "why": {
+            "th": "ปวดหัวเฉียบพลันรุนแรงที่สุดในชีวิตและแรงสุดภายในชั่วโมง",
+            "it": "Cefalea improvvisa, la peggiore di sempre, al massimo entro un'ora.",
+            "en": "Sudden, worst-ever headache peaking within an hour."
+          }
+        },
+        {
+          "id": "CR-HEAD-01-C2",
+          "text": {
+            "th": "พิจารณาเยื่อหุ้มสมองอักเสบหรือสมองอักเสบ",
+            "it": "Considerare meningite o encefalite",
+            "en": "Consider meningitis or encephalitis"
+          },
+          "why": {
+            "th": "ปวดหัวร่วมกับไข้ คอแข็ง ผื่น หรือสับสน",
+            "it": "Cefalea con febbre, rigidità nucale, eruzione o confusione.",
+            "en": "Headache with fever, neck stiffness, rash or confusion."
+          }
+        },
+        {
+          "id": "CR-HEAD-01-C3",
+          "text": {
+            "th": "พิจารณาหลอดเลือดสมองหรือเลือดออกในสมอง",
+            "it": "Considerare ictus o emorragia intracranica",
+            "en": "Consider stroke or intracranial haemorrhage"
+          },
+          "why": {
+            "th": "ปวดหัวร่วมกับอาการทางระบบประสาท ใช้ยาละลายลิ่มเลือด หรือศีรษะกระแทก",
+            "it": "Cefalea con deficit focale, anticoagulanti o trauma cranico.",
+            "en": "Headache with focal deficit, anticoagulant use or head injury."
+          }
+        },
+        {
+          "id": "CR-HEAD-01-C4",
+          "text": {
+            "th": "พิจารณาหลอดเลือดแดงอักเสบชนิดเซลล์ยักษ์ในผู้อายุเกิน 50 ปี",
+            "it": "Considerare arterite a cellule giganti in persona oltre i 50 anni",
+            "en": "Consider giant cell arteritis in a person over 50"
+          },
+          "why": {
+            "th": "ปวดหัวใหม่ในอายุเกิน 50 ร่วมกับปวดกรามเวลาเคี้ยวหรือตามัว เสี่ยงตาบอด",
+            "it": "Cefalea nuova oltre i 50 anni con claudicatio mandibolare o disturbi visivi: rischio di perdita della vista.",
+            "en": "New headache over 50 with jaw claudication or visual symptoms risks sight loss."
+          }
+        }
+      ],
+      "source": "NICE CG150 Headaches in over 12s: diagnosis and management; Godwin SA et al. ACEP Clinical Policy: Acute Headache. Ann Emerg Med 2019;74:e41-e74. doi:10.1016/j.annemergmed.2019.07.009 (PMID 31543134); Perry JJ et al. Ottawa SAH Rule. JAMA 2013;310:1248-55 (PMID 24065011)"
+    },
+    {
+      "id": "CR-ABD-01",
+      "match": [
+        [
+          "abdominal pain",
+          "stomach pain",
+          "stomach ache",
+          "stomachache",
+          "belly pain",
+          "tummy pain",
+          "stomach hurts",
+          "belly hurts",
+          "pain in my stomach",
+          "pain in my belly",
+          "mal di pancia",
+          "dolore alla pancia",
+          "dolore addominal",
+          "mal di stomaco",
+          "male alla pancia",
+          "ปวดท้อง",
+          "เจ็บท้อง",
+          "ท้องปวด",
+          "ปวดบิด"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-ABD-01-Q1",
+          "text": {
+            "th": "มีโอกาสตั้งครรภ์ไหม ประจำเดือนครั้งสุดท้ายเมื่อไร",
+            "it": "Potrebbe essere in gravidanza? Quando ha avuto l'ultima mestruazione?",
+            "en": "Could you be pregnant? When was your last period?"
+          },
+          "why": {
+            "th": "คัดกรองการตั้งครรภ์นอกมดลูกในผู้ที่อาจตั้งครรภ์",
+            "it": "Ricerca la gravidanza ectopica in chi potrebbe essere in gravidanza.",
+            "en": "Screens for ectopic pregnancy in anyone who could be pregnant."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-ABD-01-Q2",
+          "text": {
+            "th": "อาเจียนเป็นเลือด หรือถ่ายดำหรือถ่ายเป็นเลือดไหม",
+            "it": "Ha vomitato sangue o ha feci nere o con sangue?",
+            "en": "Any vomiting of blood, or black or bloody stools?"
+          },
+          "why": {
+            "th": "คัดกรองเลือดออกในทางเดินอาหาร",
+            "it": "Ricerca emorragia gastrointestinale.",
+            "en": "Screens for gastrointestinal bleeding."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-ABD-01-Q3",
+          "text": {
+            "th": "ปวดตลอดและปวดมากขึ้นเวลาขยับหรือไอไหม เริ่มปวดตรงไหนและย้ายที่ไหม",
+            "it": "Il dolore è continuo e peggiora muovendosi o tossendo? Dove è iniziato e si è spostato?",
+            "en": "Is the pain constant and worse when you move or cough? Where did it start, and has it moved?"
+          },
+          "why": {
+            "th": "อาการเยื่อบุช่องท้องระคายเคืองและปวดย้ายที่บ่งชี้ไส้ติ่งอักเสบหรือทะลุ",
+            "it": "Peritonismo e dolore migrante suggeriscono appendicite o perforazione.",
+            "en": "Peritonism and migrating pain suggest appendicitis or perforation."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-ABD-01-Q4",
+          "text": {
+            "th": "อาเจียน หรือไม่ผายลมไม่ถ่ายไหม",
+            "it": "Vomita o non riesce a emettere gas o feci?",
+            "en": "Are you vomiting, or unable to pass wind or open your bowels?"
+          },
+          "why": {
+            "th": "บ่งชี้ลำไส้อุดตัน",
+            "it": "Suggerisce occlusione intestinale.",
+            "en": "Suggests bowel obstruction."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-ABD-01-Q5",
+          "text": {
+            "th": "ปวดทะลุไปหลังไหม เคยรู้ว่ามีหลอดเลือดโป่งพองไหม (ผู้สูงอายุ)",
+            "it": "Il dolore passa alla schiena? Aneurisma noto? (età avanzata)",
+            "en": "Does the pain go through to your back? Any known aneurysm? (older adults)"
+          },
+          "why": {
+            "th": "คัดกรองหลอดเลือดแดงใหญ่ในช่องท้องโป่งพองในผู้สูงอายุ",
+            "it": "Ricerca aneurisma dell'aorta addominale negli anziani.",
+            "en": "Screens for abdominal aortic aneurysm in older adults."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-ABD-01-C1",
+          "text": {
+            "th": "พิจารณาการตั้งครรภ์นอกมดลูกในผู้ที่อาจตั้งครรภ์",
+            "it": "Considerare gravidanza ectopica in persona che potrebbe essere in gravidanza",
+            "en": "Consider ectopic pregnancy in a person who could be pregnant"
+          },
+          "why": {
+            "th": "ปวดท้องร่วมกับประจำเดือนขาดหรือเลือดออก อาการอาจไม่ชัดเจน",
+            "it": "Dolore addominale con ritardo mestruale o sanguinamento; può essere atipica.",
+            "en": "Abdominal pain with a missed period or bleeding; can present atypically."
+          }
+        },
+        {
+          "id": "CR-ABD-01-C2",
+          "text": {
+            "th": "พิจารณาไส้ติ่งอักเสบ",
+            "it": "Considerare appendicite",
+            "en": "Consider appendicitis"
+          },
+          "why": {
+            "th": "ปวดย้ายไปท้องน้อยขวา ปวดมากขึ้นเวลาขยับ",
+            "it": "Dolore che migra in fossa iliaca destra, peggiore al movimento.",
+            "en": "Pain migrating to the right lower abdomen, worse on movement."
+          }
+        },
+        {
+          "id": "CR-ABD-01-C3",
+          "text": {
+            "th": "พิจารณาลำไส้อุดตันหรือทะลุ",
+            "it": "Considerare occlusione o perforazione intestinale",
+            "en": "Consider bowel obstruction or perforation"
+          },
+          "why": {
+            "th": "อาเจียน ไม่ผายลม หรือปวดตลอดร่วมกับท้องแข็ง",
+            "it": "Vomito, alvo chiuso o dolore continuo con peritonismo.",
+            "en": "Vomiting, no flatus, or constant pain with peritonism."
+          }
+        },
+        {
+          "id": "CR-ABD-01-C4",
+          "text": {
+            "th": "พิจารณาหลอดเลือดแดงใหญ่ช่องท้องโป่งพองแตกหรือรั่วในผู้สูงอายุ",
+            "it": "Considerare aneurisma aortico addominale rotto o fissurato in età avanzata",
+            "en": "Consider ruptured or leaking abdominal aortic aneurysm in an older adult"
+          },
+          "why": {
+            "th": "ปวดท้องหรือหลังร่วมกับหมดสติหรือเคยรู้ว่ามีโป่งพอง",
+            "it": "Dolore addominale o lombare con collasso o aneurisma noto.",
+            "en": "Abdominal or back pain with collapse or known aneurysm."
+          }
+        }
+      ],
+      "source": "NICE NG126 Ectopic pregnancy and miscarriage; NICE CG141 Acute upper GI bleeding; Wanhainen A et al. ESVS 2019 Guidelines on abdominal aorto-iliac aneurysms. Eur J Vasc Endovasc Surg 2019;57:8-93. doi:10.1016/j.ejvs.2018.09.020 (PMID 30528142)"
+    },
+    {
+      "id": "CR-FEVER-01",
+      "match": [
+        [
+          "fever",
+          "feverish",
+          "high temperature",
+          "temperature of",
+          "chills",
+          "rigors",
+          "febbre",
+          "febbricitante",
+          "brividi",
+          "temperatura alta",
+          "ไข้",
+          "ตัวร้อน",
+          "หนาวสั่น"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-FEVER-01-Q1",
+          "text": {
+            "th": "มีสับสน ง่วงซึมมาก หายใจเร็ว หรือรู้สึกแย่ที่สุดในชีวิตไหม",
+            "it": "Ha confusione, molta sonnolenza, respiro veloce, o si sente peggio che mai?",
+            "en": "Are you confused, very drowsy, breathing fast, or feeling the worst you have ever felt?"
+          },
+          "why": {
+            "th": "คัดกรองติดเชื้อในกระแสเลือด (สับสน หายใจเร็ว)",
+            "it": "Ricerca sepsi (stato mentale alterato, tachipnea).",
+            "en": "Screens for sepsis (altered mentation, raised respiratory rate)."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-FEVER-01-Q2",
+          "text": {
+            "th": "มีคอแข็ง ปวดหัวมาก หรือผื่นที่กดแล้วไม่จางไหม",
+            "it": "Collo rigido, mal di testa forte o macchie che non scompaiono alla pressione?",
+            "en": "Any stiff neck, severe headache, or a rash that does not fade when pressed?"
+          },
+          "why": {
+            "th": "คัดกรองเยื่อหุ้มสมองอักเสบและติดเชื้อเมนิงโกคอคคัส",
+            "it": "Ricerca meningite e malattia meningococcica.",
+            "en": "Screens for meningitis and meningococcal disease."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-FEVER-01-Q3",
+          "text": {
+            "th": "ช่วงนี้เดินทางไปไหน หรือโดนยุงกัดไหม",
+            "it": "Ha viaggiato di recente o ha ricevuto punture di zanzara?",
+            "en": "Have you travelled recently, or been bitten by mosquitoes?"
+          },
+          "why": {
+            "th": "ไข้เลือดออกและมาลาเรียในผู้เดินทางและในพื้นที่ระบาด",
+            "it": "Dengue e malaria nei viaggiatori e nelle aree endemiche.",
+            "en": "Dengue and malaria in travellers and in endemic areas."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-FEVER-01-Q4",
+          "text": {
+            "th": "คิดว่าติดเชื้อที่ไหน ไอ ปัสสาวะ ผิวหนัง หรือท้อง",
+            "it": "Dove pensa sia l'infezione: tosse, urine, pelle o pancia?",
+            "en": "Where do you think the infection is: cough, urine, skin or belly?"
+          },
+          "why": {
+            "th": "ระบุแหล่งติดเชื้อ",
+            "it": "Identifica la sede dell'infezione.",
+            "en": "Identifies the source of infection."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-FEVER-01-Q5",
+          "text": {
+            "th": "ภูมิคุ้มกันต่ำไหม เช่น ได้เคมีบำบัด กินสเตียรอยด์ หรือตัดม้าม",
+            "it": "Ha difese immunitarie ridotte: chemioterapia, cortisonici, asportazione della milza?",
+            "en": "Is your immune system weakened: chemotherapy, steroids, no spleen?"
+          },
+          "why": {
+            "th": "เสี่ยงติดเชื้อรุนแรงในผู้ภูมิคุ้มกันต่ำ",
+            "it": "Rischio di sepsi neutropenica o fulminante.",
+            "en": "Neutropenic or overwhelming sepsis risk."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-FEVER-01-C1",
+          "text": {
+            "th": "พิจารณาภาวะติดเชื้อในกระแสเลือด",
+            "it": "Considerare sepsi",
+            "en": "Consider sepsis"
+          },
+          "why": {
+            "th": "ไข้ร่วมกับสับสน หายใจเร็ว หรือความดันต่ำ",
+            "it": "Febbre con confusione, tachipnea o ipotensione.",
+            "en": "Fever with confusion, fast breathing or low blood pressure."
+          }
+        },
+        {
+          "id": "CR-FEVER-01-C2",
+          "text": {
+            "th": "พิจารณาเยื่อหุ้มสมองอักเสบหรือติดเชื้อเมนิงโกคอคคัส",
+            "it": "Considerare meningite o malattia meningococcica",
+            "en": "Consider meningitis or meningococcal disease"
+          },
+          "why": {
+            "th": "ไข้ร่วมกับคอแข็งหรือผื่นกดไม่จาง",
+            "it": "Febbre con rigidità nucale o eruzione che non scompare alla pressione.",
+            "en": "Fever with neck stiffness or a non-blanching rash."
+          }
+        },
+        {
+          "id": "CR-FEVER-01-C3",
+          "text": {
+            "th": "พิจารณาไข้เลือดออกหรือมาลาเรียหลังโดนยุงกัดหรือเดินทาง",
+            "it": "Considerare dengue o malaria dopo esposizione a zanzare o viaggi",
+            "en": "Consider dengue or malaria after mosquito exposure or travel"
+          },
+          "why": {
+            "th": "เป็นโรคประจำถิ่นในไทยและพบบ่อยในผู้เดินทาง",
+            "it": "Endemiche in Thailandia e frequenti nei viaggiatori di rientro.",
+            "en": "Endemic in Thailand and common in returning travellers."
+          }
+        }
+      ],
+      "source": "NICE NG51 Suspected sepsis: recognition, diagnosis and early management; Singer M et al. Sepsis-3. JAMA 2016;315:801-10. doi:10.1001/jama.2016.0287 (PMID 26903338); NICE NG240 Meningitis (bacterial) and meningococcal disease; WHO Dengue: guidelines for diagnosis, treatment, prevention and control (2009)"
+    },
+    {
+      "id": "CR-DIZZY-01",
+      "match": [
+        [
+          "dizzy",
+          "dizziness",
+          "lightheaded",
+          "light-headed",
+          "faint",
+          "passed out",
+          "blacked out",
+          "vertigo",
+          "room spinning",
+          "giramento di testa",
+          "mi gira la testa",
+          "vertigin",
+          "capogiro",
+          "svenut",
+          "svenire",
+          "perso i sensi",
+          "เวียนหัว",
+          "เวียนศีรษะ",
+          "บ้านหมุน",
+          "หน้ามืด",
+          "เป็นลมล้ม",
+          "เป็นลมไป",
+          "จะเป็นลม",
+          "วูบไป",
+          "มึนหัว"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-DIZZY-01-Q1",
+          "text": {
+            "th": "หมดสติไหม เป็นตอนออกกำลังหรือตอนนอนอยู่ไหม",
+            "it": "Ha perso conoscenza? È successo durante uno sforzo o in posizione sdraiata?",
+            "en": "Did you lose consciousness? Did it happen during exercise or while lying down?"
+          },
+          "why": {
+            "th": "หมดสติตอนออกแรงหรือตอนนอนบ่งชี้สาเหตุจากหัวใจ",
+            "it": "Sincope da sforzo o in posizione supina suggerisce causa cardiaca.",
+            "en": "Syncope on exertion or lying down suggests a cardiac cause."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-DIZZY-01-Q2",
+          "text": {
+            "th": "ก่อนเป็นมีเจ็บหน้าอก ใจสั่น หรือหอบไหม",
+            "it": "Prima ha avuto dolore al petto, palpitazioni o fiato corto?",
+            "en": "Did you have chest pain, palpitations or breathlessness before it?"
+          },
+          "why": {
+            "th": "คัดกรองหัวใจเต้นผิดจังหวะ หัวใจขาดเลือด หรือลิ่มเลือดที่ปอด",
+            "it": "Ricerca aritmia, SCA o EP.",
+            "en": "Screens for arrhythmia, ACS or PE."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-DIZZY-01-Q3",
+          "text": {
+            "th": "มีอ่อนแรง ชา เห็นภาพซ้อน พูดไม่ชัด หรือเดินเซไหม",
+            "it": "Debolezza, intorpidimento, visione doppia, parola impastata o difficoltà a camminare?",
+            "en": "Any weakness, numbness, double vision, slurred speech or trouble walking?"
+          },
+          "why": {
+            "th": "หลอดเลือดสมองส่วนหลังอาจมาด้วยอาการเวียนหัว",
+            "it": "L'ictus del circolo posteriore può presentarsi come vertigine.",
+            "en": "Posterior circulation stroke can present as dizziness."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-DIZZY-01-Q4",
+          "text": {
+            "th": "ถ่ายดำ เลือดออกมาก หรือมีโอกาสตั้งครรภ์ไหม",
+            "it": "Feci nere, sanguinamento abbondante o possibile gravidanza?",
+            "en": "Any black stools, heavy bleeding, or could you be pregnant?"
+          },
+          "why": {
+            "th": "เสียเลือดซ่อนเร้นหรือตั้งครรภ์นอกมดลูก",
+            "it": "Perdita ematica occulta o gravidanza ectopica.",
+            "en": "Hidden blood loss or ectopic pregnancy."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-DIZZY-01-Q5",
+          "text": {
+            "th": "มีญาติเสียชีวิตกะทันหันไหม กินยาหัวใจหรือยาความดันอะไรบ้าง",
+            "it": "Familiarità per morte improvvisa? Quali farmaci per cuore o pressione assume?",
+            "en": "Any family history of sudden death? Which heart or blood-pressure medicines do you take?"
+          },
+          "why": {
+            "th": "หัวใจเต้นผิดจังหวะทางพันธุกรรม หรือความดันต่ำจากยา",
+            "it": "Aritmia ereditaria o ipotensione da farmaci.",
+            "en": "Inherited arrhythmia or drug-induced hypotension."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-DIZZY-01-C1",
+          "text": {
+            "th": "พิจารณาหมดสติจากหัวใจ (หัวใจเต้นผิดจังหวะหรือโรคโครงสร้างหัวใจ)",
+            "it": "Considerare sincope cardiaca (aritmia o cardiopatia strutturale)",
+            "en": "Consider cardiac syncope (arrhythmia or structural heart disease)"
+          },
+          "why": {
+            "th": "หมดสติตอนออกแรงหรือนอน ใจสั่น ญาติเสียชีวิตกะทันหัน",
+            "it": "Sincope da sforzo o supina, palpitazioni, familiarità per morte improvvisa.",
+            "en": "Exertional or supine syncope, palpitations, family history of sudden death."
+          }
+        },
+        {
+          "id": "CR-DIZZY-01-C2",
+          "text": {
+            "th": "พิจารณาหลอดเลือดสมองส่วนหลัง",
+            "it": "Considerare ictus del circolo posteriore",
+            "en": "Consider posterior circulation stroke"
+          },
+          "why": {
+            "th": "เวียนหัวร่วมกับอาการทางระบบประสาทหรือเดินไม่ได้",
+            "it": "Vertigine con qualsiasi segno neurologico o incapacità a camminare.",
+            "en": "Dizziness with any neurological sign or inability to walk."
+          }
+        },
+        {
+          "id": "CR-DIZZY-01-C3",
+          "text": {
+            "th": "พิจารณาเลือดออกซ่อนเร้นหรือตั้งครรภ์นอกมดลูก",
+            "it": "Considerare sanguinamento occulto o gravidanza ectopica",
+            "en": "Consider occult bleeding or ectopic pregnancy"
+          },
+          "why": {
+            "th": "จะเป็นลมร่วมกับถ่ายดำ เลือดออก หรืออาจตั้งครรภ์",
+            "it": "Presincope con feci nere, sanguinamento o possibile gravidanza.",
+            "en": "Presyncope with black stools, bleeding or possible pregnancy."
+          }
+        }
+      ],
+      "source": "Brignole M et al. 2018 ESC Guidelines for the diagnosis and management of syncope. Eur Heart J 2018;39:1883-1948. doi:10.1093/eurheartj/ehy037 (PMID 29562304); NICE CG109 Transient loss of consciousness in over 16s"
+    },
+    {
+      "id": "CR-BACK-01",
+      "match": [
+        [
+          "back pain",
+          "backache",
+          "my back hurts",
+          "lower back",
+          "mal di schiena",
+          "dolore alla schiena",
+          "lombalgia",
+          "bloccata la schiena",
+          "ปวดหลัง",
+          "เจ็บหลัง",
+          "ปวดเอว"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-BACK-01-Q1",
+          "text": {
+            "th": "มีชารอบก้นหรืออวัยวะเพศ หรือเพิ่งมีปัญหาปัสสาวะหรือกลั้นอุจจาระไม่ได้ไหม",
+            "it": "Intorpidimento ai glutei o ai genitali, o nuove difficoltà a urinare o a controllare l'intestino?",
+            "en": "Any numbness around your bottom or genitals, or new trouble passing urine or controlling your bowels?"
+          },
+          "why": {
+            "th": "คัดกรองกลุ่มอาการรากประสาทหางม้าถูกกด",
+            "it": "Ricerca sindrome della cauda equina.",
+            "en": "Screens for cauda equina syndrome."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-BACK-01-Q2",
+          "text": {
+            "th": "ขาอ่อนแรงไหม",
+            "it": "Debolezza alle gambe?",
+            "en": "Any weakness in your legs?"
+          },
+          "why": {
+            "th": "รากประสาทหรือไขสันหลังถูกกด",
+            "it": "Compressione radicolare o midollare.",
+            "en": "Nerve root or spinal cord compression."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-BACK-01-Q3",
+          "text": {
+            "th": "มีไข้ น้ำหนักลด เคยเป็นมะเร็ง หรือปวดกลางคืนไหม",
+            "it": "Febbre, calo di peso, storia di tumore o dolore notturno?",
+            "en": "Any fever, weight loss, history of cancer, or pain at night?"
+          },
+          "why": {
+            "th": "ติดเชื้อที่กระดูกสันหลังหรือมะเร็งกระจายกดไขสันหลัง",
+            "it": "Infezione vertebrale o compressione midollare metastatica.",
+            "en": "Spinal infection or metastatic spinal cord compression."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-BACK-01-Q4",
+          "text": {
+            "th": "เริ่มหลังล้มหรือบาดเจ็บไหม มีกระดูกพรุนหรือกินสเตียรอยด์ไหม",
+            "it": "È iniziato dopo una caduta o un trauma? Ha osteoporosi o prende cortisonici?",
+            "en": "Did it start after a fall or injury? Do you have osteoporosis or take steroids?"
+          },
+          "why": {
+            "th": "กระดูกสันหลังหัก",
+            "it": "Frattura vertebrale.",
+            "en": "Vertebral fracture."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-BACK-01-Q5",
+          "text": {
+            "th": "ปวดเฉียบพลันรุนแรงและปวดท้องด้วยไหม (อายุเกิน 50)",
+            "it": "Il dolore è improvviso e intenso, anche alla pancia? (oltre 50 anni)",
+            "en": "Is the pain sudden and severe, also in the belly? (over 50)"
+          },
+          "why": {
+            "th": "หลอดเลือดแดงใหญ่ช่องท้องโป่งพองอาจมาด้วยปวดหลัง",
+            "it": "L'aneurisma dell'aorta addominale può presentarsi come mal di schiena.",
+            "en": "Abdominal aortic aneurysm can present as back pain."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-BACK-01-C1",
+          "text": {
+            "th": "พิจารณากลุ่มอาการรากประสาทหางม้าถูกกด",
+            "it": "Considerare sindrome della cauda equina",
+            "en": "Consider cauda equina syndrome"
+          },
+          "why": {
+            "th": "ชาบริเวณก้น ปัสสาวะหรืออุจจาระผิดปกติ อาการที่ขาสองข้าง",
+            "it": "Anestesia a sella, disturbi vescicali o intestinali, sintomi bilaterali.",
+            "en": "Saddle numbness, bladder or bowel change, bilateral leg symptoms."
+          }
+        },
+        {
+          "id": "CR-BACK-01-C2",
+          "text": {
+            "th": "พิจารณามะเร็งกระจายกดไขสันหลังหรือติดเชื้อที่กระดูกสันหลัง",
+            "it": "Considerare compressione midollare metastatica o infezione vertebrale",
+            "en": "Consider metastatic spinal cord compression or spinal infection"
+          },
+          "why": {
+            "th": "เคยเป็นมะเร็ง ไข้ น้ำหนักลด ปวดกลางคืน",
+            "it": "Storia di tumore, febbre, calo di peso, dolore notturno.",
+            "en": "Cancer history, fever, weight loss, night pain."
+          }
+        },
+        {
+          "id": "CR-BACK-01-C3",
+          "text": {
+            "th": "พิจารณาหลอดเลือดแดงใหญ่ช่องท้องโป่งพองในผู้สูงอายุ",
+            "it": "Considerare aneurisma dell'aorta addominale in età avanzata",
+            "en": "Consider abdominal aortic aneurysm in an older adult"
+          },
+          "why": {
+            "th": "ปวดหลังหรือท้องรุนแรงเฉียบพลันในอายุเกิน 50",
+            "it": "Dolore improvviso e intenso lombare o addominale oltre i 50 anni.",
+            "en": "Sudden severe back or abdominal pain over 50."
+          }
+        }
+      ],
+      "source": "NICE NG59 Low back pain and sciatica in over 16s; NICE NG234 Spinal metastases and metastatic spinal cord compression; Wanhainen A et al. ESVS 2019 AAA guidelines (PMID 30528142)"
+    },
+    {
+      "id": "CR-URINE-01",
+      "match": [
+        [
+          "burning when i pee",
+          "burns when i pee",
+          "burning when i urinate",
+          "burning urine",
+          "pain when i pee",
+          "pain when peeing",
+          "painful urination",
+          "pee all the time",
+          "peeing a lot",
+          "blood in my urine",
+          "blood in urine",
+          "urine infection",
+          "urinary infection",
+          "bladder infection",
+          "bruciore quando urino",
+          "bruciore a urinare",
+          "cistite",
+          "urino spesso",
+          "sangue nelle urine",
+          "ปัสสาวะแสบ",
+          "ฉี่แสบ",
+          "แสบขัด",
+          "ปัสสาวะบ่อย",
+          "ฉี่บ่อย",
+          "ปัสสาวะเป็นเลือด",
+          "ฉี่เป็นเลือด",
+          "กระเพาะปัสสาวะอักเสบ"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-URINE-01-Q1",
+          "text": {
+            "th": "มีไข้ หนาวสั่น หรือปวดสีข้างหรือหลังไหม",
+            "it": "Febbre, brividi o dolore al fianco o alla schiena?",
+            "en": "Any fever, shivering, or pain in your side or back?"
+          },
+          "why": {
+            "th": "คัดกรองกรวยไตอักเสบและติดเชื้อในกระแสเลือดจากทางเดินปัสสาวะ",
+            "it": "Ricerca pielonefrite e urosepsi.",
+            "en": "Screens for pyelonephritis and urosepsis."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-URINE-01-Q2",
+          "text": {
+            "th": "มีโอกาสตั้งครรภ์ไหม",
+            "it": "Potrebbe essere in gravidanza?",
+            "en": "Could you be pregnant?"
+          },
+          "why": {
+            "th": "การติดเชื้อทางเดินปัสสาวะในหญิงตั้งครรภ์ต้องดูแลต่างออกไป และอาการปวดอาจเป็นครรภ์นอกมดลูก",
+            "it": "L'infezione urinaria in gravidanza va gestita diversamente; il dolore può essere da gravidanza ectopica.",
+            "en": "Urinary infection in pregnancy needs different management; abdominal pain may be ectopic."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-URINE-01-Q3",
+          "text": {
+            "th": "ปัสสาวะมีเลือดปนไหม",
+            "it": "C'è sangue nelle urine?",
+            "en": "Is there blood in your urine?"
+          },
+          "why": {
+            "th": "ปัสสาวะเป็นเลือด นึกถึงนิ่ว หรือมะเร็งในผู้สูงอายุ",
+            "it": "Ematuria: calcoli, o tumore negli anziani.",
+            "en": "Haematuria: stones, or cancer in older adults."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-URINE-01-Q4",
+          "text": {
+            "th": "มีตกขาวหรือหนองผิดปกติ หรือมีคู่นอนใหม่ไหม",
+            "it": "Perdite insolite o un nuovo partner sessuale?",
+            "en": "Any unusual discharge, or a new sexual partner?"
+          },
+          "why": {
+            "th": "โรคติดต่อทางเพศสัมพันธ์อาจคล้ายการติดเชื้อทางเดินปัสสาวะ",
+            "it": "Un'infezione sessualmente trasmessa può simulare un'infezione urinaria.",
+            "en": "Sexually transmitted infection can mimic a urinary infection."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-URINE-01-C1",
+          "text": {
+            "th": "พิจารณากรวยไตอักเสบหรือติดเชื้อในกระแสเลือดจากทางเดินปัสสาวะ",
+            "it": "Considerare pielonefrite o urosepsi",
+            "en": "Consider pyelonephritis or urosepsis"
+          },
+          "why": {
+            "th": "ไข้ หนาวสั่น หรือปวดเอวร่วมกับอาการทางปัสสาวะ",
+            "it": "Febbre, brividi o dolore lombare con sintomi urinari.",
+            "en": "Fever, rigors or loin pain with urinary symptoms."
+          }
+        },
+        {
+          "id": "CR-URINE-01-C2",
+          "text": {
+            "th": "พิจารณาโรคติดต่อทางเพศสัมพันธ์",
+            "it": "Considerare un'infezione sessualmente trasmessa",
+            "en": "Consider a sexually transmitted infection"
+          },
+          "why": {
+            "th": "มีตกขาวหรือคู่นอนใหม่ร่วมกับปัสสาวะแสบ",
+            "it": "Perdite o nuovo partner con disuria.",
+            "en": "Discharge or new partner with dysuria."
+          }
+        },
+        {
+          "id": "CR-URINE-01-C3",
+          "text": {
+            "th": "พิจารณาต่อมลูกหมากอักเสบในผู้ชายที่มีไข้",
+            "it": "Considerare prostatite in un uomo con febbre",
+            "en": "Consider prostatitis in a man with fever"
+          },
+          "why": {
+            "th": "อาการทางปัสสาวะร่วมกับไข้หรือปวดฝีเย็บในผู้ชาย",
+            "it": "Sintomi urinari con febbre o dolore perineale nell'uomo.",
+            "en": "Urinary symptoms with fever or perineal pain in men."
+          }
+        }
+      ],
+      "source": "NICE NG109 Urinary tract infection (lower): antimicrobial prescribing; NICE NG111 Pyelonephritis (acute): antimicrobial prescribing; NICE NG51 Suspected sepsis"
+    },
+    {
+      "id": "CR-COUGH-01",
+      "match": [
+        [
+          "cough",
+          "tosse",
+          "tossisco",
+          "อาการไอ",
+          "ไอมา",
+          "ไอแห้ง",
+          "ไอมีเสมหะ",
+          "ไอมี",
+          "ไอเรื้อรัง",
+          "ไอเป็นเลือด",
+          "ไอทั้ง",
+          "ไอหนัก",
+          "ไอบ่อย",
+          "มีเสมหะ"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-COUGH-01-Q1",
+          "text": {
+            "th": "ไอมานานเท่าไร เกินสามสัปดาห์ไหม",
+            "it": "Da quanto tempo ha la tosse? Più di tre settimane?",
+            "en": "How long have you had the cough? More than three weeks?"
+          },
+          "why": {
+            "th": "ไอเกินสามสัปดาห์ต้องประเมินวัณโรคและมะเร็งปอด",
+            "it": "Tosse oltre tre settimane richiede valutazione per TBC e tumore polmonare.",
+            "en": "Cough over three weeks needs assessment for TB and lung cancer."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-COUGH-01-Q2",
+          "text": {
+            "th": "ไอเป็นเลือด น้ำหนักลด หรือเหงื่อออกกลางคืนไหม",
+            "it": "Tossisce sangue, perde peso o suda di notte?",
+            "en": "Are you coughing up blood, losing weight, or sweating at night?"
+          },
+          "why": {
+            "th": "วัณโรคหรือมะเร็ง",
+            "it": "Tubercolosi o neoplasia.",
+            "en": "Tuberculosis or malignancy."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-COUGH-01-Q3",
+          "text": {
+            "th": "หอบ หรือเจ็บหน้าอกเวลาหายใจไหม",
+            "it": "Ha fiato corto o dolore al petto respirando?",
+            "en": "Are you short of breath, or is there chest pain when you breathe?"
+          },
+          "why": {
+            "th": "ปอดอักเสบหรือลิ่มเลือดอุดหลอดเลือดปอด",
+            "it": "Polmonite o embolia polmonare.",
+            "en": "Pneumonia or pulmonary embolism."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-COUGH-01-Q4",
+          "text": {
+            "th": "สูบบุหรี่ หรือเคยใกล้ชิดผู้ป่วยวัณโรคไหม",
+            "it": "Fuma o ha avuto contatti con qualcuno con la TBC?",
+            "en": "Do you smoke, or have you been in contact with someone with TB?"
+          },
+          "why": {
+            "th": "สัมผัสวัณโรค (พบมากในไทย) และความเสี่ยงมะเร็ง",
+            "it": "Esposizione alla TBC (alta prevalenza in Thailandia) e rischio oncologico.",
+            "en": "TB exposure (high burden in Thailand) and cancer risk."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-COUGH-01-C1",
+          "text": {
+            "th": "พิจารณาปอดอักเสบ",
+            "it": "Considerare polmonite",
+            "en": "Consider pneumonia"
+          },
+          "why": {
+            "th": "ไข้ หอบ เจ็บเวลาหายใจร่วมกับไอ",
+            "it": "Febbre, dispnea, dolore pleuritico con tosse.",
+            "en": "Fever, breathlessness, pleuritic pain with cough."
+          }
+        },
+        {
+          "id": "CR-COUGH-01-C2",
+          "text": {
+            "th": "พิจารณาวัณโรค",
+            "it": "Considerare tubercolosi",
+            "en": "Consider tuberculosis"
+          },
+          "why": {
+            "th": "ไอนาน เหงื่อออกกลางคืน น้ำหนักลด หรือมีผู้สัมผัส",
+            "it": "Tosse prolungata, sudorazioni notturne, calo di peso o contatto.",
+            "en": "Prolonged cough, night sweats, weight loss or contact."
+          }
+        },
+        {
+          "id": "CR-COUGH-01-C3",
+          "text": {
+            "th": "พิจารณามะเร็งปอดในผู้สูบบุหรี่อายุเกิน 40 หรือไอเป็นเลือด",
+            "it": "Considerare tumore polmonare in fumatore oltre i 40 anni o con emottisi",
+            "en": "Consider lung cancer in a smoker over 40 or with haemoptysis"
+          },
+          "why": {
+            "th": "เกณฑ์สงสัยมะเร็งของ NICE",
+            "it": "Criteri NICE di sospetto oncologico.",
+            "en": "NICE suspected-cancer criteria."
+          }
+        }
+      ],
+      "source": "NICE NG120 Cough (acute): antimicrobial prescribing; NICE NG12 Suspected cancer: recognition and referral; NICE NG33 Tuberculosis"
+    },
+    {
+      "id": "CR-THROAT-01",
+      "match": [
+        [
+          "sore throat",
+          "throat hurts",
+          "throat pain",
+          "painful to swallow",
+          "hurts to swallow",
+          "mal di gola",
+          "gola infiammata",
+          "fa male la gola",
+          "dolore alla gola",
+          "เจ็บคอ",
+          "คออักเสบ",
+          "กลืนเจ็บ",
+          "กลืนน้ำลายก็เจ็บ",
+          "กลืนน้ำลายเจ็บ"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-THROAT-01-Q1",
+          "text": {
+            "th": "กลืนน้ำลายได้ไหม น้ำลายไหล เสียงเปลี่ยน หรือหายใจมีเสียงไหม",
+            "it": "Riesce a deglutire la saliva? Sbava, ha la voce cambiata o respira rumorosamente?",
+            "en": "Can you swallow your saliva? Any drooling, voice change or noisy breathing?"
+          },
+          "why": {
+            "th": "คัดกรองฝาปิดกล่องเสียงอักเสบและทางเดินหายใจอุดกั้น",
+            "it": "Ricerca epiglottite e compromissione delle vie aeree.",
+            "en": "Screens for epiglottitis and airway compromise."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-THROAT-01-Q2",
+          "text": {
+            "th": "เจ็บข้างเดียวมากกว่าชัดเจน หรืออ้าปากได้ไม่สุดไหม",
+            "it": "È molto peggio da un lato o non riesce ad aprire bene la bocca?",
+            "en": "Is it much worse on one side, or can you not open your mouth fully?"
+          },
+          "why": {
+            "th": "ฝีรอบต่อมทอนซิล",
+            "it": "Ascesso peritonsillare.",
+            "en": "Peritonsillar abscess (quinsy)."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-THROAT-01-Q3",
+          "text": {
+            "th": "มีไข้ มีหนองที่ต่อมทอนซิล และไม่ไอไหม",
+            "it": "Febbre, pus sulle tonsille e nessuna tosse?",
+            "en": "Any fever, pus on the tonsils, and no cough?"
+          },
+          "why": {
+            "th": "เกณฑ์ FeverPAIN/Centor สำหรับคออักเสบจากแบคทีเรีย",
+            "it": "Criteri FeverPAIN/Centor per faringite batterica.",
+            "en": "FeverPAIN/Centor features for bacterial pharyngitis."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-THROAT-01-Q4",
+          "text": {
+            "th": "กินยาที่กดภูมิคุ้มกัน เช่น ยาไทรอยด์คาร์บิมาโซล หรือได้เคมีบำบัดไหม",
+            "it": "Prende farmaci che riducono le difese, come carbimazolo o chemioterapia?",
+            "en": "Do you take medicines that lower immunity, such as carbimazole or chemotherapy?"
+          },
+          "why": {
+            "th": "เจ็บคออาจเป็นอาการแรกของเม็ดเลือดขาวต่ำรุนแรง",
+            "it": "Il mal di gola può essere il primo segno di agranulocitosi.",
+            "en": "Sore throat can be the first sign of agranulocytosis."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-THROAT-01-C1",
+          "text": {
+            "th": "พิจารณาฝาปิดกล่องเสียงอักเสบหรือทางเดินหายใจอุดกั้น",
+            "it": "Considerare epiglottite o compromissione delle vie aeree",
+            "en": "Consider epiglottitis or airway compromise"
+          },
+          "why": {
+            "th": "น้ำลายไหล หายใจมีเสียง เสียงอู้อี้ กลืนน้ำลายไม่ได้",
+            "it": "Scialorrea, stridore, voce ovattata, impossibilità a deglutire la saliva.",
+            "en": "Drooling, stridor, muffled voice, unable to swallow saliva."
+          }
+        },
+        {
+          "id": "CR-THROAT-01-C2",
+          "text": {
+            "th": "พิจารณาฝีรอบต่อมทอนซิล",
+            "it": "Considerare ascesso peritonsillare",
+            "en": "Consider peritonsillar abscess"
+          },
+          "why": {
+            "th": "ปวดข้างเดียวรุนแรง อ้าปากไม่ขึ้น ลิ้นไก่เบี้ยว",
+            "it": "Dolore intenso monolaterale, trisma, deviazione dell'ugola.",
+            "en": "Severe one-sided pain, trismus, uvula deviation."
+          }
+        },
+        {
+          "id": "CR-THROAT-01-C3",
+          "text": {
+            "th": "พิจารณาเม็ดเลือดขาวต่ำรุนแรงในผู้ที่ได้คาร์บิมาโซลหรือเคมีบำบัด",
+            "it": "Considerare agranulocitosi in persona in terapia con carbimazolo o chemioterapia",
+            "en": "Consider agranulocytosis in a person on carbimazole or chemotherapy"
+          },
+          "why": {
+            "th": "เจ็บคอมีไข้ขณะใช้ยาเหล่านี้ต้องตรวจความสมบูรณ์ของเม็ดเลือด",
+            "it": "Mal di gola con febbre in questi farmaci richiede un emocromo.",
+            "en": "Sore throat with fever on these drugs needs a blood count."
+          }
+        }
+      ],
+      "source": "NICE NG84 Sore throat (acute): antimicrobial prescribing (FeverPAIN/Centor; red flags for quinsy and epiglottitis)"
+    },
+    {
+      "id": "CR-RASH-01",
+      "match": [
+        [
+          "rash",
+          "spots",
+          "hives",
+          "itchy skin",
+          "eruzione",
+          "macchie",
+          "orticaria",
+          "bolle",
+          "prurito",
+          "ผื่น",
+          "ลมพิษ",
+          "ตุ่ม",
+          "คันตามตัว"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-RASH-01-Q1",
+          "text": {
+            "th": "กดผื่นด้วยแก้วแล้วจางไหม มีไข้ไหม",
+            "it": "Le macchie scompaiono premendo un bicchiere? Ha febbre?",
+            "en": "Does the rash fade when you press a glass on it? Do you have a fever?"
+          },
+          "why": {
+            "th": "ผื่นกดไม่จางร่วมกับไข้นึกถึงติดเชื้อเมนิงโกคอคคัส",
+            "it": "Eruzione che non scompare alla pressione con febbre suggerisce malattia meningococcica.",
+            "en": "Non-blanching rash with fever suggests meningococcal disease."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-RASH-01-Q2",
+          "text": {
+            "th": "มีตุ่มน้ำ ผิวลอก หรือแผลในปากหรือตาไหม",
+            "it": "Bolle, pelle che si stacca, bocca o occhi doloranti?",
+            "en": "Any blisters, peeling skin, or sore mouth or eyes?"
+          },
+          "why": {
+            "th": "คัดกรองกลุ่มอาการสตีเวนส์-จอห์นสันและผิวหนังตายเฉียบพลัน",
+            "it": "Ricerca sindrome di Stevens-Johnson / necrolisi epidermica tossica.",
+            "en": "Screens for Stevens-Johnson syndrome / toxic epidermal necrolysis."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-RASH-01-Q3",
+          "text": {
+            "th": "เริ่มยาใหม่ในช่วง 8 สัปดาห์ที่ผ่านมาไหม",
+            "it": "Ha iniziato un nuovo farmaco nelle ultime 8 settimane?",
+            "en": "Did you start any new medicine in the last 8 weeks?"
+          },
+          "why": {
+            "th": "ผื่นแพ้ยารุนแรงมักเกิดภายใน 8 สัปดาห์หลังเริ่มยาใหม่",
+            "it": "Le reazioni gravi da farmaco iniziano di solito entro 8 settimane.",
+            "en": "Severe drug reactions usually start within 8 weeks of a new drug."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-RASH-01-Q4",
+          "text": {
+            "th": "ปากหรือลิ้นบวม หรือหายใจลำบากไหม",
+            "it": "Gonfiore di labbra o lingua, o difficoltà a respirare?",
+            "en": "Any swelling of the lips or tongue, or trouble breathing?"
+          },
+          "why": {
+            "th": "แพ้รุนแรงหรือบวมใต้ผิวหนัง",
+            "it": "Anafilassi o angioedema.",
+            "en": "Anaphylaxis or angioedema."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-RASH-01-Q5",
+          "text": {
+            "th": "มีไข้ ปวดเมื่อยตัวหรือปวดกระบอกตา หลังโดนยุงกัดไหม",
+            "it": "Febbre con dolori diffusi o dolore dietro gli occhi, dopo punture di zanzara?",
+            "en": "Fever with body aches or pain behind the eyes, after mosquito bites?"
+          },
+          "why": {
+            "th": "ไข้เลือดออก (โรคประจำถิ่นในไทย)",
+            "it": "Dengue (endemica in Thailandia).",
+            "en": "Dengue (endemic in Thailand)."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-RASH-01-C1",
+          "text": {
+            "th": "พิจารณาติดเชื้อเมนิงโกคอคคัส",
+            "it": "Considerare malattia meningococcica",
+            "en": "Consider meningococcal disease"
+          },
+          "why": {
+            "th": "ไข้ร่วมกับผื่นกดไม่จาง",
+            "it": "Febbre con eruzione che non scompare alla pressione.",
+            "en": "Fever with a non-blanching rash."
+          }
+        },
+        {
+          "id": "CR-RASH-01-C2",
+          "text": {
+            "th": "พิจารณากลุ่มอาการสตีเวนส์-จอห์นสัน/ผิวหนังตายเฉียบพลัน หรือแพ้ยารุนแรง",
+            "it": "Considerare SJS/TEN o reazione grave da farmaco",
+            "en": "Consider Stevens-Johnson syndrome / toxic epidermal necrolysis or a severe drug reaction"
+          },
+          "why": {
+            "th": "ตุ่มน้ำ มีแผลในเยื่อบุ เริ่มยาใหม่ภายใน 8 สัปดาห์",
+            "it": "Bolle, coinvolgimento mucoso, nuovo farmaco entro 8 settimane.",
+            "en": "Blisters, mucosal involvement, new drug within 8 weeks."
+          }
+        },
+        {
+          "id": "CR-RASH-01-C3",
+          "text": {
+            "th": "พิจารณาไข้เลือดออกในผู้ที่มีไข้",
+            "it": "Considerare dengue in persona con febbre",
+            "en": "Consider dengue in a person with fever"
+          },
+          "why": {
+            "th": "ไข้ ปวดกล้ามเนื้อ ปวดกระบอกตา จุดเลือดออก ในพื้นที่ระบาด",
+            "it": "Febbre, mialgie, dolore retro-orbitale, petecchie in area endemica.",
+            "en": "Fever, myalgia, retro-orbital pain, petechiae in an endemic area."
+          }
+        }
+      ],
+      "source": "NICE NG240 Meningitis (bacterial) and meningococcal disease; Creamer D et al. UK guidelines for the management of SJS/TEN in adults 2016. Br J Dermatol 2016;174:1194-227 (PMID 27317286); WHO Dengue guidelines (2009)"
+    },
+    {
+      "id": "CR-GI-01",
+      "match": [
+        [
+          "vomit",
+          "throwing up",
+          "diarrh",
+          "loose stool",
+          "watery stool",
+          "vomito",
+          "vomitato",
+          "diarrea",
+          "scariche",
+          "อาเจียน",
+          "อ้วก",
+          "ท้องเสีย",
+          "ถ่ายเหลว",
+          "ถ่ายเป็นน้ำ",
+          "ขี้ไหล"
+        ]
+      ],
+      "questions": [
+        {
+          "id": "CR-GI-01-Q1",
+          "text": {
+            "th": "ดื่มน้ำแล้วไม่อาเจียนไหม ยังปัสสาวะออกไหม ลุกยืนแล้วหน้ามืดไหม",
+            "it": "Riesce a bere senza vomitare? Urina? Ha capogiri alzandosi?",
+            "en": "Can you keep fluids down? Are you passing urine? Dizzy when you stand?"
+          },
+          "why": {
+            "th": "คัดกรองภาวะขาดน้ำและไตบาดเจ็บเฉียบพลัน",
+            "it": "Ricerca disidratazione e danno renale acuto.",
+            "en": "Screens for dehydration and acute kidney injury."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-GI-01-Q2",
+          "text": {
+            "th": "อาเจียนหรืออุจจาระมีเลือด หรือถ่ายดำไหม",
+            "it": "Sangue nel vomito o nelle feci, o feci nere?",
+            "en": "Any blood in the vomit or stool, or black stool?"
+          },
+          "why": {
+            "th": "เลือดออกในทางเดินอาหารหรือบิด",
+            "it": "Emorragia gastrointestinale o dissenteria.",
+            "en": "Gastrointestinal bleeding or dysentery."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-GI-01-Q3",
+          "text": {
+            "th": "ปวดท้องมากหรือปวดตลอด หรือท้องอืดโตไหม",
+            "it": "Dolore addominale forte o continuo, o pancia gonfia?",
+            "en": "Is there severe or constant belly pain, or a swollen belly?"
+          },
+          "why": {
+            "th": "สาเหตุทางศัลยกรรม เช่น ลำไส้อุดตัน",
+            "it": "Causa chirurgica come occlusione.",
+            "en": "Surgical cause such as obstruction."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-GI-01-Q4",
+          "text": {
+            "th": "เป็นเบาหวานไหม หรือมีโอกาสตั้งครรภ์ไหม",
+            "it": "Ha il diabete o potrebbe essere in gravidanza?",
+            "en": "Do you have diabetes, or could you be pregnant?"
+          },
+          "why": {
+            "th": "ภาวะเลือดเป็นกรดจากเบาหวานอาจมาด้วยอาเจียน และการตั้งครรภ์เปลี่ยนการวินิจฉัยแยกโรค",
+            "it": "La chetoacidosi diabetica può esordire con vomito; la gravidanza cambia la diagnosi differenziale.",
+            "en": "Diabetic ketoacidosis can present with vomiting; pregnancy changes the differential."
+          },
+          "modes": [
+            "nurse",
+            "doctor"
+          ]
+        },
+        {
+          "id": "CR-GI-01-Q5",
+          "text": {
+            "th": "ช่วงนี้เดินทาง ได้ยาปฏิชีวนะ หรือนอนโรงพยาบาลไหม",
+            "it": "Viaggi, antibiotici o ricoveri recenti?",
+            "en": "Recent travel, antibiotics, or hospital stay?"
+          },
+          "why": {
+            "th": "การติดเชื้อจากการเดินทางและเชื้อ C. difficile",
+            "it": "Infezioni del viaggiatore e C. difficile.",
+            "en": "Traveller's infections and C. difficile."
+          },
+          "modes": [
+            "doctor"
+          ]
+        }
+      ],
+      "considerations": [
+        {
+          "id": "CR-GI-01-C1",
+          "text": {
+            "th": "พิจารณาภาวะขาดน้ำร่วมกับไตบาดเจ็บเฉียบพลัน",
+            "it": "Considerare disidratazione con danno renale acuto",
+            "en": "Consider dehydration with acute kidney injury"
+          },
+          "why": {
+            "th": "อาเจียนต่อเนื่อง ปัสสาวะน้อย ลุกแล้วหน้ามืด",
+            "it": "Vomito persistente, oliguria, capogiri posturali.",
+            "en": "Persistent vomiting, little urine, postural dizziness."
+          }
+        },
+        {
+          "id": "CR-GI-01-C2",
+          "text": {
+            "th": "พิจารณาภาวะเลือดเป็นกรดจากเบาหวานในผู้เป็นเบาหวาน",
+            "it": "Considerare chetoacidosi diabetica in persona con diabete",
+            "en": "Consider diabetic ketoacidosis in a person with diabetes"
+          },
+          "why": {
+            "th": "อาเจียน ปวดท้อง หายใจเร็วในผู้เป็นเบาหวาน",
+            "it": "Vomito, dolore addominale, tachipnea nel diabete.",
+            "en": "Vomiting, abdominal pain, fast breathing in diabetes."
+          }
+        },
+        {
+          "id": "CR-GI-01-C3",
+          "text": {
+            "th": "พิจารณาสาเหตุทางศัลยกรรม เช่น ลำไส้อุดตัน",
+            "it": "Considerare causa chirurgica come occlusione intestinale",
+            "en": "Consider a surgical cause such as bowel obstruction"
+          },
+          "why": {
+            "th": "ปวดรุนแรงตลอด ท้องอืดโต อาเจียนสีเขียว",
+            "it": "Dolore intenso continuo, distensione, vomito biliare.",
+            "en": "Severe constant pain, distension, bilious vomiting."
+          }
+        }
+      ],
+      "source": "NICE CKS Gastroenteritis; JBDS-IP (Joint British Diabetes Societies) Management of diabetic ketoacidosis in adults; NICE CG141 Acute upper GI bleeding"
+    }
+  ]
+}
