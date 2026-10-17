@@ -169,3 +169,31 @@ export interface OpsMetrics {
   modelLatencyMs: { p50: number | null; p95: number | null };
   provider: { name: string; model: string; hardware: string };
 }
+
+// ---------- Red-flag rule file (packages/shared/src/redflags.json, written by the Doctor) ----------
+
+export interface RedFlagRule {
+  id: string; // "RF-CHEST-01"
+  severity: RedFlagSeverity;
+  label: Localized;
+  action: Localized;
+  patientMessage: Localized;
+  /**
+   * AND of ORs: the rule fires when EVERY group has at least one term present in the
+   * (lower-cased, whitespace-normalised) patient text. Terms are listed in th, it and en,
+   * including colloquial/lay phrasing. Thai terms match as substrings (no word spaces).
+   */
+  match: string[][];
+  /** Optional extra condition on the extracted fields, e.g. { "pregnancy_status": "pregnant" }. Applied only if present. */
+  requires?: Partial<Record<FieldKey, string>>;
+  /** Guideline / literature reference supporting the rule. */
+  source: string;
+}
+
+export interface RedFlagRuleFile {
+  version: string;
+  /** Negation cues in th/it/en; a term preceded by a cue within `negationWindowChars` does not count. */
+  negationCues: string[];
+  negationWindowChars: number;
+  rules: RedFlagRule[];
+}

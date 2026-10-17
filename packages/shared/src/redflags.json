@@ -1,0 +1,16 @@
+{
+  "version": "0.0-placeholder",
+  "negationCues": ["no ", "not ", "non ", "senza ", "ไม่"],
+  "negationWindowChars": 12,
+  "rules": [
+    {
+      "id": "RF-CHEST-01",
+      "severity": "emergency",
+      "label": { "th": "เจ็บหน้าอกร่วมกับเหงื่อออก", "it": "Dolore toracico con sudorazione", "en": "Chest pain with sweating" },
+      "action": { "th": "ส่งพบแพทย์ทันที ทำ ECG", "it": "Valutazione medica immediata, ECG", "en": "Immediate clinician assessment, ECG" },
+      "patientMessage": { "th": "กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้", "it": "Vada subito al banco dell'infermiere", "en": "Please go to the nurse desk now" },
+      "match": [["chest pain", "เจ็บหน้าอก", "dolore al petto"], ["sweat", "เหงื่อ", "sudo"]],
+      "source": "placeholder — Doctor replaces"
+    }
+  ]
+}
