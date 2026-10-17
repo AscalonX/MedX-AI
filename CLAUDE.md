@@ -32,8 +32,10 @@ Use "suggests for review", "flags for clinician", "decision support". Synthetic 
 | `pitch/` | Pitch lead |
 
 ## Design rules
-No purple/blue gradients, glassmorphism, generic card grids, sparkle icons, emoji UI, "AI assistant" bubbles, centered hero + 3 cards.
-Follow `docs/design/DIRECTION.md` and tokens in `packages/shared/src/tokens.ts`.
+Owner decision (Sat 17 Oct 2026, 15:00): modern banking-app look, reference https://u-talk-ten.vercel.app/#/home, primary colour teal → ocean blue.
+Follow `docs/design/DIRECTION.md` (v2) and tokens in `packages/shared/src/tokens.ts`. No ad-hoc colours.
+Red stays reserved for urgency (red flags, high alerts). Safety states (verified / unverified / missing / edited / approved) must stay visually distinct.
+Still banned: emoji UI, sparkle ✨ icons, "AI assistant" chat bubbles for clinical content, generic stock hero + 3 feature cards.
 
 ## Report (required at the end of every task)
 Write `docs/reports/<wave>-<role>.md`:
