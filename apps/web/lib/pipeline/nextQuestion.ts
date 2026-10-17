@@ -1,5 +1,5 @@
 import type { ExtractedField, IntakeSession, NextQuestion } from '@medx/shared';
-import { isPresent, REQUIRED_FIELDS } from './config';
+import { isPresent, MAX_FOLLOW_UPS, QUESTION_PRIORITY } from './config';
 import type { EngineContext } from './extract';
 import { invoke } from './extract';
 import { QUESTION_SYSTEM, questionPrompt } from './prompts';
@@ -7,7 +7,8 @@ import { languageOK, localized, object } from './schema';
 import { QUESTIONS } from './templates';
 import { words } from './verify';
 export async function nextQuestion(session: IntakeSession, fields: ExtractedField[], ctx: EngineContext): Promise<NextQuestion | null> {
-  const field = REQUIRED_FIELDS.find(k => !fields.some(f => f.key === k && isPresent(f)));
+  if (session.summary?.redFlags.length || session.status === 'escalated' || session.turns.filter(t => t.role === 'assistant').length >= MAX_FOLLOW_UPS) return null;
+  const field = QUESTION_PRIORITY.find(k => fields.some(f => f.key === k && f.required && !isPresent(f)));
   if (!field) return null;
   const result = await invoke({ step: 'next_question', system: QUESTION_SYSTEM, user: questionPrompt(session, field), schemaName: 'intake_next_question' }, ctx);
   const data = result.data;

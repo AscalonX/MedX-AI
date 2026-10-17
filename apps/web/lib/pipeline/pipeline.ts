@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import type { AuditEvent, ExtractedField, IntakeSession, IntakeSummary, Lang, OpsMetrics, ReviewAction, SessionStatus } from '@medx/shared';
-import { emptyFields, FIELD_KEYS, isPresent, providerInfo } from './config';
+import type { AuditEvent, ExtractedField, IntakeSession, IntakeSummary, Lang, OpsMetrics, RedFlagReviewAction, ReviewAction, SessionStatus } from '@medx/shared';
+import { applyRequiredFields, emptyFields, FIELD_KEYS, isPresent, providerInfo } from './config';
 import { extract } from './extract';
 import type { EngineContext } from './extract';
 import type { ModelClient } from './llm';
@@ -14,7 +14,7 @@ export type { ModelClient } from './llm';
 export class PipelineError extends Error {
   constructor(message: string, public code: 'bad_request' | 'not_found') { super(message); }
 }
-export function createSession(patientLang: Lang, opts: { persist?: boolean; now?: () => string } = {}): IntakeSession {
+export function createSession(patientLang: Lang, opts: { persist?: boolean; now?: () => string; demoCaseId?: string } = {}): IntakeSession {
   if (!['th', 'it', 'en'].includes(patientLang)) throw new PipelineError('Invalid patient language', 'bad_request');
   const at = opts.now?.() || new Date().toISOString();
   const used = new Set(opts.persist === false ? [] : getSessions().map(s => s.code));
@@ -22,7 +22,7 @@ export function createSession(patientLang: Lang, opts: { persist?: boolean; now?
   for (let n = 1; n <= 1000; n++) { const candidate = `B-${String(n % 1000).padStart(3, '0')}`; if (!used.has(candidate)) { code = candidate; break; } }
   if (!code) throw new PipelineError('Session code capacity reached', 'bad_request');
   const session: IntakeSession = { id: randomUUID(), code, patientLang, status: 'collecting', turns: [], summary: null, createdAt: at, updatedAt: at };
-  if (opts.persist !== false) { saveSession(session); appendAudit(session.id, 'session_created', 'patient', { patientLang }, undefined, at); }
+  if (opts.persist !== false) { saveSession(session); appendAudit(session.id, 'session_created', 'patient', { patientLang, ...(opts.demoCaseId ? { demoCaseId: opts.demoCaseId } : {}) }, undefined, at); }
   return session;
 }
 export interface RunOptions {
@@ -63,7 +63,7 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
   if (summary.redFlags.length || input.status === 'escalated') return escalate();
   const ctx: EngineContext = { client: opts.client, trace: opts.trace, deadline, modelCalls: summary.modelCalls, log: (event, detail) => audit('summary_generated', { event, ...detail }) };
   const extracted = await extract(session, ctx);
-  summary.fields = preserveReviewed(previous?.fields || [], extracted.fields);
+  summary.fields = applyRequiredFields(preserveReviewed(previous?.fields || [], extracted.fields));
   // Redact model-proposed values too: an untrusted provider cannot reintroduce PII into storage.
   summary.fields = summary.fields.map(f => ({ ...f, value: f.value ? { th: redact(f.value.th).text, it: redact(f.value.it).text, en: redact(f.value.en).text } : null, valueOriginal: f.valueOriginal === null ? null : redact(f.valueOriginal).text }));
   addFlags(checkRedFlags(session.turns, summary.fields));
@@ -80,7 +80,7 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
   }
   if (reason) {
     summary.abstained = true; summary.abstainReason = reason; summary.nextQuestion = null; session.status = 'needs_human';
-    summary.fields = summary.fields.map(f => f.status === 'supported' ? { ...f, status: 'unsupported', confidence: Math.min(0.3, f.confidence) } : f);
+    summary.fields = applyRequiredFields(summary.fields.map(f => f.status === 'supported' ? { ...f, status: 'unsupported', confidence: Math.min(0.3, f.confidence) } : f));
     audit('abstained', { reason });
   } else {
     session.status = summary.nextQuestion ? 'collecting' : 'awaiting_review';
@@ -100,11 +100,12 @@ export async function addTurn(sessionId: string, rawText: string) {
     return session;
   });
 }
-export async function review(sessionId: string, reviewerId: string, actions: ReviewAction[]) {
+export async function review(sessionId: string, reviewerId: string, actions: ReviewAction[], redFlagActions: RedFlagReviewAction[] = []) {
   return withSessionLock(sessionId, () => {
     const session = requireSession(sessionId);
-    if (!reviewerId?.trim() || reviewerId.length > 200 || !Array.isArray(actions) || !actions.length || actions.some(a => !a || !FIELD_KEYS.includes(a.fieldKey) || !['approve', 'edit', 'reject'].includes(a.action) || (a.action === 'edit' && (typeof a.newValue !== 'string' || !a.newValue.trim() || a.newValue.length > 300)))) throw new PipelineError('Invalid review actions', 'bad_request');
+    if (typeof reviewerId !== 'string' || !reviewerId.trim() || reviewerId.length > 200 || !Array.isArray(actions) || !Array.isArray(redFlagActions) || (!actions.length && !redFlagActions.length) || actions.length > 24 || redFlagActions.length > 18 || actions.some(a => !a || !FIELD_KEYS.includes(a.fieldKey) || !['approve', 'edit', 'reject'].includes(a.action) || (a.action === 'edit' && (typeof a.newValue !== 'string' || !a.newValue.trim() || a.newValue.length > 300))) || redFlagActions.some(a => !a || typeof a.ruleId !== 'string' || !['acknowledge', 'false_alarm'].includes(a.action) || (a.note !== undefined && (typeof a.note !== 'string' || a.note.length > 2000)) || (a.action === 'false_alarm' && !a.note?.trim()))) throw new PipelineError('Invalid review actions', 'bad_request');
     if (!session.summary) throw new PipelineError('Session has no summary to review', 'bad_request');
+    if (redFlagActions.some(a => !session.summary!.redFlags.some(f => f.ruleId === a.ruleId))) throw new PipelineError('Unknown red flag', 'bad_request');
     for (const action of actions) {
       const f = session.summary.fields.find(f => f.key === action.fieldKey);
       if (!f) throw new PipelineError('Unknown field', 'bad_request');
@@ -116,10 +117,19 @@ export async function review(sessionId: string, reviewerId: string, actions: Rev
         f.value = { th: value, it: value, en: value }; f.valueOriginal = value; f.status = 'edited';
       } else { f.status = 'missing'; f.value = null; f.valueOriginal = null; f.evidence = []; f.confidence = 0; }
     }
-    if (!session.summary.redFlags.length && session.status !== 'taken_over') session.status = session.summary.fields.filter(f => f.required).every(f => ['approved', 'edited'].includes(f.status)) ? 'approved' : session.summary.abstained ? 'needs_human' : 'awaiting_review';
+    session.summary.fields = applyRequiredFields(session.summary.fields);
+    const at = new Date().toISOString();
+    const actorId = redact(reviewerId).text;
+    const safeFlagActions = redFlagActions.map(a => ({ ...a, ...(a.note !== undefined ? { note: redact(a.note.trim()).text } : {}) }));
+    for (const action of safeFlagActions) {
+      session.summary.redFlags.find(f => f.ruleId === action.ruleId)!.review = { action: action.action, reviewerId: actorId, at, ...(action.note !== undefined ? { note: action.note } : {}) };
+    }
+    if (session.summary.redFlags.length) { session.summary.nextQuestion = null; if (session.status !== 'taken_over') session.status = 'escalated'; }
+    else if (session.status !== 'taken_over') session.status = session.summary.fields.filter(f => f.required).every(f => ['approved', 'edited'].includes(f.status)) ? 'approved' : session.summary.abstained ? 'needs_human' : 'awaiting_review';
     if (session.status === 'approved') session.summary.nextQuestion = null;
-    session.updatedAt = new Date().toISOString(); saveSession(session);
-    appendAudit(sessionId, 'review', 'clinician', { actions: actions.map(a => ({ ...a, ...(a.newValue ? { newValue: redact(a.newValue).text } : {}) })) }, redact(reviewerId).text);
+    session.updatedAt = at; saveSession(session);
+    if (actions.length) appendAudit(sessionId, 'review', 'clinician', { actions: actions.map(a => ({ ...a, ...(a.newValue ? { newValue: redact(a.newValue).text } : {}) })) }, actorId, at);
+    if (safeFlagActions.length) appendAudit(sessionId, 'red_flag_review', 'clinician', { actions: safeFlagActions }, actorId, at);
     return session;
   });
 }

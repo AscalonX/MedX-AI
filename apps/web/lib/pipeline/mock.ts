@@ -18,22 +18,27 @@ export function mockJSON(req: ChatRequest): unknown {
       [/(?:headache|mal di testa|ปวดหัว|ปวดศีรษะ)/i, { en: 'headache', it: 'mal di testa', th: 'ปวดหัว' }],
       [/(?:stomach ache|stomach pain|mal di pancia|ปวดท้อง)/i, { en: 'stomach ache', it: 'mal di pancia', th: 'ปวดท้อง' }],
       [/(?:cough|tosse|ไอ)/i, { en: 'cough', it: 'tosse', th: 'ไอ' }],
+      [/(?:burning when I pee)/i, { en: 'burning urination', it: 'bruciore quando urino', th: 'แสบเวลาปัสสาวะ' }],
+      [/(?:rolled my left ankle)/i, { en: 'left ankle injury', it: 'trauma alla caviglia sinistra', th: 'ข้อเท้าซ้ายบาดเจ็บ' }],
+      [/(?:mal di gola)/i, { en: 'sore throat', it: 'mal di gola', th: 'เจ็บคอ' }],
+      [/(?:febbre)/i, { en: 'fever', it: 'febbre', th: 'มีไข้' }],
     ],
-    onset: [[/(?:since yesterday|started yesterday|da ieri|ตั้งแต่เมื่อวาน|เริ่มเมื่อวาน)/i, { en: 'since yesterday', it: 'da ieri', th: 'ตั้งแต่เมื่อวาน' }]],
+    onset: [[/(?:since yesterday|started yesterday|da ieri|ตั้งแต่เมื่อวาน|เริ่มเมื่อวาน)/i, { en: 'since yesterday', it: 'da ieri', th: 'ตั้งแต่เมื่อวาน' }], [/(?:for two days|da due giorni)/i, { en: 'two days ago', it: 'da due giorni', th: 'สองวันก่อน' }], [/yesterday evening/i, { en: 'yesterday evening', it: 'ieri sera', th: 'เมื่อวานตอนเย็น' }], [/da stamattina/i, { en: 'this morning', it: 'da stamattina', th: 'เช้าวันนี้' }]],
     associated_symptoms: [[/(?:no other symptoms|nessun altro sintomo|ไม่มีอาการอื่น)/i, { en: 'no other symptoms', it: 'nessun altro sintomo', th: 'ไม่มีอาการอื่น' }], [/(?:nausea|คลื่นไส้)/i, { en: 'nausea', it: 'nausea', th: 'คลื่นไส้' }]],
-    medications: [[/(?:no (?:medicines|medications)|nessun farmaco|non prendo farmaci|ไม่มียาที่ใช้|ไม่ได้กินยา)/i, { en: 'no medicines', it: 'nessun farmaco', th: 'ไม่ได้กินยา' }], [/(?:paracetamol(?:o)?|พาราเซตามอล)/i, { en: 'paracetamol', it: 'paracetamolo', th: 'พาราเซตามอล' }]],
-    allergies: [[/(?:no (?:known )?allergies|nessuna allergia|ไม่มีประวัติแพ้|ไม่แพ้ยา)/i, { en: 'no known allergies', it: 'nessuna allergia nota', th: 'ไม่มีประวัติแพ้' }]],
+    medications: [[/(?:no (?:medicines|medications)|don't take any medication|nessun farmaco|non prendo farmaci|ไม่มียาที่ใช้|ไม่ได้กินยา)/i, { en: 'no medicines', it: 'nessun farmaco', th: 'ไม่ได้กินยา' }], [/(?:paracetamol(?:o)?|พาราเซตามอล)/i, { en: 'paracetamol', it: 'paracetamolo', th: 'พาราเซตามอล' }], [/daily multivitamin/i, { en: 'daily multivitamin', it: 'multivitaminico giornaliero', th: 'วิตามินรวมทุกวัน' }]],
+    allergies: [[/(?:no (?:known )?allergies|nessuna allergia|non sono allergico a nulla|ไม่มีประวัติแพ้|ไม่แพ้ยา)/i, { en: 'no known allergies', it: 'nessuna allergia nota', th: 'ไม่มีประวัติแพ้' }]],
     pregnancy_status: [[/(?:not pregnant|non sono incinta|ไม่ตั้งครรภ์|ไม่ได้ตั้งครรภ์)/i, { en: 'not pregnant', it: 'non in gravidanza', th: 'ไม่ตั้งครรภ์' }]],
+    sex: [[/\b(?:male|man|uomo)\b/i, { en: 'male', it: 'maschio', th: 'ชาย' }], [/\b(?:female|woman|donna)\b/i, { en: 'female', it: 'femmina', th: 'หญิง' }]],
   };
   for (const [, alias, text] of turns) {
     // Do not extract sentences containing instruction patterns.
     const safe = text.split(/(?<=[.!?\n])/).filter(s => !/ignore|output|say I|mark this|istruzion|คำสั่ง/i.test(s)).join(' ');
     const put = (key: FieldKey, quote: string, value: Localized) => { result.fields[key] = { value_original: quote, value, evidence: [{ turn: alias, quote }], certainty: 'high' }; };
     for (const [key, pairs] of Object.entries(patterns)) for (const [re, value] of pairs) { const m = re.exec(safe); if (m) { put(key as FieldKey, m[0], value); break; } }
-    const severity = /\b(\d{1,2})\s*\/\s*10\b/.exec(safe);
-    if (severity) put('severity', severity[0], { en: severity[0], it: severity[0], th: `ระดับ ${severity[0]}` });
-    const age = /(?:\b(?:I am|I'm|ho)\s+(\d{1,3})\s*(?:years old|anni)|อายุ\s*(\d{1,3})\s*ปี)/i.exec(safe);
-    if (age) { const n = age[1] || age[2]; put('age', age[0], { en: `${n} years`, it: `${n} anni`, th: `${n} ปี` }); }
+    const severity = /\b(\d{1,2})\s*(?:\/|out of|su)\s*10\b/.exec(safe);
+    if (severity) { const n = `${severity[1]}/10`; put('severity', severity[0], { en: n, it: n, th: `ระดับ ${n}` }); }
+    const age = /(?:\b(?:I am|I'm|ho)\s+(\d{1,3})\s*(?:years old|anni)|อายุ\s*(\d{1,3})\s*ปี|\b(?:I am|I'm)\s+(?:a\s+)?(\d{1,3})(?:\s+year old|(?=,\s*(?:male|female)))|\b(?:uomo|donna) di (\d{1,3}) anni)/i.exec(safe);
+    if (age) { const n = age[1] || age[2] || age[3] || age[4]; put('age', age[0], { en: `${n} years`, it: `${n} anni`, th: `${n} ปี` }); }
   }
   return result;
 }

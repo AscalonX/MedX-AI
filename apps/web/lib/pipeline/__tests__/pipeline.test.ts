@@ -32,13 +32,13 @@ describe('pipeline', () => {
   it.each(['en', 'it', 'th'] as Lang[])('complete %s case awaits review', async lang => {
     const session = await addTurn(createSession(lang).id, completeByLang[lang]);
     expect(session.status).toBe('awaiting_review'); expect(session.summary?.nextQuestion).toBeNull(); expect(session.summary?.fields).toHaveLength(12);
-    expect(session.summary?.fields.filter(f => f.required && f.status === 'supported')).toHaveLength(REQUIRED_FIELDS.length);
+    expect(session.summary?.fields.filter(f => f.required && f.status === 'supported')).toHaveLength(REQUIRED_FIELDS.length + 1);
     expect(session.summary?.modelCalls).toHaveLength(1);
     for (const f of session.summary!.fields) for (const e of f.evidence) expect(session.turns.find(t => t.id === e.turnId)?.text.slice(e.start, e.end)).toBe(e.quote);
   });
   it('review approves required fields and records actor/actions', async () => {
     const session = await addTurn(createSession('en').id, complete);
-    const approved = await review(session.id, 'synthetic-reviewer', REQUIRED_FIELDS.map(fieldKey => ({ fieldKey, action: 'approve' })));
+    const approved = await review(session.id, 'synthetic-reviewer', session.summary!.fields.filter(f => f.required).map(f => ({ fieldKey: f.key, action: 'approve' })));
     expect(approved.status).toBe('approved'); expect(getAudit(session.id).at(-1)?.actorId).toBe('synthetic-reviewer');
     expect(metrics().autoCapturedRate).toBe(1);
   });

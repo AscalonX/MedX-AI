@@ -3,16 +3,34 @@ import type { ExtractedField, RedFlagHit, RedFlagRuleFile, Turn } from '@medx/sh
 import { isPresent } from './config';
 
 function normalise(text: string) {
-  let t = ''; const map: number[] = []; const ends: number[] = []; let offset = 0;
+  // Same text as the clinical reference's norm(), with UTF-16 source offsets.
+  let t = ' '; const map: number[] = [0]; const ends: number[] = [0]; let offset = 0;
+  const lower = text.normalize('NFC').toLowerCase(); let normalisedOffset = 0;
   for (const segment of new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(text)) {
     const cp = segment.segment;
-    for (const c of cp.normalize('NFC').toLowerCase()) {
-      if (/\s/u.test(c)) { if (!t || t.endsWith(' ')) continue; t += ' '; map.push(offset); ends.push(offset + cp.length); }
+    const length = cp.normalize('NFC').toLowerCase().length;
+    // Lower-case the whole text first, including context-sensitive Unicode casing.
+    for (const c of lower.slice(normalisedOffset, normalisedOffset + length).replace(/[’‘]/g, "'")) {
+      if (/\s/u.test(c)) {
+        if (t.endsWith(' ')) { ends[ends.length - 1] = offset + cp.length; continue; }
+        t += ' '; map.push(offset); ends.push(offset + cp.length);
+      }
       else { t += c; for (let i = 0; i < c.length; i++) { map.push(offset); ends.push(offset + cp.length); } }
     }
+    normalisedOffset += length;
     offset += cp.length;
   }
+  if (t.length > 1 && t.endsWith(' ')) { t = t.slice(0, -1); map.pop(); ends.pop(); }
   return { t, map, ends };
+}
+function clause(before: string) {
+  let cut = 0;
+  for (const p of [',', '.', ';', ':', '!', '?', '\n']) cut = Math.max(cut, before.lastIndexOf(p) + 1);
+  for (const word of [' but ', ' ma ', ' però ', ' pero ', 'แต่']) {
+    const i = before.lastIndexOf(word);
+    if (i !== -1) cut = Math.max(cut, i + word.length - (word.endsWith(' ') ? 1 : 0));
+  }
+  return before.slice(cut);
 }
 export function checkRedFlags(input: string | Turn[], fields?: ExtractedField[], ruleFile: RedFlagRuleFile = rules as RedFlagRuleFile): RedFlagHit[] {
   const turns = typeof input === 'string' ? [{ id: 'T1', text: input, role: 'patient' as const, lang: 'en' as const, at: '' }] : input.filter(t => t.role === 'patient');
@@ -28,14 +46,14 @@ export function checkRedFlags(input: string | Turn[], fields?: ExtractedField[],
       for (const group of rule.match) {
       let found: { start: number; end: number } | undefined;
       for (const term of group) {
-        const needle = normalise(term).t.trim(); if (!needle) continue;
+        const needle = normalise(term).t.slice(1); if (!needle) continue;
         let from = 0;
         while (from <= n.t.length) {
           const at = n.t.indexOf(needle, from); if (at < 0) break;
           const fromChar = Math.max(0, at - ruleFile.negationWindowChars);
-          const preceding = (fromChar === 0 ? ' ' : '') + n.t.slice(fromChar, at);
+          const preceding = clause(n.t.slice(fromChar, at));
           // Leading/trailing cue spaces are intentional word boundaries in the rule file.
-          const negated = ruleFile.negationCues.some(cue => { const c = cue.normalize('NFC').toLowerCase().replace(/\s+/gu, ' '); return c.trim() && preceding.includes(c); });
+          const negated = ruleFile.negationCues.some(cue => preceding.includes(cue));
           if (!negated) { found = { start: n.map[at], end: n.ends[at + needle.length - 1] }; break; }
           from = at + 1;
         }
