@@ -37,7 +37,10 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
   const [sel, setSel] = useState<Sel>(null);
   const [live, setLive] = useState("");
   const [busy, setBusy] = useState(false);
-  const [signedFx, setSignedFx] = useState<{ reviewerId: string; at: string } | null>(null);
+  const [writeError, setWriteError] = useState<string | null>(null);
+  const [noteError, setNoteError] = useState<string | null>(null);
+  const [consented, setConsented] = useState(false);
+  useEffect(() => { try { setConsented(sessionStorage.getItem(`medx.consult.consent.${id}`) === "1"); } catch { /* keep default */ } }, [id]);
   const seen = useRef<Set<string>>(new Set());
   const reqId = useRef(0);
 
@@ -81,7 +84,7 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
   const open = questionsFor(mode, suggestions).filter((s) => s.status === "open").sort((a, b) => rank(a) - rank(b));
   const shown = open.slice(0, 3);
   const considerations = considerationsFor(mode, suggestions).filter((s) => s.status === "open").sort((a, b) => (a.source === b.source ? 0 : a.source === "rule" ? -1 : 1)).slice(0, 4);
-  const note: ConsultNote | null = state.note ? { ...state.note, signed: state.note.signed ?? signedFx ?? undefined } : null;
+  const note: ConsultNote | null = state.note;
 
   useEffect(() => {
     const fresh = shown.filter((s) => !seen.current.has(s.id));
@@ -96,12 +99,19 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
     if (!t) return;
     const clientTurnId = crypto.randomUUID();
     setLocal((l) => [...l, { id: `local-${clientTurnId}`, speaker: who, text: t, at: new Date().toISOString() }]);
-    try {
-      const r = await post<ConsultState>(`/api/sessions/${id}/consult/turns`, { speaker: who, text: t, mode, clientTurnId });
-      setCs(r); setFixture(false);
-    } catch { setFixture(true); }
+    if (!fixture) {
+      try {
+        const r = await post<ConsultState>(`/api/sessions/${id}/consult/turns`, { speaker: who, text: t, mode, clientTurnId });
+        setCs(r); setWriteError(null);
+      } catch (e) { setWriteError(`${ct("writeFailed", lang)}: ${(e as Error).message}`); }
+    }
     loadSession();
-  }, [id, mode, loadSession]);
+  }, [id, mode, loadSession, fixture, lang]);
+  const giveConsent = (on: boolean) => {
+    setConsented(on);
+    try { if (on) sessionStorage.setItem(`medx.consult.consent.${id}`, "1"); else sessionStorage.removeItem(`medx.consult.consent.${id}`); } catch { /* local state only */ }
+    if (on) submit(ct("consentNote", "en"), "clinician"); // audited as a stored clinician line through the existing turn route
+  };
   const speakerRef = useRef(speaker);
   speakerRef.current = speaker;
   const recLang = REC_LANG[speaker === "patient" ? patientLang : lang];
@@ -128,17 +138,18 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
   const mark = async (s: ConsultSuggestion, status: "asked" | "dismissed") => {
     setStatusMap((m) => ({ ...m, [s.id]: status }));
     setCs((c) => (c ? { ...c, suggestions: c.suggestions.map((x) => (x.id === s.id ? { ...x, status } : x)) } : c));
-    if (!fixture) { try { await post(`/api/sessions/${id}/consult/suggestions/${encodeURIComponent(s.id)}`, { reviewerId: reviewer, status }); } catch { /* optimistic; next poll corrects */ } }
+    if (!fixture) { try { await post(`/api/sessions/${id}/consult/suggestions/${encodeURIComponent(s.id)}`, { reviewerId: reviewer, status }); } catch (e) { setWriteError(`${ct("writeFailed", lang)}: ${(e as Error).message}`); loadConsult(); } }
   };
+  // Writes never fall back to fixtures: a refused or failed write is shown with the server's reason and nothing is marked signed.
   const noteAction = async (action: "draft" | "sign", edits?: { lineId: string; text: string }[]) => {
+    if (fixture) { setNoteError(ct("fixtureNoSign", lang)); return; }
     setBusy(true);
+    setNoteError(null);
     try {
-      if (!fixture) { const r = await post<ConsultState>(`/api/sessions/${id}/consult/note`, { reviewerId: reviewer, mode, action, ...(edits ? { edits } : {}) }); setCs(r); }
-      else if (action === "sign") setSignedFx({ reviewerId: reviewer, at: new Date().toISOString() });
+      const r = await post<ConsultState>(`/api/sessions/${id}/consult/note`, { reviewerId: reviewer, mode, action, ...(edits ? { edits } : {}) });
+      setCs(r);
     } catch (e) {
-      setFixture(true);
-      if (action === "sign") setSignedFx({ reviewerId: reviewer, at: new Date().toISOString() });
-      setLoadError((e as Error).message);
+      setNoteError(`${ct("writeFailed", lang)}: ${(e as Error).message}`);
     } finally { setBusy(false); }
   };
   const ackFlags = async () => {
@@ -216,7 +227,7 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
               <button
                 type="button"
                 aria-pressed={sp.listening}
-                disabled={!sp.supported}
+                disabled={!sp.supported || !consented}
                 onClick={() => { if (sp.listening) { sp.stop(); setLive(ct("stoppedAnnounce", lang)); } else { sp.start(); setLive(ct("listeningAnnounce", lang)); } }}
                 className={`grid size-16 shrink-0 place-items-center rounded-full text-on-primary transition-transform duration-quick ease-pen active:scale-95 disabled:bg-muted disabled:text-graphite ${sp.listening ? "bg-primary-gradient cl-pulse" : "bg-ink"}`}
                 aria-label={ct(sp.listening ? "micStop" : "mic", lang)}
@@ -240,7 +251,13 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
                 />
               </div>
             </div>
+            <label className="flex items-start gap-3 rounded-2xl bg-paper p-3 text-small text-ink">
+              <input type="checkbox" checked={consented} onChange={(e) => giveConsent(e.target.checked)} className="mt-0.5 size-5 shrink-0 accent-[var(--color-teal)]" />
+              <span>{ct("consentLabel", lang)}</span>
+            </label>
+            {!consented && <p className="text-small font-semibold text-warn">{ct("consentNeeded", lang)}</p>}
             {!sp.supported && <p className="text-small text-ink-soft">{ct("noSpeech", lang)}</p>}
+            {writeError && <p role="alert" className="text-small font-semibold text-signal">{writeError}</p>}
             {sp.error && <p role="alert" className="text-small font-semibold text-signal">{sp.error}</p>}
             <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); submit(text, speaker); setText(""); }}>
               <label className="flex min-w-60 flex-1 flex-col gap-1 text-small font-semibold text-ink-soft">
@@ -283,7 +300,8 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
           note={note}
           lang={lang}
           busy={busy}
-          blockedReason={pending ? ct("signBlocked", lang) : null}
+          blockedReason={fixture ? ct("fixtureNoSign", lang) : pending ? ct("signBlocked", lang) : null}
+          error={noteError}
           reviewer={reviewer}
           onHover={(ev, key) => setSel(ev ? { key, ev } : null)}
           onDraft={() => noteAction("draft")}
@@ -362,8 +380,8 @@ function SuggestionCard({ s, lang, patientLang, active, onShow, onMark }: { s: C
   );
 }
 
-function NotePanel({ note, lang, busy, blockedReason, reviewer, onHover, onDraft, onSign, next }: {
-  note: ConsultNote | null; lang: Lang; busy: boolean; blockedReason: string | null; reviewer: string;
+function NotePanel({ note, lang, busy, blockedReason, error, reviewer, onHover, onDraft, onSign, next }: {
+  note: ConsultNote | null; lang: Lang; busy: boolean; blockedReason: string | null; error: string | null; reviewer: string;
   onHover: (ev: Evidence[] | null, key: string) => void; onDraft: () => void; onSign: (edits: { lineId: string; text: string }[]) => void; next: { id: string; code: string } | null;
 }) {
   const [edits, setEdits] = useState<Record<string, string>>({});
@@ -441,9 +459,10 @@ function NotePanel({ note, lang, busy, blockedReason, reviewer, onHover, onDraft
                             <label className="flex items-center gap-2 text-small font-semibold text-ink-soft">
                               <input type="checkbox" checked={kept.has(l.id)} onChange={(e) => setKept((k) => { const n = new Set(k); if (e.target.checked) n.add(l.id); else n.delete(l.id); return n; })} className="size-4 accent-[var(--color-teal)]" />
                               {ct("keepInNote", lang)}
+                              {!kept.has(l.id) && <Badge tone="outline">{ct("willDrop", lang)}</Badge>}
                             </label>
                           )}
-                          {!signed && <Button className={sm} variant="quiet" icon={<Icon name="pencil" size={14} />} onClick={() => { setEditing(l.id); setDraft(lineText(l)); }}>{ct("edit", lang)}</Button>}
+                          {!signed && sec !== "red_flags" && <Button className={sm} variant="quiet" icon={<Icon name="pencil" size={14} />} onClick={() => { setEditing(l.id); setDraft(lineText(l)); }}>{ct("edit", lang)}</Button>}
                         </div>
                       )}
                     </li>
@@ -455,6 +474,7 @@ function NotePanel({ note, lang, busy, blockedReason, reviewer, onHover, onDraft
         })
       )}
 
+      {error && <p role="alert" className="text-small font-semibold text-signal">{error}</p>}
       {note && !signed && (
         <div className="flex flex-wrap items-center gap-3 border-t border-rule/70 pt-3">
           <Button variant="primary" icon={<Icon name="circle-check" size={16} />} disabled={busy || !!blockedReason} aria-describedby={blockedReason ? "sign-why" : undefined} onClick={() => onSign([...Object.entries(edits).map(([lineId, t]) => ({ lineId, text: t })), ...note.lines.filter((l) => kept.has(l.id) && !(l.id in edits)).map((l) => ({ lineId: l.id, text: l.text[lang] }))])}>{ct("sign", lang)}</Button>

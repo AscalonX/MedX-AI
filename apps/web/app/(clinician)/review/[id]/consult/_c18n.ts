@@ -22,7 +22,7 @@ export const C = {
   clinician: L("Clinician", "บุคลากร", "Clinico"),
   typeLabel: L("Type what was said", "พิมพ์สิ่งที่พูด", "Scriva ciò che è stato detto"),
   send: L("Add line", "เพิ่มบรรทัด", "Aggiungi riga"),
-  privacy: L("Speech is processed by your browser's speech service. Synthetic demo only.", "เสียงถูกประมวลผลโดยบริการเสียงของเบราว์เซอร์ ใช้เพื่อการสาธิตข้อมูลสังเคราะห์เท่านั้น", "Il parlato è elaborato dal servizio vocale del browser. Solo dimostrazione con dati sintetici."),
+  privacy: L("Listening sends the room audio to your browser's cloud speech service (Google in Chrome, Microsoft in Edge, Apple in Safari). Get the patient's agreement first. Synthetic demo only.", "การฟังจะส่งเสียงในห้องไปยังบริการรู้จำเสียงบนคลาวด์ของเบราว์เซอร์ (Google ใน Chrome, Microsoft ใน Edge, Apple ใน Safari) ขอความยินยอมจากผู้ป่วยก่อน ใช้กับข้อมูลสาธิตสังเคราะห์เท่านั้น", "L'ascolto invia l'audio della stanza al servizio vocale cloud del browser (Google in Chrome, Microsoft in Edge, Apple in Safari). Chiedere prima il consenso del paziente. Solo dimostrazione con dati sintetici."),
   transcript: L("Live transcript", "บทสนทนาสด", "Trascrizione in tempo reale"),
   emptyTranscript: L("Nothing said yet. Press Listen or type a line.", "ยังไม่มีบทสนทนา กดฟังหรือพิมพ์", "Ancora nulla. Prema Ascolta o scriva una riga."),
   suggestions: L("Suggestions", "ข้อเสนอแนะ", "Suggerimenti"),
@@ -70,9 +70,15 @@ export const C = {
   considerations: L("Considerations", "ข้อพิจารณา", "Considerazioni"),
   noConsiderations: L("Nothing to consider yet.", "ยังไม่มีข้อพิจารณา", "Nulla da considerare per ora."),
   keepInNote: L("Keep in note", "เก็บไว้ในบันทึก", "Mantieni nella nota"),
-  droppedUnlessKept: L("Dropped at signing unless kept.", "จะถูกตัดออกเมื่อลงนาม เว้นแต่เลือกเก็บไว้", "Eliminate alla firma se non mantenute."),
+  droppedUnlessKept: L("Considerations are dropped at signing unless you keep them.", "ข้อพิจารณาจะถูกตัดออกเมื่อลงนาม เว้นแต่คุณเลือกเก็บไว้", "Le considerazioni vengono eliminate alla firma se non le mantiene."),
   vitals: L("Vitals", "สัญญาณชีพ", "Parametri vitali"),
   orders: L("Orders", "คำสั่งการรักษา", "Ordini"),
+  consentLabel: L("I have told the patient this conversation is transcribed to help the clinician; speech is processed by the browser's cloud speech service; synthetic demo only.", "ฉันได้แจ้งผู้ป่วยแล้วว่าบทสนทนานี้ถูกถอดความเพื่อช่วยบุคลากร เสียงถูกประมวลผลโดยบริการรู้จำเสียงบนคลาวด์ของเบราว์เซอร์ และใช้กับข้อมูลสาธิตสังเคราะห์เท่านั้น", "Ho informato il paziente che questa conversazione viene trascritta per aiutare il clinico; il parlato è elaborato dal servizio vocale cloud del browser; solo dimostrazione con dati sintetici."),
+  consentNeeded: L("Confirm consent to enable the microphone. Typing a line does not need it.", "ยืนยันความยินยอมเพื่อเปิดไมโครโฟน การพิมพ์ไม่ต้องใช้", "Confermi il consenso per attivare il microfono. Scrivere una riga non lo richiede."),
+  consentNote: L("Consent noted: patient told this conversation is transcribed.", "บันทึกความยินยอม: แจ้งผู้ป่วยว่าบทสนทนานี้ถูกถอดความ", "Consenso annotato: il paziente è stato informato che la conversazione è trascritta."),
+  willDrop: L("Will be dropped", "จะถูกตัดออก", "Sarà eliminata"),
+  writeFailed: L("Not saved", "ไม่ได้บันทึก", "Non salvato"),
+  fixtureNoSign: L("The consult service is not answering, so the note cannot be signed.", "บริการไม่ตอบสนอง จึงลงนามบันทึกไม่ได้", "Il servizio non risponde: la nota non può essere firmata."),
 } satisfies Record<string, Localized>;
 export type CKey = keyof typeof C;
 export const ct = (k: CKey, lang: Lang) => C[k][lang];

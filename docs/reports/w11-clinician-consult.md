@@ -30,3 +30,9 @@ From about 20:00 the dev server on :3000 returned 500 for every page and API rou
 ## Mali and role-aware identity
 - Landing hero uses `mascot="wave"` (`screens/v8-landing-mali.png`); the empty queue state uses `mascot="pointing"`. No mascot on red-flag, alert, error, consult suggestion, considerations or note areas.
 - The "Signed in as" selector follows the role: nurse names in nurse mode, doctors (Dr. M. Bianchi, Dr. S. Chaiyo) in doctor mode; switching role moves the identity to the first name of the new list. Verified in doctor-mode consult: options are the two doctors and the note signer uses the selected doctor.
+
+## Safety must-fixes (MF-2, MF-3, MF-10)
+- MF-3: sign, draft, turn and suggestion writes never fall back to fixtures and never show "Note signed" on failure. The server reason is shown ("Not saved: Every red flag requires clinician review before signing") and the note stays editable. Fixture mode (GET failure only) disables Sign with an explanation. Verified live on an escalated case by invoking the sign handler past the disabled button: 409 shown, no receipt.
+- MF-2 (UI side): each consideration line has "Keep in note" (default off) and a "Will be dropped" chip; copy is "Considerations are dropped at signing unless you keep them."; kept lines are sent as unchanged-text edits at sign. The server still has to drop unkept lines (consult.ts), otherwise the note keeps them.
+- MF-10: a consent checkbox (en/th/it, EN wording from the review) gates the mic per session (sessionStorage); ticking it posts one clinician line "Consent noted: patient told this conversation is transcribed." through the existing turn route as the audit trail. The privacy line now uses the review's vendor-cloud wording. Typed lines are not gated. Verified: mic disabled before, enabled after, consent line in the transcript.
+- Red-flag note lines have no Edit control.
