@@ -14,3 +14,7 @@
 | Patient mobile | Sonnet 5.5 | done: Expo app, simulator-verified, web export builds | Sat 14:45 | — |
 | Pitch lead | Sonnet 5.5 | drafts done: SUBMISSION, VIDEO-SCRIPT, DECK-OUTLINE, SAFETY | Sat 14:30 | metrics |
 | Human | — | finish lablab team → Token Factory key | — | AMD key |
+
+## Engine backlog (next Codex wave)
+- redact.ts: name triggers case-insensitive ("Sono Marco Rossi" leaked) — reported by mobile builder 15:05.
+- mock provider: an answer to a follow-up must fill the asked field (mock repeats the severity question 3×).
