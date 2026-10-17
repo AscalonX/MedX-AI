@@ -87,9 +87,11 @@ describe('doctor orders and prescribing gates', () => {
     const order = { ...draft, drugText: drug.names[0].trim(), id: 'new-order', generic: drug.generic, drugClass: drug.drugClass, doseMg: drug.doseRange!.maxSingleMg!, timesPerDay: 1, at: '', status: 'draft' as const, checks: [], overrides: [] };
     const baseline = prescribingChecks(s, order).filter(a => a.kind === 'dose_range'); expect(baseline).toEqual([]);
     const single = prescribingChecks(s, { ...order, doseMg: drug.doseRange!.maxSingleMg! + 1 });
-    expect(single.some(a => a.ruleId === 'MR-DOSE-01' && a.severity === 'high')).toBe(true);
+    expect(single.filter(a => a.kind === 'dose_range')).toHaveLength(1);
+    expect(single.some(a => a.kind === 'dose_range' && a.severity === 'high' && a.message.en.includes('single dose'))).toBe(true);
     const daily = prescribingChecks(s, { ...order, timesPerDay: drug.doseRange!.maxDailyMg! / order.doseMg + 1 });
-    expect(daily.some(a => a.ruleId === 'MR-DOSE-02' && a.severity === 'high')).toBe(true);
+    expect(daily.filter(a => a.kind === 'dose_range')).toHaveLength(1);
+    expect(daily.some(a => a.kind === 'dose_range' && a.severity === 'high' && a.message.en.includes('daily dose'))).toBe(true);
   });
   it('validates catalog codes and returns updated session with a submitted investigation', async () => {
     const id = createSession('en').id;
@@ -104,7 +106,7 @@ describe('doctor orders and prescribing gates', () => {
   it('matches dictionary and enforces both dose limits; unknown and unparsed drugs do not invent doses', async () => {
     const id = createSession('en').id, o = await make(id, { dose: '1500 mg' });
     expect(o).toMatchObject({ generic: 'paracetamol', doseMg: 1500, timesPerDay: 4 });
-    expect(o.checks.filter((a: { kind: string }) => a.kind === 'dose_range').map((a: { ruleId: string }) => a.ruleId)).toEqual(['MR-DOSE-01', 'MR-DOSE-02']);
+    expect(o.checks.filter((a: { kind: string }) => a.kind === 'dose_range').map((a: { ruleId: string }) => a.ruleId)).toEqual(['MR-DOSE-RANGE']);
     const unknown = await make(id, { drugText: 'mystery pill' }); expect(unknown.checks.some((a: { kind: string }) => a.kind === 'unknown_medication')).toBe(true);
     const unparsed = await make(createSession('en').id, { dose: 'one tablet' }); expect(unparsed).not.toHaveProperty('doseMg'); expect(unparsed.checks).toEqual([]);
   });

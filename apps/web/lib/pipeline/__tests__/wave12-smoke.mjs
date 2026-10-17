@@ -29,7 +29,7 @@ assert.equal(updated.orders.investigations[0].code, 'ecg');
 const draft = { orderedBy: 'synthetic-w12-doctor', drugText: 'paracetamol', dose: '1500 mg', route: 'oral', frequency: 'every 6 hours' };
 updated = call(`${root}/orders/medications`, draft);
 let order = updated.orders.medications[0];
-assert.equal(order.checks.filter(a => a.kind === 'dose_range').length, 2);
+assert.equal(order.checks.filter(a => a.kind === 'dose_range').length, 1);
 const orderRoot = `${root}/orders/medications/${order.id}`;
 call(`${orderRoot}/submit`, { orderedBy: draft.orderedBy, overrides: [] }, 409);
 call(`${orderRoot}/submit`, { orderedBy: draft.orderedBy, overrides: order.checks.filter(a => a.severity === 'high').map(a => ({ alertId: a.id, reason: 'Synthetic override documented for smoke test' })) });

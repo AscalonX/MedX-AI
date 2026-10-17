@@ -28,10 +28,24 @@ export function prescribingChecks(s: IntakeSession, order: MedicationOrder) {
   const checks = checkMedRules([...current, ...others.map(entry), entry(order)], s.summary?.allergies || [], pregnancy).filter(a => a.medIds.includes(order.id));
   const drug = lookupDrug(order.drugText);
   if (drug?.doseRange && order.doseMg !== undefined) {
-    for (const [ruleId, exceeds] of [
-      ['MR-DOSE-01', drug.doseRange.maxSingleMg !== undefined && order.doseMg > drug.doseRange.maxSingleMg],
-      ['MR-DOSE-02', drug.doseRange.maxDailyMg !== undefined && order.timesPerDay !== undefined && order.doseMg * order.timesPerDay > drug.doseRange.maxDailyMg],
-    ] as const) if (exceeds) checks.push({ id: stableId(ruleId, [order.id]), ruleId, kind: 'dose_range', severity: 'high', ...structuredClone(MEDRULES.messages.dose_range), medIds: [order.id], allergyIds: [], evidence: [], source: MEDRULES.doseRangeSource || `medrules ${MEDRULES.version}` });
+    const { maxSingleMg, maxDailyMg } = drug.doseRange;
+    const single = maxSingleMg !== undefined && order.doseMg > maxSingleMg;
+    const dailyMg = order.timesPerDay !== undefined ? order.doseMg * order.timesPerDay : undefined;
+    const daily = maxDailyMg !== undefined && dailyMg !== undefined && dailyMg > maxDailyMg;
+    if (single || daily) {
+      // One identity per order, even when a later edit changes which limits exceed.
+      const ruleId = 'MR-DOSE-RANGE';
+      const copy = structuredClone(MEDRULES.messages.dose_range);
+      const labels = { en: ['single dose', 'daily dose'], it: ['dose singola', 'dose giornaliera'], th: ['ขนาดยาต่อครั้ง', 'ขนาดยาต่อวัน'] };
+      for (const lang of ['en', 'it', 'th'] as const) {
+        const limits = [
+          ...(single ? [`${labels[lang][0]} ${order.doseMg} mg > ${maxSingleMg} mg`] : []),
+          ...(daily ? [`${labels[lang][1]} ${dailyMg} mg > ${maxDailyMg} mg`] : []),
+        ];
+        copy.message[lang] += ` (${limits.join('; ')})`;
+      }
+      checks.push({ id: stableId(ruleId, [order.id]), ruleId, kind: 'dose_range', severity: 'high', ...copy, medIds: [order.id], allergyIds: [], evidence: [], source: MEDRULES.doseRangeSource || `medrules ${MEDRULES.version}` });
+    }
   }
   return checks;
 }

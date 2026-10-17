@@ -158,3 +158,67 @@ No blocking questions or shape changes. Orchestrator follow-up: the `VitalRuleFi
 ## NEXT ACTION
 
 Orchestrator can repeat the synthetic curl script and review the changes. No commit, dependency install or server restart was performed. Pre-existing `.impeccable/` was left untouched.
+
+---
+
+# Wave 14 — AI engineer — prescribing evidence and dose alert consolidation
+
+## STATUS
+
+done
+
+## SUMMARY
+
+- Allergy-conflict alerts now carry the matched allergies' verified patient evidence alongside the conflicting patient medication's evidence. Repeated matches merge all allergy IDs and quotes without duplicating identical evidence spans.
+- An allergy supplied only through a clinician edit adds no invented evidence and appends localized provenance, including “from clinician-edited allergy” in English. Provenance remains visible after a subsequent verification when the edit history is retained.
+- Prescribing checks emit one high `dose_range` alert per order, under stable `MR-DOSE-RANGE` identity. The localized message lists every exceeded single/daily limit with actual and maximum values. One documented override covers that alert; submission without an override still fails.
+
+## FILES CHANGED
+
+- `apps/web/lib/pipeline/medrules.ts` — combine allergy/medication evidence and clinician-edit provenance, including merged matches.
+- `apps/web/lib/pipeline/orders.ts` — consolidate dose checks and describe exceeded limits in all three languages.
+- `apps/web/lib/pipeline/__tests__/wave14.test.ts` — 14 regressions for evidence propagation, exact patient spans, merged quotes, clinician-only edits, single/daily/both limits, stable identity, conservative parsing and audited override submission.
+- `apps/web/lib/pipeline/__tests__/wave14-smoke.mjs` — reproducible live curl checks against the existing server.
+- `apps/web/lib/pipeline/__tests__/wave12.test.ts` — update dose assertions, retaining the 31-drug boundary matrix.
+- `apps/web/lib/pipeline/__tests__/wave12-smoke.mjs` — expect one consolidated dose alert.
+- `docs/reports/w12-ai-engineer.md` — append this report.
+
+## TESTS RUN + RESULTS
+
+From `apps/web`:
+
+- `./node_modules/.bin/vitest run --pool=threads --maxWorkers=1 --minWorkers=1` — **19/19 files, 1,382/1,382 tests passed**, 57.27 seconds; includes all 14 new Wave 14 regressions and 117 Wave 12 tests.
+- `./node_modules/.bin/tsc --noEmit` — **passed**.
+- `./node_modules/.bin/eslint .` — **passed**.
+
+From repository root:
+
+- `node apps/web/lib/pipeline/__tests__/wave14-smoke.mjs` — **13/13 live curl requests and all assertions passed** against the existing `localhost:3000` server.
+- `git diff --check` — **passed** after the report append.
+
+Runner notes: an initial targeted run passed 129/131 tests; two new fixtures incorrectly paired amoxicillin text with a paracetamol generic, then were corrected. The first full-suite attempt exceeded its 55-second process budget. The final full-suite run above used a 120-second budget and exited successfully. No package installation or server restart was needed.
+
+## EVIDENCE
+
+- Synthetic allergy session: `cf7be5d8-4fd7-4da9-a9bd-7eb3a0c7931d`. Its amoxicillin order check returned the verified patient quote `penicillin`, UTF-16 offsets **37–47**, turn `9f90ae1c-6ab3-40d6-8952-a0c1d8956609`. The matching existing-medication allergy alert retained **2 evidence spans** (medication and allergy).
+- Synthetic dose session: `99c2c0ef-30c7-4ab0-8e78-294f293200ac`. One high alert, `MR-DOSE-RANGE-072b7c6440a94902358b79d6`, said: “Dose is outside the usual adult range — check. (single dose 1500 mg > 1000 mg; daily dose 6000 mg > 4000 mg)”.
+- Live daily-only and single-only edits retained the same alert ID. Submission without an override returned **409**; exactly one documented override returned **200**, persisted one override and appended `order_submitted` audit evidence.
+- The live check used newly created synthetic sessions reproducing the reported allergy scenario; it did not modify seeded B-014. Clinician-only allergy provenance is covered by unit regressions.
+
+## ASSUMPTIONS
+
+- Summary medication/allergy evidence has already passed the pipeline's patient-quote verification. Alert construction preserves those exact evidence objects and never manufactures quotes from order text or clinician edits.
+- `ruleId` is an existing string contract; `MR-DOSE-RANGE` groups the Doctor-owned single/daily checks without changing clinical thresholds or shared files.
+
+## RISKS
+
+- Previously stored dose alerts have the old per-limit IDs until checks refresh. Submission and pharmacy verification recompute checks; callers must use the refreshed consolidated alert ID for a documented override. Old override IDs are not silently accepted.
+- Live smoke verification created two synthetic sessions and a synthetic submitted order with a documented override. It did not reset the running store.
+
+## OPEN QUESTIONS / CONTRACT CHANGE REQUESTS
+
+None. No shared contract or threshold changes required.
+
+## NEXT ACTION
+
+UI builder can refresh/recheck B-014 and repeat `wave14-smoke.mjs`. No commit, install or server restart was performed. Concurrent changes outside pipeline ownership were left untouched.

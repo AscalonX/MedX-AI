@@ -35,7 +35,11 @@ export function checkMedRules(medications: MedicationEntry[], allergies: Allergy
   const add = (ruleId: string, kind: MedAlertKind, severity: MedAlert['severity'], ms: MedicationEntry[], als: AllergyEntry[] = [], source = SOURCES[kind] || `medrules ${MEDRULES.version}: ${ruleId}`) => {
     const medIds = ms.map(m => m.id).sort(); const id = stableId(ruleId, medIds);
     const existing = out.get(id);
-    if (existing) { existing.allergyIds = [...new Set([...existing.allergyIds, ...als.map(a => a.id)])]; return; }
+    const allergyIds = [...new Set([...(existing?.allergyIds || []), ...als.map(a => a.id)])];
+    const matchedAllergies = allergies.filter(a => allergyIds.includes(a.id));
+    const evidence = [...new Map([
+      ...(existing?.evidence || []), ...ms.flatMap(m => m.evidence), ...matchedAllergies.flatMap(a => a.evidence),
+    ].map(e => [JSON.stringify([e.turnId, e.start, e.end, e.quote]), e])).values()];
     const copy = structuredClone(MEDRULES.messages[kind]);
     if (ms.some(m => stoppedTiming(m.timing))) {
       const suffix = { en: 'patient says stopped — confirm', it: 'il paziente riferisce di aver interrotto — confermare', th: 'ผู้ป่วยแจ้งว่าหยุดยาแล้ว — โปรดยืนยัน' };
@@ -44,7 +48,11 @@ export function checkMedRules(medications: MedicationEntry[], allergies: Allergy
         copy.action[lang] += ` (${suffix[lang]})`;
       }
     }
-    out.set(id, { id, ruleId, kind, severity, ...copy, medIds, allergyIds: als.map(a => a.id), evidence: ms.flatMap(m => m.evidence), source });
+    if (matchedAllergies.some(a => (a.status === 'edited' || a.review?.previous) && !a.evidence.length)) {
+      const suffix = { en: 'from clinician-edited allergy', it: 'da allergia modificata dal clinico', th: 'จากข้อมูลแพ้ยาที่บุคลากรทางคลินิกแก้ไข' };
+      for (const lang of ['en', 'it', 'th'] as const) copy.message[lang] += ` (${suffix[lang]})`;
+    }
+    out.set(id, { id, ruleId, kind, severity, ...copy, medIds, allergyIds, evidence, source });
   };
   for (const { m, d, tokens } of meds) {
     if (!d || d.generic.endsWith('(unspecified)')) add('MR-UNKNOWN-01', 'unknown_medication', 'moderate', [m]);
