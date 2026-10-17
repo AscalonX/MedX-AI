@@ -11,7 +11,8 @@ export type Localized = Record<Lang, string>;
 
 export interface Turn {
   id: string;
-  role: "patient" | "assistant";
+  /** "clinician" = nurse/doctor speech captured in consult (ambient) mode; never fed to extraction as patient evidence. */
+  role: "patient" | "assistant" | "clinician";
   lang: Lang;
   /** Patient text AFTER PII redaction (e.g. "[NAME_1]", "[PHONE_1]"). Raw text is never stored. */
   text: string;
@@ -168,6 +169,9 @@ export type AuditType =
   | "review"
   | "red_flag_review"
   | "pharmacy_review"
+  | "consult_turn"
+  | "consult_suggestion"
+  | "consult_note_signed"
   | "takeover";
 
 export interface AuditEvent {
@@ -319,4 +323,67 @@ export interface MedRuleFile {
   allergyConflicts: { allergenClass: string; drugClasses: string[]; ruleId: string; severity: "high" | "moderate"; source: string }[];
   interactions: { a: string; b: string; ruleId: string; severity: "high" | "moderate"; message: Localized; source: string }[];
   messages: Record<MedAlertKind, { message: Localized; action: Localized }>;
+}
+
+// ---------- Consult assistant (ambient listening for nurse / doctor) ----------
+
+export type ConsultMode = "nurse" | "doctor";
+
+export type ConsultSuggestionKind =
+  | "ask_next" // a question the clinician could ask now (missing required info)
+  | "rule_out" // a don't-miss question to rule out a serious cause (from clinical rules)
+  | "consider"; // doctor mode only: a condition to consider — decision support, NOT a diagnosis
+
+export interface ConsultSuggestion {
+  id: string; // stable across refreshes (kind + ruleId/field + key)
+  kind: ConsultSuggestionKind;
+  mode: ConsultMode[]; // which modes may show it
+  text: Localized; // the question to ask, or "Consider: …"
+  why: Localized; // short clinical reason
+  /** Patient quotes that triggered it (verified). Empty for generic missing-field prompts. */
+  evidence: Evidence[];
+  field?: FieldKey;
+  ruleId?: string; // consult rule id from packages/shared/src/consultrules.json
+  source: "rule" | "model";
+  /** 0..1 for model suggestions; rules = 1. */
+  confidence: number;
+  status: "open" | "asked" | "dismissed" | "answered";
+}
+
+export interface ConsultNoteLine {
+  id: string;
+  section: "presenting_complaint" | "history" | "medications" | "allergies" | "red_flags" | "considerations" | "open_questions";
+  text: Localized;
+  evidence: Evidence[];
+  /** "unsupported" lines are drafts without a verified quote — shown as needs-check, never as fact. */
+  status: "supported" | "unsupported" | "edited" | "clinician";
+}
+
+export interface ConsultNote {
+  lines: ConsultNoteLine[];
+  generatedAt: string;
+  signed?: { reviewerId: string; at: string };
+  disclaimer: Localized; // "Draft for clinician review. Not a diagnosis."
+}
+
+export interface ConsultState {
+  sessionId: string;
+  mode: ConsultMode;
+  suggestions: ConsultSuggestion[];
+  note: ConsultNote | null;
+  modelCalls: ModelCall[];
+}
+
+/** packages/shared/src/consultrules.json (Doctor-owned): deterministic don't-miss question bank. */
+export interface ConsultRuleFile {
+  version: string;
+  rules: {
+    id: string; // "CR-CHEST-01"
+    /** Same AND-of-ORs matching as red flags, on patient speech. */
+    match: string[][];
+    questions: { id: string; text: Localized; why: Localized; modes: ConsultMode[] }[];
+    /** Doctor-mode "consider" items: condition names framed for review, never diagnoses. */
+    considerations?: { id: string; text: Localized; why: Localized }[];
+    source: string;
+  }[];
 }

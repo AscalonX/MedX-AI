@@ -1,5 +1,5 @@
 // HTTP contract between apps/mobile, apps/web UI and apps/web/app/api. Base path: /api
-import type { AllergyReviewAction, AuditEvent, IntakeSession, Lang, MedAlertReviewAction, MedReviewAction, OpsMetrics, RedFlagReviewAction, ReviewAction } from "./types";
+import type { ConsultMode, ConsultState, AllergyReviewAction, AuditEvent, IntakeSession, Lang, MedAlertReviewAction, MedReviewAction, OpsMetrics, RedFlagReviewAction, ReviewAction } from "./types";
 
 /** POST /api/sessions */
 export interface CreateSessionReq { patientLang: Lang }
@@ -38,3 +38,19 @@ export interface ApiError { error: string; code: "bad_request" | "not_found" | "
 export interface PharmacyReviewReq { reviewerId: string; medActions: MedReviewAction[]; alertActions: MedAlertReviewAction[]; allergyActions?: AllergyReviewAction[]; /** true when the pharmacist signs off the list */ complete?: boolean }
 export type PharmacyReviewRes = IntakeSession;
 /** Audit payload for type "pharmacy_review": { medActions, alertActions, allergyActions, complete } exactly as received (no raw patient text). */
+
+/** POST /api/sessions/:id/consult/turns — one transcribed utterance from the consult room.
+ * speaker "patient" goes through redaction → red flags → extraction exactly like a patient turn;
+ * speaker "clinician" is redacted and stored for context only (marks matching suggestions "asked"). */
+export interface ConsultTurnReq { speaker: "patient" | "clinician"; text: string; mode: ConsultMode; clientTurnId?: string }
+export type ConsultTurnRes = ConsultState;
+
+/** GET /api/sessions/:id/consult?mode=nurse|doctor */
+export type GetConsultRes = ConsultState;
+
+/** POST /api/sessions/:id/consult/suggestions/:suggestionId — clinician marks a suggestion. */
+export interface ConsultSuggestionReq { reviewerId: string; status: "asked" | "dismissed" }
+
+/** POST /api/sessions/:id/consult/note — regenerate (action "draft") or sign (action "sign", with line edits). */
+export interface ConsultNoteReq { reviewerId: string; mode: ConsultMode; action: "draft" | "sign"; edits?: { lineId: string; text: string }[] }
+export type ConsultNoteRes = ConsultState;
