@@ -60,7 +60,8 @@ All model calls (extraction, translation, safety screen, next question, medicati
 ```bash
 docker build -f apps/web/Dockerfile -t medx-bridge . \
  && docker run --rm -p 3000:3000 -e MODEL_PROVIDER=mock -e DEMO_SEED=1 medx-bridge
-# open http://localhost:3000, then seed demo data:  curl localhost:3000/api/demo/reset
+# open http://localhost:3000, then seed demo data (server started with DEMO_SEED=1 and DEMO_TOKEN):
+#   curl -X POST -H "x-demo-token: $DEMO_TOKEN" localhost:3000/api/demo/reset
 ```
 
 With Gemma on AMD: `cp .env.example .env`, fill `AMD_*`, set `MODEL_PROVIDER=amd`, then `docker compose --env-file .env up --build`.
@@ -92,7 +93,8 @@ Run it before `docker build` / deploy (the output is a build artifact, not commi
 | `AMD_API_KEY` | Bearer key, server-side only, never committed |
 | `AMD_MODEL` | Primary Gemma model id, exactly as `GET {AMD_BASE_URL}/models` returns it |
 | `AMD_MODEL_FALLBACK` | Optional second Gemma id used on provider error |
-| `DEMO_SEED` | `1` enables `GET /api/demo/reset` (synthetic fixtures); leave unset outside demos |
+| `DEMO_SEED` | `1` enables `POST /api/demo/reset` (synthetic fixtures); leave unset outside demos |
+| `DEMO_TOKEN` | secret required in the `x-demo-token` header for demo reset/seed; reset is disabled when unset |
 | `LLM_TIMEOUT_MS` | Per-call timeout; defaults 25000 ms (extraction) and 8000 ms (next question) |
 
 Also: `AMD_JSON_SCHEMA=false` disables `response_format` json_schema if an endpoint rejects it; `MEDX_STORE_PATH` sets the JSON store file (Docker default `/app/apps/web/.data/store.json`). See [.env.example](.env.example).

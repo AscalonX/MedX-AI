@@ -8,7 +8,7 @@ Script: [pitch/VIDEO-SCRIPT.md](../pitch/VIDEO-SCRIPT.md). Synthetic data only. 
 # server, with or without a live AMD key
 cd apps/web
 DEMO_SEED=1 MODEL_PROVIDER=amd npm run dev        # or MODEL_PROVIDER=mock; or the Docker one-liner in README
-curl localhost:3000/api/demo/reset                # clears the store and replays 11 synthetic cases
+curl -X POST -H "x-demo-token: $DEMO_TOKEN" localhost:3000/api/demo/reset   # needs DEMO_SEED=1 and DEMO_TOKEN set on the server; wipes and replays 11 synthetic cases
 curl localhost:3000/api/health                    # must say provider "amd-tokenfactory" if you narrate "Gemma on AMD"
 ```
 
@@ -24,7 +24,7 @@ scripts/build-patient-web.sh     # patient app at http://localhost:3000/patient/
 
 Browser: window 1440 wide, hide bookmarks bar, language switch set per segment. The Next dev badge is already off (`devIndicators: false`).
 
-## Seeded cases (after `/api/demo/reset`; codes follow creation order)
+## Seeded cases (after `POST /api/demo/reset`; codes follow creation order)
 
 | Code | Fixture | Language | State | Use it to show |
 |---|---|---|---|---|
@@ -56,5 +56,5 @@ Live segments (Italian tourist, buried Thai red flag) are typed fresh in the pat
 ## Reset between takes
 
 ```bash
-curl localhost:3000/api/demo/reset   # idempotent; wipes sessions and audit, reseeds
+curl -X POST -H "x-demo-token: $DEMO_TOKEN" localhost:3000/api/demo/reset   # idempotent; wipes sessions and audit, reseeds
 ```
