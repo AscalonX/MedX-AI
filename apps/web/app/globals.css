@@ -33,10 +33,19 @@
   --color-signal-tint: #FDEAEC;
   --color-on-signal: #FFFFFF;
 
-  /* type: Latin face first, Thai face for Thai glyphs. `font-serif` is a v1 alias of the display face. */
-  --font-sans: var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif;
-  --font-display: var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif;
-  --font-serif: var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif;
+  /* type: SCBXBeta2 everywhere (Latin, Italian, Thai). `font-serif` and `font-display` are aliases. */
+  --font-sans: var(--font-scbx), system-ui, "Noto Sans Thai", sans-serif;
+  --font-display: var(--font-scbx), system-ui, "Noto Sans Thai", sans-serif;
+  --font-serif: var(--font-scbx), system-ui, "Noto Sans Thai", sans-serif;
+
+  /* SCBXBeta2 ships 300/400/700 only: map Tailwind weights onto real cuts (no synthesis). */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 400;
+  --font-weight-semibold: 700;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 700;
+  --font-weight-black: 700;
 
   --text-micro: 12px;
   --text-micro--line-height: 1.4;
@@ -146,7 +155,7 @@
   h3 {
     font-family: var(--font-display);
     font-weight: 700;
-    letter-spacing: -0.015em;
+    letter-spacing: -0.01em;
     text-wrap: balance;
   }
   p {

@@ -49,30 +49,27 @@ export const gradient = {
 } as const;
 
 // ---------- Type ----------
-// One modern geometric sans for everything; Thai glyphs come from a matched Thai face.
-// Web: next/font/google. Native has no per-glyph fallback, so mobile picks the family per language.
-// `serif` is kept as a v1 alias of `display` so existing calls compile.
-const displayLatin = { regular: "PlusJakartaSans_600SemiBold", medium: "PlusJakartaSans_700Bold", semibold: "PlusJakartaSans_700Bold", bold: "PlusJakartaSans_800ExtraBold" };
-const displayThai = { regular: "IBMPlexSansThaiLooped_600SemiBold", medium: "IBMPlexSansThaiLooped_700Bold", semibold: "IBMPlexSansThaiLooped_700Bold", bold: "IBMPlexSansThaiLooped_700Bold" };
-const sansLatin = { regular: "PlusJakartaSans_400Regular", medium: "PlusJakartaSans_500Medium", semibold: "PlusJakartaSans_600SemiBold", bold: "PlusJakartaSans_700Bold" };
-const sansThai = { regular: "IBMPlexSansThaiLooped_400Regular", medium: "IBMPlexSansThaiLooped_500Medium", semibold: "IBMPlexSansThaiLooped_600SemiBold", bold: "IBMPlexSansThaiLooped_700Bold" };
+// Owner decision: SCBXBeta2 is the single typeface for Latin, Italian and Thai on every surface.
+// It ships three cuts: Light 300, Regular 400, Bold 700. Role weights map onto those (no synthetic weights).
+// Web: next/font/local (apps/web/app/layout.tsx, var --font-scbx). Mobile: expo-font registers the names below
+// from apps/mobile/assets/fonts. The font has no `tnum` feature: digits are proportional.
+export const scbxFont = { light: "SCBXBeta2-Light", regular: "SCBXBeta2-Regular", bold: "SCBXBeta2-Bold" } as const;
+const scbxWeights = { regular: scbxFont.regular, medium: scbxFont.regular, semibold: scbxFont.bold, bold: scbxFont.bold, light: scbxFont.light };
+const scbxDisplay = { regular: scbxFont.bold, medium: scbxFont.bold, semibold: scbxFont.bold, bold: scbxFont.bold, light: scbxFont.light };
+const stack = 'var(--font-scbx), system-ui, "Noto Sans Thai", sans-serif';
 
 export const fontFamily = {
-  web: {
-    display: "var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif",
-    serif: "var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif", // v1 alias
-    sans: "var(--font-jakarta), var(--font-anuphan), system-ui, sans-serif",
-  },
-  /** expo-google-fonts export names. Needs @expo-google-fonts/plus-jakarta-sans (see DIRECTION.md section 3). */
+  web: { display: stack, serif: stack /* v1 alias */, sans: stack },
+  /** expo-font names, identical for every language. `display` defaults to Bold. */
   mobile: {
-    display: { th: displayThai, it: displayLatin, en: displayLatin },
-    serif: { th: displayThai, it: displayLatin, en: displayLatin }, // v1 alias
-    sans: { th: sansThai, it: sansLatin, en: sansLatin },
+    display: { th: scbxDisplay, it: scbxDisplay, en: scbxDisplay },
+    serif: { th: scbxDisplay, it: scbxDisplay, en: scbxDisplay }, // v1 alias
+    sans: { th: scbxWeights, it: scbxWeights, en: scbxWeights },
   },
 } as const;
 
 export type FontRole = "display" | "serif" | "sans";
-export type FontWeightName = "regular" | "medium" | "semibold" | "bold";
+export type FontWeightName = "light" | "regular" | "medium" | "semibold" | "bold";
 export function mobileFont(role: FontRole, lang: Lang, weight: FontWeightName = "regular"): string {
   return fontFamily.mobile[role][lang][weight];
 }

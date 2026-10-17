@@ -62,38 +62,47 @@ Rules:
 
 ## 3. Type
 
-| Role | Latin (it, en) | Thai (web) | Thai (mobile, patient) |
-|---|---|---|---|
-| Display and UI | Plus Jakarta Sans 400 to 800 | Anuphan | IBM Plex Sans Thai Looped |
+**One typeface everywhere: SCBXBeta2** (owner decision, recorded in `docs/DECISIONS.md`). The same family covers Latin, Italian and Thai on web and mobile, so mixed Thai and Latin lines share one design. Checked with fontTools:
+- all 87 assigned Thai code points (U+0E01 to U+0E5B);
+- all 12 Italian accented vowels (à è é ì ò ù and capitals);
+- `kern`, `mark` and `mkmk` positioning for Thai stacking.
 
-Why these:
-- **Plus Jakarta Sans** is a modern geometric grotesk with open counters and friendly round forms, and it is the reference app's face. It has true tabular figures (`tnum`), and `latin` covers Italian accents (à è é ì ò ù).
-- **Anuphan** (Cadson Demak) is a loopless modern Thai with the same geometric construction and x-height feel as Jakarta, so mixed Thai/Latin lines sit level. Web Thai clinicians read it fast.
-- **On mobile, patients get looped Thai (มีหัว), IBM Plex Sans Thai Looped**, because looped forms are easier for older and less-practised readers. It is already installed.
-- Tabular, lining numerals are set globally. Big numbers use `stat` (32px, weight 800).
+| Cut | File | Role |
+|---|---|---|
+| Light 300 | `SCBXBeta2-Light.otf` | Large secondary text only (17px and up): greeting line, hero subtitle. Never for small text or values |
+| Regular 400 | `SCBXBeta2-Regular.otf` | Body, labels, chips' secondary text, inputs |
+| Bold 700 | `SCBXBeta2-Bold.otf` | Headings, values, buttons, chips, big numbers, the patient code |
+
+Weights map onto the three real cuts, so the browser never synthesises a weight:
+- Tailwind `font-medium` = 400.
+- `font-semibold`, `font-bold` and `font-extrabold` = 700.
 
 Loading:
-- **Web:** `next/font/google` in `layout.tsx` (`--font-jakarta`, `--font-anuphan`, thai subset only).
-- **Mobile:** per language via `mobileFont(role, lang, weight)`. React Native cannot fall back per glyph.
-  - Needs `npx expo install @expo-google-fonts/plus-jakarta-sans`.
-  - Load `PlusJakartaSans_400Regular` through `800ExtraBold` plus `IBMPlexSansThaiLooped_700Bold`.
-  - Until then Latin text falls back to the system font.
-- **Roles:** `display` is new; `serif` is kept as an alias of `display` so v1 calls compile.
+- **Web:** `next/font/local` in `layout.tsx` from `apps/web/app/fonts/`, exposed as `--font-scbx`. Fallback stack: system-ui, Noto Sans Thai, sans-serif.
+- **Mobile:** register with expo-font as `"SCBXBeta2-Light"`, `"SCBXBeta2-Regular"` and `"SCBXBeta2-Bold"` from `apps/mobile/assets/fonts/`.
+  - `mobileFont(role, lang, weight)` returns these names for every language.
+  - `sans` maps regular and medium to Regular, semibold and bold to Bold, and light to Light.
+  - `display` defaults to Bold.
+- `serif` and `display` remain as aliases so earlier calls compile.
+
+Numerals: SCBXBeta2 has **no `tnum` feature**, so digits are proportional and `tabular-nums` has no effect.
+- Single big numbers (StatTile, patient code) are unaffected.
+- In tables and live counters, right-align number columns and give them a fixed width so changing digits do not shift the layout.
 
 Scale (px; line height Latin / Thai):
 
 | Token | Size | LH | Weight | Use |
 |---|---|---|---|---|
-| `micro` | 12 | 1.4 / 1.6 | 600 in chips | Chips, meta |
-| `small` | 13 | 1.45 / 1.65 | 400 to 600 | Labels, table meta |
-| `body` | 15 | 1.5 / 1.7 | 400; values 600 | Clinician body |
-| `lead` | 17 | 1.45 / 1.6 | 500 to 700 | Card titles, red-flag action |
+| `micro` | 12 | 1.4 / 1.6 | 700 in chips | Chips, meta |
+| `small` | 13 | 1.45 / 1.65 | 400 or 700 | Labels, table meta |
+| `body` | 15 | 1.5 / 1.7 | 400; values 700 | Clinician body |
+| `lead` | 17 | 1.45 / 1.6 | 400 or 700 | Card titles, red-flag action |
 | `bodyPatient` | 18 | 1.5 / 1.7 | 400 | Patient body |
-| `title` | 22 | 1.25 / 1.5 | 700 to 800 | Screen titles, hero title, greeting name |
+| `title` | 22 | 1.25 / 1.5 | 700 | Screen titles, hero title, greeting name |
 | `question` | 26 | 1.2 / 1.45 | 700 | The one patient question |
-| `stat` | 32 | 1.1 / 1.3 | 800 | Big numbers |
-| `display` | 34 | 1.1 / 1.4 | 800 | Red-flag screen (mobile) |
-| `code` | 52 | 1.0 | 800 | Patient code B-042 |
+| `stat` | 32 | 1.1 / 1.3 | 700 | Big numbers |
+| `display` | 34 | 1.1 / 1.4 | 700 | Red-flag screen (mobile) |
+| `code` | 52 | 1.0 | 700 | Patient code B-042 |
 
 Rules: sentence case; no ALL CAPS. Negative tracking on Latin headings only; Thai tracking is always 0. Thai never gets italics (the CSS forces normal).
 
@@ -215,7 +224,7 @@ Home and welcome:
 | [M] MedX Bridge              ( TH )  |  brand mark + language pill
 |                                      |
 | Good morning                         |  small inkSoft
-| Welcome                              |  title 22, 800
+| Welcome                              |  title 22, Bold
 |                                      |
 | +----------------------------------+ |  GRADIENT HERO (teal -> ocean), radius 28
 | | Tell us what brings you in       | |  title, white
@@ -226,7 +235,7 @@ Home and welcome:
 |                                      |
 | +---------------+ +----------------+ |  two white cards
 | | Your code     | | Wait           | |  small inkSoft
-| | B-042         | | ~ 15 min       | |  stat 32, 800, tabular (real data only)
+| | B-042         | | ~ 15 min       | |  stat 32, Bold (real data only)
 | +---------------+ +----------------+ |
 |                                      |
 | This does not replace a doctor. In   |  small graphite
@@ -264,7 +273,7 @@ Red flag (see 6c):
 ```
 +======================================+  red gradient, full screen
 | (!)                                  |  white icon disc
-| Vada subito al banco                 |  display 34, 800, white
+| Vada subito al banco                 |  display 34, Bold, white
 | dell'accettazione.                   |
 | Mostri questa schermata al personale.|  bodyPatient, white
 | +----------------------------------+ |

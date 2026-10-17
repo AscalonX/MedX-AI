@@ -81,3 +81,37 @@ Token additions: colours `muted`, `teal`, `ocean`, `primaryFrom`, `primaryTo`, `
 
 ## NEXT ACTION
 Builders adopt `AppShell`, `GradientHero`, `Card` and `StatTile` per DIRECTION.md section 8. Then run `impeccable-finish-reviewer` on the three web screens and the mobile flow at 375px and 1440px, with reduced motion on.
+
+---
+
+## Addendum: SCBXBeta2 single typeface (owner decision)
+
+STATUS: done. Nothing committed.
+
+- **Web.** `apps/web/app/layout.tsx` now uses `next/font/local` with SCBXBeta2 Light 300, Regular 400 and Bold 700 (`--font-scbx`). The fallback stack is system-ui, -apple-system, Segoe UI, Noto Sans Thai, sans-serif. Plus Jakarta Sans and Anuphan are removed.
+- **Weights.** `globals.css` maps Tailwind weights onto the three real cuts (medium = 400; semibold, bold and extrabold = 700), so the browser never synthesises a weight. All three font stacks point to `--font-scbx`. The Thai line-height and no-italic rules are unchanged.
+- **Tokens.** `tokens.ts` adds a new `scbxFont` export (`SCBXBeta2-Light`, `-Regular`, `-Bold`). `mobileFont(role, lang, weight)` now returns these names for every language.
+  - `FontWeightName` gains `light`.
+  - In `sans`, medium maps to Regular and semibold to Bold. `display` defaults to Bold.
+- **DIRECTION.md.** Section 3 is rewritten for one family with weights by role. Light is only for large secondary text.
+- **Coverage, checked with fontTools on all three cuts:**
+  - all 87 assigned Thai code points;
+  - all 12 Italian accented vowels;
+  - GPOS `kern`, `mark` and `mkmk`.
+- **Numerals.** The font has no `tnum` feature, so digits are proportional (digit advance widths vary from 412 to 676 units in Light) and `tabular-nums` does nothing. Single big numbers such as StatTile and the patient code look fine. Tables and live timers should right-align number columns with a fixed width; DIRECTION.md section 3 says so.
+- **Tests.**
+  - `apps/web`: `npx tsc --noEmit` exits 0.
+  - `apps/mobile`: `npx tsc --noEmit` exits 0.
+- **Screens.** Saved to `docs/reports/screens/`:
+  - `v2-font-review.png` (B-003: verified, missing and edited states);
+  - `v2-font-review-escalated.png` (B-013);
+  - `v2-font-ops.png`.
+- **Mobile builder.** Register the fonts with expo-font in `_layout.tsx` using exactly these keys, then drop the Plex and Newsreader loads:
+
+  ```ts
+  "SCBXBeta2-Light": require("../../assets/fonts/SCBXBeta2-Light.otf"),
+  "SCBXBeta2-Regular": require("../../assets/fonts/SCBXBeta2-Regular.otf"),
+  "SCBXBeta2-Bold": require("../../assets/fonts/SCBXBeta2-Bold.otf"),
+  ```
+
+  Until then, mobile text falls back to the system font. `expo-linear-gradient` is approved; plus-jakarta and lucide are not needed.
