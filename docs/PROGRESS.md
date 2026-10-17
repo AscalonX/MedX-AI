@@ -2,15 +2,15 @@
 
 | Role | Model | Status | Last update (ICT) | Blocker |
 |---|---|---|---|---|
-| Orchestrator | Opus 5.5 | contracts, integration, dev server :3000 (mock, 8 seeded sessions) | Sat 15:05 | — |
-| Doctor | Opus 5.5 | W2 done: SPEC, 18 rules v1.1 (175/175), gold review (4 fixes) | Sat 14:40 | — |
-| Medical researcher | Sonnet 5.5 | W2 done: PROBLEM.md (19 sources), 40 cases (321/321 quotes verified) | Sat 14:20 | native-speaker proofread |
-| AI researcher | Opus 5.5 | W2 done: DESIGN incl. add-only model screen, METRICS pre-declared, eval harness (mock run OK) | Sat 15:00 | AMD key for real runs |
-| Design lead | Opus 5.5 | W1 done: DIRECTION, tokens, globals.css, 9 house components | Sat 14:45 | — |
-| AI engineer | Codex | W2 done (322 tests); W3 model safety screen + verifier boundary fix running | Sat 15:05 | — |
-| Ops dashboard | Codex | W3 building /ops | Sat 15:05 | — |
-| Clinician web | Sonnet 5.5 | W3 building /review | Sat 15:05 | — |
-| Patient mobile | Sonnet 5.5 | W3 building Expo app | Sat 15:05 | — |
-| Pitch lead | Sonnet 5.5 | W3 drafting submission copy, video script, deck outline, safety page | Sat 15:05 | — |
-| Blind holdout | Sonnet 5.5 | done: 18 cases; rules-only recall 7/10, FA 3/8 (recorded before changes) | Sat 14:30 | — |
-| Human | — | finish lablab team (Token Factory says email not registered until team exists) | Sat 15:05 | AMD key |
+| Orchestrator | Opus 5.5 | integration; dev server :3000 (mock) | Sat 14:50 | — |
+| Doctor | Opus 5.5 | W3 done: PHARMACY-SPEC, medrules v1.0 (59 drugs, 194/194), red flags v1.1 (175/175) | Sat 14:45 | — |
+| Medical researcher | Sonnet 5.5 | W3 done: 52 cases incl. 12 MED (475/475 quotes), pharmacy evidence | Sat 14:35 | native-speaker proofread |
+| AI researcher | Opus 5.5 | W2 done: eval harness + pre-declared metrics, mock run OK | Sat 14:20 | AMD key |
+| Design lead | Opus 5.5 | W1 done; finish review pending | Sat 13:45 | — |
+| AI engineer | Codex | W3 done (374 tests, model safety screen); W4 medication engine running | Sat 14:45 | — |
+| Ops dashboard | Codex | done: /ops (verified visually by orchestrator) | Sat 14:40 | — |
+| Clinician web | Sonnet 5.5 | done: /review (screens verified) | Sat 14:38 | — |
+| Pharmacist web | Sonnet 5.5 | done on fixtures: /pharmacy; live data after W4 | Sat 14:40 | engine W4 |
+| Patient mobile | Sonnet 5.5 | done: Expo app, simulator-verified, web export builds | Sat 14:45 | — |
+| Pitch lead | Sonnet 5.5 | drafts done: SUBMISSION, VIDEO-SCRIPT, DECK-OUTLINE, SAFETY | Sat 14:30 | metrics |
+| Human | — | finish lablab team → Token Factory key | — | AMD key |
