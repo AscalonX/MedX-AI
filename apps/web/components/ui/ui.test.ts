@@ -6,7 +6,8 @@ import { segments } from "./segments";
 
 describe("segments", () => {
   const text = "ho mal di petto e sudo freddo";
-  it("marks exact quotes, merges overlaps, orders active marks", () => {
+  const view = (s: ReturnType<typeof segments>) => s.map((x) => [x.text, x.mark ? (x.mark.active ? `A${x.mark.order}` : "P") : "-"]);
+  it("marks exact quotes, splits overlaps at boundaries, orders active runs", () => {
     const s = segments(text, [
       { start: 3, end: 14, quote: "mal di petto", active: true }, // wrong offsets: 3..14 is "mal di pett"
       { start: 3, end: 15, quote: "mal di petto", active: true },
@@ -14,9 +15,35 @@ describe("segments", () => {
       { start: 23, end: 29, quote: "freddo", active: true },
     ]);
     expect(s.map((x) => x.text).join("")).toBe(text);
-    expect(s.filter((x) => x.mark).map((x) => [x.text, x.mark!.active, x.mark!.order])).toEqual([
-      ["mal di petto", true, 0],
-      ["sudo freddo", true, 1],
+    expect(view(s)).toEqual([
+      ["ho ", "-"],
+      ["mal di petto", "A0"],
+      [" e ", "-"],
+      ["sudo ", "P"],
+      ["freddo", "A1"],
+    ]);
+  });
+  it("selected quote inside a passive quote: only the selected range is active", () => {
+    const t = "Headache since yesterday";
+    const s = segments(t, [
+      { start: 0, end: 24, quote: t, active: false },
+      { start: 9, end: 24, quote: "since yesterday", active: true },
+    ]);
+    expect(view(s)).toEqual([
+      ["Headache ", "P"],
+      ["since yesterday", "A0"],
+    ]);
+  });
+  it("partial overlap and passive inside active", () => {
+    const t = "pain in chest and arm";
+    const s = segments(t, [
+      { start: 0, end: 13, quote: "pain in chest", active: true },
+      { start: 8, end: 21, quote: "chest and arm", active: false },
+      { start: 0, end: 4, quote: "pain", active: false },
+    ]);
+    expect(view(s)).toEqual([
+      ["pain in chest", "A0"],
+      [" and arm", "P"],
     ]);
   });
   it("drops a mark whose offsets do not reproduce the quote", () => {

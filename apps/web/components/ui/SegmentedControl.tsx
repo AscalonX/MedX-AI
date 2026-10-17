@@ -83,7 +83,7 @@ export function Pill({ active = false, icon, children, onClick, count }: { activ
       aria-pressed={active}
       onClick={onClick}
       className={cx(
-        "inline-flex h-9 items-center gap-2 rounded-full px-4 text-small font-semibold transition-colors duration-quick ease-pen",
+        "inline-flex h-9 items-center gap-2 rounded-full px-4 text-small font-semibold transition-[background-color,color] duration-quick ease-pen",
         focusRing,
         active ? "bg-ink text-sheet" : "bg-sheet text-ink-soft ring-1 ring-inset ring-rule hover:text-ink",
       )}

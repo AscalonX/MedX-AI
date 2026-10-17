@@ -6,28 +6,30 @@ export type Segment = { text: string; mark?: { active: boolean; order: number } 
 /**
  * Split turn text into plain and marked runs.
  * Safety: a mark whose offsets do not reproduce its quote exactly is dropped, never guessed.
- * Overlapping marks merge (active if either is). `order` counts active marks left to right for the sweep stagger.
+ * Overlaps are split at interval boundaries: a character is active only if an active mark covers it,
+ * so a passive quote that contains the selected quote stays passive outside the selected range.
+ * Adjacent pieces with the same state join. `order` counts active runs left to right for the sweep stagger.
  */
 export function segments(text: string, marks: Mark[]): Segment[] {
-  const valid = marks
-    .filter((m) => m.start >= 0 && m.end <= text.length && m.start < m.end && text.slice(m.start, m.end) === m.quote)
-    .sort((a, b) => a.start - b.start);
-  const merged: { start: number; end: number; active: boolean }[] = [];
-  for (const m of valid) {
-    const last = merged[merged.length - 1];
-    if (last && m.start < last.end) {
-      last.end = Math.max(last.end, m.end);
-      last.active ||= m.active;
-    } else merged.push({ start: m.start, end: m.end, active: m.active });
+  const valid = marks.filter(
+    (m) => m.start >= 0 && m.end <= text.length && m.start < m.end && text.slice(m.start, m.end) === m.quote,
+  );
+  const cuts = [...new Set([0, text.length, ...valid.flatMap((m) => [m.start, m.end])])].sort((a, b) => a - b);
+
+  // state per elementary interval: 0 plain, 1 passive mark, 2 active mark
+  const runs: { start: number; end: number; state: 0 | 1 | 2 }[] = [];
+  for (let i = 0; i < cuts.length - 1; i++) {
+    const [a, b] = [cuts[i]!, cuts[i + 1]!];
+    const cover = valid.filter((m) => m.start <= a && m.end >= b);
+    const state = cover.length === 0 ? 0 : cover.some((m) => m.active) ? 2 : 1;
+    const last = runs[runs.length - 1];
+    if (last && last.state === state) last.end = b;
+    else runs.push({ start: a, end: b, state });
   }
-  const out: Segment[] = [];
-  let at = 0;
+
   let order = 0;
-  for (const m of merged) {
-    if (m.start > at) out.push({ text: text.slice(at, m.start) });
-    out.push({ text: text.slice(m.start, m.end), mark: { active: m.active, order: m.active ? order++ : -1 } });
-    at = m.end;
-  }
-  if (at < text.length) out.push({ text: text.slice(at) });
-  return out;
+  return runs.map((r) => {
+    const t = text.slice(r.start, r.end);
+    return r.state === 0 ? { text: t } : { text: t, mark: { active: r.state === 2, order: r.state === 2 ? order++ : -1 } };
+  });
 }

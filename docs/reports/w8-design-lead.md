@@ -56,3 +56,34 @@ None.
 - Ops: use `StatTile value={<CountUp value={n} />}`.
 - All shells: pass `labels` only if they need different wording.
 - Fix the 4 type errors in the pharmacy and review workspaces.
+
+---
+
+## Addendum: evidence overlap fix (w9 final review #13) and the focus ring on the "All" filter
+
+**Bug.** When evidence spans overlapped, `segments()` merged them into one span and marked the whole span active if any part was. Selecting "since yesterday" therefore highlighted all of "Headache since yesterday".
+
+**Fix (`components/ui/segments.ts`).**
+- Spans are now split at every start and end point. A character is active only if the selected quote's own range covers it.
+- An overlapping unselected span stays unselected outside the selected range.
+- Neighbouring pieces in the same state join back together, and `order` counts selected pieces left to right for the sweep stagger.
+- The existing safety check is unchanged: a span whose offsets do not reproduce its quote is still dropped.
+
+**Tests (`components/ui/ui.test.ts`).** The first case below is the original test with its expected result updated; the other two are new.
+- Original test: "sudo freddo" (unselected) with "freddo" (selected) now gives "sudo " unselected and "freddo" selected.
+- "Headache since yesterday": selected is "since yesterday" only; "Headache " stays unselected.
+- Partial overlap plus an unselected span inside a selected one: "pain in chest" selected, " and arm" unselected.
+
+**Focus ring.** I moved focus to the clinician queue's "All" filter with the Tab key in the browser.
+- Its `:focus-visible` style is a solid 2px ocean outline (`rgb(26, 92, 191)`) with a 2px offset, visible against both the dark selected pill and the white card.
+- The pill's colour transition had been animating the outline colour for about 140 ms. `Pill` now transitions only background and text colour, so the ring appears immediately.
+
+**Results.**
+
+| Check | Result |
+|---|---|
+| UI tests (`vitest components/ui`) | 7/7 pass |
+| Web `tsc --noEmit` | exit 0 |
+| Mobile `tsc --noEmit` | exit 0 |
+
+Nothing committed.
