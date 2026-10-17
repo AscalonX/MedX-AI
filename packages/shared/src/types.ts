@@ -494,3 +494,51 @@ export interface InvestigationOrder {
 
 /** packages/shared/src/investigations.json (Doctor-owned) catalog. */
 export interface InvestigationCatalog { version: string; items: { id: string; category: "lab" | "imaging" | "ecg" | "other"; label: Localized }[] }
+
+// ---------- Case trace (executed per-case graph; derived from audit + summary, never changes clinical logic) ----------
+
+export type TraceNodeKind =
+  | "input" // a patient / clinician turn
+  | "redact"
+  | "red_flag_rules"
+  | "model_screen"
+  | "extract"
+  | "verify"
+  | "abstain"
+  | "next_question"
+  | "consult_rules"
+  | "vitals_news2"
+  | "triage_confirm"
+  | "med_rules"
+  | "order_check"
+  | "clinician_action" // review, sign, override, takeover
+  | "pharmacist_action"
+  | "output"; // summary / note / escalation shown to a human
+
+export interface TraceNode {
+  id: string;
+  kind: TraceNodeKind;
+  label: Localized;
+  at: string;
+  /** "rule" deterministic code, "model" Gemma call, "human" clinician/patient action. */
+  actor: "rule" | "model" | "human" | "system";
+  status: "ok" | "skipped" | "failed" | "escalated" | "abstained";
+  /** Short, PII-free description of what happened (e.g. "RF-CHEST-01 fired", "3 fields verified, 1 unsupported"). */
+  detail: Localized;
+  evidence: Evidence[];
+  latencyMs?: number;
+  /** Audit event ids this node was derived from (for replay/inspection). */
+  auditIds: string[];
+}
+
+export interface TraceEdge { from: string; to: string; label?: string }
+
+export interface CaseTrace {
+  sessionId: string;
+  version: "1";
+  generatedAt: string;
+  nodes: TraceNode[];
+  edges: TraceEdge[];
+  /** Hash of the audit events used, so a re-derivation can be compared (deterministic replay check). */
+  auditDigest: string;
+}

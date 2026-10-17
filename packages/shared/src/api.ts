@@ -70,3 +70,6 @@ export interface PharmacyOrderActionReq { reviewerId: string; action: "verify" |
 export interface CancelOrderReq { orderedBy: string; reason?: string }
 /** POST /api/sessions/:id/orders/investigations */
 export interface InvestigationOrderReq { orderedBy: string; code: string; reason?: string; fromSuggestionId?: string }
+
+/** GET /api/sessions/:id/trace — the executed case graph (JSON export). Clinician-only; never in the patient view. */
+export type GetTraceRes = import("./types").CaseTrace;
