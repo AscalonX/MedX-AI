@@ -1,8 +1,15 @@
+"use client";
+import { QueueCard, QueueStats } from "./_queue";
+import { useClinician } from "./_shell";
+import { tr } from "./_i18n";
+
 export default function ReviewIndex() {
+  const { lang } = useClinician();
   return (
-    <section className="flex flex-1 flex-col gap-2 bg-sheet p-8 shadow-sheet">
-      <h1 className="text-title">Select an intake</h1>
-      <p className="max-w-[46ch] text-body text-ink-soft">Choose a code in the queue. Escalated intakes are pinned at the top.</p>
-    </section>
+    <div className="mx-auto flex max-w-[1100px] flex-col gap-6">
+      <QueueStats />
+      <p className="text-body text-ink-soft">{tr("queueHint", lang)}</p>
+      <div className="max-h-[calc(100dvh-22rem)] min-h-[360px]"><QueueCard /></div>
+    </div>
   );
 }
