@@ -22,7 +22,7 @@ export const T = {
   filterEscalated: L("Escalated", "เร่งด่วน", "Urgenti"),
   filterReview: L("To review", "รอตรวจ", "Da rivedere"),
   queueHint: L("Escalated intakes are pinned first. Open one to review it.", "รายการเร่งด่วนอยู่บนสุด เปิดเพื่อตรวจสอบ", "I casi urgenti sono in cima. Ne apra uno per rivederlo."),
-  landTitle: L("MedX Bridge: multilingual intake you can trust", "MedX Bridge: รับข้อมูลหลายภาษาที่เชื่อถือได้", "MedX Bridge: accettazione multilingue di cui fidarsi"),
+  landTitle: L("MedX Bridge: multilingual intake where every field points to the patient's own words", "MedX Bridge: รับข้อมูลหลายภาษา ทุกช่องชี้ไปยังคำพูดของผู้ป่วยเอง", "MedX Bridge: accettazione multilingue in cui ogni campo rimanda alle parole del paziente"),
   landSub: L("Patients describe symptoms in their own language. Clinicians see one summary where every field links to the patient's own words.", "ผู้ป่วยเล่าอาการด้วยภาษาของตนเอง บุคลากรเห็นสรุปเดียวที่ทุกช่องเชื่อมกับคำพูดของผู้ป่วย", "I pazienti descrivono i sintomi nella propria lingua. Il clinico vede un riepilogo in cui ogni campo rimanda alle parole del paziente."),
   roleClinician: L("Clinician", "บุคลากรทางการแพทย์", "Clinico"),
   rolePharmacist: L("Pharmacist", "เภสัชกร", "Farmacista"),
@@ -119,7 +119,7 @@ export const T = {
   auditTrail: L("Audit trail", "บันทึกการตรวจสอบ", "Registro di audit"),
   hideAudit: L("Hide audit trail", "ซ่อนบันทึกการตรวจสอบ", "Nascondi registro"),
   decisionSupport: L("Decision support. Research prototype. Clinician confirms.", "ช่วยตัดสินใจ ต้นแบบงานวิจัย บุคลากรเป็นผู้ยืนยัน", "Supporto decisionale. Prototipo di ricerca. Il clinico conferma."),
-  mockModel: L("Mock model, not AMD", "โมเดลจำลอง ไม่ใช่ AMD", "Modello simulato, non AMD"),
+  mockModel: L("Mock model (not AMD)", "โมเดลจำลอง (ไม่ใช่ AMD)", "Modello simulato (non AMD)"),
   generated: L("Generated", "สร้างเมื่อ", "Generato"),
   failed: L("failed", "ล้มเหลว", "fallito"),
   notRefreshed: L("Not refreshed", "ยังไม่อัปเดต", "Non aggiornato"),
@@ -164,6 +164,9 @@ export const T = {
   step_next_question: L("next question", "คำถามถัดไป", "domanda successiva"),
   disclaimerShort: L("Research prototype. Supports clinicians; does not diagnose.", "ต้นแบบงานวิจัย ช่วยบุคลากร ไม่วินิจฉัย", "Prototipo di ricerca. Supporta i clinici; non diagnostica."),
   takeOverApproved: L("An approved intake cannot be taken over.", "รายการที่อนุมัติแล้วรับช่วงไม่ได้", "Un'accettazione approvata non può essere presa in gestione."),
+  clinicianCorrection: L("Clinician correction", "การแก้ไขโดยบุคลากร", "Correzione del clinico"),
+  tagSpoken: L("Spoken (speech-to-text)", "พูด (แปลงเสียงเป็นข้อความ)", "Parlato (voce in testo)"),
+  tagTyped: L("Typed", "พิมพ์", "Scritto"),
 } satisfies Record<string, Localized>;
 
 export type TKey = keyof typeof T;

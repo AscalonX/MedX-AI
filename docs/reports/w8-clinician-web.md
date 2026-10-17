@@ -28,3 +28,12 @@ Screens: `docs/reports/screens/v4-review-{landing,index,escalated-th,awaiting,ap
 - P1 receipt: when the status turns approved (including via the last field edit) the receipt scrolls to the top (no smooth scroll under reduced motion), takes focus and is announced ("Intake approved · B-004"). Verified live by editing all 6 required fields on B-004.
 - P2: "Take over intake" is disabled once approved, with `title` and `aria-describedby` text; audit trail uses localized field labels and verbs ("Edit Chief complaint"); Italian blocked reasons now read "Prima confermi il segnale." / "Confermi il segnale prima di approvare."; the queue filter pills get an ocean 2px outline with offset on focus (class-only, via wrapper; not visually checked with a keyboard).
 - Not done: "7 fields approved" still counts edits (kept; says "fields approved").
+
+## Final fix wave
+- #11 gloss: fields that are `edited`, or were ever edited per the audit log, show only as "Clinician correction: label: value" with no quote arrow; only verified model values are glossed against patient quotes.
+- #14 polling: workspace and queue use single-flight requests with monotonically increasing ids, a `force` refetch after mutations, and cleanup that drops in-flight results on unmount or id change.
+- #15 emergency badge now fires on the transition into escalated per id (new case or existing case that escalates). Verified: a headache case escalated by a second turn raised the tab title from (1) to (2) and slid in.
+- #16 drawer: trigger has `aria-expanded`; opening it from the trigger moves focus to Close, closing returns focus to the trigger (verified at 1024). Opening via a field click does not steal focus.
+- MF-3 footer: no hard-coded "AMD Instinct". Shows the extract call's model and provider, plus the hardware string only when /api/health reports provider amd-tokenfactory; mock shows "Mock model (not AMD)".
+- MF-4: landing title is "Multilingual intake where every field points to the patient's own words" (th/it added); no "30 seconds" in my copy.
+- Spoken/Typed tag on every patient transcript line from `Turn.inputMode` (localized; spoken reads "speech-to-text").

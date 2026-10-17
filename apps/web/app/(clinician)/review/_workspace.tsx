@@ -20,6 +20,8 @@ export function Workspace({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [sel, setSel] = useState<Sel | null>(null);
   const [drawer, setDrawer] = useState(false);
+  const trigger = useRef<HTMLElement | null>(null); // the control that opened the drawer, so focus can return to it
+  const openDrawer = (e: React.MouseEvent<HTMLElement>) => { trigger.current = e.currentTarget; setDrawer(true); };
   const [editing, setEditing] = useState<FieldKey | null>(null);
   const [auditOpen, setAuditOpen] = useState(false);
   const [prev, setPrev] = useState<Partial<Record<FieldKey, string>>>({});
@@ -30,9 +32,16 @@ export function Workspace({ id }: { id: string }) {
   const [live, setLive] = useState("");
   useEffect(() => { markOpened(id); }, [id, markOpened]);
   // When the last edit or approval completes the case, bring the receipt into view, focus it and announce it.
+  useEffect(() => {
+    const narrow = window.matchMedia("(max-width: 1279px)").matches;
+    if (drawer && narrow && trigger.current) setTimeout(() => document.getElementById("transcript-close")?.focus(), 60);
+    if (!drawer && trigger.current) { const t = trigger.current; trigger.current = null; if (narrow) setTimeout(() => t.focus(), 0); }
+  }, [drawer]);
   const status = data?.session.status;
   const prevStatus = useRef<string | undefined>(undefined);
   const code = data?.session.code ?? "";
+  const [health, setHealth] = useState<{ provider: string; model: string; hardware: string } | null>(null);
+  useEffect(() => { fetch("/api/health", { cache: "no-store" }).then((r) => r.json()).then(setHealth).catch(() => setHealth(null)); }, []);
   useEffect(() => {
     if (status === "approved" && prevStatus.current && prevStatus.current !== "approved") {
       const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -45,16 +54,24 @@ export function Workspace({ id }: { id: string }) {
     prevStatus.current = status;
   }, [status, lang, code]);
 
-  const load = useCallback(async () => {
+  const reqId = useRef(0);
+  const inflight = useRef(false);
+  // Single flight for polls; `force` (after a mutation) always issues a new request. Only the newest request may write state.
+  const load = useCallback(async (force = false) => {
     if (busyRef.current) return;
+    if (inflight.current && !force) return;
+    inflight.current = true;
     const g = gen.current;
+    const mine = ++reqId.current;
     try {
       const d = await fetchSession(id);
-      if (g !== gen.current) return; // a mutation or navigation happened while this was in flight
+      if (g !== gen.current || mine !== reqId.current) return; // a mutation, navigation, unmount or newer request happened meanwhile
       setData(d);
       setLoadError(null);
     } catch (e) {
-      if (g === gen.current) setLoadError((e as Error).message);
+      if (g === gen.current && mine === reqId.current) setLoadError((e as Error).message);
+    } finally {
+      if (mine === reqId.current) inflight.current = false;
     }
   }, [id]);
 
@@ -63,8 +80,9 @@ export function Workspace({ id }: { id: string }) {
     prevStatus.current = undefined; setData(null); setLive(""); setSel(null); setEditing(null); setPrev({}); setActionError(null); setAuditOpen(false); setLoadError(null);
     scrollRef.current?.scrollTo({ top: 0 });
     load();
-    const t = setInterval(load, 5000);
-    return () => clearInterval(t);
+    const t = setInterval(() => load(), 5000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => { clearInterval(t); gen.current++; reqId.current++; inflight.current = false; }; // cancel on unmount or id change
   }, [id, load]);
 
   // Escape clears the highlight (DIRECTION 6a) and closes the drawer.
@@ -81,14 +99,14 @@ export function Workspace({ id }: { id: string }) {
     gen.current++; busyRef.current = true; setBusy(true); setActionError(null);
     try { await fn(); return true; }
     catch (e) { setActionError((e as Error).message); return false; }
-    finally { gen.current++; busyRef.current = false; setBusy(false); await load(); refreshQueue(); }
+    finally { gen.current++; busyRef.current = false; setBusy(false); await load(true); refreshQueue(); }
   }, [load, refreshQueue]);
 
   if (!data) {
     return (
       <Card aria-busy="true" className="flex flex-col gap-4">
         {loadError ? (
-          <p role="alert" className="text-body text-signal">{tr("loadFailed", lang)}: {loadError}. <button className="font-semibold text-ocean underline" onClick={load}>{tr("retry", lang)}</button></p>
+          <p role="alert" className="text-body text-signal">{tr("loadFailed", lang)}: {loadError}. <button className="font-semibold text-ocean underline" onClick={() => load(true)}>{tr("retry", lang)}</button></p>
         ) : (
           [0, 1, 2, 3].map((i) => <span key={i} className="mx-skeleton !h-12" />)
         )}
@@ -143,11 +161,16 @@ export function Workspace({ id }: { id: string }) {
     }));
   // Clinician-language gloss for a patient turn, from values the pipeline already verified against the quote. Never machine-translated here.
   const glossFor = (turnId: string) => {
-    const out: { quote: string; label: string; text: string }[] = [];
+    const out: { quote: string; label: string; text: string; correction?: boolean }[] = [];
+    const editedKeys = new Set<string>();
+    for (const e of audit) if (e.type === "review") for (const a of (e.payload.actions as ReviewAction[] | undefined) ?? []) if (a.action === "edit") editedKeys.add(a.fieldKey);
     for (const f of fields) {
       const v = f.value?.[lang];
       if (!v || !["supported", "approved", "edited"].includes(f.status)) continue;
-      for (const e of f.evidence) if (e.turnId === turnId) out.push({ quote: e.quote, label: FIELD_LABEL[f.key][lang], text: v });
+      if (!f.evidence.some((e) => e.turnId === turnId)) continue;
+      // A clinician-entered value is never shown as the translation of the patient's quote.
+      if (f.status === "edited" || editedKeys.has(f.key)) out.push({ quote: "", label: FIELD_LABEL[f.key][lang], text: v, correction: true });
+      else for (const e of f.evidence) if (e.turnId === turnId) out.push({ quote: e.quote, label: FIELD_LABEL[f.key][lang], text: v });
     }
     for (const h of hits) for (const e of h.evidence) if (e.turnId === turnId) out.push({ quote: e.quote, label: tr("redFlag", lang), text: h.label[lang] });
     return out.filter((g, i) => out.findIndex((o) => o.quote === g.quote && o.text === g.text) === i);
@@ -179,7 +202,7 @@ export function Workspace({ id }: { id: string }) {
       <>
         <Link href="/review" className={cls}><Icon name="chevron-right" size={14} className="rotate-180" />{tr("navQueue", lang)}</Link>
         {nextCase && <Link href={`/review/${nextCase.id}`} className={cls}>{tr("nextCase", lang)} {nextCase.code}<Icon name="chevron-right" size={14} /></Link>}
-        <button type="button" onClick={() => setDrawer(true)} aria-controls="transcript" className={`${cls} min-[1280px]:hidden`}>
+        <button type="button" onClick={openDrawer} aria-expanded={drawer} aria-controls="transcript" className={`${cls} min-[1280px]:hidden`}>
           <Icon name="quote" size={14} />{tr("patientsWords", lang)}
         </button>
       </>
@@ -309,7 +332,7 @@ export function Workspace({ id }: { id: string }) {
           )}
         </div>
       )}
-      <Provenance s={session} lang={lang} />
+      <Provenance s={session} lang={lang} health={health} />
     </>
   );
 
@@ -394,7 +417,7 @@ export function Workspace({ id }: { id: string }) {
         <div className="flex items-center gap-2 px-5 pb-2 pt-4">
           <Icon name="quote" size={18} className="text-ocean" />
           <h2 className="text-lead font-bold">{tr("patientsWords", lang)}</h2>
-          <Button variant="quiet" className="ml-auto h-8! px-3! text-small! min-[1280px]:hidden" onClick={() => setDrawer(false)}>{tr("close", lang)}</Button>
+          <Button id="transcript-close" variant="quiet" className="ml-auto h-8! px-3! text-small! min-[1280px]:hidden" onClick={() => setDrawer(false)}>{tr("close", lang)}</Button>
         </div>
         <ol className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">
           {session.turns.length === 0 && <li className="py-3 text-small text-ink-soft">{tr("noWords", lang)}</li>}
@@ -407,6 +430,7 @@ export function Workspace({ id }: { id: string }) {
                   <span className="tabular-nums">{i + 1}</span><span className="tabular-nums">{clock(t.at, lang)}</span>
                   <span className="font-semibold text-ink-soft">{t.role === "patient" ? tr("patient", lang) : tr("question", lang)}</span>
                   <span lang={t.lang}>{LANG_NAME[t.lang]}</span>
+                  {t.role === "patient" && <span className="rounded-full bg-muted px-2 py-0.5 font-semibold text-ink-soft">{tr(t.inputMode === "voice" ? "tagSpoken" : "tagTyped", lang)}</span>}
                 </p>
                 {t.role === "patient" ? (
                   <>
@@ -417,9 +441,15 @@ export function Workspace({ id }: { id: string }) {
                         <ul className="mt-2 flex flex-col gap-1 rounded-2xl bg-paper px-3 py-2 text-small text-ink-soft">
                           {gl.map((g, gi) => (
                             <li key={gi}>
-                              <span lang={t.lang} className="font-semibold text-ink">“{g.quote}”</span> <span aria-hidden="true">→</span>{" "}
-                              <span className="sr-only">{tr("glossIn", lang)} </span>
-                              <span lang={lang}>{g.label}: {g.text}</span>
+                              {g.correction ? (
+                                <span lang={lang}><span className="font-semibold text-teal">{tr("clinicianCorrection", lang)}:</span> {g.label}: {g.text}</span>
+                              ) : (
+                                <>
+                                  <span lang={t.lang} className="font-semibold text-ink">“{g.quote}”</span> <span aria-hidden="true">→</span>{" "}
+                                  <span className="sr-only">{tr("glossIn", lang)} </span>
+                                  <span lang={lang}>{g.label}: {g.text}</span>
+                                </>
+                              )}
                             </li>
                           ))}
                         </ul>
@@ -589,17 +619,19 @@ function Unknowns({ fields, lang }: { fields: ExtractedField[]; lang: Lang }) {
   );
 }
 
-function Provenance({ s, lang }: { s: IntakeSession; lang: Lang }) {
+function Provenance({ s, lang, health }: { s: IntakeSession; lang: Lang; health: { provider: string; model: string; hardware: string } | null }) {
   const calls = s.summary?.modelCalls ?? [];
   if (!calls.length) return null;
   // Attribute per step: the headline follows the extract call that succeeded, never a failed or unrelated call.
   const ex = [...calls].reverse().find((c) => c.step === "extract" && c.ok);
-  const head = !ex ? null : ex.provider === "amd-tokenfactory" ? "Gemma · AMD Instinct" : tr("mockModel", lang);
+  // Provider, model and hardware exactly as the engine reports them; never a hard-coded hardware claim.
+  const head = !ex ? null : ex.provider === "amd-tokenfactory" ? ex.model : tr("mockModel", lang);
+  const hw = ex?.provider === "amd-tokenfactory" && health?.provider === "amd-tokenfactory" && health.hardware ? health.hardware : null;
   const name = (p: string) => (p === "amd-tokenfactory" ? "AMD" : "mock");
   return (
     <footer className="flex flex-col gap-0.5 px-2 pb-2 text-micro text-ink-soft">
       <p>
-        {head && <><span className="font-semibold">{head}</span> ({ex!.model}). </>}
+        {head && <><span className="font-semibold">{head}</span> ({ex!.provider}{hw ? `, ${hw}` : ""}). </>}
         {calls.map((c, i) => (
           <span key={i}>{i > 0 && ", "}{tr(`step_${c.step}` as TKey, lang)}: {name(c.provider)} {c.latencyMs} ms{c.ok ? "" : ` (${tr("failed", lang)})`}</span>
         ))}
