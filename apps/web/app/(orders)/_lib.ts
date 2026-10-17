@@ -16,7 +16,12 @@ export const T = {
   rr: L("Respiratory rate (/min)", "อัตราหายใจ (ครั้ง/นาที)", "Frequenza respiratoria (/min)"),
   temp: L("Temperature (°C)", "อุณหภูมิ (°C)", "Temperatura (°C)"),
   spo2: L("SpO2 (%)", "SpO2 (%)", "SpO2 (%)"),
-  onO2: L("On supplemental oxygen", "ได้รับออกซิเจน", "In ossigenoterapia"),
+  onO2: L("On supplemental oxygen?", "ได้รับออกซิเจนหรือไม่", "In ossigenoterapia?"),
+  roomAir: L("No, room air", "ไม่ใช่ อากาศปกติ", "No, aria ambiente"),
+  yesO2: L("Yes, on oxygen", "ใช่ ได้รับออกซิเจน", "Sì, in ossigeno"),
+  o2Required: L("Choose yes or no.", "เลือกใช่หรือไม่ใช่", "Scegli sì o no."),
+  moreUrgent: L("Suggested level is now more urgent than the confirmed level. Re-confirm.", "ระดับที่เสนอเร่งด่วนกว่าระดับที่ยืนยันไว้ ต้องยืนยันใหม่", "Il livello suggerito è ora più urgente di quello confermato. Riconferma."),
+  prevConfirmed: L("Previously confirmed", "ยืนยันก่อนหน้า", "Confermato in precedenza"),
   pain: L("Pain (0 to 10)", "ความเจ็บปวด (0 ถึง 10)", "Dolore (0-10)"),
   acvpu: L("Consciousness (ACVPU)", "ระดับความรู้สึกตัว (ACVPU)", "Coscienza (ACVPU)"),
   notAssessed: L("Not assessed", "ไม่ได้ประเมิน", "Non valutato"),
@@ -88,6 +93,7 @@ export const T = {
   noChecks: L("No rule fired. This is not a complete check.", "ไม่มีกฎที่ทำงาน นี่ไม่ใช่การตรวจที่สมบูรณ์", "Nessuna regola attivata. Non è un controllo completo."),
   high: L("High", "สูง", "Alta"),
   moderate: L("Moderate", "ปานกลาง", "Moderata"),
+  unchecked: L("Not checked", "ยังไม่ได้ตรวจ", "Non controllato"),
   overrideReason: L("Reason for proceeding despite this alert", "เหตุผลที่สั่งต่อแม้มีการแจ้งเตือน", "Motivo per procedere nonostante l'avviso"),
   submit: L("Submit to pharmacy", "ส่งให้เภสัชกร", "Invia alla farmacia"),
   submitting: L("Submitting", "กำลังส่ง", "Invio"),
@@ -119,17 +125,21 @@ export const tr = (k: TKey, lang: Lang, vars?: Record<string, string | number>) 
 export const clockOf = (iso: string, lang: Lang) =>
   new Date(iso).toLocaleTimeString(lang === "th" ? "th-TH" : lang === "it" ? "it-IT" : "en-GB", { hour: "2-digit", minute: "2-digit" });
 
-/** Call a route. Missing/failing routes (404/405/5xx, network) fall back to `fixture`; 4xx with a message is surfaced. */
+/** Call a route. READS (no body) may fall back to `fixture` on 404/405/5xx/network. WRITES never do: any failure throws the server message so the form stays and the user sees it. */
 export async function call<T>(url: string, body: unknown | undefined, fixture: () => T): Promise<{ data: T; fixture: boolean }> {
+  const write = body !== undefined;
   let res: Response;
   try {
-    res = await fetch(url, body === undefined ? { cache: "no-store" } : { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    res = await fetch(url, write ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : { cache: "no-store" });
   } catch {
+    if (write) throw new Error("Network error. Nothing was saved.");
     return { data: fixture(), fixture: true };
   }
   const json = await res.json().catch(() => null);
-  if (res.status === 404 || res.status === 405 || res.status >= 500) return { data: fixture(), fixture: true };
-  if (!res.ok) throw new Error(json?.error ?? `Request failed (${res.status})`);
+  if (!res.ok) {
+    if (!write && (res.status === 404 || res.status === 405 || res.status >= 500)) return { data: fixture(), fixture: true };
+    throw new Error(json?.error ?? `Request failed (${res.status}). Nothing was saved.`);
+  }
   return { data: json as T, fixture: false };
 }
 

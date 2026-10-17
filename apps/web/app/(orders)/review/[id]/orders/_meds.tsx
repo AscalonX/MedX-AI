@@ -15,6 +15,7 @@ export function Meds({ id, session, lang, reviewer, apply }: { id: string; sessi
   const [errs, setErrs] = useState<Partial<Record<keyof typeof EMPTY, string>>>({});
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [formErr, setFormErr] = useState<string | null>(null);
   const meds = session?.orders?.medications ?? [];
   const set = (k: keyof typeof EMPTY) => (e: React.ChangeEvent<HTMLInputElement>) => setF((v) => ({ ...v, [k]: e.target.value }));
 
@@ -25,12 +26,12 @@ export function Meds({ id, session, lang, reviewer, apply }: { id: string; sessi
     setErrs(e);
     if (Object.keys(e).length || !session) return;
     const req: MedicationOrderReq = { orderedBy: reviewer, orderId: editing ?? undefined, drugText: f.drugText.trim(), dose: f.dose.trim(), route: f.route.trim(), frequency: f.frequency.trim(), duration: f.duration.trim() || undefined };
-    setBusy(true); setErr(null);
+    setBusy(true); setErr(null); setFormErr(null);
     try {
       const r = await call<unknown>(`/api/sessions/${id}/orders/medications`, req, () => fixtureMedication(session, req));
       apply(asSession(r.data), r.fixture);
       setF(EMPTY); setEditing(null);
-    } catch (x) { setErr((x as Error).message); }
+    } catch (x) { setFormErr((x as Error).message); }
     finally { setBusy(false); }
   }
 
@@ -58,7 +59,7 @@ export function Meds({ id, session, lang, reviewer, apply }: { id: string; sessi
           <Field label={tr("frequency", lang)} value={f.frequency} error={errs.frequency} onChange={set("frequency")} placeholder="every 6 hours" autoComplete="off" />
           <Field label={tr("duration", lang)} value={f.duration} onChange={set("duration")} placeholder="5 days" autoComplete="off" />
         </div>
-        {err && !meds.length && <Notice>{err}</Notice>}
+        {formErr && <Notice>{formErr}</Notice>}
         <div className="flex flex-wrap gap-2">
           <Button type="submit" variant="primary" disabled={busy} icon={<Icon name="pill" size={16} />}>{busy ? tr("checking", lang) : editing ? tr("update", lang) : tr("check", lang)}</Button>
           {editing && <Button onClick={() => { setEditing(null); setF(EMPTY); }}>{tr("cancelPick", lang)}</Button>}
@@ -82,7 +83,7 @@ function OrderCard({ m, lang, busy, err, onEdit, onSubmit, onCancel }: {
 }) {
   const [reasons, setReasons] = useState<Record<string, string>>(() => Object.fromEntries(m.overrides.map((o) => [o.alertId, o.reason])));
   const high = m.checks.filter((a) => a.severity === "high");
-  const missing = high.filter((a) => (reasons[a.id] ?? "").trim().length < 5);
+  const missing = high.filter((a) => ((reasons[a.id] ?? "").match(/\p{L}/gu)?.length ?? 0) < 5);
   const editable = m.status === "draft" || m.status === "returned";
   const done = m.status === "cancelled";
   return (
@@ -134,11 +135,12 @@ function OrderCard({ m, lang, busy, err, onEdit, onSubmit, onCancel }: {
 
 function AlertCard({ a, lang, children }: { a: MedAlert; lang: Lang; children?: React.ReactNode }) {
   const high = a.severity === "high";
+  const unchecked = /MR-DOSE-UNCHECKED|MR-ALLERGY-UNKNOWN/.test(a.ruleId);
   return (
-    <li className={`rounded-xl p-3 ${high ? "bg-signal-tint ring-1 ring-signal/60" : "border border-dashed border-warn/60 bg-warn-tint"}`}>
+    <li className={`rounded-xl p-3 ${unchecked ? "border-2 border-warn bg-warn-tint" : high ? "bg-signal-tint ring-1 ring-signal/60" : "border border-dashed border-warn/60 bg-warn-tint"}`}>
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={high ? "signal" : "pencil"} icon={<Icon name="triangle-alert" size={12} />}>{high ? tr("high", lang) : tr("moderate", lang)}</Badge>
-        <span className="text-micro font-semibold text-ink-soft">{a.kind.replace(/_/g, " ")}</span>
+        <span className="text-micro font-semibold text-ink-soft">{unchecked ? tr("unchecked", lang) : a.kind.replace(/_/g, " ")}</span>
       </div>
       <p className="mt-1 text-body font-semibold text-ink">{a.message[lang]}</p>
       <p className="text-small text-ink-soft">{a.action[lang]}</p>

@@ -30,9 +30,9 @@ export function Vitals({ id }: { id: string }) {
   const [fixture, setFixture] = useState(false);
   const [loadErr, setLoadErr] = useState<string | null>(null);
   const [vals, setVals] = useState<Record<K, string>>({ heartRate: "", systolicBP: "", diastolicBP: "", respRate: "", tempC: "", spo2: "", painScore: "" });
-  const [onO2, setOnO2] = useState(false);
+  const [onO2, setOnO2] = useState<"" | "yes" | "no">("");
   const [cons, setCons] = useState<Consciousness | "">("");
-  const [errs, setErrs] = useState<Partial<Record<K | "form", string>>>({});
+  const [errs, setErrs] = useState<Partial<Record<K | "form" | "o2", string>>>({});
   const [busy, setBusy] = useState(false);
   const [level, setLevel] = useState<Level>(3);
   const [note, setNote] = useState("");
@@ -55,9 +55,9 @@ export function Vitals({ id }: { id: string }) {
   const nVitals = session?.vitals?.length ?? 0;
   useEffect(() => { if (triage) { setLevel(triage.suggestedLevel); setNote(""); setCErr(null); } }, [triage?.suggestedLevel, nVitals]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function validate(): Partial<Record<K | "form", string>> {
-    const e: Partial<Record<K | "form", string>> = {};
-    let any = onO2 || !!cons;
+  function validate(): Partial<Record<K | "form" | "o2", string>> {
+    const e: Partial<Record<K | "form" | "o2", string>> = {};
+    let any = !!cons;
     for (const f of FIELDS) {
       const s = vals[f.k].trim();
       if (!s) continue;
@@ -68,6 +68,7 @@ export function Vitals({ id }: { id: string }) {
     const sys = vals.systolicBP.trim(), dia = vals.diastolicBP.trim();
     if (!!sys !== !!dia) e[sys ? "diastolicBP" : "systolicBP"] = tr("diaNeedsSys", lang);
     else if (sys && dia && !e.systolicBP && !e.diastolicBP && Number(dia) >= Number(sys)) e.diastolicBP = tr("diaLess", lang);
+    if (!onO2) e.o2 = tr("o2Required", lang);
     if (!any) e.form = tr("needOne", lang);
     return e;
   }
@@ -84,7 +85,7 @@ export function Vitals({ id }: { id: string }) {
     const num = (k: K) => (vals[k].trim() ? Number(vals[k]) : undefined);
     const req: VitalsReq = {
       recordedBy: reviewer,
-      vitals: { heartRate: num("heartRate"), systolicBP: num("systolicBP"), diastolicBP: num("diastolicBP"), respRate: num("respRate"), tempC: num("tempC"), spo2: num("spo2"), onOxygen: onO2, painScore: num("painScore"), consciousness: cons || undefined },
+      vitals: { heartRate: num("heartRate"), systolicBP: num("systolicBP"), diastolicBP: num("diastolicBP"), respRate: num("respRate"), tempC: num("tempC"), spo2: num("spo2"), onOxygen: onO2 === "yes", painScore: num("painScore"), consciousness: cons || undefined },
     };
     setBusy(true);
     try {
@@ -92,7 +93,7 @@ export function Vitals({ id }: { id: string }) {
       setSession(asSession(r.data));
       if (r.fixture) setFixture(true);
       setVals({ heartRate: "", systolicBP: "", diastolicBP: "", respRate: "", tempC: "", spo2: "", painScore: "" });
-      setOnO2(false); setCons("");
+      setOnO2(""); setCons("");
       formRef.current?.querySelector<HTMLInputElement>("[name=heartRate]")?.focus();
     } catch (x) { setErrs({ form: (x as Error).message }); }
     finally { setBusy(false); }
@@ -130,10 +131,18 @@ export function Vitals({ id }: { id: string }) {
                   onChange={(e) => setVals((v) => ({ ...v, [f.k]: e.target.value }))}
                 />
               ))}
-              <label className="col-span-2 flex h-14 items-center gap-3 rounded-control border border-rule-strong/70 px-4 text-body font-semibold text-ink">
-                <input type="checkbox" checked={onO2} onChange={(e) => setOnO2(e.target.checked)} className="size-5 accent-teal" />
-                {tr("onO2", lang)}
-              </label>
+              <fieldset className="col-span-2">
+                <legend className="mb-1.5 text-small font-semibold text-ink">{tr("onO2", lang)}</legend>
+                <div className="flex flex-wrap gap-3">
+                  {(["no", "yes"] as const).map((v) => (
+                    <label key={v} className="flex h-14 flex-1 items-center gap-3 rounded-control border border-rule-strong/70 px-4 text-body font-semibold text-ink">
+                      <input type="radio" name="onOxygen" value={v} checked={onO2 === v} onChange={() => setOnO2(v)} className="size-5 accent-teal" />
+                      {tr(v === "yes" ? "yesO2" : "roomAir", lang)}
+                    </label>
+                  ))}
+                </div>
+                {errs.o2 && <p className="mt-1 text-small text-signal">{errs.o2}</p>}
+              </fieldset>
             </div>
             <div>
               <p id="acvpu" className="mb-1.5 text-small font-semibold text-ink">{tr("acvpu", lang)}</p>
@@ -179,7 +188,7 @@ export function Vitals({ id }: { id: string }) {
                   {triage.reasons.map((r, i) => <li key={i}>{r[lang]}</li>)}
                 </ul>
 
-                {triage.confirmed ? (
+                {triage.confirmed && triage.suggestedLevel >= triage.confirmed.level ? (
                   <Receipt
                     className="mt-4"
                     focusOnMount={false}
@@ -193,6 +202,11 @@ export function Vitals({ id }: { id: string }) {
                   />
                 ) : (
                   <div className="mt-4 space-y-3 border-t border-rule/70 pt-4">
+                    {triage.confirmed && (
+                      <p role="alert" className="rounded-2xl border-l-4 border-signal bg-signal-tint px-4 py-2 text-body font-bold text-signal">
+                        {tr("moreUrgent", lang)} <span className="font-normal">({tr("prevConfirmed", lang)}: {triage.confirmed.level})</span>
+                      </p>
+                    )}
                     <SegmentedControl
                       ariaLabel={tr("yourLevel", lang)} value={String(level) as "1"} onChange={(v) => setLevel(Number(v) as Level)}
                       options={LEVELS.map((n) => ({ value: String(n) as "1", label: String(n) }))}

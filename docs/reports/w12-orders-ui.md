@@ -34,3 +34,11 @@ Run with Playwright against :3000; screenshots v9-vitals-live.png, v9-orders-liv
 - allergy_conflict returned with empty `evidence` for B-014 although the patient said they were allergic, so no patient quote shows.
 - dose_range returns two identical HIGH alerts for one paracetamol order (single and daily?), each needing its own override reason.
 - Triage for a case with an emergency red flag says "complete NEWS2 before confirming" when ACVPU is not assessed; the form leaves ACVPU blank on purpose.
+
+## Safety must-fixes (MF-3, MF-4, MF-6/7/8 UI, SF-7)
+- MF-3: `call()` in `_lib.ts` now falls back to fixtures for reads only. Every write (vitals, triage confirm, orders, submit, cancel) throws the server message (or "Network error. Nothing was saved.") and the form keeps its values. Medication Check errors now show in the form even when orders already exist.
+- MF-4: if `suggestedLevel` is more urgent than `confirmed.level`, a red-accent banner "Suggested level is now more urgent than the confirmed level. Re-confirm." shows with the confirm control visible (previous level shown). Live: banner appeared after worsening vitals; screenshot v10-vitals-reconfirm.png.
+- Oxygen: "On supplemental oxygen?" is a required yes/no (room air / on oxygen), no default; Save shows "Choose yes or no." until chosen. Live-verified.
+- MF-6/7: alerts with ruleId MR-DOSE-UNCHECKED or MR-ALLERGY-UNKNOWN render as a bold amber "Not checked" card. NOT live-verified: the server did not emit them yet (Ibuprofen "some tablets" returned no checks).
+- MF-8: override reason needs at least 5 letters (client), submit stays disabled otherwise.
+- tsc and eslint 'app/(orders)' clean. Live: write against an unknown session showed "Session not found" and added no history row.
