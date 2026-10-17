@@ -25,3 +25,16 @@ const loc = { type: 'object', additionalProperties: false, required: ['th', 'it'
 const field = { type: 'object', additionalProperties: false, required: ['value_original', 'value', 'evidence', 'certainty'], properties: { value_original: str(300), value: loc, certainty: { type: 'string', enum: ['high', 'medium', 'low'] }, evidence: { type: 'array', minItems: 1, maxItems: 3, items: { type: 'object', additionalProperties: false, required: ['turn', 'quote'], properties: { turn: { type: 'string', pattern: '^T\\d+$' }, quote: str(400) } } } } };
 export const EXTRACTION_SCHEMA = { type: 'object', additionalProperties: false, required: ['language_detected', 'fields'], properties: { language_detected: { type: 'string', enum: ['th', 'it', 'en', 'mixed', 'other'] }, fields: { type: 'object', additionalProperties: false, required: FIELD_KEYS, properties: Object.fromEntries(FIELD_KEYS.map(k => [k, { anyOf: [{ type: 'null' }, field] }])) } } };
 export const QUESTION_SCHEMA = { type: 'object', additionalProperties: false, required: ['field', 'question'], properties: { field: { type: 'string', enum: FIELD_KEYS }, question: loc } };
+export const SCREEN_CATEGORIES = ['CHEST', 'STROKE', 'BREATH', 'ANAPH', 'SUICIDE', 'BLEED', 'PREG', 'HEAD', 'SEIZ', 'MENING', 'CONSC', 'SYNC', 'ABD', 'FEVER-INF'] as const;
+export type ScreenCategory = typeof SCREEN_CATEGORIES[number];
+export interface ModelScreenFlag { category: ScreenCategory; turn: string; quote: string; certainty: 'high' | 'medium' | 'low' }
+export const SCREEN_SCHEMA = { type: 'object', additionalProperties: false, required: ['flags'], properties: { flags: { type: 'array', maxItems: 3, items: { type: 'object', additionalProperties: false, required: ['category', 'turn', 'quote', 'certainty'], properties: { category: { type: 'string', enum: SCREEN_CATEGORIES }, turn: { type: 'string', pattern: '^T\\d+$' }, quote: str(400), certainty: { type: 'string', enum: ['high', 'medium', 'low'] } } } } } };
+export function validateScreen(data: unknown): { flags: ModelScreenFlag[]; invalid: number[] } | null {
+  if (!object(data) || Object.keys(data).some(k => k !== 'flags') || !Array.isArray(data.flags) || data.flags.length > 3) return null;
+  const flags: ModelScreenFlag[] = []; const invalid: number[] = [];
+  data.flags.forEach((f, i) => {
+    if (!object(f) || typeof f.category !== 'string' || !SCREEN_CATEGORIES.includes(f.category as ScreenCategory) || typeof f.turn !== 'string' || !/^T\d+$/.test(f.turn) || !shortString(f.quote, 400) || typeof f.certainty !== 'string' || !['high', 'medium', 'low'].includes(f.certainty) || Object.keys(f).some(k => !['category', 'turn', 'quote', 'certainty'].includes(k))) invalid.push(i);
+    else flags.push(f as unknown as ModelScreenFlag);
+  });
+  return { flags, invalid };
+}

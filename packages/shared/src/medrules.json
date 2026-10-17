@@ -1,0 +1,1258 @@
+{
+  "version": "1.0",
+  "drugs": [
+    {
+      "generic": "paracetamol",
+      "drugClass": "paracetamol",
+      "names": [
+        "paracetamol",
+        "paracetamolo",
+        "acetaminophen",
+        "tylenol",
+        "panadol",
+        "tachipirina",
+        "efferalgan",
+        " sara ",
+        "ซาร่า",
+        "ยาพารา",
+        "พารา",
+        "ไทลินอล",
+        "พานาดอล"
+      ],
+      "maxDailyMg": 4000
+    },
+    {
+      "generic": "paracetamol+chlorphenamine+phenylephrine",
+      "drugClass": "paracetamol",
+      "names": [
+        "decolgen",
+        "ดีคอลเจน",
+        "tiffy",
+        "ทิฟฟี่"
+      ]
+    },
+    {
+      "generic": "paracetamol+codeine",
+      "drugClass": "opioid",
+      "names": [
+        "tachidol",
+        "co-codamol",
+        "tylenol with codeine",
+        "paracetamolo e codeina"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "paracetamol+orphenadrine",
+      "drugClass": "paracetamol",
+      "names": [
+        "norgesic",
+        "นอร์เจสิก"
+      ]
+    },
+    {
+      "generic": "ibuprofen",
+      "drugClass": "nsaid",
+      "names": [
+        "ibuprofen",
+        "brufen",
+        "nurofen",
+        " moment ",
+        "ไอบูโพรเฟน",
+        "ไอบูโปรเฟน",
+        "ไอบู",
+        "บรูเฟน",
+        "นูโรเฟน"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "diclofenac",
+      "drugClass": "nsaid",
+      "names": [
+        "diclofenac",
+        "voltaren",
+        "dicloreum",
+        "ไดโคลฟีแนค",
+        "ไดโคลฟีแน็ค",
+        "โวลทาเรน"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "naproxen",
+      "drugClass": "nsaid",
+      "names": [
+        "naproxen",
+        "naprosyn",
+        "synflex",
+        "momendol",
+        "นาพรอกเซน"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "mefenamic acid",
+      "drugClass": "nsaid",
+      "names": [
+        "mefenamic",
+        "ponstan",
+        "ponstel",
+        "พอนสแตน",
+        "มีเฟนามิก"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "ketoprofen",
+      "drugClass": "nsaid",
+      "names": [
+        "ketoprofen",
+        " oki ",
+        "okitask",
+        "orudis",
+        "คีโตโพรเฟน"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "nimesulide",
+      "drugClass": "nsaid",
+      "names": [
+        "nimesulid",
+        "aulin"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "celecoxib",
+      "drugClass": "cox2_inhibitor",
+      "names": [
+        "celecoxib",
+        "celebrex",
+        "เซเลบเร็กซ์",
+        "ซีลีคอกซิบ"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "aspirin",
+      "drugClass": "aspirin",
+      "names": [
+        "aspirin",
+        "aspirina",
+        "cardioaspirina",
+        "aspirinetta",
+        "แอสไพริน",
+        "ยาแอส"
+      ]
+    },
+    {
+      "generic": "amoxicillin",
+      "drugClass": "penicillin",
+      "names": [
+        "amoxicillin",
+        "amoxicillina",
+        "amoxil",
+        "zimox",
+        "velamox",
+        "อะม็อกซี",
+        "อะมอกซี",
+        "อม็อกซี"
+      ]
+    },
+    {
+      "generic": "amoxicillin+clavulanic acid",
+      "drugClass": "penicillin",
+      "names": [
+        "augmentin",
+        "amoxiclav",
+        "co-amoxiclav",
+        "amoxicillin clavulanate",
+        "amoxicillin-clavulanate",
+        "amoxicillin/clavulanate",
+        "amoxicillina e acido clavulanico",
+        "amoxicillina/acido clavulanico",
+        "clavulan",
+        "ออกเมนติน",
+        "ออคเมนติน"
+      ]
+    },
+    {
+      "generic": "dicloxacillin",
+      "drugClass": "penicillin",
+      "names": [
+        "dicloxacillin",
+        "ไดคลอกซาซิลลิน",
+        "ไดคล็อกซาซิลลิน"
+      ]
+    },
+    {
+      "generic": "cefalexin",
+      "drugClass": "cephalosporin",
+      "names": [
+        "cefalexin",
+        "cephalexin",
+        "cefalessina",
+        "keflex",
+        "เซฟาเล็กซิน"
+      ]
+    },
+    {
+      "generic": "azithromycin",
+      "drugClass": "macrolide",
+      "names": [
+        "azithromycin",
+        "azitromicina",
+        "zithromax",
+        "zitromax",
+        "อะซิโธรมัยซิน"
+      ]
+    },
+    {
+      "generic": "clarithromycin",
+      "drugClass": "macrolide",
+      "names": [
+        "clarithromycin",
+        "claritromicina",
+        "klacid",
+        "klaricid",
+        "คลาริโธรมัยซิน"
+      ]
+    },
+    {
+      "generic": "ciprofloxacin",
+      "drugClass": "fluoroquinolone",
+      "names": [
+        "ciproflox",
+        "ciproxin",
+        "cipro ",
+        "ซิโปรฟลอกซาซิน",
+        "ไซโปรฟลอกซาซิน"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "co-trimoxazole",
+      "drugClass": "sulfonamide_antibiotic",
+      "names": [
+        "co-trimoxazole",
+        "cotrimoxazol",
+        "sulfamethoxazole",
+        "sulfametoxazolo",
+        "bactrim",
+        "septrin",
+        "แบคทริม",
+        "โคไตรม็อกซาโซล"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "doxycycline",
+      "drugClass": "tetracycline",
+      "names": [
+        "doxycyclin",
+        "doxiciclina",
+        "vibramycin",
+        "bassado",
+        "ด็อกซีไซคลิน",
+        "ดอกซีไซคลิน"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "metronidazole",
+      "drugClass": "nitroimidazole",
+      "names": [
+        "metronidazol",
+        "flagyl",
+        "เมโทรนิดาโซล"
+      ]
+    },
+    {
+      "generic": "warfarin",
+      "drugClass": "anticoagulant",
+      "names": [
+        "warfarin",
+        "coumadin",
+        "orfarin",
+        "วาร์ฟาริน"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "rivaroxaban",
+      "drugClass": "anticoagulant",
+      "names": [
+        "rivaroxaban",
+        "xarelto"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "apixaban",
+      "drugClass": "anticoagulant",
+      "names": [
+        "apixaban",
+        "eliquis"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "blood thinner (unspecified)",
+      "drugClass": "anticoagulant",
+      "names": [
+        "blood thinner",
+        "anticoagulant",
+        "anticoagulante",
+        "ยาละลายลิ่มเลือด",
+        "ยาต้านการแข็งตัวของเลือด"
+      ]
+    },
+    {
+      "generic": "clopidogrel",
+      "drugClass": "antiplatelet",
+      "names": [
+        "clopidogrel",
+        "plavix",
+        "apolets",
+        "โคลพิโดเกรล"
+      ]
+    },
+    {
+      "generic": "metformin",
+      "drugClass": "biguanide",
+      "names": [
+        "metformin",
+        "metformina",
+        "glucophage",
+        "metforal",
+        "เมทฟอร์มิน"
+      ]
+    },
+    {
+      "generic": "gliclazide",
+      "drugClass": "sulfonylurea",
+      "names": [
+        "gliclazid",
+        "diamicron",
+        "กลิคลาไซด์"
+      ]
+    },
+    {
+      "generic": "insulin",
+      "drugClass": "insulin",
+      "names": [
+        "insulin",
+        "อินซูลิน",
+        "lantus",
+        "novorapid",
+        "humulin",
+        "mixtard",
+        "humalog"
+      ]
+    },
+    {
+      "generic": "enalapril",
+      "drugClass": "ace_inhibitor",
+      "names": [
+        "enalapril",
+        "enaril",
+        "renitec",
+        "enapren",
+        "อีนาลาพริล"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "ramipril",
+      "drugClass": "ace_inhibitor",
+      "names": [
+        "ramipril",
+        "triatec",
+        "tritace"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "losartan",
+      "drugClass": "arb",
+      "names": [
+        "losartan",
+        "cozaar",
+        "lortaan",
+        "โลซาร์แทน"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "amlodipine",
+      "drugClass": "calcium_channel_blocker",
+      "names": [
+        "amlodipin",
+        "norvasc",
+        "อัมโลดิปีน",
+        "แอมโลดิปีน"
+      ]
+    },
+    {
+      "generic": "spironolactone",
+      "drugClass": "potassium_sparing_diuretic",
+      "names": [
+        "spironolact",
+        "spironolatt",
+        "aldactone",
+        "สไปโรโนแลคโตน"
+      ]
+    },
+    {
+      "generic": "blood pressure medicine (unspecified)",
+      "drugClass": "antihypertensive_unspecified",
+      "names": [
+        "blood pressure pill",
+        "blood pressure medicine",
+        "blood pressure tablet",
+        "pastiglia per la pressione",
+        "farmaco per la pressione",
+        "medicina per la pressione",
+        "ยาความดัน",
+        "ยาลดความดัน"
+      ]
+    },
+    {
+      "generic": "atorvastatin",
+      "drugClass": "statin",
+      "names": [
+        "atorvastatin",
+        "lipitor",
+        "totalip",
+        "อะทอร์วาสแตติน",
+        "อะโทวาสแตติน"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "simvastatin",
+      "drugClass": "statin",
+      "names": [
+        "simvastatin",
+        "zocor",
+        "sivastin",
+        "ซิมวาสแตติน"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "statin (unspecified)",
+      "drugClass": "statin",
+      "names": [
+        "cholesterol pill",
+        "cholesterol medicine",
+        "cholesterol tablet",
+        "statin",
+        "pastiglia per il colesterolo",
+        "farmaco per il colesterolo",
+        "medicina per il colesterolo",
+        "ยาลดไขมัน",
+        "ยาไขมัน",
+        "ยาลดคอเลสเตอรอล"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "omeprazole",
+      "drugClass": "ppi",
+      "names": [
+        "omeprazol",
+        "losec",
+        "miracid",
+        "omeprazen",
+        "โอเมพราโซล"
+      ]
+    },
+    {
+      "generic": "salbutamol",
+      "drugClass": "beta2_agonist",
+      "names": [
+        "salbutamol",
+        "albuterol",
+        "ventolin",
+        "broncovaleas",
+        "ซัลบูทามอล",
+        "เวนโทลิน"
+      ]
+    },
+    {
+      "generic": "prednisolone",
+      "drugClass": "corticosteroid",
+      "names": [
+        "prednisolon",
+        "เพรดนิโซโลน"
+      ]
+    },
+    {
+      "generic": "prednisone",
+      "drugClass": "corticosteroid",
+      "names": [
+        "prednison",
+        "deltacortene"
+      ]
+    },
+    {
+      "generic": "codeine",
+      "drugClass": "opioid",
+      "names": [
+        "codeine",
+        "codeina",
+        "โคเดอีน"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "tramadol",
+      "drugClass": "opioid",
+      "names": [
+        "tramadol",
+        "tramal",
+        "contramal",
+        "ทรามาดอล"
+      ],
+      "pregnancy": "caution"
+    },
+    {
+      "generic": "cetirizine",
+      "drugClass": "antihistamine",
+      "names": [
+        "cetirizin",
+        "zyrtec",
+        "zirtec",
+        "เซทิริซีน"
+      ]
+    },
+    {
+      "generic": "loratadine",
+      "drugClass": "antihistamine",
+      "names": [
+        "loratadin",
+        "clarityne",
+        "claritin",
+        "ลอราทาดีน"
+      ]
+    },
+    {
+      "generic": "chlorphenamine",
+      "drugClass": "antihistamine",
+      "names": [
+        "chlorphenamine",
+        "chlorpheniramine",
+        "clorfenamina",
+        " cpm ",
+        "คลอเฟนิรามีน",
+        "ซีพีเอ็ม"
+      ]
+    },
+    {
+      "generic": "levothyroxine",
+      "drugClass": "thyroid_hormone",
+      "names": [
+        "levothyrox",
+        "levotiroxina",
+        "eltroxin",
+        "eutirox",
+        "euthyrox",
+        "synthroid",
+        "เลโวไทร็อกซีน",
+        "เลโวไทรอกซีน"
+      ]
+    },
+    {
+      "generic": "isotretinoin",
+      "drugClass": "retinoid",
+      "names": [
+        "isotretinoin",
+        "roaccutane",
+        "acnotin",
+        "ไอโซเตรติโนอิน"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "sertraline",
+      "drugClass": "ssri",
+      "names": [
+        "sertralin",
+        "zoloft",
+        "เซอร์ทราลีน"
+      ]
+    },
+    {
+      "generic": "fluoxetine",
+      "drugClass": "ssri",
+      "names": [
+        "fluoxetin",
+        "prozac",
+        "ฟลูออกซิทีน"
+      ]
+    },
+    {
+      "generic": "sildenafil",
+      "drugClass": "pde5_inhibitor",
+      "names": [
+        "sildenafil",
+        "viagra",
+        "ไวอากร้า",
+        "ไวอากรา"
+      ]
+    },
+    {
+      "generic": "tadalafil",
+      "drugClass": "pde5_inhibitor",
+      "names": [
+        "tadalafil",
+        "cialis",
+        "เซียลิส"
+      ]
+    },
+    {
+      "generic": "nitrate",
+      "drugClass": "nitrate",
+      "names": [
+        "isosorbide",
+        "isordil",
+        "monoket",
+        "imdur",
+        "nitroglycerin",
+        "glyceryl trinitrate",
+        "trinitrina",
+        "nitroglicerina",
+        "venitrin",
+        "ไอซอร์ดิล",
+        "ยาอมใต้ลิ้น"
+      ]
+    },
+    {
+      "generic": "methotrexate",
+      "drugClass": "antimetabolite",
+      "names": [
+        "methotrexat",
+        "metotrexato",
+        "เมโธเทร็กเซต",
+        "เมโธเทร็กเซท"
+      ],
+      "pregnancy": "avoid"
+    },
+    {
+      "generic": "domperidone",
+      "drugClass": "prokinetic",
+      "names": [
+        "domperidon",
+        "motilium",
+        "peridon",
+        "ดอมเพอริโดน"
+      ]
+    },
+    {
+      "generic": "loperamide",
+      "drugClass": "antidiarrhoeal",
+      "names": [
+        "loperamid",
+        "imodium",
+        "โลเพอราไมด์"
+      ]
+    },
+    {
+      "generic": "misoprostol",
+      "drugClass": "prostaglandin",
+      "names": [
+        "misoprostol",
+        "cytotec",
+        "ไซโตเทค"
+      ],
+      "pregnancy": "avoid"
+    }
+  ],
+  "allergens": [
+    {
+      "allergenClass": "penicillin",
+      "names": [
+        "penicillin",
+        "penicillina",
+        "penicilline",
+        "amoxi",
+        "augmentin",
+        "ampicillin",
+        "ampicillina",
+        "dicloxacillin",
+        "เพนิซิลลิน",
+        "เพนนิซิลลิน",
+        "เพนิซิลิน",
+        "อะม็อกซี",
+        "อะมอกซี",
+        "อม็อกซี",
+        "ออกเมนติน"
+      ]
+    },
+    {
+      "allergenClass": "cephalosporin",
+      "names": [
+        "cephalosporin",
+        "cefalosporin",
+        "cefalexin",
+        "cephalexin",
+        "keflex",
+        "ceftriaxon",
+        "cefixim",
+        "cefuroxim",
+        "cefazolin",
+        "เซฟาโลสปอริน",
+        "เซฟาเล็กซิน",
+        "เซฟไตรอะโซน"
+      ]
+    },
+    {
+      "allergenClass": "sulfa",
+      "names": [
+        "sulfa",
+        "sulpha",
+        "sulfamid",
+        "sulfonamid",
+        "sulfametoxazolo",
+        "sulfamethoxazole",
+        "bactrim",
+        "co-trimoxazole",
+        "cotrimoxazol",
+        "ซัลฟา",
+        "แบคทริม"
+      ]
+    },
+    {
+      "allergenClass": "nsaid",
+      "names": [
+        "nsaid",
+        " fans ",
+        "antinfiammator",
+        "anti-inflammator",
+        "ibuprofen",
+        "brufen",
+        "nurofen",
+        "diclofenac",
+        "voltaren",
+        "naproxen",
+        "ketoprofen",
+        "mefenamic",
+        "ponstan",
+        "aspirin",
+        "aspirina",
+        "ไอบูโพรเฟน",
+        "ไอบูโปรเฟน",
+        "ไดโคลฟีแนค",
+        "แอสไพริน",
+        "พอนสแตน",
+        "เอ็นเสด"
+      ]
+    },
+    {
+      "allergenClass": "paracetamol",
+      "names": [
+        "paracetamol",
+        "acetaminophen",
+        "tylenol",
+        "panadol",
+        "tachipirina",
+        "ยาพารา",
+        "พาราเซตามอล"
+      ]
+    },
+    {
+      "allergenClass": "opioid",
+      "names": [
+        "codeine",
+        "codeina",
+        "morphine",
+        "morfina",
+        "tramadol",
+        "opioid",
+        "oppioid",
+        "โคเดอีน",
+        "มอร์ฟีน",
+        "ทรามาดอล"
+      ]
+    },
+    {
+      "allergenClass": "macrolide",
+      "names": [
+        "macrolid",
+        "azithro",
+        "azitro",
+        "clarithro",
+        "claritro",
+        "erythro",
+        "eritro",
+        "อีริโธรมัยซิน",
+        "อะซิโธรมัยซิน"
+      ]
+    },
+    {
+      "allergenClass": "fluoroquinolone",
+      "names": [
+        "quinolon",
+        "chinolon",
+        "ciproflox",
+        "levoflox",
+        "ไซโปรฟลอกซาซิน",
+        "ซิโปรฟลอกซาซิน"
+      ]
+    },
+    {
+      "allergenClass": "nondrug_contrast_iodine",
+      "names": [
+        "contrast",
+        "iodine",
+        "iodio",
+        "mezzo di contrasto",
+        "สารทึบรังสี",
+        "ไอโอดีน"
+      ]
+    },
+    {
+      "allergenClass": "nondrug_latex",
+      "names": [
+        "latex",
+        "lattice",
+        "ยางพารา",
+        "ถุงมือยาง"
+      ]
+    },
+    {
+      "allergenClass": "food_peanut_nut",
+      "names": [
+        "peanut",
+        "nuts",
+        "arachidi",
+        "noccioline",
+        "frutta secca",
+        "ถั่ว"
+      ]
+    },
+    {
+      "allergenClass": "food_shellfish",
+      "names": [
+        "shellfish",
+        "shrimp",
+        "prawn",
+        "crostacei",
+        "gamberi",
+        "frutti di mare",
+        "อาหารทะเล",
+        "กุ้ง",
+        "ปู"
+      ]
+    },
+    {
+      "allergenClass": "food_egg_milk",
+      "names": [
+        "egg",
+        "uova",
+        "uovo",
+        "milk",
+        "latte",
+        "ไข่",
+        "นมวัว"
+      ]
+    }
+  ],
+  "allergyConflicts": [
+    {
+      "allergenClass": "penicillin",
+      "drugClasses": [
+        "penicillin"
+      ],
+      "ruleId": "MR-ALLERGY-PEN",
+      "severity": "high",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (penicillins: hypersensitivity)"
+    },
+    {
+      "allergenClass": "penicillin",
+      "drugClasses": [
+        "cephalosporin"
+      ],
+      "ruleId": "MR-ALLERGY-PEN-CEPH",
+      "severity": "moderate",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (cephalosporins: cross-sensitivity with penicillin, about 0.5-6.5%)"
+    },
+    {
+      "allergenClass": "cephalosporin",
+      "drugClasses": [
+        "cephalosporin"
+      ],
+      "ruleId": "MR-ALLERGY-CEPH",
+      "severity": "high",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections"
+    },
+    {
+      "allergenClass": "cephalosporin",
+      "drugClasses": [
+        "penicillin"
+      ],
+      "ruleId": "MR-ALLERGY-CEPH-PEN",
+      "severity": "moderate",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections"
+    },
+    {
+      "allergenClass": "sulfa",
+      "drugClasses": [
+        "sulfonamide_antibiotic"
+      ],
+      "ruleId": "MR-ALLERGY-SULFA",
+      "severity": "high",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (co-trimoxazole)"
+    },
+    {
+      "allergenClass": "nsaid",
+      "drugClasses": [
+        "nsaid",
+        "aspirin"
+      ],
+      "ruleId": "MR-ALLERGY-NSAID",
+      "severity": "high",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (NSAIDs: contra-indicated with history of hypersensitivity to aspirin or any other NSAID)"
+    },
+    {
+      "allergenClass": "nsaid",
+      "drugClasses": [
+        "cox2_inhibitor"
+      ],
+      "ruleId": "MR-ALLERGY-NSAID-COX2",
+      "severity": "moderate",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (celecoxib: caution in NSAID hypersensitivity)"
+    },
+    {
+      "allergenClass": "paracetamol",
+      "drugClasses": [
+        "paracetamol"
+      ],
+      "ruleId": "MR-ALLERGY-PARA",
+      "severity": "high",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections"
+    },
+    {
+      "allergenClass": "opioid",
+      "drugClasses": [
+        "opioid"
+      ],
+      "ruleId": "MR-ALLERGY-OPIOID",
+      "severity": "high",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections"
+    },
+    {
+      "allergenClass": "macrolide",
+      "drugClasses": [
+        "macrolide"
+      ],
+      "ruleId": "MR-ALLERGY-MACROLIDE",
+      "severity": "high",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections"
+    },
+    {
+      "allergenClass": "fluoroquinolone",
+      "drugClasses": [
+        "fluoroquinolone"
+      ],
+      "ruleId": "MR-ALLERGY-FQ",
+      "severity": "high",
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections"
+    }
+  ],
+  "interactions": [
+    {
+      "a": "anticoagulant",
+      "b": "nsaid",
+      "ruleId": "MR-INT-01",
+      "severity": "high",
+      "message": {
+        "th": "ยาต้านการแข็งตัวของเลือดร่วมกับยากลุ่ม NSAID: เพิ่มความเสี่ยงเลือดออกรุนแรง",
+        "it": "Anticoagulante con un FANS: rischio aumentato di sanguinamento grave.",
+        "en": "Blood thinner with an NSAID: higher risk of serious bleeding."
+      },
+      "source": "Battistella M et al. Arch Intern Med 2005;165(2):189-92. doi:10.1001/archinte.165.2.189 (PMID 15668365); BNF interactions: warfarin + NSAIDs"
+    },
+    {
+      "a": "anticoagulant",
+      "b": "cox2_inhibitor",
+      "ruleId": "MR-INT-02",
+      "severity": "high",
+      "message": {
+        "th": "ยาต้านการแข็งตัวของเลือดร่วมกับ COX-2 inhibitor: เสี่ยงเลือดออกใกล้เคียง NSAID",
+        "it": "Anticoagulante con un inibitore COX-2: rischio di sanguinamento simile ai FANS.",
+        "en": "Blood thinner with a COX-2 inhibitor: bleeding risk similar to other NSAIDs."
+      },
+      "source": "Battistella M et al. Arch Intern Med 2005;165(2):189-92. doi:10.1001/archinte.165.2.189 (PMID 15668365)"
+    },
+    {
+      "a": "anticoagulant",
+      "b": "aspirin",
+      "ruleId": "MR-INT-03",
+      "severity": "high",
+      "message": {
+        "th": "ยาต้านการแข็งตัวของเลือดร่วมกับแอสไพริน: เพิ่มความเสี่ยงเลือดออก ตรวจสอบว่าแพทย์ตั้งใจสั่งร่วมกันหรือไม่",
+        "it": "Anticoagulante con aspirina: rischio aumentato di sanguinamento; verificare se voluto.",
+        "en": "Blood thinner with aspirin: higher risk of serious bleeding; check if intended."
+      },
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (warfarin + aspirin)"
+    },
+    {
+      "a": "warfarin",
+      "b": "co-trimoxazole",
+      "ruleId": "MR-INT-04",
+      "severity": "high",
+      "message": {
+        "th": "วาร์ฟารินร่วมกับโคไตรม็อกซาโซล: INR สูงขึ้นและเสี่ยงเลือดออก",
+        "it": "Warfarin con cotrimossazolo: aumento INR e sanguinamento.",
+        "en": "Warfarin with co-trimoxazole: INR rise and bleeding."
+      },
+      "source": "Fischer HD et al. Arch Intern Med 2010;170(7):617-21. doi:10.1001/archinternmed.2010.37 (PMID 20386005)"
+    },
+    {
+      "a": "warfarin",
+      "b": "metronidazole",
+      "ruleId": "MR-INT-05",
+      "severity": "high",
+      "message": {
+        "th": "วาร์ฟารินร่วมกับเมโทรนิดาโซล: INR สูงขึ้นและเสี่ยงเลือดออก",
+        "it": "Warfarin con metronidazolo: aumento INR e sanguinamento.",
+        "en": "Warfarin with metronidazole: INR rise and bleeding."
+      },
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (warfarin + metronidazole); Stockley's Drug Interactions"
+    },
+    {
+      "a": "ssri",
+      "b": "tramadol",
+      "ruleId": "MR-INT-06",
+      "severity": "high",
+      "message": {
+        "th": "ยากลุ่ม SSRI ร่วมกับทรามาดอล: เสี่ยงกลุ่มอาการเซโรโทนินและชัก",
+        "it": "SSRI con tramadolo: rischio di sindrome serotoninergica e convulsioni.",
+        "en": "SSRI with tramadol: risk of serotonin syndrome and seizures."
+      },
+      "source": "Boyer EW, Shannon M. The serotonin syndrome. N Engl J Med 2005;352(11):1112-20. doi:10.1056/NEJMra041867 (PMID 15784664)"
+    },
+    {
+      "a": "nitrate",
+      "b": "pde5_inhibitor",
+      "ruleId": "MR-INT-07",
+      "severity": "high",
+      "message": {
+        "th": "ยาไนเตรตร่วมกับซิลเดนาฟิล/ทาดาลาฟิล: ความดันต่ำรุนแรงถึงชีวิต ห้ามใช้ร่วมกัน",
+        "it": "Nitrato con sildenafil/tadalafil: ipotensione grave, potenzialmente fatale. Controindicato.",
+        "en": "Nitrate with sildenafil/tadalafil: severe, possibly fatal, low blood pressure. Contraindicated."
+      },
+      "source": "FDA prescribing information: Viagra (sildenafil) and Cialis (tadalafil), Contraindications (organic nitrates)"
+    },
+    {
+      "a": "methotrexate",
+      "b": "nsaid",
+      "ruleId": "MR-INT-08",
+      "severity": "high",
+      "message": {
+        "th": "เมโธเทร็กเซตร่วมกับ NSAID: เสี่ยงพิษจากเมโธเทร็กเซต (ไขกระดูก ไต)",
+        "it": "Metotrexato con un FANS: tossicità da metotrexato (midollo, rene).",
+        "en": "Methotrexate with an NSAID: methotrexate toxicity (marrow, kidney)."
+      },
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (methotrexate + NSAIDs); FDA methotrexate prescribing information, Drug Interactions"
+    },
+    {
+      "a": "simvastatin",
+      "b": "clarithromycin",
+      "ruleId": "MR-INT-09",
+      "severity": "high",
+      "message": {
+        "th": "ซิมวาสแตตินร่วมกับคลาริโธรมัยซิน: เสี่ยงกล้ามเนื้อสลาย ห้ามใช้ร่วมกัน",
+        "it": "Simvastatina con claritromicina: rischio di rabdomiolisi. Controindicato.",
+        "en": "Simvastatin with clarithromycin: rhabdomyolysis risk. Contraindicated."
+      },
+      "source": "FDA prescribing information: Zocor (simvastatin), Contraindications (strong CYP3A4 inhibitors); Patel AM et al. Ann Intern Med 2013;158(12):869-76. doi:10.7326/0003-4819-158-12-201306180-00004 (PMID 23778904)"
+    },
+    {
+      "a": "statin",
+      "b": "clarithromycin",
+      "ruleId": "MR-INT-10",
+      "severity": "moderate",
+      "message": {
+        "th": "ยากลุ่มสแตตินร่วมกับคลาริโธรมัยซิน: เพิ่มความเสี่ยงพิษต่อกล้ามเนื้อและไต",
+        "it": "Statina con claritromicina: rischio aumentato di tossicità muscolare e danno renale.",
+        "en": "Statin with clarithromycin: higher risk of muscle toxicity and kidney injury."
+      },
+      "source": "Patel AM et al. Ann Intern Med 2013;158(12):869-76. doi:10.7326/0003-4819-158-12-201306180-00004 (PMID 23778904)"
+    },
+    {
+      "a": "ace_inhibitor",
+      "b": "potassium_sparing_diuretic",
+      "ruleId": "MR-INT-11",
+      "severity": "moderate",
+      "message": {
+        "th": "ยากลุ่ม ACE inhibitor ร่วมกับสไปโรโนแลคโตน: เสี่ยงโพแทสเซียมสูง",
+        "it": "ACE-inibitore con spironolattone: rischio di iperpotassiemia.",
+        "en": "ACE inhibitor with spironolactone: risk of high potassium."
+      },
+      "source": "Juurlink DN et al. N Engl J Med 2004;351(6):543-51. doi:10.1056/NEJMoa040135 (PMID 15295047)"
+    },
+    {
+      "a": "arb",
+      "b": "potassium_sparing_diuretic",
+      "ruleId": "MR-INT-12",
+      "severity": "moderate",
+      "message": {
+        "th": "ยากลุ่ม ARB ร่วมกับสไปโรโนแลคโตน: เสี่ยงโพแทสเซียมสูง",
+        "it": "Sartano con spironolattone: rischio di iperpotassiemia.",
+        "en": "ARB with spironolactone: risk of high potassium."
+      },
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (angiotensin-II receptor antagonists + potassium-sparing diuretics)"
+    },
+    {
+      "a": "ace_inhibitor",
+      "b": "arb",
+      "ruleId": "MR-INT-13",
+      "severity": "moderate",
+      "message": {
+        "th": "ACE inhibitor ร่วมกับ ARB: ความดันต่ำและไตบาดเจ็บมากขึ้นโดยไม่ได้ประโยชน์เพิ่ม",
+        "it": "ACE-inibitore con sartano (doppio blocco): più ipotensione e danno renale, nessun beneficio aggiuntivo.",
+        "en": "ACE inhibitor with ARB (dual blockade): more low blood pressure and kidney injury, no added benefit."
+      },
+      "source": "ONTARGET Investigators, Yusuf S et al. N Engl J Med 2008;358(15):1547-59. doi:10.1056/NEJMoa0801317 (PMID 18378520)"
+    },
+    {
+      "a": "ace_inhibitor",
+      "b": "nsaid",
+      "ruleId": "MR-INT-14",
+      "severity": "moderate",
+      "message": {
+        "th": "ACE inhibitor ร่วมกับ NSAID: เสี่ยงไตบาดเจ็บ โดยเฉพาะถ้าใช้ยาขับปัสสาวะด้วย",
+        "it": "ACE-inibitore con un FANS: rischio di danno renale, maggiore con un diuretico.",
+        "en": "ACE inhibitor with an NSAID: kidney injury risk, worse with a diuretic."
+      },
+      "source": "Lapi F et al. BMJ 2013;346:e8525. doi:10.1136/bmj.e8525 (PMID 23299844)"
+    },
+    {
+      "a": "arb",
+      "b": "nsaid",
+      "ruleId": "MR-INT-15",
+      "severity": "moderate",
+      "message": {
+        "th": "ARB ร่วมกับ NSAID: เสี่ยงไตบาดเจ็บ โดยเฉพาะถ้าใช้ยาขับปัสสาวะด้วย",
+        "it": "Sartano con un FANS: rischio di danno renale, maggiore con un diuretico.",
+        "en": "ARB with an NSAID: kidney injury risk, worse with a diuretic."
+      },
+      "source": "Lapi F et al. BMJ 2013;346:e8525. doi:10.1136/bmj.e8525 (PMID 23299844)"
+    },
+    {
+      "a": "clopidogrel",
+      "b": "omeprazole",
+      "ruleId": "MR-INT-16",
+      "severity": "moderate",
+      "message": {
+        "th": "โคลพิโดเกรลร่วมกับโอเมพราโซล: อาจลดฤทธิ์โคลพิโดเกรล ควรพิจารณาแพนโทพราโซลแทน",
+        "it": "Clopidogrel con omeprazolo: può ridurre l'effetto del clopidogrel; preferire pantoprazolo.",
+        "en": "Clopidogrel with omeprazole: may reduce clopidogrel effect; pantoprazole is preferred."
+      },
+      "source": "FDA prescribing information: Plavix (clopidogrel), Warnings (CYP2C19 inhibitors, omeprazole); Juurlink DN et al. CMAJ 2009;180(7):713-8. doi:10.1503/cmaj.082001 (PMID 19176635)"
+    },
+    {
+      "a": "aspirin",
+      "b": "nsaid",
+      "ruleId": "MR-INT-17",
+      "severity": "moderate",
+      "message": {
+        "th": "แอสไพรินร่วมกับ NSAID อื่น: เสี่ยงเลือดออกในกระเพาะ และไอบูโพรเฟนอาจลดฤทธิ์แอสไพรินขนาดต่ำ",
+        "it": "Aspirina con un altro FANS: più sanguinamento gastrico; l'ibuprofene può ridurre l'effetto dell'aspirina a basso dosaggio.",
+        "en": "Aspirin with another NSAID: more stomach bleeding; ibuprofen may blunt low-dose aspirin."
+      },
+      "source": "FDA: Concomitant use of ibuprofen and aspirin (2006 science paper / information for healthcare professionals); BNF interactions"
+    },
+    {
+      "a": "ssri",
+      "b": "nsaid",
+      "ruleId": "MR-INT-18",
+      "severity": "moderate",
+      "message": {
+        "th": "SSRI ร่วมกับ NSAID: เพิ่มความเสี่ยงเลือดออกในทางเดินอาหาร",
+        "it": "SSRI con un FANS: rischio aumentato di sanguinamento gastrico.",
+        "en": "SSRI with an NSAID: higher risk of stomach bleeding."
+      },
+      "source": "BNF (British National Formulary), current edition, Medicines: Interactions / Contra-indications sections (SSRIs + NSAIDs)"
+    }
+  ],
+  "messages": {
+    "allergy_conflict": {
+      "message": {
+        "th": "ยานี้อาจขัดกับประวัติแพ้ยาที่ผู้ป่วยแจ้ง",
+        "it": "Questo farmaco potrebbe essere in conflitto con un'allergia riferita dal paziente.",
+        "en": "This medicine may conflict with an allergy the patient reported."
+      },
+      "action": {
+        "th": "ยืนยันประวัติแพ้ (อาการอะไร เมื่อไร) และชื่อยาก่อนให้ยาทุกครั้ง",
+        "it": "Confermare l'allergia (quale reazione, quando) e il prodotto prima di qualsiasi dose.",
+        "en": "Confirm the allergy (what reaction, when) and the product before any dose."
+      }
+    },
+    "duplicate_therapy": {
+      "message": {
+        "th": "มียาสองรายการที่มีตัวยาเดียวกันหรือกลุ่มยาเดียวกัน",
+        "it": "Due prodotti contengono lo stesso principio attivo o la stessa classe di farmaci.",
+        "en": "Two products contain the same ingredient or the same drug class."
+      },
+      "action": {
+        "th": "ตรวจสอบว่าผู้ป่วยใช้ทั้งสองรายการจริงหรือไม่ และแพทย์ตั้งใจสั่งซ้ำหรือไม่",
+        "it": "Verificare se entrambi sono assunti ora e se la duplicazione è voluta.",
+        "en": "Check whether both are really taken now and whether the duplication is intended."
+      }
+    },
+    "pregnancy_caution": {
+      "message": {
+        "th": "ยานี้ต้องระวังหรือควรหลีกเลี่ยงในหญิงตั้งครรภ์",
+        "it": "Questo farmaco richiede cautela o va evitato in gravidanza.",
+        "en": "This medicine needs caution or should be avoided in pregnancy."
+      },
+      "action": {
+        "th": "ยืนยันการตั้งครรภ์และอายุครรภ์ แล้วทบทวนกับแพทย์ผู้สั่งยา",
+        "it": "Confermare lo stato di gravidanza e l'epoca gestazionale; rivalutare con il prescrittore.",
+        "en": "Confirm pregnancy status and gestation; review with the prescriber."
+      }
+    },
+    "interaction": {
+      "message": {
+        "th": "ยาเหล่านี้มีปฏิกิริยาระหว่างกันที่ทราบแล้ว",
+        "it": "Questi farmaci hanno un'interazione nota.",
+        "en": "These medicines are known to interact."
+      },
+      "action": {
+        "th": "ตรวจสอบว่าใช้ทั้งสองตัวอยู่หรือไม่ แล้วทบทวนกับแพทย์ผู้สั่งยา",
+        "it": "Verificare se entrambi sono assunti ora; rivalutare con il prescrittore.",
+        "en": "Check whether both are taken now; review with the prescriber."
+      }
+    },
+    "max_dose_risk": {
+      "message": {
+        "th": "อาจได้รับพาราเซตามอล (หรือตัวยาที่มีขนาดสูงสุดต่อวัน) จากยามากกว่าหนึ่งรายการ",
+        "it": "Il paracetamolo (o un altro principio con dose massima) potrebbe provenire da più prodotti.",
+        "en": "Paracetamol (or another dose-limited ingredient) may come from more than one product."
+      },
+      "action": {
+        "th": "รวมขนาดยาต่อวันจากทุกรายการ (พาราเซตามอลไม่เกิน 4 กรัม/วันในผู้ใหญ่ น้อยกว่านี้ถ้ามีโรคตับ ดื่มสุรา หรือน้ำหนักตัวน้อย)",
+        "it": "Sommare la dose giornaliera totale di tutti i prodotti (paracetamolo max 4 g/die nell'adulto; meno se epatopatia, alcol o basso peso).",
+        "en": "Add up the total daily dose from all products (paracetamol max 4 g/day in adults; lower if liver disease, alcohol or low weight)."
+      }
+    },
+    "unknown_medication": {
+      "message": {
+        "th": "ผู้ป่วยระบุยาที่ระบบระบุชื่อยาไม่ได้แน่ชัด",
+        "it": "Il paziente ha indicato un farmaco che non è stato possibile identificare con precisione.",
+        "en": "The patient named a medicine that could not be identified exactly."
+      },
+      "action": {
+        "th": "ขอดูแผงยาหรือรูปถ่าย ระบุชื่อสามัญและขนาดยา ระบบยังไม่ได้ตรวจความปลอดภัยของยานี้",
+        "it": "Chiedere di vedere la confezione o una foto; identificare principio attivo e dose. Nessun controllo di sicurezza è stato eseguito.",
+        "en": "Ask to see the pack or photo; identify the generic and dose. No safety checks were run on it."
+      }
+    }
+  }
+}

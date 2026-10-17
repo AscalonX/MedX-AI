@@ -6,6 +6,7 @@ import { QUESTIONS } from './templates';
 
 /** Deliberately narrow deterministic demo extractor, not an evaluation oracle. */
 export function mockJSON(req: ChatRequest): unknown {
+  if (req.step === 'red_flags') return { flags: [] };
   if (req.step === 'next_question') {
     const key = /Missing information: (\w+):/.exec(req.user)?.[1] as FieldKey;
     return { field: key, question: QUESTIONS[key] };

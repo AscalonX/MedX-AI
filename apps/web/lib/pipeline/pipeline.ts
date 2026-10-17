@@ -6,6 +6,7 @@ import type { EngineContext } from './extract';
 import type { ModelClient } from './llm';
 import { nextQuestion } from './nextQuestion';
 import { checkRedFlags } from './redflags';
+import { redFlagScreen } from './redFlagScreen';
 import { redact } from './redact';
 import { appendAudit, getAudit, getSession, getSessions, saveSession, withSessionLock } from './store';
 import { words } from './verify';
@@ -62,11 +63,12 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
   addFlags(checkRedFlags(session.turns));
   if (summary.redFlags.length || input.status === 'escalated') return escalate();
   const ctx: EngineContext = { client: opts.client, trace: opts.trace, deadline, modelCalls: summary.modelCalls, log: (event, detail) => audit('summary_generated', { event, ...detail }) };
-  const extracted = await extract(session, ctx);
+  const [extracted, modelFlags] = await Promise.all([extract(session, ctx), redFlagScreen(session, ctx)]);
   summary.fields = applyRequiredFields(preserveReviewed(previous?.fields || [], extracted.fields));
   // Redact model-proposed values too: an untrusted provider cannot reintroduce PII into storage.
   summary.fields = summary.fields.map(f => ({ ...f, value: f.value ? { th: redact(f.value.th).text, it: redact(f.value.it).text, en: redact(f.value.en).text } : null, valueOriginal: f.valueOriginal === null ? null : redact(f.valueOriginal).text }));
   addFlags(checkRedFlags(session.turns, summary.fields));
+  addFlags(modelFlags);
   if (summary.redFlags.length) return escalate();
   let reason = extracted.reason as IntakeSummary['abstainReason'];
   const supportedRequired = summary.fields.filter(f => f.required && f.status === 'supported');

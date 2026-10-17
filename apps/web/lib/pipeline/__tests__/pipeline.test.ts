@@ -27,13 +27,13 @@ describe('pipeline', () => {
   it('unreachable AMD provider abstains', async () => {
     vi.stubEnv('MODEL_PROVIDER', 'amd'); vi.stubEnv('AMD_BASE_URL', 'http://127.0.0.1:9'); vi.stubEnv('AMD_API_KEY', 'synthetic-test-key'); vi.stubEnv('AMD_MODEL', 'synthetic-test-model');
     const result = await addTurn(createSession('en').id, 'I have a mild headache');
-    expect(result.status).toBe('needs_human'); expect(result.summary?.abstainReason).toBe('provider_error'); expect(result.summary?.modelCalls).toHaveLength(2); expect(result.summary?.fields.filter(f => f.status === 'supported')).toEqual([]);
+    expect(result.status).toBe('needs_human'); expect(result.summary?.abstainReason).toBe('provider_error'); expect(result.summary?.modelCalls.filter(c => c.step === 'extract')).toHaveLength(2); expect(result.summary?.fields.filter(f => f.status === 'supported')).toEqual([]);
   });
   it.each(['en', 'it', 'th'] as Lang[])('complete %s case awaits review', async lang => {
     const session = await addTurn(createSession(lang).id, completeByLang[lang]);
     expect(session.status).toBe('awaiting_review'); expect(session.summary?.nextQuestion).toBeNull(); expect(session.summary?.fields).toHaveLength(12);
     expect(session.summary?.fields.filter(f => f.required && f.status === 'supported')).toHaveLength(REQUIRED_FIELDS.length + 1);
-    expect(session.summary?.modelCalls).toHaveLength(1);
+    expect(session.summary?.modelCalls.map(c => c.step)).toEqual(['extract', 'red_flags']);
     for (const f of session.summary!.fields) for (const e of f.evidence) expect(session.turns.find(t => t.id === e.turnId)?.text.slice(e.start, e.end)).toBe(e.quote);
   });
   it('review approves required fields and records actor/actions', async () => {
@@ -77,21 +77,21 @@ describe('pipeline', () => {
     let extracts = 0; const trace = vi.fn();
     const client = clientFor(r => r.step === 'extract' && extracts++ === 0 ? { wrong: 'shape' } : mockJSON(r));
     const s = await runTurn(createSession('en', { persist: false }), complete, { client, trace, now: () => '2026-10-17T01:02:03Z' });
-    expect(s.status).toBe('awaiting_review'); expect(s.summary?.modelCalls).toHaveLength(2); expect(s.summary?.modelCalls[0].ok).toBe(false); expect(trace).toHaveBeenCalledTimes(2); expect(trace.mock.calls[0][0].raw).toEqual({ wrong: 'shape' }); expect(s.summary?.generatedAt).toBe('2026-10-17T01:02:03Z');
+    expect(s.status).toBe('awaiting_review'); expect(s.summary?.modelCalls.filter(c => c.step === 'extract')).toHaveLength(2); expect(s.summary?.modelCalls[0].ok).toBe(false); expect(trace.mock.calls.filter(([e]) => e.step === 'extract')).toHaveLength(2); expect(trace.mock.calls[0][0].raw).toEqual({ wrong: 'shape' }); expect(s.summary?.generatedAt).toBe('2026-10-17T01:02:03Z');
   });
   it.each(['th', 'it', 'en'] as Lang[])('schema fault twice abstains in %s', async lang => {
     const s = await runTurn(createSession(lang, { persist: false }), completeByLang[lang], { client: clientFor(() => ({ invalid: true })) });
-    expect(s.status).toBe('needs_human'); expect(s.summary?.abstainReason).toBe('schema_error'); expect(s.summary?.modelCalls).toHaveLength(2);
+    expect(s.status).toBe('needs_human'); expect(s.summary?.abstainReason).toBe('schema_error'); expect(s.summary?.modelCalls.filter(c => c.step === 'extract')).toHaveLength(2);
   });
   it('provider retry selects AMD_MODEL_FALLBACK', async () => {
     vi.stubEnv('AMD_MODEL_FALLBACK', 'fallback-test'); const requests: ChatRequest[] = [];
-    const client: ModelClient = async r => { requests.push(r); return requests.length === 1 ? { data: null, call: call(false), failure: 'provider_error' } : { data: mockJSON(r), call: call() }; };
+    const client: ModelClient = async r => { requests.push(r); return r.step === 'extract' && requests.filter(r => r.step === 'extract').length === 1 ? { data: null, call: call(false), failure: 'provider_error' } : { data: mockJSON(r), call: { ...call(), step: r.step } }; };
     const s = await runTurn(createSession('en', { persist: false }), complete, { client });
-    expect(s.status).toBe('awaiting_review'); expect(requests[1].model).toBe('fallback-test'); expect(s.summary?.modelCalls).toHaveLength(2);
+    expect(s.status).toBe('awaiting_review'); expect(requests.filter(r => r.step === 'extract')[1].model).toBe('fallback-test'); expect(s.summary?.modelCalls.filter(c => c.step === 'extract')).toHaveLength(2);
   });
   it('long Retry-After abstains immediately', async () => {
     const client = vi.fn<ModelClient>(async () => ({ data: null, call: call(false), failure: 'provider_error', retryAfterMs: 3000 }));
-    const s = await runTurn(createSession('en', { persist: false }), complete, { client }); expect(s.summary?.abstainReason).toBe('provider_error'); expect(client).toHaveBeenCalledTimes(1);
+    const s = await runTurn(createSession('en', { persist: false }), complete, { client }); expect(s.summary?.abstainReason).toBe('provider_error'); expect(client.mock.calls.filter(([r]) => r.step === 'extract')).toHaveLength(1);
   });
   it('quotes absent from transcript trigger low confidence and zero assertions', async () => {
     const client = clientFor(r => { const data = mockJSON(r) as ReturnType<typeof JSON.parse>; if (r.step === 'extract') for (const f of Object.values(data.fields) as { evidence: { turn: string; quote: string }[] }[]) if (f) f.evidence = [{ turn: 'T1', quote: 'invented evidence never written by the patient' }]; return data; });

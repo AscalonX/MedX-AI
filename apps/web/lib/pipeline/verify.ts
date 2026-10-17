@@ -25,6 +25,16 @@ export function norm(s: string): { t: string; map: number[]; ends: number[] } {
 export function words(s: string, lang: Lang = 'en') {
   return [...new Intl.Segmenter(lang, { granularity: 'word' }).segment(s)].filter(x => x.isWordLike);
 }
+function boundaryCheck(text: string, lang: Lang) {
+  const segments = words(text, lang);
+  // ICU splits these Thai drug transliterations into apparent words (including ไอ).
+  // Treat the complete medication name as one segment so it cannot evidence cough.
+  const compounds = [...text.matchAll(/ไอบู(?:โพร|โปร)เฟน/gu)].map(m => [m.index, m.index + m[0].length]);
+  return (start: number, end: number) => !segments.some(s =>
+    (s.index < start && start < s.index + s.segment.length) ||
+    (s.index < end && end < s.index + s.segment.length)) &&
+    !compounds.some(([a, b]) => (a < start && start < b) || (a < end && end < b));
+}
 export interface Verified { evidence: Evidence; matchFactor: number; correctedTurn: boolean }
 export function verifyDetailed(quote: string, turns: Turn[], turnId?: string): Verified | null {
   const q = norm(quote).t;
@@ -32,11 +42,17 @@ export function verifyDetailed(quote: string, turns: Turn[], turnId?: string): V
   const patients = turns.filter(t => t.role === 'patient');
   const ordered = [...patients.filter(t => t.id === turnId), ...patients.filter(t => t.id !== turnId)];
   for (const turn of ordered) {
+    const bounded = boundaryCheck(turn.text, turn.lang);
     const result = (start: number, end: number, matchFactor: number): Verified => ({ evidence: { turnId: turn.id, quote: turn.text.slice(start, end), start, end }, matchFactor, correctedTurn: !!turnId && turn.id !== turnId });
-    const exact = turn.text.indexOf(quote);
-    if (exact >= 0) return result(exact, exact + quote.length, 1);
-    const n = norm(turn.text); const at = n.t.indexOf(q);
-    if (at >= 0) return result(n.map[at], n.ends[at + q.length - 1], 0.95);
+    // Check all occurrences: an embedded first occurrence must not hide a later word.
+    for (let at = turn.text.indexOf(quote); at >= 0; at = turn.text.indexOf(quote, at + 1)) {
+      if (bounded(at, at + quote.length)) return result(at, at + quote.length, 1);
+    }
+    const n = norm(turn.text);
+    for (let at = n.t.indexOf(q); at >= 0; at = n.t.indexOf(q, at + 1)) {
+      const start = n.map[at]; const end = n.ends[at + q.length - 1];
+      if (bounded(start, end)) return result(start, end, 0.95);
+    }
     const qt = words(q, turn.lang).map(x => x.segment);
     if (qt.length < 3) continue;
     const tt = words(n.t, turn.lang); let best = 0; let span: [number, number] | undefined;
@@ -47,7 +63,9 @@ export function verifyDetailed(quote: string, turns: Turn[], turnId?: string): V
         let matches = 0;
         for (const w of tt.slice(i, i + size)) { const count = counts.get(w.segment) || 0; if (count) { matches++; counts.set(w.segment, count - 1); } }
         const overlap = matches / qt.length;
-        if (overlap > best) { best = overlap; const last = tt[i + size - 1]; span = [tt[i].index, last.index + last.segment.length]; }
+        const last = tt[i + size - 1];
+        const candidate: [number, number] = [tt[i].index, last.index + last.segment.length];
+        if (overlap > best && bounded(n.map[candidate[0]], n.ends[candidate[1] - 1])) { best = overlap; span = candidate; }
       }
     }
     if (best >= 0.8 && span) return result(n.map[span[0]], n.ends[span[1] - 1], 0.8);

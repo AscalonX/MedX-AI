@@ -74,7 +74,8 @@ describe('AMD client transport', () => {
 describe('fault injection, six scenarios in all languages', () => {
   it.each((['th', 'it', 'en'] as Lang[]).flatMap(lang => ['401', 'timeout', '500', 'malformed', 'shape', 'quotes'].map(fault => [lang, fault] as const)))('%s %s abstains with zero asserted fields', async (lang, fault) => {
     const failCall = { step: 'extract' as const, provider: 'mock' as const, model: 'fault-injection', latencyMs: 0, ok: false, error: 'Synthetic injected error' };
-    const client: ModelClient = async () => {
+    const client: ModelClient = async req => {
+      if (req.step === 'red_flags') return { data: { flags: [] }, call: { ...failCall, step: 'red_flags', ok: true } };
       if (fault === 'quotes') return { data: { language_detected: lang, fields: Object.fromEntries(FIELD_KEYS.map(k => [k, { value_original: 'fabrication', value: { en: 'fabrication', it: 'invenzione', th: 'ข้อความสมมติ' }, certainty: 'high', evidence: [{ turn: 'T1', quote: 'totally absent evidence' }] }])) }, call: { ...failCall, ok: true } };
       if (fault === 'shape') return { data: { bad: true }, call: { ...failCall, ok: true } };
       if (fault === 'malformed') return { data: null, raw: 'broken JSON', failure: 'schema_error', call: failCall };

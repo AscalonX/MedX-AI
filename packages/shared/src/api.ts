@@ -1,5 +1,5 @@
 // HTTP contract between apps/mobile, apps/web UI and apps/web/app/api. Base path: /api
-import type { AuditEvent, IntakeSession, Lang, MedAlertReviewAction, MedReviewAction, OpsMetrics, RedFlagReviewAction, ReviewAction } from "./types";
+import type { AllergyReviewAction, AuditEvent, IntakeSession, Lang, MedAlertReviewAction, MedReviewAction, OpsMetrics, RedFlagReviewAction, ReviewAction } from "./types";
 
 /** POST /api/sessions */
 export interface CreateSessionReq { patientLang: Lang }
@@ -30,5 +30,6 @@ export type MetricsRes = OpsMetrics;
 export interface ApiError { error: string; code: "bad_request" | "not_found" | "provider_error" | "internal" }
 
 /** POST /api/sessions/:id/pharmacy-review — pharmacist reconciles meds and handles med alerts. Alerts are never deleted. */
-export interface PharmacyReviewReq { reviewerId: string; medActions: MedReviewAction[]; alertActions: MedAlertReviewAction[]; /** true when the pharmacist signs off the list */ complete?: boolean }
+export interface PharmacyReviewReq { reviewerId: string; medActions: MedReviewAction[]; alertActions: MedAlertReviewAction[]; allergyActions?: AllergyReviewAction[]; /** true when the pharmacist signs off the list */ complete?: boolean }
 export type PharmacyReviewRes = IntakeSession;
+/** Audit payload for type "pharmacy_review": { medActions, alertActions, allergyActions, complete } exactly as received (no raw patient text). */

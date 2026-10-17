@@ -1,6 +1,6 @@
 import type { ModelCall, PipelineStep } from '@medx/shared';
 import { mockJSON } from './mock';
-import { EXTRACTION_SCHEMA, QUESTION_SCHEMA } from './schema';
+import { EXTRACTION_SCHEMA, QUESTION_SCHEMA, SCREEN_SCHEMA } from './schema';
 
 export interface ChatRequest {
   step: PipelineStep; system: string; user: string; schemaName: string;
@@ -63,11 +63,11 @@ export async function chatJSON(req: ChatRequest): Promise<ChatResult> {
           messages.push({ role: 'assistant', content: (typeof req.repair.raw === 'string' ? req.repair.raw : JSON.stringify(req.repair.raw)).slice(0, 4000) });
           messages.push({ role: 'user', content: `Your previous output was not valid. Problems: ${req.repair.errors.slice(0, 10).join('\n')}. Return only the corrected JSON object with the same content and the exact required shape. Do not add fields or values that were not in the transcript.` });
         }
-        const format = useSchema ? { type: 'json_schema', json_schema: { name: req.schemaName, schema: req.step === 'next_question' ? QUESTION_SCHEMA : EXTRACTION_SCHEMA, strict: true } } : { type: 'json_object' };
+        const format = useSchema ? { type: 'json_schema', json_schema: { name: req.schemaName, schema: req.step === 'red_flags' ? SCREEN_SCHEMA : req.step === 'next_question' ? QUESTION_SCHEMA : EXTRACTION_SCHEMA, strict: true } } : { type: 'json_object' };
         const response = await fetch(`${process.env.AMD_BASE_URL.replace(/\/$/, '')}/chat/completions`, {
           method: 'POST', signal: controller.signal,
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.AMD_API_KEY}` },
-          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: req.step === 'next_question' ? 250 : 1500, ...(!noFormat ? { response_format: format } : {}) }),
+          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: req.step === 'red_flags' ? 400 : req.step === 'next_question' ? 250 : 1500, ...(!noFormat ? { response_format: format } : {}) }),
         });
         if (!response.ok) {
           // Inspect gateway diagnostics only for compatibility; never persist response bodies.

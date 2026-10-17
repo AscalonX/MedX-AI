@@ -52,7 +52,7 @@ describe('clinical required fields and question budget', () => {
     expect(session.status).toBe('awaiting_review');
     expect(session.summary?.nextQuestion).toBeNull();
     expect(session.summary?.fields.find(f => f.key === 'onset')?.status).toBe('missing');
-    expect(session.summary?.modelCalls.map(c => c.step)).toEqual(['extract']);
+    expect(session.summary?.modelCalls.map(c => c.step)).toEqual(['extract', 'red_flags']);
   });
   it('a flag cancels follow-ups before the configured provider is called', async () => {
     const first = await runTurn(createSession('en', { persist: false }), 'I have a headache');
@@ -155,7 +155,7 @@ describe('demo fixture replay', () => {
     const fetcher = vi.fn(async (_url: string, init: RequestInit) => {
       const payload = JSON.parse(init.body as string);
       const user = payload.messages[1].content;
-      const data = mockJSON({ step: user.startsWith('Missing information:') ? 'next_question' : 'extract', schemaName: 'seed_transport_test', system: payload.messages[0].content, user });
+      const data = mockJSON({ step: user.startsWith('Missing information:') ? 'next_question' : payload.messages[0].content.startsWith('You are a safety screen') ? 'red_flags' : 'extract', schemaName: 'seed_transport_test', system: payload.messages[0].content, user });
       return Response.json({ choices: [{ message: { content: JSON.stringify(data) } }] });
     });
     vi.stubGlobal('fetch', fetcher);

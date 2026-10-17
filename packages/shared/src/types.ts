@@ -134,6 +134,8 @@ export interface IntakeSummary {
   medications?: MedicationEntry[];
   /** Patient-stated allergens, each with evidence (pharmacist view). */
   allergies?: AllergyEntry[];
+  /** Evidence that the patient explicitly said they have no known allergies; absent/empty = not stated. */
+  noKnownAllergiesEvidence?: Evidence[];
   /** Deterministic medication-safety alerts (packages/shared/src/medrules.json). Never cleared by a model. */
   medAlerts?: MedAlert[];
   redFlags: RedFlagHit[];
@@ -244,6 +246,8 @@ export interface MedicationEntry {
   evidence: Evidence[];
   confidence: number;
   status: MedStatus;
+  /** Set by the pharmacist; `previous` keeps the struck-through value across reloads. */
+  review?: { reviewerId: string; at: string; previous?: { generic: string | null; dose: string | null; frequency: string | null } };
 }
 
 export interface AllergyEntry {
@@ -254,6 +258,14 @@ export interface AllergyEntry {
   reaction: string | null;
   evidence: Evidence[];
   status: "supported" | "unmatched" | "unsupported" | "verified" | "edited";
+  review?: { reviewerId: string; at: string; previous?: { allergenClass: string | null; reaction: string | null } };
+}
+
+export interface AllergyReviewAction {
+  allergyId: string;
+  action: "verify" | "edit";
+  allergenClass?: string;
+  reaction?: string;
 }
 
 export type MedAlertKind =

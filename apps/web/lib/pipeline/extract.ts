@@ -71,6 +71,7 @@ export async function extract(session: IntakeSession, ctx: EngineContext) {
     const selfRating = { high: 0.9, medium: 0.7, low: 0.45 }[f.certainty];
     const langOK = languageOK(f.value);
     if (!langOK) ctx.log?.('field_language_failed', { key: base.key });
+    // Bare answers and short Thai segments carry less context; apply this once.
     const score = best && langOK ? Math.round(selfRating * best.matchFactor * (words(best.evidence.quote, session.patientLang).length <= 2 ? 0.85 : 1) * 100) / 100 : 0;
     const supported = score >= 0.5;
     if (!verified.length || !langOK) failed++;
