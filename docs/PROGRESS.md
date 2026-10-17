@@ -1,21 +1,22 @@
-# Progress board
+# Progress board — Sat 17 Oct 2026, 17:45 ICT
 
-| Role | Model | Status | Last update (ICT) | Blocker |
-|---|---|---|---|---|
-| Orchestrator | Opus 5.5 | integration; dev server :3000 (mock) | Sat 14:50 | — |
-| Doctor | Opus 5.5 | W3 done: PHARMACY-SPEC, medrules v1.0 (59 drugs, 194/194), red flags v1.1 (175/175) | Sat 14:45 | — |
-| Medical researcher | Sonnet 5.5 | W3 done: 52 cases incl. 12 MED (475/475 quotes), pharmacy evidence | Sat 14:35 | native-speaker proofread |
-| AI researcher | Opus 5.5 | W2 done: eval harness + pre-declared metrics, mock run OK | Sat 14:20 | AMD key |
-| Design lead | Opus 5.5 | W1 done; finish review pending | Sat 13:45 | — |
-| AI engineer | Codex | W3 done (374 tests, model safety screen); W4 medication engine running | Sat 14:45 | — |
-| Ops dashboard | Codex | done: /ops (verified visually by orchestrator) | Sat 14:40 | — |
-| Clinician web | Sonnet 5.5 | done: /review (screens verified) | Sat 14:38 | — |
-| Pharmacist web | Sonnet 5.5 | done on fixtures: /pharmacy; live data after W4 | Sat 14:40 | engine W4 |
-| Patient mobile | Sonnet 5.5 | done: Expo app, simulator-verified, web export builds | Sat 14:45 | — |
-| Pitch lead | Sonnet 5.5 | drafts done: SUBMISSION, VIDEO-SCRIPT, DECK-OUTLINE, SAFETY | Sat 14:30 | metrics |
-| Human | — | finish lablab team → Token Factory key | — | AMD key |
+## Status: feature-complete on the mock model; blocked only on the AMD key for real Gemma numbers
 
-## Engine backlog (next Codex wave)
-- redact.ts: name triggers case-insensitive ("Sono Marco Rossi" leaked) — reported by mobile builder 15:05.
-- mock provider: an answer to a follow-up must fill the asked field (mock repeats the severity question 3×).
-- pharmacy-review: accept "" for dose/frequency/reaction as explicit clear (pharmacist builder CR, 15:20).
+| Area | State | Evidence |
+|---|---|---|
+| Patient app (Expo + /patient web) | done: 3 languages, voice agent with confirm-before-send, chips, live status, persistence, red flag not dismissable | docs/reports/w8-patient-mobile.md, w7-patient-mobile-voice.md |
+| Clinician /review | done: evidence highlight, approve/edit/take over, receipts, emergency alerts, spoken/typed tags | docs/reports/w8-clinician-web.md |
+| Pharmacist /pharmacy | done: reconciliation, med alerts (59 drugs, 18 interactions), server-enforced sign-off | docs/reports/w8-pharmacist-web.md |
+| Ops /ops | done: "what needs you now", metrics, honest mock labels | docs/reports/w8-ops-dashboard.md |
+| Engine | 1,119 tests (14 files, 3× clean runs), red flags 175/175, med rules 194/194 | docs/reports/w10-ai-engineer.md |
+| Reviews | Claude→Codex engine review, Codex→Claude UI reviews ×2, QA bug hunt, UX audit ×2, clinical safety review (CONDITIONAL_PASS → must-fixes done), Codex verification 22/25 then remaining fixed | docs/reports/w6-engine-review.md, w9-codex-final-review.md, w10-codex-verify.md, w7-qa-bugs.md, w8-ux-reaudit.md, w9-clinical-safety-review.md |
+| Submission | deck PDF, cover v2, SUBMISSION.md, VIDEO-SCRIPT.md, SAFETY.md, README, Docker | pitch/, README.md |
+| Public repo | https://github.com/KingPhuripol/medx-bridge | — |
+
+## Blocked on the owner
+1. AMD Token Factory key → set AMD_BASE_URL / AMD_API_KEY / AMD_MODEL in apps/web/.env.local, MODEL_PROVIDER=amd → run eval (`cd apps/web && npx vite-node ../../eval/run.ts -- --split dev`, then test + holdout), fill [pending AMD run] in deck/SUBMISSION.
+2. Team names (deck slide 8, README).
+3. Deploy approval (Vercel) if judges should get a live URL.
+
+## Known limitations (also in pitch/SAFETY.md)
+Keyword red-flag rules miss paraphrases (holdout 7/10); Gemma screen unmeasured; voice uses Apple/Google speech; no clinician login; pattern-based redaction; Thai/Italian need native review; SCBXBeta2 font licence risk accepted by owner.
