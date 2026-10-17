@@ -83,14 +83,14 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
   // Questions fill the 3 popup slots; considerations live in their own doctor-only panel (see _guard.ts).
   const open = questionsFor(mode, suggestions).filter((s) => s.status === "open").sort((a, b) => rank(a) - rank(b));
   const shown = open.slice(0, 3);
-  const considerations = considerationsFor(mode, suggestions).filter((s) => s.status === "open").sort((a, b) => (a.source === b.source ? 0 : a.source === "rule" ? -1 : 1)).slice(0, 4);
+  const considerations = considerationsFor(mode, suggestions).filter((s) => s.status !== "dismissed").sort((a, b) => (a.source === b.source ? 0 : a.source === "rule" ? -1 : 1)).slice(0, 4);
   const note: ConsultNote | null = state.note;
 
   useEffect(() => {
     const fresh = shown.filter((s) => !seen.current.has(s.id));
     if (!fresh.length) return;
     fresh.forEach((s) => seen.current.add(s.id));
-    setLive(fresh.map((s) => `${ct("announceNew", lang)}: ${s.text[lang]}`).join(". "));
+    setLive(fresh.map((s) => `${ct("announceNew", lang)}: ${s.text[lang].replace(/[.?!]+$/, "")}`).join(". "));
   }, [shown, lang]);
 
   // ---- speech
@@ -202,7 +202,8 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
           <p className="text-small text-ink-soft"><Badge tone="ocean">{ct(mode === "nurse" ? "modeNurse" : "modeDoctor", lang)}</Badge> <span lang={patientLang}>{LANG_NAME[patientLang]}</span></p>
         </div>
         {fixture && <Badge tone="pencil" className="ml-1">{ct("fixture", lang)}</Badge>}
-        <Link href={`/review/${id}`} className="ml-auto inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean">
+        {mode === "nurse" && <Link href={`/review/${id}/vitals`} className="ml-auto inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-4 text-small font-semibold text-on-primary">{ct("nextVitals", lang)}<Icon name="chevron-right" size={14} /></Link>}
+        <Link href={`/review/${id}`} className={`${mode === "nurse" ? "" : "ml-auto "}inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean`}>
           <Icon name="chevron-right" size={14} className="rotate-180" />{ct("backToCase", lang)}
         </Link>
         {fixture && <p className="basis-full text-micro text-ink-soft">{ct("fixtureHint", lang)}</p>}
@@ -285,10 +286,10 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
           {mode === "doctor" && (
             <section aria-labelledby="consider-h" className="mt-2 flex flex-col gap-2 rounded-card border border-teal/30 bg-teal-tint/50 p-3">
               <h2 id="consider-h" className="text-lead font-bold text-teal">{ct("considerations", lang)}</h2>
-              <p className="text-micro font-semibold text-teal">{ct("considerNote", lang)}</p>
+              <p className="text-micro font-semibold text-teal">{ct("considerPanelNote", lang)}</p>
               {considerations.length === 0 && <p className="text-small text-ink-soft">{ct("noConsiderations", lang)}</p>}
               {considerations.map((s) => (
-                <SuggestionCard key={s.id} s={s} lang={lang} patientLang={patientLang} active={sel?.key === s.id} onShow={() => setSel(sel?.key === s.id ? null : { key: s.id, ev: s.evidence })} onMark={(st) => mark(s, st)} />
+                <SuggestionCard key={s.id} s={s} lang={lang} patientLang={patientLang} panel active={sel?.key === s.id} onShow={() => setSel(sel?.key === s.id ? null : { key: s.id, ev: s.evidence })} onMark={(st) => mark(s, st)} />
               ))}
             </section>
           )}
@@ -307,6 +308,8 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
           onDraft={() => noteAction("draft")}
           onSign={(edits) => noteAction("sign", edits)}
           next={next ? { id: next.id, code: next.code } : null}
+          caseId={id}
+          keptTexts={new Set(suggestions.filter((x) => x.kind === "consider" && x.status === "asked").map((x) => x.text.en))}
         />
       )}
     </div>
@@ -318,6 +321,9 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
     </RedFlagInterrupt>
   ) : body;
 }
+
+/** "Consider for clinician review: Consider sepsis" -> "Sepsis": the chip already says Consider. */
+const condition = (t: string) => { const c = t.replace(/^(?:consider(?:\s+for clinician review)?\s*:?\s*)+/i, "").trim(); return c ? c[0].toUpperCase() + c.slice(1) : t; };
 
 const rank = (s: ConsultSuggestion) => (s.kind === "rule_out" ? 0 : 1);
 
@@ -353,7 +359,7 @@ function Transcript({ lines, turnLang, marksFor, sel, lang }: { lines: Line[]; t
   );
 }
 
-function SuggestionCard({ s, lang, patientLang, active, onShow, onMark }: { s: ConsultSuggestion; lang: Lang; patientLang: Lang; active: boolean; onShow: () => void; onMark: (st: "asked" | "dismissed") => void }) {
+function SuggestionCard({ s, lang, patientLang, panel = false, active, onShow, onMark }: { s: ConsultSuggestion; lang: Lang; patientLang: Lang; panel?: boolean; active: boolean; onShow: () => void; onMark: (st: "asked" | "dismissed") => void }) {
   const tone = s.kind === "rule_out" ? "signalOutline" : s.kind === "consider" ? "teal" : "ocean";
   const label = ct(s.kind === "rule_out" ? "ruleOut" : s.kind === "consider" ? "consider" : "askNext", lang);
   const sm = "h-8! px-3! text-small!";
@@ -363,8 +369,8 @@ function SuggestionCard({ s, lang, patientLang, active, onShow, onMark }: { s: C
         <Badge tone={tone} icon={s.kind === "rule_out" ? <Icon name="triangle-alert" size={12} /> : undefined}>{label}</Badge>
         <Badge tone={s.source === "rule" ? "outline" : "pencil"}>{ct(s.source === "rule" ? "sourceRule" : "sourceModel", lang)}</Badge>
       </div>
-      <p className="text-body font-semibold text-ink"><LangMorph text={s.text} lang={lang} /></p>
-      {s.kind === "consider" && <p className="text-micro font-semibold text-teal">{ct("considerNote", lang)}</p>}
+      <p className="text-body font-semibold text-ink">{s.kind === "consider" ? condition(s.text[lang]) : <LangMorph text={s.text} lang={lang} />}</p>
+      {s.kind === "consider" && <p className="text-micro font-semibold text-teal">{ct(s.source === "rule" ? "considerRuleNote" : "considerNote", lang)}</p>}
       <p className="text-small text-ink-soft"><span className="font-semibold">{ct("why", lang)}:</span> <LangMorph text={s.why} lang={lang} /></p>
       {s.evidence[0] && (
         <button type="button" onClick={onShow} aria-pressed={active} className="self-start rounded-2xl bg-paper px-3 py-1.5 text-left text-small text-ink-soft hover:bg-ocean-tint">
@@ -373,15 +379,24 @@ function SuggestionCard({ s, lang, patientLang, active, onShow, onMark }: { s: C
         </button>
       )}
       <div className="flex gap-2 pt-1">
-        <Button className={sm} variant="primary" icon={<Icon name="check" size={14} />} onClick={() => onMark("asked")}>{ct("asked", lang)}</Button>
-        <Button className={sm} onClick={() => onMark("dismissed")}>{ct("dismiss", lang)}</Button>
+        {panel ? (
+          <>
+            <Button className={sm} variant="primary" aria-pressed={s.status === "asked"} icon={<Icon name="check" size={14} />} disabled={s.status === "asked"} onClick={() => onMark("asked")}>{ct(s.status === "asked" ? "keptBtn" : "keepBtn", lang)}</Button>
+            <Button className={sm} onClick={() => onMark("dismissed")}>{ct("notRelevant", lang)}</Button>
+          </>
+        ) : (
+          <>
+            <Button className={sm} variant="primary" icon={<Icon name="check" size={14} />} onClick={() => onMark("asked")}>{ct("asked", lang)}</Button>
+            <Button className={sm} onClick={() => onMark("dismissed")}>{ct("dismiss", lang)}</Button>
+          </>
+        )}
       </div>
     </Card>
   );
 }
 
-function NotePanel({ note, lang, busy, blockedReason, error, reviewer, onHover, onDraft, onSign, next }: {
-  note: ConsultNote | null; lang: Lang; busy: boolean; blockedReason: string | null; error: string | null; reviewer: string;
+function NotePanel({ note, lang, busy, blockedReason, error, reviewer, caseId, keptTexts, onHover, onDraft, onSign, next }: {
+  note: ConsultNote | null; lang: Lang; busy: boolean; blockedReason: string | null; error: string | null; reviewer: string; caseId: string; keptTexts: Set<string>;
   onHover: (ev: Evidence[] | null, key: string) => void; onDraft: () => void; onSign: (edits: { lineId: string; text: string }[]) => void; next: { id: string; code: string } | null;
 }) {
   const [edits, setEdits] = useState<Record<string, string>>({});
@@ -390,16 +405,21 @@ function NotePanel({ note, lang, busy, blockedReason, error, reviewer, onHover, 
   const [hov, setHov] = useState<string | null>(null);
   const [kept, setKept] = useState<Set<string>>(new Set());
   const signed = note?.signed;
+  const isKept = (l: ConsultNoteLine) => kept.has(l.id) || keptTexts.has(l.text.en);
   const lineText = (l: ConsultNoteLine) => edits[l.id] ?? l.text[lang];
   const sm = "h-8! px-3! text-small!";
 
   return (
     <Card className="cl-enter flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-lead font-bold">{ct("draftNote", lang)}</h2>
-        <Button className="ml-auto" disabled={busy || !!signed} icon={<Icon name="clipboard-list" size={16} />} onClick={onDraft}>{ct(note ? "redraft" : "draftBtn", lang)}</Button>
+        <h2 className="text-lead font-bold">{ct(signed ? "signedNote" : "draftNote", lang)}</h2>
+        {!signed && <Button className="ml-auto" disabled={busy} icon={<Icon name="clipboard-list" size={16} />} onClick={onDraft}>{ct(note ? "redraft" : "draftBtn", lang)}</Button>}
       </div>
-      <p className="rounded-2xl bg-warn-tint px-4 py-2.5 text-small font-semibold text-warn">{note?.disclaimer[lang] ?? ct("noteDisclaimer", lang)}</p>
+      {signed ? (
+        <p className="rounded-2xl bg-teal-tint px-4 py-2.5 text-small font-semibold text-teal">{ct("signedBanner", lang)}</p>
+      ) : (
+        <p className="rounded-2xl bg-warn-tint px-4 py-2.5 text-small font-semibold text-warn">{note?.disclaimer[lang] ?? ct("noteDisclaimer", lang)}</p>
+      )}
 
       {signed ? (
         <div role="status" className="flex flex-wrap items-center gap-4 rounded-card border border-teal/30 bg-teal-tint p-4">
@@ -408,7 +428,10 @@ function NotePanel({ note, lang, busy, blockedReason, error, reviewer, onHover, 
             <p className="text-lead font-extrabold text-teal">{ct("signedTitle", lang)}</p>
             <p className="text-small text-ink-soft">{signed.reviewerId}, {clock(signed.at, lang)}</p>
           </div>
-          {next && <Link href={`/review/${next.id}`} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-5 text-small font-semibold text-on-primary">{ct("nextCase", lang)} {next.code}<Icon name="chevron-right" size={14} /></Link>}
+          <div className="flex flex-wrap gap-2">
+            <Link href={`/review/${caseId}/orders`} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-5 text-small font-semibold text-on-primary shadow-[0_10px_18px_-10px_rgba(26,95,196,0.8)]">{ct("writeOrders", lang)}<Icon name="chevron-right" size={14} /></Link>
+            {next && <Link href={`/review/${next.id}`} className="inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean">{ct("nextCase", lang)} {next.code}</Link>}
+          </div>
         </div>
       ) : null}
 
@@ -457,9 +480,9 @@ function NotePanel({ note, lang, busy, blockedReason, error, reviewer, onHover, 
                           </div>
                           {!signed && sec === "considerations" && (
                             <label className="flex items-center gap-2 text-small font-semibold text-ink-soft">
-                              <input type="checkbox" checked={kept.has(l.id)} onChange={(e) => setKept((k) => { const n = new Set(k); if (e.target.checked) n.add(l.id); else n.delete(l.id); return n; })} className="size-4 accent-[var(--color-teal)]" />
+                              <input type="checkbox" checked={isKept(l)} onChange={(e) => setKept((k) => { const n = new Set(k); if (e.target.checked) n.add(l.id); else n.delete(l.id); return n; })} className="size-4 accent-[var(--color-teal)]" />
                               {ct("keepInNote", lang)}
-                              {!kept.has(l.id) && <Badge tone="outline">{ct("willDrop", lang)}</Badge>}
+                              {!isKept(l) && <Badge tone="outline">{ct("willDrop", lang)}</Badge>}
                             </label>
                           )}
                           {!signed && sec !== "red_flags" && <Button className={sm} variant="quiet" icon={<Icon name="pencil" size={14} />} onClick={() => { setEditing(l.id); setDraft(lineText(l)); }}>{ct("edit", lang)}</Button>}
@@ -477,7 +500,7 @@ function NotePanel({ note, lang, busy, blockedReason, error, reviewer, onHover, 
       {error && <p role="alert" className="text-small font-semibold text-signal">{error}</p>}
       {note && !signed && (
         <div className="flex flex-wrap items-center gap-3 border-t border-rule/70 pt-3">
-          <Button variant="primary" icon={<Icon name="circle-check" size={16} />} disabled={busy || !!blockedReason} aria-describedby={blockedReason ? "sign-why" : undefined} onClick={() => onSign([...Object.entries(edits).map(([lineId, t]) => ({ lineId, text: t })), ...note.lines.filter((l) => kept.has(l.id) && !(l.id in edits)).map((l) => ({ lineId: l.id, text: l.text[lang] }))])}>{ct("sign", lang)}</Button>
+          <Button variant="primary" icon={<Icon name="circle-check" size={16} />} disabled={busy || !!blockedReason} aria-describedby={blockedReason ? "sign-why" : undefined} onClick={() => onSign([...Object.entries(edits).map(([lineId, t]) => ({ lineId, text: t })), ...note.lines.filter((l) => l.section === "considerations" && isKept(l) && !(l.id in edits)).map((l) => ({ lineId: l.id, text: l.text[lang] }))])}>{ct("sign", lang)}</Button>
           {blockedReason && <span id="sign-why" className="text-small font-semibold text-warn">{blockedReason}</span>}
           <span className="ml-auto text-micro text-ink-soft">{reviewer}</span>
         </div>

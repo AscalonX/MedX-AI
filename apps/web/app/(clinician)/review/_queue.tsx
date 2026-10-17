@@ -47,6 +47,8 @@ export function FlagChip({ s, lang }: { s: IntakeSession; lang: Lang }) {
   return <Badge tone="signalOutline" icon={<Icon name="triangle-alert" size={12} />}>{tr(open ? "flagOpen" : "flagAck", lang)}</Badge>;
 }
 
+export const returnedOrders = (s: IntakeSession) => (s.orders?.medications ?? []).filter((o) => o.status === "returned");
+
 export function LangBadge({ lang, className = "" }: { lang: Lang; className?: string }) {
   return (
     <span aria-hidden="true" className={`grid size-10 shrink-0 place-items-center rounded-full bg-ocean-tint text-small font-extrabold text-ocean ${className}`}>
@@ -117,6 +119,7 @@ export function QueueCard({ activeId, compact = false }: { activeId?: string; co
                       <span className="font-bold tabular-nums text-ink">{s.code}</span>
                       <StatusChip s={s} lang={lang} />
                       <FlagChip s={s} lang={lang} />
+                      {returnedOrders(s).length > 0 && <Badge tone="pencil" icon={<Icon name="clipboard-list" size={12} />}>{tr("returnedChip", lang)}</Badge>}
                     </span>
                     <span className="truncate text-small text-ink-soft">
                       {s.status === "escalated" && pending && <span className="font-semibold text-signal">{tr("notAcked", lang)} </span>}

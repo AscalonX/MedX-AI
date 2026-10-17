@@ -1,9 +1,10 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { Lang } from "@medx/shared";
 import { AppShell, Icon, type ShellRole } from "@/components/ui";
-import { REVIEWERS, reviewersFor } from "./review/_lib";
+import { ROLE_STORAGE_KEY, reviewerStorageKey } from "@medx/shared/src/staff";
+import { reviewersFor } from "./review/_lib";
 import { tr } from "./review/_i18n";
 
 interface Frame { clinicianRole: "nurse" | "doctor"; setClinicianRole: (r: "nurse" | "doctor") => void; lang: Lang; setLang: (l: Lang) => void; reviewer: string; setReviewer: (r: string) => void; now: number }
@@ -27,38 +28,42 @@ const ENTER_CSS =
 /** App shell for clinician surfaces: language and reviewer state, greeting, role switch, nav. */
 export function ClinicianFrame({ active, urgent, children }: { active: "home" | "review"; urgent?: number; children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
-  const [reviewer, setReviewerState] = useState(REVIEWERS[0]);
+  const [reviewer, setReviewerState] = useState(reviewersFor("nurse")[0]);
   const [now, setNow] = useState(0);
-  const [clinicianRole, setClinicianRole] = useState<"nurse" | "doctor">("nurse");
+  const [clinicianRole, setClinicianRoleState] = useState<"nurse" | "doctor">("nurse");
+  const chosen = useRef(false); // a role picked in this page view beats the stored one
+  const setClinicianRole = (r: "nurse" | "doctor") => { chosen.current = true; setClinicianRoleState(r); store.set("medx.clinicianRole", r); store.set(ROLE_STORAGE_KEY, r); };
   const router = useRouter();
   const path = usePathname();
 
   useEffect(() => {
     const l = store.get("medx.lang");
     if (l === "th" || l === "it" || l === "en") setLangState(l);
-    const r = store.get("medx.reviewer");
-    if (r && REVIEWERS.includes(r)) setReviewerState(r);
+    const cr = store.get("medx.clinicianRole");
+    if (!chosen.current && (cr === "nurse" || cr === "doctor")) setClinicianRoleState(cr);
     setNow(Date.now());
     const t = setInterval(() => setNow(Date.now()), 5000);
     return () => clearInterval(t);
   }, []);
   const setLang = (l: Lang) => { setLangState(l); store.set("medx.lang", l); };
-  const setReviewer = (r: string) => { setReviewerState(r); store.set("medx.reviewer", r); };
+  const setReviewer = (r: string) => { setReviewerState(r); store.set(reviewerStorageKey(clinicianRole), r); };
 
   useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
-  // The identity list follows the role: nurse names in nurse mode, doctor names in doctor mode.
+  // The identity list follows the role and is remembered per role (nurse names in nurse mode, doctors in doctor mode).
   const names = reviewersFor(clinicianRole);
   useEffect(() => {
-    if (!names.includes(reviewer)) { setReviewerState(names[0]); store.set("medx.reviewer", names[0]); }
-  }, [names, reviewer]);
+    const saved = store.get(reviewerStorageKey(clinicianRole));
+    setReviewerState(saved && reviewersFor(clinicianRole).includes(saved) ? saved : reviewersFor(clinicianRole)[0]);
+  }, [clinicianRole]);
+
+  useEffect(() => { if (!path?.startsWith("/pharmacy") && !path?.startsWith("/ops")) store.set(ROLE_STORAGE_KEY, clinicianRole); }, [path, clinicianRole]);
 
   const hour = now ? new Date(now).getHours() : -1;
   const greeting = tr(hour < 0 ? "hello" : hour < 12 ? "greetMorning" : hour < 18 ? "greetAfternoon" : "greetEvening", lang);
   const role: ShellRole = path?.startsWith("/pharmacy") ? "pharmacist" : path?.startsWith("/ops") ? "ops" : clinicianRole;
   const switchRole = (r: ShellRole) => {
-    if (r === "pharmacist") router.push("/pharmacy");
-    else if (r === "ops") router.push("/ops");
+    if (r === "pharmacist" || r === "ops") { store.set(ROLE_STORAGE_KEY, r); router.push(r === "pharmacist" ? "/pharmacy" : "/ops"); }
     else { setClinicianRole(r); if (active === "home" || !path?.startsWith("/review")) router.push("/review"); }
   };
 

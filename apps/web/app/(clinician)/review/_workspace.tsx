@@ -5,7 +5,7 @@ import type { AuditEvent, Evidence, ExtractedField, FieldKey, IntakeSession, Lan
 import { Badge, Button, Card, EvidenceHighlight, FieldValue, GradientHero, Icon, LangMorph, RedFlagInterrupt, type Mark } from "@/components/ui";
 import { FIELD_GROUPS, FIELD_LABEL, LANG_NAME, auditLine, clock, fetchSession, post, waited } from "./_lib";
 import { fmt, tr, type TKey } from "./_i18n";
-import { Complaint, FlagChip, LangBadge, StatusChip } from "./_queue";
+import { Complaint, FlagChip, LangBadge, StatusChip, returnedOrders } from "./_queue";
 import { useClinician } from "./_shell";
 import { ct } from "./[id]/consult/_c18n";
 
@@ -276,6 +276,18 @@ export function Workspace({ id }: { id: string }) {
     <>
       {header}
       {screenDown && <p role="status" className={note}>{tr("screenDown", lang)}</p>}
+      {returnedOrders(session).length > 0 && (
+        <div role="status" className="flex flex-wrap items-center gap-3 rounded-2xl border border-warn/40 bg-warn-tint px-4 py-3 text-small text-warn">
+          <Icon name="triangle-alert" size={16} />
+          <div className="min-w-0 flex-1">
+            <p className="font-bold">{tr("returnedBanner", lang)}</p>
+            {returnedOrders(session).map((o) => (
+              <p key={o.id}>{o.drugText}{o.dose ? ` ${o.dose}` : ""}{o.pharmacist?.note ? `. ${tr("pharmacistNote", lang)}: ${o.pharmacist.note}` : ""}</p>
+            ))}
+          </div>
+          <Link href={`/review/${id}/orders`} className="inline-flex h-9 items-center gap-1 rounded-full bg-sheet px-4 font-semibold text-ocean">{tr("openOrders", lang)}<Icon name="chevron-right" size={14} /></Link>
+        </div>
+      )}
       {session.status === "escalated" && summary && !summary.abstained && fields.some((f) => f.required && f.status === "missing") && <p className={note}>{tr("stoppedBanner", lang)}</p>}
       {session.status === "collecting" && <p className={note}>{tr("stillAnswering", lang)}</p>}
       {closed && (

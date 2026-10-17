@@ -79,6 +79,15 @@ export const C = {
   willDrop: L("Will be dropped", "จะถูกตัดออก", "Sarà eliminata"),
   writeFailed: L("Not saved", "ไม่ได้บันทึก", "Non salvato"),
   fixtureNoSign: L("The consult service is not answering, so the note cannot be signed.", "บริการไม่ตอบสนอง จึงลงนามบันทึกไม่ได้", "Il servizio non risponde: la nota non può essere firmata."),
+  considerRuleNote: L("From MedX rule list, for clinician judgement. Not a diagnosis.", "จากรายการกฎของ MedX เพื่อการตัดสินใจของบุคลากร ไม่ใช่การวินิจฉัย", "Dall'elenco di regole MedX, per il giudizio del clinico. Non è una diagnosi."),
+  considerPanelNote: L("For clinician judgement. Not a diagnosis.", "เพื่อการตัดสินใจของบุคลากร ไม่ใช่การวินิจฉัย", "Per il giudizio del clinico. Non è una diagnosi."),
+  keepBtn: L("Keep in note", "เก็บไว้ในบันทึก", "Mantieni nella nota"),
+  keptBtn: L("Kept in note", "เก็บไว้แล้ว", "Mantenuta nella nota"),
+  notRelevant: L("Not relevant", "ไม่เกี่ยวข้อง", "Non pertinente"),
+  signedNote: L("Signed visit note", "บันทึกการตรวจที่ลงนามแล้ว", "Nota di visita firmata"),
+  signedBanner: L("Signed. This note is read only.", "ลงนามแล้ว บันทึกนี้อ่านได้อย่างเดียว", "Firmata. Questa nota è di sola lettura."),
+  writeOrders: L("Write orders", "เขียนคำสั่ง", "Scrivi gli ordini"),
+  nextVitals: L("Next: vitals", "ถัดไป: สัญญาณชีพ", "Poi: parametri vitali"),
 } satisfies Record<string, Localized>;
 export type CKey = keyof typeof C;
 export const ct = (k: CKey, lang: Lang) => C[k][lang];

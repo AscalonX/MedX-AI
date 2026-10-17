@@ -167,6 +167,10 @@ export const T = {
   clinicianCorrection: L("Clinician correction", "การแก้ไขโดยบุคลากร", "Correzione del clinico"),
   tagSpoken: L("Spoken (speech-to-text)", "พูด (แปลงเสียงเป็นข้อความ)", "Parlato (voce in testo)"),
   tagTyped: L("Typed", "พิมพ์", "Scritto"),
+  returnedChip: L("Returned by pharmacist", "เภสัชกรส่งกลับ", "Restituito dal farmacista"),
+  returnedBanner: L("A pharmacist returned a medication order", "เภสัชกรส่งคำสั่งยากลับมา", "Il farmacista ha restituito un ordine di farmaci"),
+  pharmacistNote: L("Pharmacist note", "บันทึกจากเภสัชกร", "Nota del farmacista"),
+  openOrders: L("Open orders", "เปิดคำสั่ง", "Apri gli ordini"),
 } satisfies Record<string, Localized>;
 
 export type TKey = keyof typeof T;
