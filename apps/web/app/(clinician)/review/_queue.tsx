@@ -3,8 +3,8 @@ import Link from "next/link";
 import { useState } from "react";
 import type { IntakeSession, Lang, SessionStatus } from "@medx/shared";
 import { Badge, Card, EmptyState, Icon, LangMorph, Pill, StatTile } from "@/components/ui";
-import { clock, topSeverity, waited } from "./_lib";
-import { tr, type TKey } from "./_i18n";
+import { cap, clock, topSeverity, waited } from "./_lib";
+import { fmt, tr, type TKey } from "./_i18n";
 import { useClinician } from "./_shell";
 
 export const STATUS_KEY: Record<SessionStatus, TKey> = {
@@ -15,9 +15,13 @@ const LANG_BADGE: Record<Lang, string> = { th: "TH", it: "IT", en: "EN" };
 /** Queue and header text for the complaint. Only verified values read as fact. */
 export function Complaint({ s, lang, onDark = false }: { s: IntakeSession; lang: Lang; onDark?: boolean }) {
   const cc = s.summary?.fields.find((f) => f.key === "chief_complaint");
-  if (s.status === "escalated" && s.summary?.redFlags[0]) return <LangMorph text={s.summary.redFlags[0].label} lang={lang} />;
-  if (s.summary?.abstained || s.status === "needs_human") return <span className={onDark ? "" : "text-graphite"}>{tr("needsHuman", lang)}</span>;
-  if (cc?.value && ["supported", "edited", "approved"].includes(cc.status)) return <LangMorph text={cc.value} lang={lang} />;
+  // A red flag keeps its label as the subject line in every status, so taking over never erases why the case matters.
+  if (s.summary?.redFlags[0]) return <LangMorph text={s.summary.redFlags[0].label} lang={lang} />;
+  if (s.summary?.abstained || s.status === "needs_human") {
+    const r = s.summary?.abstainReason;
+    return <span className={onDark ? "" : "text-graphite"}>{r ? tr(`ar_${r}` as TKey, lang) : tr("needsHuman", lang)}</span>;
+  }
+  if (cc?.value && ["supported", "edited", "approved"].includes(cc.status)) return <LangMorph text={cap(cc.value)} lang={lang} />;
   if (cc?.value) return <span className={onDark ? "" : "text-warn"}>{tr("unverified", lang)}</span>;
   return <span className={onDark ? "" : "text-graphite"}>{tr("noComplaint", lang)}</span>;
 }
@@ -33,6 +37,14 @@ export function StatusChip({ s, lang }: { s: IntakeSession; lang: Lang }) {
   }
   const tone = s.status === "approved" ? "teal" : s.status === "needs_human" ? "pencil" : s.status === "collecting" ? "outline" : "ocean";
   return <Badge tone={tone} icon={s.status === "approved" ? <Icon name="check" size={12} /> : undefined}>{tr(STATUS_KEY[s.status], lang)}</Badge>;
+}
+
+/** Shown beside the status when a red flag exists but the case is no longer in the escalated state. */
+export function FlagChip({ s, lang }: { s: IntakeSession; lang: Lang }) {
+  const hits = s.summary?.redFlags ?? [];
+  if (!hits.length || s.status === "escalated") return null;
+  const open = hits.some((h) => !h.review);
+  return <Badge tone="signalOutline" icon={<Icon name="triangle-alert" size={12} />}>{tr(open ? "flagOpen" : "flagAck", lang)}</Badge>;
 }
 
 export function LangBadge({ lang, className = "" }: { lang: Lang; className?: string }) {
@@ -62,8 +74,9 @@ type Filter = "all" | "escalated" | "review";
 
 /** Queue as rounded white cards. `compact` is the narrow column beside an open review. */
 export function QueueCard({ activeId, compact = false }: { activeId?: string; compact?: boolean }) {
-  const { sorted, error, lang, now, refreshQueue } = useClinician();
+  const { sorted, error, lang, now, refreshQueue, fresh } = useClinician();
   const [filter, setFilter] = useState<Filter>("all");
+  const [showEmpty, setShowEmpty] = useState(false);
 
   const body = () => {
     if (!sorted && error) {
@@ -75,8 +88,10 @@ export function QueueCard({ activeId, compact = false }: { activeId?: string; co
       );
     }
     if (!sorted) return <div aria-busy="true" className="flex flex-col gap-3">{[0, 1, 2].map((i) => <span key={i} className="mx-skeleton !h-16" />)}</div>;
-    const shown = sorted.filter((s) => filter === "all" || (filter === "escalated" ? s.status === "escalated" : ["awaiting_review", "needs_human"].includes(s.status)));
-    if (!shown.length) return <EmptyState icon={<Icon name="inbox" size={22} />} title={tr("queueEmpty", lang)} />;
+    const isEmpty = (s: IntakeSession) => !s.turns.some((t) => t.role === "patient");
+    const empties = sorted.filter(isEmpty);
+    const shown = sorted.filter((s) => (showEmpty || !isEmpty(s)) && (filter === "all" || (filter === "escalated" ? s.status === "escalated" : ["awaiting_review", "needs_human"].includes(s.status))));
+    if (!shown.length && !empties.length) return <EmptyState icon={<Icon name="inbox" size={22} />} title={tr("queueEmpty", lang)} />;
     return (
       <>
         {error && <p role="status" className="px-1 text-small text-signal">{tr("queueStale", lang)}: {error}.</p>}
@@ -86,7 +101,7 @@ export function QueueCard({ activeId, compact = false }: { activeId?: string; co
             const pending = (s.summary?.redFlags ?? []).some((h) => !h.review);
             const active = s.id === activeId;
             return (
-              <li key={s.id} className="cl-enter">
+              <li key={s.id} className={fresh.has(s.id) ? "cl-slide rounded-2xl" : "cl-enter"}>
                 <Link
                   href={`/review/${s.id}`}
                   aria-current={active ? "page" : undefined}
@@ -101,6 +116,7 @@ export function QueueCard({ activeId, compact = false }: { activeId?: string; co
                     <span className="flex items-center gap-2">
                       <span className="font-bold tabular-nums text-ink">{s.code}</span>
                       <StatusChip s={s} lang={lang} />
+                      <FlagChip s={s} lang={lang} />
                     </span>
                     <span className="truncate text-small text-ink-soft">
                       {s.status === "escalated" && pending && <span className="font-semibold text-signal">{tr("notAcked", lang)} </span>}
@@ -108,13 +124,18 @@ export function QueueCard({ activeId, compact = false }: { activeId?: string; co
                     </span>
                   </span>
                   <span className="whitespace-nowrap text-micro text-graphite">
-                    {s.status === "approved" ? clock(s.updatedAt) : now ? waited(s.createdAt, now, tr("min", lang)) : ""}
+                    {s.status === "approved" ? clock(s.updatedAt, lang) : now ? waited(s.createdAt, now, tr("min", lang)) : ""}
                   </span>
                 </Link>
               </li>
             );
           })}
         </ul>
+        {empties.length > 0 && (
+          <button type="button" onClick={() => setShowEmpty((v) => !v)} className="mt-3 text-small font-semibold text-ocean underline-offset-4 hover:underline">
+            {showEmpty ? tr("hideEmpty", lang) : fmt(tr("showEmpty", lang), { n: empties.length })}
+          </button>
+        )}
       </>
     );
   };

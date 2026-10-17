@@ -20,7 +20,9 @@ const store = {
 };
 
 // Soft card enter. Reduced motion is flattened by the global rule in globals.css.
-const ENTER_CSS = "@keyframes cl-enter{from{opacity:0;transform:translateY(8px)}}.cl-enter{animation:cl-enter 240ms var(--ease-pen) both}";
+const ENTER_CSS =
+  "@keyframes cl-enter{from{opacity:0;transform:translateY(8px)}}.cl-enter{animation:cl-enter 240ms var(--ease-pen) both}" +
+  "@keyframes cl-slide{0%{opacity:0;transform:translateY(-18px);box-shadow:0 0 0 0 rgba(190,27,43,.55)}60%{opacity:1;transform:none;box-shadow:0 0 0 6px rgba(190,27,43,.35)}100%{box-shadow:0 0 0 0 rgba(190,27,43,0)}}.cl-slide{animation:cl-slide 420ms var(--ease-interrupt) both}";
 
 /** App shell for clinician surfaces: language and reviewer state, greeting, role switch, nav. */
 export function ClinicianFrame({ active, urgent, children }: { active: "home" | "review"; urgent?: number; children: ReactNode }) {
@@ -43,6 +45,8 @@ export function ClinicianFrame({ active, urgent, children }: { active: "home" | 
   const setLang = (l: Lang) => { setLangState(l); store.set("medx.lang", l); };
   const setReviewer = (r: string) => { setReviewerState(r); store.set("medx.reviewer", r); };
 
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
+
   const hour = now ? new Date(now).getHours() : -1;
   const greeting = tr(hour < 0 ? "hello" : hour < 12 ? "greetMorning" : hour < 18 ? "greetAfternoon" : "greetEvening", lang);
   const role: ShellRole = path?.startsWith("/pharmacy") ? "pharmacist" : path?.startsWith("/ops") ? "ops" : clinicianRole;
@@ -55,6 +59,9 @@ export function ClinicianFrame({ active, urgent, children }: { active: "home" | 
   return (
     <F.Provider value={{ lang, setLang, reviewer, setReviewer, now }}>
       <style>{ENTER_CSS}</style>
+      <a href="#main-content" className="sr-only z-50 rounded-full bg-sheet px-4 py-2 text-small font-semibold text-ocean focus:not-sr-only focus:fixed focus:left-3 focus:top-3">
+        {tr("skip", lang)}
+      </a>
       <AppShell
         role={role}
         onRoleChange={switchRole}
@@ -82,7 +89,7 @@ export function ClinicianFrame({ active, urgent, children }: { active: "home" | 
           </label>
         }
       >
-        {children}
+        <div id="main-content" tabIndex={-1} className="outline-none">{children}</div>
       </AppShell>
     </F.Provider>
   );

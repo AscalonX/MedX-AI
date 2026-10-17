@@ -3,9 +3,9 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { AuditEvent, Evidence, ExtractedField, FieldKey, IntakeSession, Lang, RedFlagHit, RedFlagReviewAction, ReviewAction } from "@medx/shared";
 import { Badge, Button, Card, EvidenceHighlight, FieldValue, GradientHero, Icon, LangMorph, RedFlagInterrupt, type Mark } from "@/components/ui";
-import { FIELD_GROUPS, FIELD_LABEL, LANG_NAME, STEP_LABEL, auditLine, clock, fetchSession, post, waited } from "./_lib";
-import { tr, type TKey } from "./_i18n";
-import { Complaint, LangBadge, StatusChip } from "./_queue";
+import { FIELD_GROUPS, FIELD_LABEL, LANG_NAME, auditLine, clock, fetchSession, post, waited } from "./_lib";
+import { fmt, tr, type TKey } from "./_i18n";
+import { Complaint, FlagChip, LangBadge, StatusChip } from "./_queue";
 import { useClinician } from "./_shell";
 
 type Sel = { type: "field"; key: FieldKey } | { type: "flag"; key: string };
@@ -13,7 +13,7 @@ const selId = (s: Sel | null) => (s ? `${s.type}:${s.key}` : "");
 const sm = "h-8! px-3! text-small!";
 
 export function Workspace({ id }: { id: string }) {
-  const { lang, reviewer, now, refreshQueue, sorted } = useClinician();
+  const { lang, reviewer, now, refreshQueue, sorted, markOpened } = useClinician();
   const [data, setData] = useState<{ session: IntakeSession; audit: AuditEvent[] } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -26,6 +26,9 @@ export function Workspace({ id }: { id: string }) {
   const busyRef = useRef(false);
   const gen = useRef(0); // bumped on every mutation and id change; older GET responses are dropped
   const scrollRef = useRef<HTMLDivElement>(null);
+  const headRef = useRef<HTMLDivElement>(null);
+  const [live, setLive] = useState("");
+  useEffect(() => { markOpened(id); }, [id, markOpened]);
 
   const load = useCallback(async () => {
     if (busyRef.current) return;
@@ -42,7 +45,7 @@ export function Workspace({ id }: { id: string }) {
 
   useEffect(() => {
     gen.current++;
-    setData(null); setSel(null); setEditing(null); setPrev({}); setActionError(null); setAuditOpen(false); setLoadError(null);
+    setData(null); setLive(""); setSel(null); setEditing(null); setPrev({}); setActionError(null); setAuditOpen(false); setLoadError(null);
     scrollRef.current?.scrollTo({ top: 0 });
     load();
     const t = setInterval(load, 5000);
@@ -100,8 +103,17 @@ export function Workspace({ id }: { id: string }) {
   }
   const takeoverBy = audit.find((e) => e.type === "takeover")?.actorId;
 
-  const sendReview = (actions: ReviewAction[], flags?: RedFlagReviewAction[]) =>
-    run(() => post(`/api/sessions/${id}/review`, { reviewerId: reviewer, actions, ...(flags ? { redFlagActions: flags } : {}) }));
+  // After a state change, announce it and move focus to the resulting status so keyboard and screen-reader users keep their place.
+  const settle = (msg: string) => {
+    setLive(msg);
+    setTimeout(() => headRef.current?.focus(), 60);
+  };
+  const sendReview = async (actions: ReviewAction[], flags?: RedFlagReviewAction[]) => {
+    const ok = await run(() => post(`/api/sessions/${id}/review`, { reviewerId: reviewer, actions, ...(flags ? { redFlagActions: flags } : {}) }));
+    if (ok && flags?.length) settle(fmt(tr(flags.every((f) => f.action === "false_alarm") ? "liveFalse" : "liveAcked", lang), { who: reviewer }));
+    else if (ok && actions.length > 1) settle(fmt(tr("liveApproved", lang), { who: reviewer }));
+    return ok;
+  };
 
   const select = (s: Sel) => { setSel(s); setDrawer(true); };
 
@@ -114,6 +126,17 @@ export function Workspace({ id }: { id: string }) {
     [...used, ...activeEv].filter((e) => e.turnId === turnId).map((e) => ({
       start: e.start, end: e.end, quote: e.quote, active: activeEv.some((a) => a.turnId === e.turnId && a.start === e.start && a.end === e.end),
     }));
+  // Clinician-language gloss for a patient turn, from values the pipeline already verified against the quote. Never machine-translated here.
+  const glossFor = (turnId: string) => {
+    const out: { quote: string; label: string; text: string }[] = [];
+    for (const f of fields) {
+      const v = f.value?.[lang];
+      if (!v || !["supported", "approved", "edited"].includes(f.status)) continue;
+      for (const e of f.evidence) if (e.turnId === turnId) out.push({ quote: e.quote, label: FIELD_LABEL[f.key][lang], text: v });
+    }
+    for (const h of hits) for (const e of h.evidence) if (e.turnId === turnId) out.push({ quote: e.quote, label: tr("redFlag", lang), text: h.label[lang] });
+    return out.filter((g, i) => out.findIndex((o) => o.quote === g.quote && o.text === g.text) === i);
+  };
   const announce = !sel ? "" : activeEv.length
     ? `Evidence, turn ${session.turns.findIndex((t) => t.id === activeEv[0].turnId) + 1}`
     : "No evidence quote for this item";
@@ -150,17 +173,34 @@ export function Workspace({ id }: { id: string }) {
   const headerMeta = (hero: boolean) => (
     <span className="flex flex-wrap items-center gap-2">
       <StatusChip s={session} lang={lang} />
+      <FlagChip s={session} lang={lang} />
       <span lang={session.patientLang} className={hero ? "rounded-full bg-white/15 px-3 py-0.5 text-small font-semibold" : "rounded-full bg-muted px-3 py-0.5 text-small font-semibold text-ink-soft"}>
         {LANG_NAME[session.patientLang]}
       </span>
       <span className={hero ? "text-small" : "text-small text-ink-soft"}>
-        {tr("started", lang)} {clock(session.createdAt)}{waitText ? `, ${waitText}` : ""}
+        {tr("started", lang)} {clock(session.createdAt, lang)}{waitText ? `, ${waitText}` : ""}
       </span>
     </span>
   );
   const complaint = <Complaint s={session} lang={lang} onDark={!hasFlags} />;
   const codeTitle = <span className="text-stat font-extrabold tabular-nums">{session.code}</span>;
-  const header = hasFlags ? (
+  const approvedEv = [...audit].reverse().find((e) => e.type === "review");
+  const approver = approvedEv?.actorId ?? reviewer;
+  const approvedCount = fields.filter((f) => f.status === "approved" || f.status === "edited").length;
+  const nextOpen = sorted?.find((x) => x.id !== id && (x.status === "escalated" || x.status === "awaiting_review")) ?? nextCase;
+  const headerBlock = session.status === "approved" && !hasFlags ? (
+    <Card className="cl-enter flex flex-wrap items-center gap-4 border-teal/30 !bg-teal-tint">
+      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-primary-gradient text-on-primary"><Icon name="circle-check" size={24} /></span>
+      <div className="min-w-0 flex-1">
+        <h1 className="text-title font-extrabold text-teal">{tr("approvedReceipt", lang)} · <span className="tabular-nums">{session.code}</span></h1>
+        <p className="text-small text-ink-soft">{approver}, {clock(approvedEv?.at ?? session.updatedAt, lang)} · {fmt(tr("receiptFields", lang), { n: approvedCount })}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {nextOpen && <Link href={`/review/${nextOpen.id}`} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-5 text-small font-semibold text-on-primary shadow-[0_10px_18px_-10px_rgba(26,95,196,0.8)] transition-transform duration-quick ease-pen active:scale-[0.97]">{tr("nextCase", lang)} {nextOpen.code}<Icon name="chevron-right" size={14} /></Link>}
+        <Link href="/review" className="inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean">{tr("navQueue", lang)}</Link>
+      </div>
+    </Card>
+  ) : hasFlags ? (
     <Card className="cl-enter flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <LangBadge lang={session.patientLang} />
@@ -182,12 +222,14 @@ export function Workspace({ id }: { id: string }) {
       {headerMeta(true)}
     </GradientHero>
   );
+  const header = <div ref={headRef} tabIndex={-1} className="outline-none">{headerBlock}</div>;
 
   const note = "rounded-2xl bg-muted px-4 py-2.5 text-small text-ink-soft";
   const sheet = (
     <>
       {header}
       {screenDown && <p role="status" className={note}>{tr("screenDown", lang)}</p>}
+      {session.status === "escalated" && summary && !summary.abstained && fields.some((f) => f.required && f.status === "missing") && <p className={note}>{tr("stoppedBanner", lang)}</p>}
       {session.status === "collecting" && <p className={note}>{tr("stillAnswering", lang)}</p>}
       {closed && (
         <p className={note}>
@@ -262,6 +304,7 @@ export function Workspace({ id }: { id: string }) {
   return (
     <div className="grid h-[calc(100dvh-9rem)] min-h-[560px] grid-cols-1 gap-6 min-[1280px]:grid-cols-[minmax(0,1fr)_400px]">
       <p aria-live="polite" className="sr-only">{announce}</p>
+      <p role="status" aria-live="polite" className="sr-only">{live}</p>
       <section aria-label={`Summary ${session.code}`} className="flex min-h-0 min-w-0 flex-col gap-3">
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto pr-1">
           {allFalseAlarm ? (
@@ -307,12 +350,18 @@ export function Workspace({ id }: { id: string }) {
           closed={closed}
           blocked={pendingFlags}
           supportedCount={supportedCount}
+          stopped={session.status === "escalated"}
+          left={fields.filter((f) => f.required && (f.status === "missing" || f.status === "unsupported")).map((f) => ({ key: f.key, label: FIELD_LABEL[f.key][lang] }))}
+          onJump={(k) => { const el = scrollRef.current?.querySelector<HTMLElement>(`[data-field-key="${k}"]`); el?.scrollIntoView({ block: "center", behavior: "smooth" }); el?.focus(); }}
           error={actionError ?? (loadError ? `${tr("notRefreshed", lang)}: ${loadError}` : null)}
           audit={audit}
           open={auditOpen}
           onToggle={() => setAuditOpen((o) => !o)}
           onApproveAll={() => sendReview(fields.filter((f) => f.status === "supported" && f.value).map((f) => ({ fieldKey: f.key, action: "approve" as const })))}
-          onTakeover={(reason) => run(() => post(`/api/sessions/${id}/takeover`, { reviewerId: reviewer, ...(reason ? { reason } : {}) }))}
+          onTakeover={async (reason) => {
+            const ok = await run(() => post(`/api/sessions/${id}/takeover`, { reviewerId: reviewer, ...(reason ? { reason } : {}) }));
+            if (ok) settle(fmt(tr("liveTaken", lang), { who: reviewer }));
+          }}
         />
       </section>
 
@@ -339,12 +388,30 @@ export function Workspace({ id }: { id: string }) {
             return (
               <li key={t.id} className="border-t border-rule/70 py-3 first:border-t-0">
                 <p className="flex items-center gap-2 text-micro text-graphite">
-                  <span className="tabular-nums">{i + 1}</span><span className="tabular-nums">{clock(t.at)}</span>
+                  <span className="tabular-nums">{i + 1}</span><span className="tabular-nums">{clock(t.at, lang)}</span>
                   <span className="font-semibold text-ink-soft">{t.role === "patient" ? tr("patient", lang) : tr("question", lang)}</span>
                   <span lang={t.lang}>{LANG_NAME[t.lang]}</span>
                 </p>
                 {t.role === "patient" ? (
-                  <EvidenceHighlight key={hasActive ? `${t.id}:${selId(sel)}` : t.id} text={t.text} lang={t.lang} marks={marks} className="mt-1" />
+                  <>
+                    <EvidenceHighlight key={hasActive ? `${t.id}:${selId(sel)}` : t.id} text={t.text} lang={t.lang} marks={marks} className="mt-1" />
+                    {t.lang !== lang && (() => {
+                      const gl = glossFor(t.id);
+                      return gl.length ? (
+                        <ul className="mt-2 flex flex-col gap-1 rounded-2xl bg-paper px-3 py-2 text-small text-ink-soft">
+                          {gl.map((g, gi) => (
+                            <li key={gi}>
+                              <span lang={t.lang} className="font-semibold text-ink">“{g.quote}”</span> <span aria-hidden="true">→</span>{" "}
+                              <span className="sr-only">{tr("glossIn", lang)} </span>
+                              <span lang={lang}>{g.label}: {g.text}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="mt-1.5"><span className="rounded-full bg-muted px-2.5 py-0.5 text-micro font-semibold text-ink-soft">{tr("originalLang", lang)}</span></p>
+                      );
+                    })()}
+                  </>
                 ) : (
                   <p lang={t.lang} className="mt-1 text-body text-ink-soft">{t.text}</p>
                 )}
@@ -381,13 +448,12 @@ function FlagReview({ hits, lang, busy, selected, onShow, onReview }: {
             <span className="text-small text-ink-soft"><LangMorph text={h.label} lang={lang} /></span>
             {h.review ? (
               <span className="ml-auto text-small text-ink-soft">
-                {tr(h.review.action === "acknowledge" ? "acknowledgedBy" : "falseAlarmBy", lang)} {h.review.reviewerId}, {clock(h.review.at)}
+                {tr(h.review.action === "acknowledge" ? "acknowledgedBy" : "falseAlarmBy", lang)} {h.review.reviewerId}, {clock(h.review.at, lang)}
                 {h.review.note ? `. ${tr("note", lang)}: ${h.review.note}` : ""}
               </span>
             ) : (
               <span className="ml-auto flex gap-2">
-                <Button className={sm} disabled={busy} onClick={() => onReview({ ruleId: h.ruleId, action: "acknowledge" })}>{tr("acknowledge", lang)}</Button>
-                <Button className={sm} disabled={busy} onClick={() => { setFalseFor(h.ruleId); setNote(""); }}>{tr("falseAlarm", lang)}</Button>
+                <Button className={sm} disabled={busy} aria-label={fmt(tr("falseAlarmAria", lang), { id: h.ruleId })} onClick={() => { setFalseFor(h.ruleId); setNote(""); }}>{tr("falseAlarm", lang)}</Button>
               </span>
             )}
           </div>
@@ -453,6 +519,7 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
       <button
         type="button"
         data-field-row
+        data-field-key={f.key}
         aria-pressed={selected}
         aria-controls="transcript"
         onClick={(e) => { e.currentTarget.focus(); onSelect(); }} // Safari does not focus buttons on click
@@ -467,7 +534,7 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
               {tr("patientWrote", lang)} <span lang={patientLang}>{f.valueOriginal}</span>
             </span>
           )}
-          {f.required && f.status === "missing" && <span className="text-micro font-semibold text-warn">{tr(stopped ? "reqStopped" : "reqMissing", lang)}</span>}
+          {f.required && f.status === "missing" && !stopped && <span className="text-micro font-semibold text-warn">{tr("reqMissing", lang)}</span>}
         </span>
       </button>
       {selected && canAct && (
@@ -518,17 +585,17 @@ function Provenance({ s, lang }: { s: IntakeSession; lang: Lang }) {
       <p>
         {head && <><span className="font-semibold">{head}</span> ({ex!.model}). </>}
         {calls.map((c, i) => (
-          <span key={i}>{i > 0 && ", "}{STEP_LABEL[c.step] ?? c.step}: {name(c.provider)} {c.latencyMs} ms{c.ok ? "" : ` (${tr("failed", lang)})`}</span>
+          <span key={i}>{i > 0 && ", "}{tr(`step_${c.step}` as TKey, lang)}: {name(c.provider)} {c.latencyMs} ms{c.ok ? "" : ` (${tr("failed", lang)})`}</span>
         ))}
-        . {tr("generated", lang)} {clock(s.summary!.generatedAt)}.
+        . {tr("generated", lang)} {clock(s.summary!.generatedAt, lang)}.
       </p>
       <p>{tr("decisionSupport", lang)}</p>
     </footer>
   );
 }
 
-function ActionBar({ lang, busy, canAct, closed, blocked, supportedCount, error, audit, open, onToggle, onApproveAll, onTakeover }: {
-  lang: Lang; busy: boolean; canAct: boolean; closed: boolean; blocked: boolean; supportedCount: number; error: string | null; audit: AuditEvent[];
+function ActionBar({ lang, busy, canAct, closed, blocked, supportedCount, left, onJump, stopped, error, audit, open, onToggle, onApproveAll, onTakeover }: {
+  lang: Lang; busy: boolean; canAct: boolean; closed: boolean; blocked: boolean; supportedCount: number; stopped: boolean; left: { key: string; label: string }[]; onJump: (k: string) => void; error: string | null; audit: AuditEvent[];
   open: boolean; onToggle: () => void; onApproveAll: () => void; onTakeover: (reason: string) => void;
 }) {
   const [taking, setTaking] = useState(false);
@@ -540,16 +607,35 @@ function ActionBar({ lang, busy, canAct, closed, blocked, supportedCount, error,
           <h2 className="pb-1 text-small font-bold">{tr("auditTrail", lang)}</h2>
           <table className="w-full text-small">
             <tbody>
-              {audit.map((e) => (
-                <tr key={e.id} className="align-baseline">
-                  <td className="whitespace-nowrap pr-3 tabular-nums text-ink-soft">{clock(e.at)}</td>
-                  <td className="whitespace-nowrap pr-3 text-ink-soft">{e.actorId ?? e.actor}</td>
-                  <td>{auditLine(e)}</td>
+              {mergeAudit(audit, lang).map((r) => (
+                <tr key={r.id} className="align-baseline">
+                  <td className="whitespace-nowrap pr-3 tabular-nums text-ink-soft">{clock(r.at, lang)}</td>
+                  <td className="whitespace-nowrap pr-3 text-ink-soft">{r.who}</td>
+                  <td>
+                    {r.text}{r.n > 1 ? ` ×${r.n}` : ""}
+                    {r.chip && <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-micro font-semibold text-ink-soft">{r.chip}</span>}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+      {canAct && left.length > 0 && !taking && !stopped && (
+        <p className="px-5 pt-3 text-small text-ink-soft">
+          {(() => {
+            const [a, b] = fmt(tr(left.length === 1 ? "leftHint1" : "leftHint", lang), { n: left.length, names: "\u0000" }).split("\u0000");
+            return (
+              <>
+                {a}
+                {left.map((l, i) => (
+                  <span key={l.key}>{i > 0 && ", "}<button type="button" onClick={() => onJump(l.key)} className="font-semibold text-ocean underline underline-offset-4">{l.label}</button></span>
+                ))}
+                {b}
+              </>
+            );
+          })()}
+        </p>
       )}
       {error && <p role="alert" className="px-5 pt-3 text-small font-semibold text-signal">{error}</p>}
       <div className="flex flex-wrap items-center gap-2 px-4 py-3">
@@ -575,4 +661,20 @@ function ActionBar({ lang, busy, canAct, closed, blocked, supportedCount, error,
       </div>
     </Card>
   );
+}
+
+/** Merge consecutive identical events, localize actors, and show model and latency on model events. */
+function mergeAudit(audit: AuditEvent[], lang: Lang) {
+  const rows: { id: string; at: string; who: string; text: string; n: number; chip?: string }[] = [];
+  for (const e of audit) {
+    const who = e.actorId ?? tr(`actor_${e.actor}` as TKey, lang);
+    const text = auditLine(e, lang);
+    if (!text) continue;
+    const calls = Array.isArray((e.payload as { modelCalls?: unknown }).modelCalls) ? ((e.payload as { modelCalls: { model: string; latencyMs: number }[] }).modelCalls) : [];
+    const chip = calls.length ? `${calls[0].model} · ${calls.reduce((a, c) => a + c.latencyMs, 0)} ms` : undefined;
+    const last = rows[rows.length - 1];
+    if (last && last.who === who && last.text === text) { last.n++; last.at = e.at; if (chip) last.chip = chip; }
+    else rows.push({ id: e.id, at: e.at, who, text, n: 1, chip });
+  }
+  return rows;
 }

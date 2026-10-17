@@ -1,3 +1,4 @@
+import { tr, type TKey } from "./_i18n";
 import type {
   AuditEvent, FieldKey, GetSessionRes, IntakeSession, IntakeSummary, Lang, Localized, RedFlagHit, SessionStatus,
 } from "@medx/shared";
@@ -79,31 +80,44 @@ export function sortQueue(list: IntakeSession[]): IntakeSession[] {
   );
 }
 
+export const cap = (l: Localized): Localized => ({ th: l.th, it: l.it.charAt(0).toUpperCase() + l.it.slice(1), en: l.en.charAt(0).toUpperCase() + l.en.slice(1) });
+
 export function waited(fromIso: string, now: number, unit = "min"): string {
   const min = Math.max(0, Math.floor((now - Date.parse(fromIso)) / 60000));
   if (min < 60) return `${min} ${unit}`;
   const h = Math.floor(min / 60);
   return h < 48 ? `${h} h ${min % 60} ${unit}` : `${Math.floor(h / 24)} d`;
 }
-export const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const LOCALE: Record<Lang, string> = { th: "th-TH", it: "it-IT", en: "en-GB" };
+/** 24-hour time in the UI language's locale. */
+export const clock = (iso: string, lang: Lang = "en") =>
+  new Intl.DateTimeFormat(LOCALE[lang], { hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date(iso));
 
 export const STATUS_LABEL: Record<SessionStatus, string> = {
   collecting: "Collecting", escalated: "Escalated", awaiting_review: "Review", needs_human: "Needs human review", approved: "Approved", taken_over: "Taken over",
 };
 
-export function auditLine(e: AuditEvent): string {
+export function auditLine(e: AuditEvent, lang: Lang): string {
   const p = e.payload as Record<string, unknown>;
-  const acts = (x: unknown) => (Array.isArray(x) ? x.map((a: { fieldKey?: string; ruleId?: string; action?: string }) => `${a.action} ${a.fieldKey ?? a.ruleId}`).join(", ") : "");
+  const acts = (x: unknown) =>
+    Array.isArray(x) ? x.map((a: { fieldKey?: string; ruleId?: string; action?: string }) => `${a.action} ${a.fieldKey ?? a.ruleId}`).join(", ") : "";
   switch (e.type) {
-    case "review": return `Field review: ${acts(p.actions)}`;
-    case "red_flag_review": return `Red flag review: ${acts(p.actions)}`;
-    case "red_flag": return `Red flag raised${typeof p.ruleId === "string" ? `: ${p.ruleId}` : ""}`;
-    case "abstained": return `Abstained: ${String(p.reason ?? "")}`;
-    case "takeover": return "Clinician took over the intake";
-    case "summary_generated": return "Summary generated";
-    case "pii_redacted": return "Personal details redacted";
-    case "session_created": return "Intake started";
-    case "turn_added": return "Turn added";
-    default: return e.type;
+    case "review": return `${tr("au_review", lang)}: ${acts(p.actions)}`;
+    case "red_flag_review": return `${tr("au_flag_review", lang)}: ${acts(p.actions)}`;
+    case "red_flag": return `${tr("au_red_flag", lang)}${typeof p.ruleId === "string" ? `: ${p.ruleId}` : ""}`;
+    case "abstained": {
+      const r = String(p.reason ?? "");
+      return `${tr("au_abstained", lang)}: ${r in ABSTAIN_KEYS ? tr(ABSTAIN_KEYS[r], lang) : ""}`.replace(/: $/, "");
+    }
+    case "takeover": return tr("au_takeover", lang);
+    case "summary_generated": return tr("au_summary", lang);
+    case "pii_redacted": return tr("au_pii", lang);
+    case "session_created": return tr("au_created", lang);
+    case "turn_added": return tr("au_turn", lang);
+    default: return "";
   }
 }
+const ABSTAIN_KEYS: Record<string, TKey> = {
+  provider_error: "ar_provider_error", schema_error: "ar_schema_error", low_confidence: "ar_low_confidence",
+  unsupported_language: "ar_unsupported_language", out_of_scope: "ar_out_of_scope", conflicting_information: "ar_conflicting_information",
+};
