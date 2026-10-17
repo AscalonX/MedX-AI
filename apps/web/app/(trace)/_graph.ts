@@ -55,8 +55,9 @@ export function summarize(nodes: TraceNode[]) {
   const esc = ordered.findIndex((n) => n.status === "escalated");
   return {
     steps: nodes.length,
-    rules: nodes.filter((n) => n.actor === "rule").length,
-    models: nodes.filter((n) => n.actor === "model").length,
+    rules: nodes.filter((n) => n.actor === "rule" && n.status !== "skipped").length,
+    models: nodes.filter((n) => n.actor === "model" && n.status !== "skipped").length,
+    skipped: nodes.filter((n) => n.status === "skipped").length,
     humans: nodes.filter((n) => n.actor === "human").length,
     escalatedAt: esc < 0 ? null : esc + 1,
     stepOf: (id: string) => ordered.findIndex((n) => n.id === id) + 1,

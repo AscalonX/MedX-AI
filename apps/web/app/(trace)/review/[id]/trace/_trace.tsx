@@ -21,6 +21,11 @@ const S = {
   steps: L("{n} steps", "{n} ขั้นตอน", "{n} passaggi"),
   rules: L("{n} rule checks", "{n} การตรวจตามกฎ", "{n} controlli a regole"),
   models: L("{n} model calls", "{n} การเรียกโมเดล", "{n} chiamate al modello"),
+  step1: L("1 step", "1 ขั้นตอน", "1 passaggio"),
+  rule1: L("1 rule check", "1 การตรวจตามกฎ", "1 controllo a regole"),
+  model1: L("1 model call", "1 การเรียกโมเดล", "1 chiamata al modello"),
+  human1: L("1 human decision", "1 การตัดสินใจโดยบุคลากร", "1 decisione umana"),
+  skippedN: L("{n} skipped", "ข้าม {n}", "{n} saltati"),
   humans: L("{n} human decisions", "{n} การตัดสินใจโดยบุคลากร", "{n} decisioni umane"),
   escalated: L("escalated at step {n}", "ส่งต่อเร่งด่วนที่ขั้นตอน {n}", "escalation al passaggio {n}"),
   notEscalated: L("not escalated", "ไม่ส่งต่อเร่งด่วน", "nessuna escalation"),
@@ -139,10 +144,10 @@ export function Trace({ id }: { id: string }) {
       {trace && layout && sum && (
         <>
           <p className="mb-3 flex flex-wrap gap-x-2 text-body font-semibold text-ink" data-testid="trace-summary">
-            <span>{tr("steps", lang, { n: sum.steps })}</span><span aria-hidden="true">·</span>
-            <span>{tr("rules", lang, { n: sum.rules })}</span><span aria-hidden="true">·</span>
-            <span>{tr("models", lang, { n: sum.models })}</span><span aria-hidden="true">·</span>
-            <span>{tr("humans", lang, { n: sum.humans })}</span><span aria-hidden="true">·</span>
+            <span>{sum.steps === 1 ? tr("step1", lang) : tr("steps", lang, { n: sum.steps })}</span><span aria-hidden="true">·</span>
+            <span>{sum.rules === 1 ? tr("rule1", lang) : tr("rules", lang, { n: sum.rules })}</span><span aria-hidden="true">·</span>
+            <span>{sum.models === 1 ? tr("model1", lang) : tr("models", lang, { n: sum.models })}{sum.skipped > 0 && ` (${tr("skippedN", lang, { n: sum.skipped })})`}</span><span aria-hidden="true">·</span>
+            <span>{sum.humans === 1 ? tr("human1", lang) : tr("humans", lang, { n: sum.humans })}</span><span aria-hidden="true">·</span>
             <span className={sum.escalatedAt ? "text-signal" : "text-ink-soft"}>{sum.escalatedAt ? tr("escalated", lang, { n: sum.escalatedAt }) : tr("notEscalated", lang)}</span>
           </p>
 
