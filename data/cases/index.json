@@ -339,6 +339,125 @@
         "rf_explicit"
       ],
       "split": "test"
+    },
+    {
+      "id": "MED-01",
+      "lang": "th",
+      "tags": [
+        "medication",
+        "allergy_conflict",
+        "local_brand"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "MED-02",
+      "lang": "th",
+      "tags": [
+        "medication",
+        "duplicate_therapy",
+        "local_brand"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "MED-03",
+      "lang": "th",
+      "tags": [
+        "medication",
+        "interaction"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "MED-04",
+      "lang": "th",
+      "tags": [
+        "medication",
+        "unknown_medication",
+        "herbal",
+        "local_brand"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "MED-05",
+      "lang": "it",
+      "tags": [
+        "medication",
+        "duplicate_therapy",
+        "max_dose_risk"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "MED-06",
+      "lang": "it",
+      "tags": [
+        "medication",
+        "pregnancy_caution"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "MED-07",
+      "lang": "it",
+      "tags": [
+        "medication",
+        "stopped_medication",
+        "local_brand"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "MED-08",
+      "lang": "it",
+      "tags": [
+        "medication",
+        "interaction",
+        "herbal"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "MED-09",
+      "lang": "en",
+      "tags": [
+        "medication",
+        "interaction"
+      ],
+      "split": "dev"
+    },
+    {
+      "id": "MED-10",
+      "lang": "en",
+      "tags": [
+        "medication",
+        "local_brand",
+        "tourist"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "MED-11",
+      "lang": "en",
+      "tags": [
+        "medication",
+        "unknown_medication"
+      ],
+      "split": "test"
+    },
+    {
+      "id": "MED-12",
+      "lang": "en",
+      "tags": [
+        "medication",
+        "clean_list",
+        "negated_allergy",
+        "dose_frequency"
+      ],
+      "split": "test"
     }
-  ]
+  ],
+  "note": "MED-* split: index%4==0 within MED-01..12 (existing 40 cases keep their original split so dev/test membership does not move)"
 }

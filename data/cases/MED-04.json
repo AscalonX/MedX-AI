@@ -1,0 +1,125 @@
+{
+  "id": "MED-04",
+  "lang": "th",
+  "tags": [
+    "medication",
+    "unknown_medication",
+    "herbal",
+    "local_brand"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ปวดเมื่อยตามตัวมาสองสัปดาห์ครับ ทายาหม่องทุกคืน แล้วก็ต้มยาสมุนไพรที่ญาติให้มากินวันละสองแก้ว ไม่รู้ว่ามีอะไรบ้าง นอกจากนั้นกินยาความดันทุกเช้า ผมอายุ 60 ผู้ชาย ไม่แพ้ยา"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Body aches",
+        "evidence": [
+          "ปวดเมื่อยตามตัว"
+        ]
+      },
+      "onset": {
+        "value_en": "2 weeks ago",
+        "evidence": [
+          "มาสองสัปดาห์"
+        ]
+      },
+      "duration": {
+        "value_en": "2 weeks",
+        "evidence": [
+          "สองสัปดาห์"
+        ]
+      },
+      "severity": null,
+      "location": null,
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "Medicated balm nightly; herbal decoction 2 glasses a day (ingredients unknown); a blood pressure pill every morning (name unknown)",
+        "evidence": [
+          "ทายาหม่องทุกคืน",
+          "ต้มยาสมุนไพรที่ญาติให้มากินวันละสองแก้ว",
+          "กินยาความดันทุกเช้า"
+        ]
+      },
+      "allergies": {
+        "value_en": "No drug allergy",
+        "evidence": [
+          "ไม่แพ้ยา"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "60",
+        "evidence": [
+          "อายุ 60"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "ผู้ชาย"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "ยาหม่อง",
+        "generic": "menthol/camphor (topical balm)",
+        "dose": null,
+        "frequency": "every night",
+        "status": "taking",
+        "evidence": [
+          "ยาหม่อง",
+          "ทุกคืน"
+        ]
+      },
+      {
+        "nameOriginal": "ยาสมุนไพร",
+        "generic": null,
+        "dose": "2 glasses",
+        "frequency": "daily",
+        "status": "taking",
+        "evidence": [
+          "ยาสมุนไพร",
+          "วันละสองแก้ว"
+        ]
+      },
+      {
+        "nameOriginal": "ยาความดัน",
+        "generic": null,
+        "dose": null,
+        "frequency": "every morning",
+        "status": "taking",
+        "evidence": [
+          "ยาความดัน",
+          "ทุกเช้า"
+        ]
+      }
+    ],
+    "allergies": [],
+    "medAlerts": [
+      {
+        "kind": "unknown_medication",
+        "drugs": [
+          "ยาสมุนไพร"
+        ]
+      },
+      {
+        "kind": "unknown_medication",
+        "drugs": [
+          "ยาความดัน"
+        ]
+      }
+    ]
+  }
+}

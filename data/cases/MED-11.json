@@ -1,0 +1,123 @@
+{
+  "id": "MED-11",
+  "lang": "en",
+  "tags": [
+    "medication",
+    "unknown_medication"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "I take a white pill for blood pressure every morning and a little yellow one for my stomach, I don't know the names. Headache for two days, 4/10. I'm 66, female, allergic to sulfa drugs."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Headache",
+        "evidence": [
+          "Headache for two days"
+        ]
+      },
+      "onset": {
+        "value_en": "2 days ago",
+        "evidence": [
+          "for two days"
+        ]
+      },
+      "duration": {
+        "value_en": "2 days",
+        "evidence": [
+          "two days"
+        ]
+      },
+      "severity": {
+        "value_en": "4/10",
+        "evidence": [
+          "4/10"
+        ]
+      },
+      "location": null,
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "White blood pressure pill every morning and small yellow stomach pill (names unknown)",
+        "evidence": [
+          "a white pill for blood pressure every morning",
+          "a little yellow one for my stomach"
+        ]
+      },
+      "allergies": {
+        "value_en": "Sulfa drugs",
+        "evidence": [
+          "allergic to sulfa drugs"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "66",
+        "evidence": [
+          "I'm 66"
+        ]
+      },
+      "sex": {
+        "value_en": "Female",
+        "evidence": [
+          "female"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "a white pill for blood pressure",
+        "generic": null,
+        "dose": null,
+        "frequency": "every morning",
+        "status": "taking",
+        "evidence": [
+          "a white pill for blood pressure every morning"
+        ]
+      },
+      {
+        "nameOriginal": "a little yellow one for my stomach",
+        "generic": null,
+        "dose": null,
+        "frequency": null,
+        "status": "taking",
+        "evidence": [
+          "a little yellow one for my stomach"
+        ]
+      }
+    ],
+    "allergies": [
+      {
+        "allergenOriginal": "sulfa drugs",
+        "allergenClass": "sulfonamide",
+        "reaction": null,
+        "evidence": [
+          "allergic to sulfa drugs"
+        ]
+      }
+    ],
+    "medAlerts": [
+      {
+        "kind": "unknown_medication",
+        "drugs": [
+          "a white pill for blood pressure"
+        ]
+      },
+      {
+        "kind": "unknown_medication",
+        "drugs": [
+          "a little yellow one for my stomach"
+        ]
+      }
+    ]
+  }
+}

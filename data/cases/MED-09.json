@@ -1,0 +1,129 @@
+{
+  "id": "MED-09",
+  "lang": "en",
+  "tags": [
+    "medication",
+    "interaction"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Back pain for a week, 6/10. A friend gave me tramadol 50 mg and I took two last night on top of my usual sertraline 100 mg every morning. Today I feel shaky, agitated and sweaty. I'm 35, male, allergic to latex."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Back pain; shaky and agitated after tramadol",
+        "evidence": [
+          "Back pain for a week",
+          "I feel shaky, agitated and sweaty"
+        ]
+      },
+      "onset": {
+        "value_en": "1 week ago",
+        "evidence": [
+          "for a week"
+        ]
+      },
+      "duration": {
+        "value_en": "1 week",
+        "evidence": [
+          "a week"
+        ]
+      },
+      "severity": {
+        "value_en": "6/10",
+        "evidence": [
+          "6/10"
+        ]
+      },
+      "location": {
+        "value_en": "Back",
+        "evidence": [
+          "Back pain"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Shaky, agitated, sweaty",
+        "evidence": [
+          "shaky, agitated and sweaty"
+        ]
+      },
+      "medications": {
+        "value_en": "Tramadol 50 mg x2 last night (from a friend); sertraline 100 mg every morning",
+        "evidence": [
+          "tramadol 50 mg and I took two last night",
+          "sertraline 100 mg every morning"
+        ]
+      },
+      "allergies": {
+        "value_en": "Latex",
+        "evidence": [
+          "allergic to latex"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "35",
+        "evidence": [
+          "I'm 35"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "male"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "tramadol",
+        "generic": "tramadol",
+        "dose": "50 mg, two tablets",
+        "frequency": "once, last night",
+        "status": "taking",
+        "evidence": [
+          "tramadol 50 mg and I took two last night"
+        ]
+      },
+      {
+        "nameOriginal": "sertraline",
+        "generic": "sertraline",
+        "dose": "100 mg",
+        "frequency": "every morning",
+        "status": "taking",
+        "evidence": [
+          "sertraline 100 mg every morning"
+        ]
+      }
+    ],
+    "allergies": [
+      {
+        "allergenOriginal": "latex",
+        "allergenClass": "latex",
+        "reaction": null,
+        "evidence": [
+          "allergic to latex"
+        ]
+      }
+    ],
+    "medAlerts": [
+      {
+        "kind": "interaction",
+        "drugs": [
+          "sertraline",
+          "tramadol"
+        ]
+      }
+    ]
+  }
+}

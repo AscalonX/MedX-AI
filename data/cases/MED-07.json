@@ -1,0 +1,114 @@
+{
+  "id": "MED-07",
+  "lang": "it",
+  "tags": [
+    "medication",
+    "stopped_medication",
+    "local_brand"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Ho una tosse secca da tre settimane che non mi lascia dormire. Una settimana fa ho smesso di prendere il Triatec perché pensavo fosse lui a farmi tossire, ma la tosse c'è ancora. Adesso prendo solo la Tachipirina 500, una compressa la sera. Ho 63 anni, uomo, allergico ai gamberi."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Dry cough",
+        "evidence": [
+          "tosse secca"
+        ]
+      },
+      "onset": {
+        "value_en": "3 weeks ago",
+        "evidence": [
+          "da tre settimane"
+        ]
+      },
+      "duration": {
+        "value_en": "3 weeks",
+        "evidence": [
+          "tre settimane"
+        ]
+      },
+      "severity": null,
+      "location": null,
+      "associated_symptoms": {
+        "value_en": "Cough disturbs sleep",
+        "evidence": [
+          "non mi lascia dormire"
+        ]
+      },
+      "medications": {
+        "value_en": "Stopped Triatec one week ago; now Tachipirina 500, one tablet in the evening",
+        "evidence": [
+          "Una settimana fa ho smesso di prendere il Triatec",
+          "Tachipirina 500, una compressa la sera"
+        ]
+      },
+      "allergies": {
+        "value_en": "Shrimp",
+        "evidence": [
+          "allergico ai gamberi"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "63",
+        "evidence": [
+          "63 anni"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "uomo"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "Triatec",
+        "generic": "ramipril",
+        "dose": null,
+        "frequency": null,
+        "status": "discontinued",
+        "timing": "stopped one week ago",
+        "evidence": [
+          "Triatec",
+          "Una settimana fa ho smesso di prendere"
+        ]
+      },
+      {
+        "nameOriginal": "Tachipirina 500",
+        "generic": "paracetamol",
+        "dose": "500 mg",
+        "frequency": "one tablet in the evening",
+        "status": "taking",
+        "evidence": [
+          "Tachipirina 500",
+          "una compressa la sera"
+        ]
+      }
+    ],
+    "allergies": [
+      {
+        "allergenOriginal": "gamberi",
+        "allergenClass": "shellfish",
+        "reaction": null,
+        "evidence": [
+          "allergico ai gamberi"
+        ]
+      }
+    ],
+    "medAlerts": []
+  }
+}

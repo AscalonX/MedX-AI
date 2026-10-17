@@ -1,0 +1,103 @@
+{
+  "id": "MED-06",
+  "lang": "it",
+  "tags": [
+    "medication",
+    "pregnancy_caution"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Sono incinta di 10 settimane e ho un mal di testa che non passa da due giorni, sarà 5 su 10. Prendo il Moment 200 quando serve, anche due o tre al giorno. Ho 31 anni, sono una donna, nessuna allergia."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Headache that will not go away",
+        "evidence": [
+          "un mal di testa che non passa"
+        ]
+      },
+      "onset": {
+        "value_en": "2 days ago",
+        "evidence": [
+          "da due giorni"
+        ]
+      },
+      "duration": {
+        "value_en": "2 days",
+        "evidence": [
+          "due giorni"
+        ]
+      },
+      "severity": {
+        "value_en": "5/10",
+        "evidence": [
+          "5 su 10"
+        ]
+      },
+      "location": null,
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "Moment 200 as needed, two or three a day",
+        "evidence": [
+          "il Moment 200 quando serve, anche due o tre al giorno"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "nessuna allergia"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": {
+        "value_en": "Pregnant, 10 weeks",
+        "evidence": [
+          "incinta di 10 settimane"
+        ]
+      },
+      "age": {
+        "value_en": "31",
+        "evidence": [
+          "31 anni"
+        ]
+      },
+      "sex": {
+        "value_en": "Female",
+        "evidence": [
+          "una donna"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "Moment 200",
+        "generic": "ibuprofen",
+        "dose": "200 mg",
+        "frequency": "two or three a day as needed",
+        "status": "taking",
+        "evidence": [
+          "Moment 200",
+          "due o tre al giorno"
+        ]
+      }
+    ],
+    "allergies": [],
+    "medAlerts": [
+      {
+        "kind": "pregnancy_caution",
+        "drugs": [
+          "ibuprofen"
+        ]
+      }
+    ]
+  }
+}

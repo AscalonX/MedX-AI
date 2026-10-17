@@ -1,0 +1,118 @@
+{
+  "id": "MED-10",
+  "lang": "en",
+  "tags": [
+    "medication",
+    "local_brand",
+    "tourist"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "I'm on holiday from Italy and my back has hurt for three days, about 6/10. At home I take Aulin sachets when it hurts, Muscoril 4 mg twice a day, and Eutirox every morning. I'm 49, male, no allergies."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Back pain",
+        "evidence": [
+          "my back has hurt"
+        ]
+      },
+      "onset": {
+        "value_en": "3 days ago",
+        "evidence": [
+          "for three days"
+        ]
+      },
+      "duration": {
+        "value_en": "3 days",
+        "evidence": [
+          "three days"
+        ]
+      },
+      "severity": {
+        "value_en": "6/10",
+        "evidence": [
+          "6/10"
+        ]
+      },
+      "location": {
+        "value_en": "Back",
+        "evidence": [
+          "my back"
+        ]
+      },
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "Aulin sachets when in pain; Muscoril 4 mg twice a day; Eutirox every morning",
+        "evidence": [
+          "Aulin sachets when it hurts",
+          "Muscoril 4 mg twice a day",
+          "Eutirox every morning"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "no allergies"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "49",
+        "evidence": [
+          "I'm 49"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "male"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "Aulin",
+        "generic": "nimesulide",
+        "dose": "1 sachet",
+        "frequency": "when in pain",
+        "status": "taking",
+        "evidence": [
+          "Aulin sachets when it hurts"
+        ]
+      },
+      {
+        "nameOriginal": "Muscoril",
+        "generic": "thiocolchicoside",
+        "dose": "4 mg",
+        "frequency": "twice a day",
+        "status": "taking",
+        "evidence": [
+          "Muscoril 4 mg twice a day"
+        ]
+      },
+      {
+        "nameOriginal": "Eutirox",
+        "generic": "levothyroxine",
+        "dose": null,
+        "frequency": "every morning",
+        "status": "taking",
+        "evidence": [
+          "Eutirox every morning"
+        ]
+      }
+    ],
+    "allergies": [],
+    "medAlerts": []
+  }
+}

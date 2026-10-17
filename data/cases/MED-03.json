@@ -1,0 +1,116 @@
+{
+  "id": "MED-03",
+  "lang": "th",
+  "tags": [
+    "medication",
+    "interaction"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ปวดเข่ามาสามวันแล้วครับ เลยซื้อไอบูโพรเฟนที่ร้านขายยากินเอง วันละสามเม็ด ปกติกินวาร์ฟารินทุกเย็นเพราะหัวใจเต้นผิดจังหวะ ผู้ชายอายุ 68 ไม่แพ้ยา"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Knee pain",
+        "evidence": [
+          "ปวดเข่า"
+        ]
+      },
+      "onset": {
+        "value_en": "3 days ago",
+        "evidence": [
+          "มาสามวัน"
+        ]
+      },
+      "duration": {
+        "value_en": "3 days",
+        "evidence": [
+          "สามวัน"
+        ]
+      },
+      "severity": null,
+      "location": {
+        "value_en": "Knee",
+        "evidence": [
+          "เข่า"
+        ]
+      },
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "Ibuprofen self-bought, 3 tablets a day; warfarin every evening",
+        "evidence": [
+          "ไอบูโพรเฟนที่ร้านขายยากินเอง วันละสามเม็ด",
+          "กินวาร์ฟารินทุกเย็น"
+        ]
+      },
+      "allergies": {
+        "value_en": "No drug allergy",
+        "evidence": [
+          "ไม่แพ้ยา"
+        ]
+      },
+      "medical_history": {
+        "value_en": "Irregular heartbeat",
+        "evidence": [
+          "หัวใจเต้นผิดจังหวะ"
+        ]
+      },
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "68",
+        "evidence": [
+          "อายุ 68"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "ผู้ชาย"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "ไอบูโพรเฟน",
+        "generic": "ibuprofen",
+        "dose": "3 tablets",
+        "frequency": "3 per day",
+        "status": "taking",
+        "evidence": [
+          "ไอบูโพรเฟน",
+          "วันละสามเม็ด"
+        ]
+      },
+      {
+        "nameOriginal": "วาร์ฟาริน",
+        "generic": "warfarin",
+        "dose": null,
+        "frequency": "every evening",
+        "status": "taking",
+        "evidence": [
+          "วาร์ฟาริน",
+          "ทุกเย็น"
+        ]
+      }
+    ],
+    "allergies": [],
+    "medAlerts": [
+      {
+        "kind": "interaction",
+        "drugs": [
+          "warfarin",
+          "ibuprofen"
+        ]
+      }
+    ]
+  }
+}

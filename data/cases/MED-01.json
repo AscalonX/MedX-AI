@@ -1,0 +1,106 @@
+{
+  "id": "MED-01",
+  "lang": "th",
+  "tags": [
+    "medication",
+    "allergy_conflict",
+    "local_brand"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "เมื่อก่อนแพ้เพนิซิลลิน กินแล้วผื่นขึ้นตามตัว แต่เมื่อวานหมอที่คลินิกจ่ายออกเมนตินให้ ผมกินไปแล้ว 3 เม็ด เช้า-เย็น วันนี้เลยมาถามว่ากินต่อได้ไหม ที่ไปหาหมอเพราะไอเจ็บคอมาสี่วัน ผู้ชายอายุ 37 ครับ"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Cough and sore throat",
+        "evidence": [
+          "ไอเจ็บคอมาสี่วัน"
+        ]
+      },
+      "onset": {
+        "value_en": "4 days ago",
+        "evidence": [
+          "มาสี่วัน"
+        ]
+      },
+      "duration": {
+        "value_en": "4 days",
+        "evidence": [
+          "สี่วัน"
+        ]
+      },
+      "severity": null,
+      "location": null,
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "Augmentin (amoxicillin-clavulanate), 3 tablets so far, morning and evening",
+        "evidence": [
+          "ออกเมนติน",
+          "กินไปแล้ว 3 เม็ด เช้า-เย็น"
+        ]
+      },
+      "allergies": {
+        "value_en": "Penicillin (rash)",
+        "evidence": [
+          "แพ้เพนิซิลลิน กินแล้วผื่นขึ้นตามตัว"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "37",
+        "evidence": [
+          "อายุ 37"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "ผู้ชาย"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "ออกเมนติน",
+        "generic": "amoxicillin-clavulanate",
+        "dose": "3 tablets so far",
+        "frequency": "morning and evening",
+        "status": "taking",
+        "evidence": [
+          "ออกเมนติน",
+          "3 เม็ด เช้า-เย็น"
+        ]
+      }
+    ],
+    "allergies": [
+      {
+        "allergenOriginal": "เพนิซิลลิน",
+        "allergenClass": "penicillin",
+        "reaction": "rash",
+        "evidence": [
+          "เพนิซิลลิน",
+          "ผื่นขึ้นตามตัว"
+        ]
+      }
+    ],
+    "medAlerts": [
+      {
+        "kind": "allergy_conflict",
+        "drugs": [
+          "amoxicillin-clavulanate"
+        ],
+        "allergenClass": "penicillin"
+      }
+    ]
+  }
+}

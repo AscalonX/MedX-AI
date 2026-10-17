@@ -1,0 +1,108 @@
+{
+  "id": "MED-12",
+  "lang": "en",
+  "tags": [
+    "medication",
+    "clean_list",
+    "negated_allergy",
+    "dose_frequency"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "I take metformin 500 mg twice a day and atorvastatin 20 mg at night. I'm here for a sore throat for 3 days, 4/10. I'm 58, male, no allergies at all."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Sore throat",
+        "evidence": [
+          "a sore throat for 3 days"
+        ]
+      },
+      "onset": {
+        "value_en": "3 days ago",
+        "evidence": [
+          "for 3 days"
+        ]
+      },
+      "duration": {
+        "value_en": "3 days",
+        "evidence": [
+          "3 days"
+        ]
+      },
+      "severity": {
+        "value_en": "4/10",
+        "evidence": [
+          "4/10"
+        ]
+      },
+      "location": {
+        "value_en": "Throat",
+        "evidence": [
+          "sore throat"
+        ]
+      },
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "Metformin 500 mg twice a day; atorvastatin 20 mg at night",
+        "evidence": [
+          "metformin 500 mg twice a day",
+          "atorvastatin 20 mg at night"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "no allergies at all"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "58",
+        "evidence": [
+          "I'm 58"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "male"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "metformin",
+        "generic": "metformin",
+        "dose": "500 mg",
+        "frequency": "twice a day",
+        "status": "taking",
+        "evidence": [
+          "metformin 500 mg twice a day"
+        ]
+      },
+      {
+        "nameOriginal": "atorvastatin",
+        "generic": "atorvastatin",
+        "dose": "20 mg",
+        "frequency": "at night",
+        "status": "taking",
+        "evidence": [
+          "atorvastatin 20 mg at night"
+        ]
+      }
+    ],
+    "allergies": [],
+    "medAlerts": []
+  }
+}

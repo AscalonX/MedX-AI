@@ -1,0 +1,107 @@
+{
+  "id": "MED-02",
+  "lang": "th",
+  "tags": [
+    "medication",
+    "duplicate_therapy",
+    "local_brand"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "ปวดหัวตัวร้อนเป็นหวัดมาสองวันค่ะ เมื่อเช้ากินซาร่าไป 2 เม็ด พอตอนบ่ายยังไม่หาย เลยกินทิฟฟี่เพิ่มอีก 2 เม็ด ผู้หญิงอายุ 52 ไม่แพ้ยาค่ะ"
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Cold with headache and feeling feverish",
+        "evidence": [
+          "ปวดหัวตัวร้อนเป็นหวัด"
+        ]
+      },
+      "onset": {
+        "value_en": "2 days ago",
+        "evidence": [
+          "มาสองวัน"
+        ]
+      },
+      "duration": {
+        "value_en": "2 days",
+        "evidence": [
+          "สองวัน"
+        ]
+      },
+      "severity": null,
+      "location": null,
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "Sara 2 tablets in the morning; Tiffy 2 more tablets in the afternoon",
+        "evidence": [
+          "กินซาร่าไป 2 เม็ด",
+          "กินทิฟฟี่เพิ่มอีก 2 เม็ด"
+        ]
+      },
+      "allergies": {
+        "value_en": "No drug allergy",
+        "evidence": [
+          "ไม่แพ้ยา"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "52",
+        "evidence": [
+          "อายุ 52"
+        ]
+      },
+      "sex": {
+        "value_en": "Female",
+        "evidence": [
+          "ผู้หญิง"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "ซาร่า",
+        "generic": "paracetamol",
+        "dose": "2 tablets",
+        "frequency": "morning",
+        "status": "taking",
+        "evidence": [
+          "ซาร่า",
+          "กินซาร่าไป 2 เม็ด"
+        ]
+      },
+      {
+        "nameOriginal": "ทิฟฟี่",
+        "generic": "paracetamol/chlorpheniramine/phenylephrine",
+        "dose": "2 tablets",
+        "frequency": "afternoon",
+        "status": "taking",
+        "evidence": [
+          "ทิฟฟี่",
+          "กินทิฟฟี่เพิ่มอีก 2 เม็ด"
+        ]
+      }
+    ],
+    "allergies": [],
+    "medAlerts": [
+      {
+        "kind": "duplicate_therapy",
+        "drugs": [
+          "paracetamol",
+          "paracetamol/chlorpheniramine/phenylephrine"
+        ]
+      }
+    ]
+  }
+}

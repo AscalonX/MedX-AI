@@ -1,0 +1,107 @@
+{
+  "id": "MED-08",
+  "lang": "it",
+  "tags": [
+    "medication",
+    "interaction",
+    "herbal"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Prendo la sertralina 50 mg ogni mattina da sei mesi, e da dieci giorni bevo una tisana all'erba di San Giovanni per dormire meglio. Da ieri sono molto agitata, il cuore mi batte forte e sudo tanto. Ho 41 anni, sono una donna, non sono incinta, nessuna allergia."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Marked agitation, strong heartbeat, heavy sweating",
+        "evidence": [
+          "molto agitata, il cuore mi batte forte e sudo tanto"
+        ]
+      },
+      "onset": {
+        "value_en": "Since yesterday",
+        "evidence": [
+          "Da ieri"
+        ]
+      },
+      "duration": null,
+      "severity": null,
+      "location": null,
+      "associated_symptoms": null,
+      "medications": {
+        "value_en": "Sertraline 50 mg every morning for 6 months; St John's wort tea for 10 days",
+        "evidence": [
+          "sertralina 50 mg ogni mattina da sei mesi",
+          "tisana all'erba di San Giovanni"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "nessuna allergia"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": {
+        "value_en": "Not pregnant",
+        "evidence": [
+          "non sono incinta"
+        ]
+      },
+      "age": {
+        "value_en": "41",
+        "evidence": [
+          "41 anni"
+        ]
+      },
+      "sex": {
+        "value_en": "Female",
+        "evidence": [
+          "una donna"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "sertralina",
+        "generic": "sertraline",
+        "dose": "50 mg",
+        "frequency": "every morning",
+        "status": "taking",
+        "evidence": [
+          "sertralina 50 mg ogni mattina"
+        ]
+      },
+      {
+        "nameOriginal": "erba di San Giovanni",
+        "generic": "hypericum perforatum (St John's wort)",
+        "dose": null,
+        "frequency": null,
+        "status": "taking",
+        "timing": "for 10 days",
+        "evidence": [
+          "tisana all'erba di San Giovanni",
+          "da dieci giorni"
+        ]
+      }
+    ],
+    "allergies": [],
+    "medAlerts": [
+      {
+        "kind": "interaction",
+        "drugs": [
+          "sertraline",
+          "hypericum perforatum (St John's wort)"
+        ]
+      }
+    ]
+  }
+}

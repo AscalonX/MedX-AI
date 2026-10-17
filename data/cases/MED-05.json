@@ -1,0 +1,116 @@
+{
+  "id": "MED-05",
+  "lang": "it",
+  "tags": [
+    "medication",
+    "duplicate_therapy",
+    "max_dose_risk"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "Ho la febbre e un forte raffreddore da tre giorni, 38.5. Prendo la Tachipirina 1000 tre volte al giorno e in più, quando la febbre risale, anche l'Efferalgan da 1000, due volte al giorno. Ho 45 anni, sono un uomo, nessuna allergia."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Fever and bad cold",
+        "evidence": [
+          "febbre e un forte raffreddore"
+        ]
+      },
+      "onset": {
+        "value_en": "3 days ago",
+        "evidence": [
+          "da tre giorni"
+        ]
+      },
+      "duration": {
+        "value_en": "3 days",
+        "evidence": [
+          "tre giorni"
+        ]
+      },
+      "severity": null,
+      "location": null,
+      "associated_symptoms": {
+        "value_en": "Temperature 38.5",
+        "evidence": [
+          "38.5"
+        ]
+      },
+      "medications": {
+        "value_en": "Tachipirina 1000 three times a day plus Efferalgan 1000 twice a day",
+        "evidence": [
+          "Tachipirina 1000 tre volte al giorno",
+          "Efferalgan da 1000, due volte al giorno"
+        ]
+      },
+      "allergies": {
+        "value_en": "No allergies",
+        "evidence": [
+          "nessuna allergia"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "45",
+        "evidence": [
+          "45 anni"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "un uomo"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "meds": [
+      {
+        "nameOriginal": "Tachipirina",
+        "generic": "paracetamol",
+        "dose": "1000 mg",
+        "frequency": "three times a day",
+        "status": "taking",
+        "evidence": [
+          "Tachipirina 1000 tre volte al giorno"
+        ]
+      },
+      {
+        "nameOriginal": "Efferalgan",
+        "generic": "paracetamol",
+        "dose": "1000 mg",
+        "frequency": "twice a day",
+        "status": "taking",
+        "evidence": [
+          "Efferalgan da 1000, due volte al giorno"
+        ]
+      }
+    ],
+    "allergies": [],
+    "medAlerts": [
+      {
+        "kind": "duplicate_therapy",
+        "drugs": [
+          "paracetamol",
+          "paracetamol"
+        ]
+      },
+      {
+        "kind": "max_dose_risk",
+        "drugs": [
+          "paracetamol"
+        ]
+      }
+    ]
+  }
+}
