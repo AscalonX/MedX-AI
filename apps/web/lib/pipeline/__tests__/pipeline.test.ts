@@ -101,18 +101,18 @@ describe('pipeline', () => {
   it('retains medium certainty tolerant evidence above the .55 threshold', async () => {
     const client = clientFor(() => {
       const fields = Object.fromEntries(FIELD_KEYS.map(k => [k, null])) as ModelExtraction['fields']; fields.chief_complaint = { value_original: 'headache', value: { th: 'ปวดหัว', it: 'mal di testa', en: 'headache' }, certainty: 'medium', evidence: [{ turn: 'T1', quote: 'have very bad head ache' }] };
-      return { language_detected: 'en', fields };
+      return { language_detected: 'en', fields, medications: [], allergies: [], noKnownAllergies: null };
     });
     // Medium tolerant long quote = .56: remains above the threshold.
     const s = await runTurn(createSession('en', { persist: false }), 'I have very bad head pain today', { client }); expect(s.summary?.abstainReason).not.toBe('low_confidence');
   });
   it('unsupported-language needs both model and code agreement', async () => {
-    const client = clientFor(() => ({ language_detected: 'other', fields: {} }));
+    const client = clientFor(() => ({ language_detected: 'other', fields: {}, medications: [], allergies: [], noKnownAllergies: null }));
     const s = await runTurn(createSession('en', { persist: false }), 'bonjour avec douleur depuis trois jours maintenant', { client }); expect(s.summary?.abstainReason).toBe('unsupported_language');
     const supported = await runTurn(createSession('th', { persist: false }), 'ฉันปวดหัวตั้งแต่เมื่อวานและมีอาการคลื่นไส้', { client }); expect(supported.summary?.abstainReason).not.toBe('unsupported_language');
   });
   it('missing chief complaint after 3 turns hands over', async () => {
-    const client = clientFor(r => r.step === 'extract' ? { language_detected: 'en', fields: {} } : { field: 'chief_complaint', question: QUESTIONS.chief_complaint });
+    const client = clientFor(r => r.step === 'extract' ? { language_detected: 'en', fields: {}, medications: [], allergies: [], noKnownAllergies: null } : { field: 'chief_complaint', question: QUESTIONS.chief_complaint });
     let s = createSession('en', { persist: false }); for (let i = 0; i < 3; i++) s = await runTurn(s, 'No allergies', { client });
     expect(s.status).toBe('needs_human'); expect(s.summary?.abstainReason).toBe('low_confidence');
   });

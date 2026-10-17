@@ -3,6 +3,7 @@ import type { ChatRequest } from './llm';
 import type { ModelExtraction } from './schema';
 import { FIELD_KEYS } from './config';
 import { QUESTIONS } from './templates';
+import { mockPharmacy } from './pharmacyExtraction';
 
 /** Deliberately narrow deterministic demo extractor, not an evaluation oracle. */
 export function mockJSON(req: ChatRequest): unknown {
@@ -28,7 +29,7 @@ export function mockJSON(req: ChatRequest): unknown {
     associated_symptoms: [[/(?:no other symptoms|nessun altro sintomo|ไม่มีอาการอื่น)/i, { en: 'no other symptoms', it: 'nessun altro sintomo', th: 'ไม่มีอาการอื่น' }], [/(?:nausea|คลื่นไส้)/i, { en: 'nausea', it: 'nausea', th: 'คลื่นไส้' }]],
     medications: [[/(?:no (?:medicines|medications)|don't take any medication|nessun farmaco|non prendo farmaci|ไม่มียาที่ใช้|ไม่ได้กินยา)/i, { en: 'no medicines', it: 'nessun farmaco', th: 'ไม่ได้กินยา' }], [/(?:paracetamol(?:o)?|พาราเซตามอล)/i, { en: 'paracetamol', it: 'paracetamolo', th: 'พาราเซตามอล' }], [/daily multivitamin/i, { en: 'daily multivitamin', it: 'multivitaminico giornaliero', th: 'วิตามินรวมทุกวัน' }]],
     allergies: [[/(?:no (?:known )?allergies|nessuna allergia|non sono allergico a nulla|ไม่มีประวัติแพ้|ไม่แพ้ยา)/i, { en: 'no known allergies', it: 'nessuna allergia nota', th: 'ไม่มีประวัติแพ้' }]],
-    pregnancy_status: [[/(?:not pregnant|non sono incinta|ไม่ตั้งครรภ์|ไม่ได้ตั้งครรภ์)/i, { en: 'not pregnant', it: 'non in gravidanza', th: 'ไม่ตั้งครรภ์' }]],
+    pregnancy_status: [[/(?:not pregnant|non sono incinta|ไม่ตั้งครรภ์|ไม่ได้ตั้งครรภ์)/i, { en: 'not pregnant', it: 'non in gravidanza', th: 'ไม่ตั้งครรภ์' }], [/(?:possibly pregnant|might be pregnant|maybe pregnant|late period|forse incinta|อาจตั้งครรภ์)/i, { en: 'possibly pregnant', it: 'possibile gravidanza', th: 'อาจตั้งครรภ์' }], [/(?:sono incinta|I am pregnant|I'm pregnant|ตั้งครรภ์)/i, { en: 'pregnant', it: 'in gravidanza', th: 'ตั้งครรภ์' }]],
     sex: [[/\b(?:male|man|uomo)\b/i, { en: 'male', it: 'maschio', th: 'ชาย' }], [/\b(?:female|woman|donna)\b/i, { en: 'female', it: 'femmina', th: 'หญิง' }]],
   };
   for (const [, alias, text] of turns) {
@@ -41,5 +42,5 @@ export function mockJSON(req: ChatRequest): unknown {
     const age = /(?:\b(?:I am|I'm|ho)\s+(\d{1,3})\s*(?:years old|anni)|อายุ\s*(\d{1,3})\s*ปี|\b(?:I am|I'm)\s+(?:a\s+)?(\d{1,3})(?:\s+year old|(?=,\s*(?:male|female)))|\b(?:uomo|donna) di (\d{1,3}) anni)/i.exec(safe);
     if (age) { const n = age[1] || age[2] || age[3] || age[4]; put('age', age[0], { en: `${n} years`, it: `${n} anni`, th: `${n} ปี` }); }
   }
-  return result;
+  return { ...result, ...mockPharmacy(turns.map(([, alias, text]) => ({ alias, text }))) };
 }

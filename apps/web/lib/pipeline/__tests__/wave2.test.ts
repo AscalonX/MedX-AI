@@ -136,11 +136,11 @@ describe('demo fixture replay', () => {
     vi.stubEnv('DEMO_SEED', value);
     expect((await seedRoute()).status).toBe(404); expect(getSessions()).toHaveLength(0); expect(getAudit()).toHaveLength(0);
   });
-  it('creates the eight-session mix through the real pipeline, once even with concurrent requests', async () => {
+  it('creates the eleven-session mix through the real pipeline, once even with concurrent requests', async () => {
     const [first, second] = await Promise.all([seedDemo(), seedDemo()]);
-    expect(first.created).toBe(8); expect(second.created).toBe(0); expect(second.reused).toBe(8);
-    expect(first.byStatus).toEqual({ escalated: 2, awaiting_review: 2, needs_human: 1, collecting: 2, approved: 1, taken_over: 0 });
-    expect(first.mismatches).toEqual([]); expect(getSessions()).toHaveLength(8);
+    expect(first.created).toBe(11); expect(second.created).toBe(0); expect(second.reused).toBe(11);
+    expect(first.byStatus).toEqual({ escalated: 2, awaiting_review: 2, needs_human: 2, collecting: 4, approved: 1, taken_over: 0 });
+    expect(first.mismatches).toEqual([]); expect(getSessions()).toHaveLength(11);
     expect(new Set(first.sessions.map(s => s.patientLang))).toEqual(new Set(['en', 'it', 'th']));
     expect(first.sessions.filter(s => s.status === 'escalated').every(s => s.summary?.modelCalls.length === 0)).toBe(true);
     for (const session of first.sessions) {
@@ -168,8 +168,8 @@ describe('demo fixture replay', () => {
     vi.stubEnv('MODEL_PROVIDER', 'amd'); vi.stubEnv('AMD_BASE_URL', 'https://synthetic.invalid/v1'); vi.stubEnv('AMD_API_KEY', 'synthetic-key'); vi.stubEnv('AMD_MODEL', 'seed-failure'); vi.stubEnv('AMD_JSON_SCHEMA', 'false');
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Synthetic failure', { status: 500, headers: { 'Retry-After': '3' } })));
     const result = await seedDemo();
-    expect(result.created).toBe(8); expect(result.byStatus.escalated).toBe(2); expect(result.byStatus.needs_human).toBe(6); expect(result.byStatus.approved).toBe(0);
-    expect(result.mismatches).toHaveLength(5);
+    expect(result.created).toBe(11); expect(result.byStatus.escalated).toBe(2); expect(result.byStatus.needs_human).toBe(9); expect(result.byStatus.approved).toBe(0);
+    expect(result.mismatches).toHaveLength(7);
     expect(result.sessions.filter(s => s.status === 'needs_human').every(s => s.summary?.abstainReason === 'provider_error' && s.summary.fields.every(f => f.status !== 'supported'))).toBe(true);
   });
 });

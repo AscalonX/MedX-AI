@@ -67,7 +67,7 @@ export async function chatJSON(req: ChatRequest): Promise<ChatResult> {
         const response = await fetch(`${process.env.AMD_BASE_URL.replace(/\/$/, '')}/chat/completions`, {
           method: 'POST', signal: controller.signal,
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.AMD_API_KEY}` },
-          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: req.step === 'red_flags' ? 400 : req.step === 'next_question' ? 250 : 1500, ...(!noFormat ? { response_format: format } : {}) }),
+          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: req.step === 'red_flags' ? 400 : req.step === 'next_question' ? 250 : 3000, ...(!noFormat ? { response_format: format } : {}) }),
         });
         if (!response.ok) {
           // Inspect gateway diagnostics only for compatibility; never persist response bodies.

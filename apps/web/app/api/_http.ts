@@ -9,7 +9,7 @@ export async function handle(fn: () => unknown | Promise<unknown>, status = 200)
   catch (error) {
     const known = error instanceof PipelineError;
     const body: ApiError = { error: known ? error.message : 'Unable to complete request', code: known ? error.code : 'internal' };
-    return json(body, body.code === 'not_found' ? 404 : body.code === 'bad_request' ? 400 : 500);
+    return json(body, known && error.status ? error.status : body.code === 'not_found' ? 404 : body.code === 'bad_request' ? 400 : 500);
   }
 }
 export async function body(request: Request): Promise<Record<string, unknown>> {

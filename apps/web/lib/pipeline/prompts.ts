@@ -13,7 +13,8 @@ RULES
 7. value_original is a short phrase in the patient's own language. value gives the same meaning in Thai (th), Italian (it) and English (en). Translate faithfully. Keep numbers, units and durations exactly. Do not add detail, severity words or medical terms the patient did not use.
 8. A negative statement is a value. "No allergies" gives allergies = "no known allergies" with its quote. If the patient says nothing about allergies, the field is null.
 9. certainty: "high" if the patient said it plainly; "medium" if the wording is vague, colloquial or a bare yes/no; "low" if you are unsure what they meant. If you would be guessing, output null instead.
-10. Output exactly one JSON object matching the schema. No markdown, no code fences, no comments, no extra keys.`;
+10. Also split medicines into medications, one entry per patient-named product (including supplements, remedies, unknown pills and stopped medicines). nameOriginal must be verbatim; dose, frequency and timing are verbatim when stated, otherwise null. Never treat an allergy mention as a medicine taken. Split stated allergens into allergies with verbatim allergenOriginal and reaction (null if unstated). Include a turn and exact supporting quote per entry, long enough to include all its stated attributes. Never invent generic names: code maps the dictionary. Explicit denial of allergies goes only into noKnownAllergies with turn and quote; otherwise null. Empty lists mean not stated. Repeated mentions of the same product are one entry; different brands remain separate.
+11. Output exactly one JSON object matching the schema. No markdown, no code fences, no comments, no extra keys.`;
 
 export const DEFINITIONS: Record<FieldKey, string> = {
   chief_complaint: 'the main problem the patient came for, in their terms.',
@@ -46,6 +47,9 @@ ${aliases(session).map(t => `<${t.role}_turn id="${t.alias}">${escapeTurn(t.text
 Return one JSON object with exactly this shape. Every field key must appear; use null when not stated.
 {
   "language_detected": "th" | "it" | "en" | "mixed" | "other",
+  "medications": [{ "nameOriginal": "<verbatim medicine>", "dose": null, "frequency": null, "timing": null, "turn": "T1", "quote": "<exact supporting patient words>" }],
+  "allergies": [{ "allergenOriginal": "<verbatim allergen>", "reaction": null, "turn": "T1", "quote": "<exact supporting patient words>" }],
+  "noKnownAllergies": null,
   "fields": {
     "<field_key>": null | {
       "value_original": "<short phrase, patient language>",

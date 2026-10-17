@@ -10,10 +10,12 @@ import { redFlagScreen } from './redFlagScreen';
 import { redact } from './redact';
 import { appendAudit, getAudit, getSession, getSessions, saveSession, withSessionLock } from './store';
 import { words } from './verify';
+import { mergePharmacy, mockPharmacy, pharmacyEntries } from './pharmacyExtraction';
+import { aliases } from './prompts';
 export type { ModelClient } from './llm';
 
 export class PipelineError extends Error {
-  constructor(message: string, public code: 'bad_request' | 'not_found') { super(message); }
+  constructor(message: string, public code: 'bad_request' | 'not_found', public status?: number) { super(message); }
 }
 export function createSession(patientLang: Lang, opts: { persist?: boolean; now?: () => string; demoCaseId?: string } = {}): IntakeSession {
   if (!['th', 'it', 'en'].includes(patientLang)) throw new PipelineError('Invalid patient language', 'bad_request');
@@ -61,10 +63,16 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
   const addFlags = (hits: IntakeSummary['redFlags']) => { for (const hit of hits) if (!summary.redFlags.some(f => f.ruleId === hit.ruleId)) summary.redFlags.push(hit); };
   const escalate = () => { session.status = 'escalated'; summary.nextQuestion = null; audit('red_flag', { ruleIds: summary.redFlags.map(r => r.ruleId) }); return session; };
   addFlags(checkRedFlags(session.turns));
-  if (summary.redFlags.length || input.status === 'escalated') return escalate();
+  if (summary.redFlags.length || input.status === 'escalated') {
+    // Safety escalation still makes zero model calls. A narrow dictionary-only
+    // pass keeps pharmacy data available for clinician review on this path.
+    mergePharmacy(session, pharmacyEntries(mockPharmacy(aliases(session).filter(t => t.role === 'patient')), session), previous);
+    return escalate();
+  }
   const ctx: EngineContext = { client: opts.client, trace: opts.trace, deadline, modelCalls: summary.modelCalls, log: (event, detail) => audit('summary_generated', { event, ...detail }) };
   const [extracted, modelFlags] = await Promise.all([extract(session, ctx), redFlagScreen(session, ctx)]);
   summary.fields = applyRequiredFields(preserveReviewed(previous?.fields || [], extracted.fields));
+  mergePharmacy(session, extracted.pharmacy || { medications: [], allergies: [], noKnownAllergiesEvidence: [] }, previous);
   // Redact model-proposed values too: an untrusted provider cannot reintroduce PII into storage.
   summary.fields = summary.fields.map(f => ({ ...f, value: f.value ? { th: redact(f.value.th).text, it: redact(f.value.it).text, en: redact(f.value.en).text } : null, valueOriginal: f.valueOriginal === null ? null : redact(f.valueOriginal).text }));
   addFlags(checkRedFlags(session.turns, summary.fields));

@@ -29,7 +29,7 @@ describe('AMD client transport', () => {
     const fetcher = vi.fn().mockResolvedValue(envelope('```json\n{"fields":{}}\n```')); vi.stubGlobal('fetch', fetcher);
     const result = await chatJSON(req); expect(result.data).toEqual({ fields: {} }); expect(result.call.ok).toBe(true); expect(result.call.provider).toBe('amd-tokenfactory'); expect(result.call.latencyMs).toBeGreaterThanOrEqual(0);
     const [url, init] = fetcher.mock.calls[0]; expect(url).toBe('https://synthetic.invalid/v1/chat/completions'); expect(init.headers.Authorization).toBe('Bearer synthetic-key-do-not-log');
-    expect(JSON.parse(init.body)).toMatchObject({ model: 'synthetic-model', temperature: 0, top_p: 1, max_tokens: 1500, stream: false, response_format: { type: 'json_object' } });
+    expect(JSON.parse(init.body)).toMatchObject({ model: 'synthetic-model', temperature: 0, top_p: 1, max_tokens: 3000, stream: false, response_format: { type: 'json_object' } });
   });
   it('retries without response_format after 400, recording both attempts', async () => {
     const fetcher = vi.fn().mockResolvedValueOnce(new Response('unsupported response_format', { status: 400 })).mockResolvedValueOnce(envelope('{"ok":true}')); vi.stubGlobal('fetch', fetcher);
@@ -76,7 +76,7 @@ describe('fault injection, six scenarios in all languages', () => {
     const failCall = { step: 'extract' as const, provider: 'mock' as const, model: 'fault-injection', latencyMs: 0, ok: false, error: 'Synthetic injected error' };
     const client: ModelClient = async req => {
       if (req.step === 'red_flags') return { data: { flags: [] }, call: { ...failCall, step: 'red_flags', ok: true } };
-      if (fault === 'quotes') return { data: { language_detected: lang, fields: Object.fromEntries(FIELD_KEYS.map(k => [k, { value_original: 'fabrication', value: { en: 'fabrication', it: 'invenzione', th: 'ข้อความสมมติ' }, certainty: 'high', evidence: [{ turn: 'T1', quote: 'totally absent evidence' }] }])) }, call: { ...failCall, ok: true } };
+      if (fault === 'quotes') return { data: { language_detected: lang, medications: [], allergies: [], noKnownAllergies: null, fields: Object.fromEntries(FIELD_KEYS.map(k => [k, { value_original: 'fabrication', value: { en: 'fabrication', it: 'invenzione', th: 'ข้อความสมมติ' }, certainty: 'high', evidence: [{ turn: 'T1', quote: 'totally absent evidence' }] }])) }, call: { ...failCall, ok: true } };
       if (fault === 'shape') return { data: { bad: true }, call: { ...failCall, ok: true } };
       if (fault === 'malformed') return { data: null, raw: 'broken JSON', failure: 'schema_error', call: failCall };
       if (fault === 'timeout') return new Promise(() => undefined);

@@ -5,6 +5,7 @@ import type { ChatRequest, ChatResult, ModelClient } from './llm';
 import { aliases, EXTRACTION_SYSTEM, extractionPrompt } from './prompts';
 import { languageOK, validateExtraction } from './schema';
 import { verifyDetailed, words } from './verify';
+import { pharmacyEntries } from './pharmacyExtraction';
 export interface EngineContext {
   client?: ModelClient;
   trace?: (e: { step: PipelineStep; raw: unknown }) => void;
@@ -77,5 +78,5 @@ export async function extract(session: IntakeSession, ctx: EngineContext) {
     if (!verified.length || !langOK) failed++;
     return { ...base, value: f.value, valueOriginal: f.value_original, evidence: verified.map(v => v.evidence), confidence: supported ? score : Math.round(Math.min(selfRating * 0.3, 0.3) * 100) / 100, status: supported ? 'supported' : 'unsupported' };
   });
-  return { fields, reason: undefined, proposed, failed, language: model.language_detected };
+  return { fields, reason: undefined, proposed, failed, language: model.language_detected, pharmacy: pharmacyEntries(model, session) };
 }

@@ -7,6 +7,9 @@ import en05 from '../../../../data/cases/EN-05.json';
 import it01 from '../../../../data/cases/IT-01.json';
 import it03 from '../../../../data/cases/IT-03.json';
 import th05 from '../../../../data/cases/TH-05.json';
+import med01 from '../../../../data/cases/MED-01.json';
+import med03 from '../../../../data/cases/MED-03.json';
+import med05 from '../../../../data/cases/MED-05.json';
 import { addTurn, createSession, PipelineError, review } from './pipeline';
 import { getAudit, getSession, withSessionLock } from './store';
 
@@ -21,6 +24,9 @@ const plans: SeedPlan[] = [
   { fixture: en03, expectedStatus: 'collecting' },
   { fixture: it03, expectedStatus: 'collecting' },
   { fixture: en02, expectedStatus: 'approved' },
+  { fixture: med01, expectedStatus: 'collecting' },
+  { fixture: med05, expectedStatus: 'collecting' },
+  { fixture: med03, expectedStatus: 'needs_human' },
 ];
 
 /** Synthetic fixture replay only; never reads gold answers or overrides the configured provider. */
