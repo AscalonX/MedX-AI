@@ -55,3 +55,9 @@ Only a definitive 404 clears the stored session. If the server cannot be reached
 - Done: the mascot shows only for awaiting_review, approved and taken_over; never for escalated (that redirects to the red flag) or needs_human.
 - Verified on web 375x812: requests carry `x-medx-client: patient`, GET uses `?view=patient`, stored session keys are exactly id, code, patientLang, status, turns, summary (summary keys nextQuestion, redFlags, abstained); routine run to Done, approval through the review API ticked the phone to Reviewed within one poll (`v9-mobile-patientview-done-reviewed.jpg`); Thai red flag and its restore after navigating to `/patient/` work. tsc and expo lint clean; `/patient` rebuilt.
 - Note: `POST /api/sessions` with the header still returns the empty session (createdAt/updatedAt only); the app ignores extra fields.
+
+## Addendum 6: branding
+- `app.json`: display name "MedX"; `icon` and iOS icon = `assets/brand/icon.png` (copy of docs/design/logo/app-icon-1024.png); Android adaptive icon = white mark foreground (`adaptive-foreground.png`, rendered at about half size for the safe zone, Chrome headless from mark-white.svg) on `#0A8077`; splash = white background with the colour mark (`splash-mark.png`, imageWidth 140); web favicon = `favicon.png` (favicon-32). Native icon and splash need `npx expo run:ios` (or a prebuild) to show; the web build picks up `<title>MedX` and the favicon.
+- Home header: the "M" tile is replaced by the lockup (`src/components/logo.tsx`, the colour lockup SVG via `SvgXml`, decorative). Staff long-press on it still resets.
+- w16-ux-final mobile item: `<html lang>` now follows the patient language on web (verified `th` in Thai). The other P1/P2 items in that report are engine/clinician side.
+- Verified on web 375x812 (`v10-mobile-logo-home-th.jpg`); tsc and expo lint clean; `/patient` rebuilt. Native icon/splash not rebuilt or viewed in this pass.

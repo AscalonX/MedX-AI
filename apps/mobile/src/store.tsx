@@ -71,6 +71,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(KEY, JSON.stringify({ session: s.session, lang: s.lang })).catch(() => {});
   }, [ready, s.session, s.lang]);
 
+  // Web: the document language follows the patient language (screen-reader voice, :lang rules).
+  useEffect(() => { if (Platform.OS === "web" && typeof document !== "undefined") document.documentElement.lang = s.lang; }, [s.lang]);
+
   const value: Ctx = {
     ...s, ready, restored, offline,
     set: (p) => { if ("session" in p) touched.current = true; setS((o) => ({ ...o, ...p })); },
