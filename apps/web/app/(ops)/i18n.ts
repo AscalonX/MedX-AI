@@ -7,6 +7,12 @@ export const languages: { lang: Lang; label: string }[] = [
 ];
 
 export const copy = {
+  greeting: { en: "Good afternoon", it: "Buon pomeriggio", th: "สวัสดีตอนบ่าย" },
+  headNurse: { en: "Head nurse", it: "Coordinatore infermieristico", th: "หัวหน้าพยาบาล" },
+  frontDesk: { en: "Today at the front desk", it: "Oggi all'accettazione", th: "ภาพรวมจุดรับผู้ป่วยวันนี้" },
+  pharmacy: { en: "Pharmacy", it: "Farmacia", th: "เภสัชกรรม" },
+  pharmacyAlerts: { en: "Pharmacy alerts open", it: "Avvisi farmaceutici aperti", th: "รายการยาเตือนที่รอตรวจสอบ" },
+  pharmacyNote: { en: "Recorded alerts without a pharmacist review", it: "Avvisi registrati senza revisione farmaceutica", th: "รายการเตือนที่บันทึกไว้และยังไม่มีเภสัชกรตรวจสอบ" },
   title: { en: "Clinic operations", it: "Attività della clinica", th: "ภาพรวมการดำเนินงานคลินิก" },
   today: { en: "Today", it: "Oggi", th: "วันนี้" },
   subtitle: { en: "Intake queue and system ledger", it: "Coda delle raccolte e registro del sistema", th: "คิวรับข้อมูลและบันทึกระบบ" },

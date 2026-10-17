@@ -1,51 +1,66 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Lang } from "@medx/shared";
-import { Button, LangMorph } from "@/components/ui";
-import { copy, languages, locale } from "../i18n";
+import { AppShell, Button, Card, GradientHero, Icon, LangMorph, type ShellRole } from "@/components/ui";
+import { copy, locale, statusCopy } from "../i18n";
 import { StatusChart, LatencyChart } from "./Charts";
-import { Blank, Escalations, Queue } from "./Queue";
-import { MetricStrip, ProviderPlate } from "./SystemLedger";
+import { Blank, duration, Escalations, Queue } from "./Queue";
+import { MetricStrip, ProviderPill, ProviderPlate } from "./SystemLedger";
 import { useOpsSnapshot } from "./useOpsSnapshot";
 import styles from "../ops.module.css";
 
 export function OpsDashboard() {
   const [lang, setLang] = useState<Lang>("en");
+  const router = useRouter();
   const { snapshot, error, refreshing, retry } = useOpsSnapshot();
   const date = snapshot ? new Intl.DateTimeFormat(locale[lang], { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Bangkok" }).format(snapshot.fetchedAt) : null;
   const time = snapshot ? new Intl.DateTimeFormat(locale[lang], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Asia/Bangkok" }).format(snapshot.fetchedAt) : null;
+  const changeRole = (role: ShellRole) => {
+    if (role === "ops") return;
+    router.push(role === "pharmacist" ? "/pharmacy" : "/review");
+  };
   return (
-    <main className={styles.desk} lang={lang}>
-      <div className={styles.masthead}><span className={styles.wordmark}>MedX Bridge</span><span><LangMorph text={copy.notice} lang={lang} /></span></div>
-      <article className={styles.sheet}>
-        <header className={styles.header}>
-          <div>
-            <p className={styles.eyebrow}><LangMorph text={copy.title} lang={lang} /></p>
-            <h1><LangMorph text={copy.today} lang={lang} />{date ? <>, <LangMorph text={date} lang={lang} /></> : <> <Blank label={copy.loading[lang]} /></>}</h1>
-            <p className={styles.subtitle}><LangMorph text={copy.subtitle} lang={lang} /></p>
+    <div className={styles.desk} lang={lang}>
+      <AppShell role="ops" onRoleChange={changeRole} greeting={<LangMorph text={copy.greeting} lang={lang} />} userName={copy.headNurse[lang]} lang={lang} onLangChange={setLang}
+        nav={[
+          { href: "/review", label: copy.queue[lang], icon: <Icon name="clipboard-list" size={18} /> },
+          { href: "/pharmacy", label: copy.pharmacy[lang], icon: <Icon name="pill" size={18} /> },
+          { href: "/ops", label: copy.title[lang], icon: <Icon name="activity" size={18} />, active: true },
+        ]}>
+        <div className={styles.board}>
+          <div className={styles.pageHeading}>
+            <div><h1><LangMorph text={copy.title} lang={lang} /></h1><p>{date ?? <Blank label={copy.loading[lang]} />}</p></div>
+            <div className={styles.sync}><Icon name="clock" size={16} /><span><LangMorph text={copy.lastUpdated} lang={lang} /> {time ?? <Blank label={copy.unavailable[lang]} />} <span lang="en">ICT</span></span></div>
           </div>
-          <div className={styles.headerControls}>
-            <div role="group" aria-label={copy.language[lang]} className={styles.languageControl}>
-              {languages.map(item => <Button key={item.lang} variant={lang === item.lang ? "primary" : "quiet"} aria-pressed={lang === item.lang} lang={item.lang} onClick={() => setLang(item.lang)}>{item.label}</Button>)}
-            </div>
-            <div className={styles.sync}><LangMorph text={copy.lastUpdated} lang={lang} /> {time ?? <Blank label={copy.unavailable[lang]} />} <span lang="en">ICT</span></div>
+          <p className={styles.disclosure}><Icon name="circle-check" size={16} /><LangMorph text={copy.notice} lang={lang} /></p>
+          <div className={styles.refreshBar}>
+            <p><LangMorph text={error && snapshot ? copy.stale : copy.live} lang={lang} /></p>
+            <Button variant="quiet" onClick={retry} disabled={refreshing}><LangMorph text={refreshing ? copy.refreshing : copy.refresh} lang={lang} /></Button>
           </div>
-        </header>
-        <div className={styles.refreshBar}>
-          <p><LangMorph text={error && snapshot ? copy.stale : copy.live} lang={lang} /></p>
-          <Button variant="quiet" onClick={retry} disabled={refreshing}><LangMorph text={refreshing ? copy.refreshing : copy.refresh} lang={lang} /><span aria-hidden="true"> ↻</span></Button>
+          {error && <Card className={styles.error} role="alert"><div><p><LangMorph text={copy.error} lang={lang} /></p>{snapshot && <p className={styles.note}><LangMorph text={copy.stale} lang={lang} /></p>}</div><Button onClick={retry} disabled={refreshing}><LangMorph text={copy.retry} lang={lang} /></Button></Card>}
+          {snapshot ? <>
+            <GradientHero title={<LangMorph text={copy.frontDesk} lang={lang} />}>
+              <div className={styles.heroTop}>
+                <div><p className={styles.heroNumber}>{new Intl.NumberFormat(locale[lang]).format(snapshot.metrics.sessionsToday)}</p><p><LangMorph text={copy.sessionsToday} lang={lang} /></p></div>
+                <ProviderPill provider={snapshot.metrics.provider} />
+              </div>
+              <dl className={styles.heroStats}>
+                <div><dt><LangMorph text={copy.escalations} lang={lang} /></dt><dd>{snapshot.metrics.escalations}</dd></div>
+                <div><dt><LangMorph text={statusCopy.awaiting_review} lang={lang} /></dt><dd>{snapshot.metrics.byStatus.awaiting_review}</dd></div>
+                <div><dt><LangMorph text={copy.medianReview} lang={lang} /></dt><dd>{snapshot.metrics.medianReviewSeconds === null ? <Blank label={copy.unavailable[lang]} /> : duration(snapshot.metrics.medianReviewSeconds, lang)}</dd></div>
+              </dl>
+            </GradientHero>
+            <MetricStrip metrics={snapshot.metrics} sessions={snapshot.sessions} lang={lang} />
+            <Escalations sessions={snapshot.sessions} lang={lang} />
+            <Queue sessions={snapshot.sessions} now={snapshot.fetchedAt} lang={lang} />
+            <div className={styles.charts}><StatusChart sessions={snapshot.sessions} lang={lang} /><LatencyChart sessions={snapshot.sessions} metrics={snapshot.metrics} lang={lang} /></div>
+            <ProviderPlate provider={snapshot.metrics.provider} lang={lang} />
+          </> : !error && <Card className={styles.loading} aria-busy="true" aria-label={copy.loading[lang]}><p role="status"><LangMorph text={copy.loading} lang={lang} /></p><div aria-hidden="true" className={styles.loadingLines}>{Array.from({ length: 6 }, (_, i) => <div key={i} className="mx-skeleton" />)}</div></Card>}
+          <footer className={styles.footer}><p><LangMorph text={copy.footer} lang={lang} /></p><span lang="en">MedX Bridge · ACT III</span></footer>
         </div>
-        {error && <div className={styles.error} role="alert"><div><p><LangMorph text={copy.error} lang={lang} /></p>{snapshot && <p className={styles.note}><LangMorph text={copy.stale} lang={lang} /></p>}</div><Button onClick={retry} disabled={refreshing}><LangMorph text={copy.retry} lang={lang} /></Button></div>}
-        {snapshot ? <>
-          <Escalations sessions={snapshot.sessions} lang={lang} />
-          <Queue sessions={snapshot.sessions} now={snapshot.fetchedAt} lang={lang} />
-          <MetricStrip metrics={snapshot.metrics} lang={lang} />
-          <div className={styles.charts}><StatusChart sessions={snapshot.sessions} lang={lang} /><LatencyChart sessions={snapshot.sessions} metrics={snapshot.metrics} lang={lang} /></div>
-          <ProviderPlate provider={snapshot.metrics.provider} lang={lang} />
-        </> : !error && <section className={styles.loading} aria-busy="true" aria-label={copy.loading[lang]}><p role="status"><LangMorph text={copy.loading} lang={lang} /></p><div aria-hidden="true" className={styles.loadingLines}>{Array.from({ length: 6 }, (_, i) => <div key={i}><span /><span /><span /></div>)}</div></section>}
-        <footer className={styles.footer}><p><LangMorph text={copy.footer} lang={lang} /></p><span lang="en">MedX Bridge · ACT III</span></footer>
-      </article>
-    </main>
+      </AppShell>
+    </div>
   );
 }

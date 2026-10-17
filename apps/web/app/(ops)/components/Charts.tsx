@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { IntakeSession, Lang, OpsMetrics } from "@medx/shared";
-import { LangMorph } from "@/components/ui";
+import { EmptyState, Icon, LangMorph } from "@/components/ui";
 import { copy, locale, statusCopy, stepCopy } from "../i18n";
 import { recordedCalls, statusOrder, stepOrder } from "../ops-data";
 import styles from "../ops.module.css";
@@ -15,7 +15,7 @@ export function StatusChart({ sessions, lang }: { sessions: IntakeSession[]; lan
       <ul className={styles.distributionRows}>{counts.map(({ status, count }) => (
         <li key={status}>
           <span className={status === "needs_human" ? "mx-pencil" : undefined}><LangMorph text={statusCopy[status]} lang={lang} /></span>
-          <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="0" x2="0" y2="20" stroke="var(--color-rule-strong)" /><rect x="0" y="5" width={count / maximum * 200} height="10" fill={status === "escalated" ? "var(--color-signal)" : "var(--color-ink-soft)"} /></svg>
+          <svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><rect x="0" y="4" width="200" height="12" rx="6" fill="var(--color-muted)" /><rect x="0" y="4" width={count / maximum * 200} height="12" rx="6" fill={status === "escalated" ? "var(--color-signal)" : status === "approved" || status === "taken_over" ? "var(--color-teal)" : "var(--color-ocean)"} /></svg>
           <span>{count}</span>
         </li>
       ))}</ul>
@@ -39,7 +39,7 @@ export function LatencyChart({ sessions, metrics, lang }: { sessions: IntakeSess
   return (
     <figure className={styles.latencyChart}>
       <figcaption><div className={styles.chartHeading}><h2><LangMorph text={copy.latency} lang={lang} /></h2><span>{calls.length} <LangMorph text={copy.calls} lang={lang} /></span></div><p className={styles.note}><LangMorph text={copy.latencyNote} lang={lang} /></p></figcaption>
-      {calls.length === 0 ? <p className={styles.emptyLine}><LangMorph text={copy.noCalls} lang={lang} /></p> : <>
+      {calls.length === 0 ? <EmptyState icon={<Icon name="activity" />} title={<LangMorph text={copy.noCalls} lang={lang} />} /> : <>
         <div className={styles.tableScroll} tabIndex={0} role="region" aria-label={copy.latency[lang]}>
           <div style={{ minWidth: plotWidth + 150 }}>
             <svg className={styles.latencySvg} viewBox={`0 0 ${plotWidth + 150} 166`} role="img" aria-label={copy.latency[lang]}>
@@ -49,7 +49,7 @@ export function LatencyChart({ sessions, metrics, lang }: { sessions: IntakeSess
               <line x1="0" y1="140" x2={plotWidth} y2="140" stroke="var(--color-rule-strong)" />
               <text x="0" y="160">0 ms</text>
               {percentileLines.map(p => <g key={p.name}>
-                <line x1="0" x2={plotWidth} y1={y(p.value)} y2={y(p.value)} stroke="var(--color-rule-strong)" strokeDasharray={p.name === "p95" ? "4 4" : undefined} />
+                <line x1="0" x2={plotWidth} y1={y(p.value)} y2={y(p.value)} stroke={p.name === "p95" ? "var(--color-ocean)" : "var(--color-teal)"} strokeDasharray={p.name === "p95" ? "4 4" : undefined} />
                 {!close && <text x={plotWidth + 8} y={y(p.value) + 4}>{p.name} {format(p.value)} ms</text>}
               </g>)}
               {close && <text x={plotWidth + 8} y={y(Math.max(p50!, p95!)) - 16}><tspan x={plotWidth + 8}>p50 {format(p50!)} ms</tspan><tspan x={plotWidth + 8} dy="16">p95 {format(p95!)} ms</tspan></text>}
@@ -57,8 +57,8 @@ export function LatencyChart({ sessions, metrics, lang }: { sessions: IntakeSess
                 const x = groupIndex * groupWidth + (index + 1) * groupWidth / (group.calls.length + 1);
                 return <g key={`${call.sessionId}-${call.index}`}>
                   <title>{`${call.code} · ${stepCopy[call.step][lang]} · ${format(call.latencyMs)} ms · ${call.ok ? copy.ok[lang] : copy.failed[lang]} · ${call.provider} · ${call.model}`}</title>
-                  {call.ok ? <line x1={x} x2={x} y1={y(call.latencyMs)} y2="140" stroke="var(--color-ink)" strokeWidth="3" strokeLinecap="square" /> : <rect x={x - 2} y={y(call.latencyMs)} width="4" height={140 - y(call.latencyMs)} fill="none" stroke="var(--color-graphite)" strokeDasharray="2 1" />}
-                  {call.latencyMs === 0 && <line x1={x - 2} x2={x + 2} y1="140" y2="140" stroke="var(--color-ink)" strokeWidth="2" />}
+                  {call.ok ? <rect x={x - 2} y={y(call.latencyMs)} width="4" height={140 - y(call.latencyMs)} rx="2" fill={groupIndex % 2 === 0 ? "var(--color-teal)" : "var(--color-ocean)"} /> : <rect x={x - 2} y={y(call.latencyMs)} width="4" height={140 - y(call.latencyMs)} rx="2" fill="none" stroke="var(--color-graphite)" strokeDasharray="2 1" />}
+                  {call.latencyMs === 0 && <line x1={x - 2} x2={x + 2} y1="140" y2="140" stroke="var(--color-ocean)" strokeWidth="2" strokeLinecap="round" />}
                 </g>;
               }))}
             </svg>
