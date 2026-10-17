@@ -14,7 +14,7 @@
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-0F1E2E?style=flat-square&logo=nextdotjs&logoColor=white">
   <img alt="Expo SDK 58" src="https://img.shields.io/badge/Expo-SDK%2058-0F1E2E?style=flat-square&logo=expo&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-1A5FC4?style=flat-square&logo=typescript&logoColor=white">
-  <img alt="Tests 1,863 passing" src="https://img.shields.io/badge/tests-1%2C863%20passing-0A8077?style=flat-square">
+  <img alt="Tests 1,872 passing" src="https://img.shields.io/badge/tests-1%2C872%20passing-0A8077?style=flat-square">
   <img alt="Gemma on AMD (Token Factory)" src="https://img.shields.io/badge/Gemma-AMD%20Token%20Factory%20(designed)-1A5FC4?style=flat-square">
   <img alt="AMD Developer Hackathon ACT III, Track 2" src="https://img.shields.io/badge/AMD%20ACT%20III-Track%202%20Health-0F1E2E?style=flat-square">
 </p>
@@ -52,6 +52,7 @@ One patient, four roles, one trail back to the patient's own words.
 | **3. Doctor** | Doctor-only "considerations" for clinical judgement (labelled "not a diagnosis", with guideline links, from a fixed curated list); an evidence-linked draft note the doctor signs; orders with deterministic checks (allergy, interaction, duplicate, pregnancy, dose range) and a written reason to override a high alert. |
 | **4. Pharmacist** | Verifies or returns each prescription with a note, with the doctor's reason in view, and reconciles the medicines the patient named (brand to generic). |
 | Clinic manager | Ops dashboard: queue by urgency, escalations, abstain rate, and an honest model label. |
+| **Every case** | **Case trace**: the executed graph of how this case was handled (rule checks, model calls, skipped steps, human decisions) with evidence per step, JSON export and a deterministic replay check (audit digest). A red-flag case stops before any model call; a medication case branches into the prescribing checks. |
 
 <p align="center"><img src="docs/design/logo/mark-color.svg" alt="" width="40"> &nbsp; Fin the dolphin is the mascot: a helper that listens closely, never the decider.</p>
 
@@ -143,7 +144,7 @@ Also: `AMD_JSON_SCHEMA=false` disables `response_format` json_schema if an endpo
 ## Tests and evaluation
 
 ```bash
-npm --prefix apps/web test      # vitest: 1,863 tests in 22 files
+npm --prefix apps/web test      # vitest: 1,872 tests in 23 files
 node docs/clinical/check-redflags.mjs   # 175 red-flag reference tests (also check-medrules, check-consultrules)
 cd apps/web && MODEL_PROVIDER=mock npx vite-node ../../eval/run.ts -- --split all
 ```

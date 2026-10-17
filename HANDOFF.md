@@ -19,7 +19,7 @@ cd apps/web && MODEL_PROVIDER=mock DEMO_SEED=1 DEMO_AUTOSEED=1 DEMO_TOKEN=pick-a
 หน้าหลัก: `/` · `/review` (พยาบาล/หมอ) · `/review/<id>/consult?mode=nurse|doctor` · `/review/<id>/vitals` · `/review/<id>/orders` · `/pharmacy` · `/ops` · `/patient/` (แอปผู้ป่วยเวอร์ชันเว็บ)
 แอปผู้ป่วย native: `cd apps/mobile && npm install && npx expo start` (ดู `docs/DEMO.md`)
 Docker: `docker build -f apps/web/Dockerfile -t medx . && docker run -p 3000:3000 -e MODEL_PROVIDER=mock -e DEMO_SEED=1 -e DEMO_AUTOSEED=1 medx`
-เทสต์: `npm --prefix apps/web test` (1,863 tests) · กฎทางคลินิก: `node docs/clinical/check-redflags.mjs` (และ check-medrules / check-consultrules)
+เทสต์: `npm --prefix apps/web test` (1,872 tests) · กฎทางคลินิก: `node docs/clinical/check-redflags.mjs` (และ check-medrules / check-consultrules)
 
 ## 3. สิ่งที่ยังต้องทำก่อนส่ง (เรียงตามความสำคัญ)
 | # | งาน | ใคร | วิธี |

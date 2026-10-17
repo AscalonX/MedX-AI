@@ -1,4 +1,4 @@
-# Progress board — Sat 17 Oct 2026, 17:45 ICT
+# Progress board — Sat 17 Oct 2026, 23:00 ICT
 
 ## Status: feature-complete on the mock model; blocked only on the AMD key for real Gemma numbers
 
@@ -8,7 +8,7 @@
 | Clinician /review | done: evidence highlight, approve/edit/take over, receipts, emergency alerts, spoken/typed tags | docs/reports/w8-clinician-web.md |
 | Pharmacist /pharmacy | done: reconciliation, med alerts (59 drugs, 18 interactions), server-enforced sign-off | docs/reports/w8-pharmacist-web.md |
 | Ops /ops | done: "what needs you now", metrics, honest mock labels | docs/reports/w8-ops-dashboard.md |
-| Engine | 1,119 tests (14 files, 3× clean runs), red flags 175/175, med rules 194/194 | docs/reports/w10-ai-engineer.md |
+| Engine | 1,872 tests (23 files, 2× clean runs); red flags 175/175, med rules 204/204, consult rules 80/80; consult assistant, vitals/NEWS2, orders + prescribing checks, Case trace | docs/reports/w18-engine.md |
 | Reviews | Claude→Codex engine review, Codex→Claude UI reviews ×2, QA bug hunt, UX audit ×2, clinical safety review (CONDITIONAL_PASS → must-fixes done), Codex verification 22/25 then remaining fixed | docs/reports/w6-engine-review.md, w9-codex-final-review.md, w10-codex-verify.md, w7-qa-bugs.md, w8-ux-reaudit.md, w9-clinical-safety-review.md |
 | Submission | deck PDF, cover v2, SUBMISSION.md, VIDEO-SCRIPT.md, SAFETY.md, README, Docker | pitch/, README.md |
 | Public repo | https://github.com/KingPhuripol/MedX-AI | — |
