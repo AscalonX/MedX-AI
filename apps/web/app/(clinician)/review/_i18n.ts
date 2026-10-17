@@ -110,8 +110,8 @@ export const T = {
   removeValue: L("Remove this value and its evidence?", "ลบค่านี้และหลักฐานของมัน?", "Rimuovere questo valore e la sua prova?"),
   rejectValue: L("Reject value", "ปฏิเสธค่า", "Rifiuta valore"),
   keep: L("Keep", "เก็บไว้", "Mantieni"),
-  ackFirst: L("Acknowledge the red flag before approving.", "โปรดรับทราบสัญญาณอันตรายก่อนอนุมัติ", "Prenda in carico il segnale prima di approvare."),
-  ackFirstShort: L("Acknowledge the red flag first.", "โปรดรับทราบสัญญาณอันตรายก่อน", "Prima prenda in carico il segnale."),
+  ackFirst: L("Acknowledge the red flag before approving.", "โปรดรับทราบสัญญาณอันตรายก่อนอนุมัติ", "Confermi il segnale prima di approvare."),
+  ackFirstShort: L("Acknowledge the red flag first.", "โปรดรับทราบสัญญาณอันตรายก่อน", "Prima confermi il segnale."),
   approveSupported: L("Approve supported fields", "อนุมัติช่องที่มีหลักฐาน", "Approva i campi supportati"),
   takeOverIntake: L("Take over intake", "รับช่วงการรับข้อมูล", "Gestisco io"),
   takeOver: L("Take over", "รับช่วง", "Gestisco io"),
@@ -163,6 +163,7 @@ export const T = {
   step_translate: L("translate", "แปล", "traduzione"),
   step_next_question: L("next question", "คำถามถัดไป", "domanda successiva"),
   disclaimerShort: L("Research prototype. Supports clinicians; does not diagnose.", "ต้นแบบงานวิจัย ช่วยบุคลากร ไม่วินิจฉัย", "Prototipo di ricerca. Supporta i clinici; non diagnostica."),
+  takeOverApproved: L("An approved intake cannot be taken over.", "รายการที่อนุมัติแล้วรับช่วงไม่ได้", "Un'accettazione approvata non può essere presa in gestione."),
 } satisfies Record<string, Localized>;
 
 export type TKey = keyof typeof T;

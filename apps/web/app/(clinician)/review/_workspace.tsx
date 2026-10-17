@@ -29,6 +29,21 @@ export function Workspace({ id }: { id: string }) {
   const headRef = useRef<HTMLDivElement>(null);
   const [live, setLive] = useState("");
   useEffect(() => { markOpened(id); }, [id, markOpened]);
+  // When the last edit or approval completes the case, bring the receipt into view, focus it and announce it.
+  const status = data?.session.status;
+  const prevStatus = useRef<string | undefined>(undefined);
+  const code = data?.session.code ?? "";
+  useEffect(() => {
+    if (status === "approved" && prevStatus.current && prevStatus.current !== "approved") {
+      const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      setTimeout(() => {
+        headRef.current?.scrollIntoView({ block: "start", behavior: reduce ? "auto" : "smooth" });
+        headRef.current?.focus({ preventScroll: true });
+      }, 80);
+      setLive(`${tr("approvedReceipt", lang)} · ${code}`);
+    }
+    prevStatus.current = status;
+  }, [status, lang, code]);
 
   const load = useCallback(async () => {
     if (busyRef.current) return;
@@ -45,7 +60,7 @@ export function Workspace({ id }: { id: string }) {
 
   useEffect(() => {
     gen.current++;
-    setData(null); setLive(""); setSel(null); setEditing(null); setPrev({}); setActionError(null); setAuditOpen(false); setLoadError(null);
+    prevStatus.current = undefined; setData(null); setLive(""); setSel(null); setEditing(null); setPrev({}); setActionError(null); setAuditOpen(false); setLoadError(null);
     scrollRef.current?.scrollTo({ top: 0 });
     load();
     const t = setInterval(load, 5000);
@@ -345,6 +360,7 @@ export function Workspace({ id }: { id: string }) {
         </div>
         <ActionBar
           lang={lang}
+          approved={session.status === "approved"}
           busy={busy}
           canAct={canAct}
           closed={closed}
@@ -594,8 +610,8 @@ function Provenance({ s, lang }: { s: IntakeSession; lang: Lang }) {
   );
 }
 
-function ActionBar({ lang, busy, canAct, closed, blocked, supportedCount, left, onJump, stopped, error, audit, open, onToggle, onApproveAll, onTakeover }: {
-  lang: Lang; busy: boolean; canAct: boolean; closed: boolean; blocked: boolean; supportedCount: number; stopped: boolean; left: { key: string; label: string }[]; onJump: (k: string) => void; error: string | null; audit: AuditEvent[];
+function ActionBar({ lang, approved, busy, canAct, closed, blocked, supportedCount, left, onJump, stopped, error, audit, open, onToggle, onApproveAll, onTakeover }: {
+  lang: Lang; approved: boolean; busy: boolean; canAct: boolean; closed: boolean; blocked: boolean; supportedCount: number; stopped: boolean; left: { key: string; label: string }[]; onJump: (k: string) => void; error: string | null; audit: AuditEvent[];
   open: boolean; onToggle: () => void; onApproveAll: () => void; onTakeover: (reason: string) => void;
 }) {
   const [taking, setTaking] = useState(false);
@@ -651,7 +667,8 @@ function ActionBar({ lang, busy, canAct, closed, blocked, supportedCount, left, 
             <Button variant="primary" icon={<Icon name="circle-check" size={16} />} disabled={busy || !canAct || supportedCount === 0 || blocked} onClick={onApproveAll}>
               {tr("approveSupported", lang)}{supportedCount > 0 ? ` (${supportedCount})` : ""}
             </Button>
-            <Button disabled={busy || closed} onClick={() => setTaking(true)}>{tr("takeOverIntake", lang)}</Button>
+            <Button disabled={busy || closed || approved} aria-describedby={approved ? "takeover-why" : undefined} title={approved ? tr("takeOverApproved", lang) : undefined} onClick={() => setTaking(true)}>{tr("takeOverIntake", lang)}</Button>
+            {approved && <span id="takeover-why" className="sr-only">{tr("takeOverApproved", lang)}</span>}
             {blocked && <span className="text-small font-semibold text-warn">{tr("ackFirstShort", lang)}</span>}
           </>
         )}

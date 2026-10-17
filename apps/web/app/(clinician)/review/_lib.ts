@@ -100,7 +100,12 @@ export const STATUS_LABEL: Record<SessionStatus, string> = {
 export function auditLine(e: AuditEvent, lang: Lang): string {
   const p = e.payload as Record<string, unknown>;
   const acts = (x: unknown) =>
-    Array.isArray(x) ? x.map((a: { fieldKey?: string; ruleId?: string; action?: string }) => `${a.action} ${a.fieldKey ?? a.ruleId}`).join(", ") : "";
+    Array.isArray(x)
+      ? x.map((a: { fieldKey?: FieldKey; ruleId?: string; action?: string }) => {
+          const verb = a.action === "approve" ? tr("approve", lang) : a.action === "edit" ? tr("edit", lang) : a.action === "reject" ? tr("reject", lang) : a.action === "acknowledge" ? tr("acknowledged", lang) : a.action === "false_alarm" ? tr("falseAlarm", lang) : "";
+          return `${verb} ${a.fieldKey ? FIELD_LABEL[a.fieldKey]?.[lang] ?? "" : a.ruleId ?? ""}`.trim();
+        }).join(", ")
+      : "";
   switch (e.type) {
     case "review": return `${tr("au_review", lang)}: ${acts(p.actions)}`;
     case "red_flag_review": return `${tr("au_flag_review", lang)}: ${acts(p.actions)}`;

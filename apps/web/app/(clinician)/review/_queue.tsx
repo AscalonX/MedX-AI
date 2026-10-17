@@ -144,11 +144,13 @@ export function QueueCard({ activeId, compact = false }: { activeId?: string; co
     <Card padded={false} className={`flex min-h-0 flex-col ${compact ? "h-full" : ""}`} aria-label={tr("queue", lang)} role="region">
       <div className="flex flex-wrap items-center gap-2 px-4 pb-3 pt-4">
         <h2 className="mr-auto text-lead font-bold">{tr("queue", lang)}</h2>
+        <span className="flex flex-wrap items-center gap-2 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 [&_button:focus-visible]:outline-ocean">
         {(["all", "escalated", "review"] as Filter[]).map((f) => (
           <Pill key={f} active={filter === f} onClick={() => setFilter(f)}>
             {tr(f === "all" ? "filterAll" : f === "escalated" ? "filterEscalated" : "filterReview", lang)}
           </Pill>
         ))}
+        </span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">{body()}</div>
     </Card>

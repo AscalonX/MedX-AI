@@ -23,3 +23,8 @@ Screens: `docs/reports/screens/v4-review-{landing,index,escalated-th,awaiting,ap
 ## Risks
 - "New emergency" counts only cases that appear after the page loads; cases already open at load do not badge the title.
 - Server holds ~150 QA sessions; th/it strings still need native review.
+
+## Re-audit fix pass
+- P1 receipt: when the status turns approved (including via the last field edit) the receipt scrolls to the top (no smooth scroll under reduced motion), takes focus and is announced ("Intake approved · B-004"). Verified live by editing all 6 required fields on B-004.
+- P2: "Take over intake" is disabled once approved, with `title` and `aria-describedby` text; audit trail uses localized field labels and verbs ("Edit Chief complaint"); Italian blocked reasons now read "Prima confermi il segnale." / "Confermi il segnale prima di approvare."; the queue filter pills get an ocean 2px outline with offset on focus (class-only, via wrapper; not visually checked with a keyboard).
+- Not done: "7 fields approved" still counts edits (kept; says "fields approved").
