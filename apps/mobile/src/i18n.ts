@@ -9,11 +9,22 @@ type S = {
   doneTitle: string; doneCode: string; doneNext1: string; doneNext2: string; doneNext3: string; newIntake: string;
   humanTitle: string; humanBody: string;
   deskTitle: (code: string) => string; deskBody: string; retry: string; deskNoCode: string;
+  tabHome: string; tabVisit: string; tabHelp: string; tabNew: string; hello: string; greetSub: string; heroTitle: string; heroSub: string; start: string;
+  howTitle: string; how: [string, string][]; privacyTitle: string; pill: (n: number) => string;
+  chipNone: string; chipToday: string; chipYesterday: string; chipWeek: string; chipSeverityA11y: (n: number) => string;
+  helpTitle: string; helpBody: string; helpEmergency: string; stepSent: string; stepReview: string; stepReviewed: string; nextTitle: string; sentTitle: string;
   rfShow: string; atDesk: string; atDeskDone: string; rfCode: string;
 };
 
 export const STR: Record<Lang, S> = {
   en: {
+    tabHome: "Home", tabVisit: "My visit", tabHelp: "Help", tabNew: "New intake", hello: "Hello", greetSub: "Welcome to MedX Bridge",
+    heroTitle: "Tell us what brings you in today", heroSub: "A nurse will read it before your visit.", start: "Start",
+    howTitle: "How it works", how: [["Describe", "Write in your own words."], ["A nurse reviews", "Before your visit."], ["You're called", "At the desk."]],
+    privacyTitle: "Please note", pill: (n) => `${n} of up to 3`,
+    chipNone: "None", chipToday: "Since today", chipYesterday: "Since yesterday", chipWeek: "This week", chipSeverityA11y: (n) => `${n} out of 10`,
+    helpTitle: "Need help now?", helpBody: "Go to the front desk and show your code to the staff.", helpEmergency: "Not at the clinic? Call 1669 in Thailand or 112 in Europe.",
+    stepSent: "Sent", stepReview: "Being reviewed", stepReviewed: "Reviewed", nextTitle: "What happens next", sentTitle: "Your answers are in",
     pickTitle: "Tell us why you came in today.",
     pickSub: "A nurse will read it before your visit.",
     privacy: "Demo with made-up cases. Please do not type real names, phone numbers or ID numbers. A nurse reads what you write.",
@@ -35,6 +46,13 @@ export const STR: Record<Lang, S> = {
     rfShow: "Show this screen to the staff at the desk.", atDesk: "I'm at the desk", atDeskDone: "A nurse is coming to you. Please keep this screen open.", rfCode: "Your code",
   },
   it: {
+    tabHome: "Home", tabVisit: "Visita", tabHelp: "Aiuto", tabNew: "Nuova scheda", hello: "Ciao", greetSub: "Benvenuto in MedX Bridge",
+    heroTitle: "Ci dica perché è venuto oggi", heroSub: "Un infermiere lo leggerà prima della visita.", start: "Inizia",
+    howTitle: "Come funziona", how: [["Descriva", "Scriva con parole sue."], ["Lo legge un infermiere", "Prima della visita."], ["La chiamano", "Al banco."]],
+    privacyTitle: "Da sapere", pill: (n) => `${n} di max 3`,
+    chipNone: "Nessuno", chipToday: "Da oggi", chipYesterday: "Da ieri", chipWeek: "Questa settimana", chipSeverityA11y: (n) => `${n} su 10`,
+    helpTitle: "Serve aiuto adesso?", helpBody: "Vada al banco e mostri il suo codice al personale.", helpEmergency: "Non è in clinica? Chiami il 1669 in Thailandia o il 112 in Europa.",
+    stepSent: "Inviato", stepReview: "In revisione", stepReviewed: "Letto", nextTitle: "Cosa succede ora", sentTitle: "Le sue risposte sono arrivate",
     pickTitle: "Ci dica perché è venuto oggi.",
     pickSub: "Un infermiere lo leggerà prima della visita.",
     privacy: "Demo con casi inventati. Non scriva nomi, numeri di telefono o documenti reali. Un infermiere legge ciò che scrive.",
@@ -56,6 +74,13 @@ export const STR: Record<Lang, S> = {
     rfShow: "Mostri questa schermata al personale al banco.", atDesk: "Sono al banco", atDeskDone: "Un infermiere sta venendo da lei. Tenga aperta questa schermata.", rfCode: "Il suo codice",
   },
   th: {
+    tabHome: "หน้าแรก", tabVisit: "การมาพบ", tabHelp: "ช่วยเหลือ", tabNew: "เริ่มแบบฟอร์มใหม่", hello: "สวัสดี", greetSub: "ยินดีต้อนรับสู่ MedX Bridge",
+    heroTitle: "บอกเราว่าวันนี้คุณมาด้วยเรื่องอะไร", heroSub: "พยาบาลจะอ่านคำตอบของคุณก่อนเรียกตรวจ", start: "เริ่ม",
+    howTitle: "ทำงานอย่างไร", how: [["เล่าอาการ", "เขียนด้วยคำพูดของคุณเอง"], ["พยาบาลตรวจดู", "ก่อนเรียกตรวจ"], ["เรียกชื่อคุณ", "ที่เคาน์เตอร์"]],
+    privacyTitle: "โปรดทราบ", pill: (n) => `${n} จากไม่เกิน 3`,
+    chipNone: "ไม่มี", chipToday: "ตั้งแต่วันนี้", chipYesterday: "ตั้งแต่เมื่อวาน", chipWeek: "สัปดาห์นี้", chipSeverityA11y: (n) => `${n} จาก 10`,
+    helpTitle: "ต้องการความช่วยเหลือตอนนี้?", helpBody: "ไปที่เคาน์เตอร์และแสดงรหัสของคุณให้เจ้าหน้าที่", helpEmergency: "ไม่ได้อยู่ที่คลินิก? โทร 1669 ในประเทศไทย หรือ 112 ในยุโรป",
+    stepSent: "ส่งแล้ว", stepReview: "กำลังตรวจดู", stepReviewed: "ตรวจดูแล้ว", nextTitle: "ขั้นตอนต่อไป", sentTitle: "ได้รับคำตอบของคุณแล้ว",
     pickTitle: "บอกเราว่าวันนี้คุณมาด้วยเรื่องอะไร",
     pickSub: "พยาบาลจะอ่านคำตอบของคุณก่อนเรียกตรวจ",
     privacy: "นี่คือเดโมที่ใช้กรณีสมมติ กรุณาอย่าพิมพ์ชื่อ เบอร์โทร หรือเลขบัตรจริง พยาบาลจะอ่านสิ่งที่คุณเขียน",

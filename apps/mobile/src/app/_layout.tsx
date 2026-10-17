@@ -1,23 +1,21 @@
-import { IBMPlexSans_400Regular, IBMPlexSans_500Medium, IBMPlexSans_600SemiBold } from "@expo-google-fonts/ibm-plex-sans";
-import { IBMPlexSansThaiLooped_400Regular, IBMPlexSansThaiLooped_500Medium, IBMPlexSansThaiLooped_600SemiBold } from "@expo-google-fonts/ibm-plex-sans-thai-looped";
-import { Newsreader_400Regular, Newsreader_500Medium, Newsreader_600SemiBold } from "@expo-google-fonts/newsreader";
-import { NotoSerifThai_400Regular, NotoSerifThai_500Medium, NotoSerifThai_600SemiBold } from "@expo-google-fonts/noto-serif-thai";
 import { color } from "@medx/shared";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { View } from "react-native";
+import { TabBar } from "@/components/tabbar";
 import { StoreProvider } from "@/store";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function Root() {
+  // Exact names SCBXBeta2-{Light,Regular,Bold}: also what tokens' mobileFont() returns.
   const [loaded, error] = useFonts({
-    IBMPlexSans_400Regular, IBMPlexSans_500Medium, IBMPlexSans_600SemiBold,
-    IBMPlexSansThaiLooped_400Regular, IBMPlexSansThaiLooped_500Medium, IBMPlexSansThaiLooped_600SemiBold,
-    Newsreader_400Regular, Newsreader_500Medium, Newsreader_600SemiBold,
-    NotoSerifThai_400Regular, NotoSerifThai_500Medium, NotoSerifThai_600SemiBold,
+    "SCBXBeta2-Light": require("../../assets/fonts/SCBXBeta2-Light.otf"),
+    "SCBXBeta2-Regular": require("../../assets/fonts/SCBXBeta2-Regular.otf"),
+    "SCBXBeta2-Bold": require("../../assets/fonts/SCBXBeta2-Bold.otf"),
   });
   const ready = loaded || !!error; // a font failure must never block the patient
   useEffect(() => { if (ready) SplashScreen.hideAsync(); }, [ready]);
@@ -25,7 +23,10 @@ export default function Root() {
   return (
     <StoreProvider>
       <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false, animation: "none", contentStyle: { backgroundColor: color.paper }, gestureEnabled: false }} />
+      <View style={{ flex: 1, backgroundColor: color.paper }}>
+        <Stack screenOptions={{ headerShown: false, animation: "none", contentStyle: { backgroundColor: color.paper }, gestureEnabled: false }} />
+        <TabBar />
+      </View>
     </StoreProvider>
   );
 }

@@ -1,10 +1,11 @@
-import { color, duration, easing, space } from "@medx/shared";
+import { color, duration, easing, gradient, radius, space } from "@medx/shared";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { AccessibilityInfo, Alert, Platform, Pressable, useWindowDimensions, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from "react-native-reanimated";
-import { Button, Page, T } from "@/components/ui";
+import { LinearGradient } from "expo-linear-gradient";
+import { Page, Pill, T } from "@/components/ui";
 import { STR } from "@/i18n";
 import { useStore } from "@/store";
 
@@ -44,19 +45,26 @@ export default function RedFlag() {
   const [head, rest] = splitFirst(message, lang === "th");
 
   return (
-    <Animated.View style={[{ flex: 1, backgroundColor: color.signal }, slide]} accessibilityRole="alert" accessible={false}>
-      <Page bg={color.signal}>
-        <T lang={lang} token="display" family="serif" weight="semibold" tone="onSignal" accessibilityRole="header">{head}</T>
-        {!!rest && <T lang={lang} token="lead" tone="onSignal" style={{ marginTop: space[4] }}>{rest}</T>}
-        <View style={{ height: space[8] }} />
-        <T lang={lang} token="small" tone="onSignal">{s.rfCode}</T>
-        <Pressable onLongPress={endIntake} delayLongPress={2000} accessible={false}>
-          <T lang="en" token="code" weight="semibold" tone="onSignal" accessible accessibilityLabel={`${s.rfCode} ${session.code.split("").join(" ")}`} style={{ marginVertical: space[2] }}>{session.code}</T>
-        </Pressable>
-        <T lang={lang} tone="onSignal" style={{ marginTop: space[3] }}>{atDesk ? s.atDeskDone : s.rfShow}</T>
-        <View style={{ flexGrow: 1, minHeight: space[8] }} />
-        {!atDesk && <Button lang={lang} label={s.atDesk} onSignal onPress={() => setAtDesk(true)} />}
-      </Page>
+    <Animated.View style={[{ flex: 1 }, slide]} accessibilityRole="alert" accessible={false}>
+      <LinearGradient colors={[gradient.signal.from, gradient.signal.to]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
+        <Page bg="transparent" tabs={false}>
+          <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: color.sheet, alignItems: "center", justifyContent: "center", marginBottom: space[5] }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <T lang="en" token="title" weight="bold" tone="signal">!</T>
+          </View>
+          <T lang={lang} token="display" weight="bold" tone="onSignal" accessibilityRole="header">{head}</T>
+          {!!rest && <T lang={lang} token="lead" tone="onSignal" style={{ marginTop: space[4] }}>{rest}</T>}
+          <View style={{ height: space[6] }} />
+          <Pressable onLongPress={endIntake} delayLongPress={2000} accessible={false}>
+            <View accessible accessibilityLabel={`${s.rfCode} ${session.code.split("").join(" ")}`} style={{ backgroundColor: color.sheet, borderRadius: radius.hero, padding: space[5] }}>
+              <T lang={lang} token="small" tone="inkSoft">{s.rfCode}</T>
+              <T lang="en" token="code" weight="bold" tone="ink">{session.code}</T>
+            </View>
+          </Pressable>
+          <T lang={lang} tone="onSignal" style={{ marginTop: space[5] }}>{atDesk ? s.atDeskDone : s.rfShow}</T>
+          <View style={{ flexGrow: 1, minHeight: space[8] }} />
+          {!atDesk && <Pill lang={lang} variant="white" tone="signal" label={s.atDesk} onPress={() => setAtDesk(true)} />}
+        </Page>
+      </LinearGradient>
     </Animated.View>
   );
 }

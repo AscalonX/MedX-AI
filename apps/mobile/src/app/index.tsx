@@ -1,65 +1,83 @@
-import { color, LANGS, layout, mobileFont, space, type Lang } from "@medx/shared";
+import { color, gradient, radius, space } from "@medx/shared";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { createSession } from "@/api";
-import { Page, Rule, T, Button } from "@/components/ui";
-import { LANG_NAME, STR } from "@/i18n";
+import { Card, GradientHero, Page, Pill, Segmented, T } from "@/components/ui";
+import { STR } from "@/i18n";
 import { useStore } from "@/store";
 
-export default function Pick() {
-  const { set, reset } = useStore();
-  const [busy, setBusy] = useState<Lang | null>(null);
-  const [failed, setFailed] = useState<Lang | null>(null);
-  const en = STR.en;
+export default function Home() {
+  const { lang, set, reset } = useStore();
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const s = STR[lang];
 
-  async function choose(l: Lang) {
-    setFailed(null); setBusy(l); reset(); set({ lang: l });
+  async function start() {
+    setFailed(false); setBusy(true); reset();
     try {
-      set({ session: await createSession(l) });
+      set({ session: await createSession(lang) });
       router.replace("/intake");
     } catch {
-      setFailed(l);
+      setFailed(true);
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   }
 
   return (
     <Page>
-      <T lang="en" token="title" family="serif" weight="semibold">MedX Bridge</T>
-      <View style={{ height: space[8] }} />
-      <T lang="en" token="question" family="serif" weight="medium">{en.pickTitle}</T>
-      <View style={{ height: space[3] }} />
-      <T lang="en" tone="inkSoft">{en.pickSub}</T>
-      <View style={{ height: space[8] }} />
-      <Rule strong />
-      {LANGS.map((l) => (
-        <View key={l}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={LANG_NAME[l]}
-            accessibilityHint={STR[l].pickA11y(LANG_NAME[l])}
-            disabled={busy !== null}
-            onPress={() => choose(l)}
-            style={({ pressed }) => ({ minHeight: layout.hitTarget + space[3], flexDirection: "row", alignItems: "center", justifyContent: "space-between", transform: [{ translateY: pressed ? 1 : 0 }] })}
-          >
-            <T lang={l} token="lead" weight="medium">{LANG_NAME[l]}</T>
-            {busy === l ? <ActivityIndicator color={color.inkSoft} /> : <T lang="en" token="lead" tone="inkSoft" importantForAccessibility="no">{">"}</T>}
-          </Pressable>
-          <Rule strong />
+      <View style={{ flexDirection: "row", alignItems: "center", gap: space[3] }}>
+        <LinearGradient colors={[gradient.primary.from, gradient.primary.to]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" }}>
+          <T lang="en" token="body" weight="bold" tone="onPrimary" importantForAccessibility="no">M</T>
+        </LinearGradient>
+        <T lang="en" token="lead" weight="bold">MedX Bridge</T>
+      </View>
+      <View style={{ height: space[5] }} />
+      <T lang={lang} token="body" tone="inkSoft">{s.hello}</T>
+      <T lang={lang} token="title" weight="bold" accessibilityRole="header">{s.greetSub}</T>
+      <View style={{ height: space[4] }} />
+      <Segmented value={lang} onChange={(l) => set({ lang: l })} disabled={busy} />
+      <View style={{ height: space[4] }} />
+
+      <GradientHero>
+        <T lang={lang} token="title" weight="bold" tone="onPrimary">{s.heroTitle}</T>
+        <T lang={lang} token="body" tone="onPrimary" style={{ marginTop: space[2], marginBottom: space[5], opacity: 0.92 }}>{s.heroSub}</T>
+        <View style={{ alignSelf: "flex-start" }}>
+          {busy ? <ActivityIndicator color={color.onPrimary} style={{ minHeight: 48 }} /> : <Pill lang={lang} variant="white" label={s.start} onPress={start} />}
         </View>
-      ))}
+      </GradientHero>
+
       {failed && (
-        <View style={{ marginTop: space[5], gap: space[3] }} accessibilityRole="alert">
-          <T lang={failed} tone="signal" weight="medium">{STR[failed].deskNoCode}</T>
-          <Button lang={failed} label={STR[failed].retry} onPress={() => choose(failed)} />
-        </View>
+        <Card tone="warn" style={{ marginTop: space[4], gap: space[3] }}>
+          <View accessibilityRole="alert" style={{ gap: space[3] }}>
+            <T lang={lang} weight="bold" tone="warn">{s.deskNoCode}</T>
+            <View style={{ alignSelf: "flex-start" }}><Pill lang={lang} variant="quiet" label={s.retry} onPress={start} /></View>
+          </View>
+        </Card>
       )}
-      <View style={{ height: space[6] }} />
-      <T lang="en" token="small" tone="inkSoft">{en.privacy}</T>
+
+      <Card style={{ marginTop: space[4] }}>
+        <T lang={lang} token="body" weight="bold" style={{ marginBottom: space[1] }}>{s.privacyTitle}</T>
+        <T lang={lang} token="small" tone="inkSoft">{s.privacy}</T>
+      </Card>
+
+      <T lang={lang} token="body" weight="bold" style={{ marginTop: space[6], marginBottom: space[3] }}>{s.howTitle}</T>
+      <View style={{ flexDirection: "row", gap: space[3] }}>
+        {s.how.map(([t, d], i) => (
+          <Card key={i} style={{ flex: 1, padding: space[3], borderRadius: radius.card }}>
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: color.tealTint, alignItems: "center", justifyContent: "center", marginBottom: space[2] }}>
+              <T lang="en" token="small" weight="bold" tone="teal">{i + 1}</T>
+            </View>
+            <T lang={lang} token="small" weight="bold">{t}</T>
+            <T lang={lang} token="micro" tone="inkSoft">{d}</T>
+          </Card>
+        ))}
+      </View>
+
       <View style={{ flexGrow: 1, minHeight: space[6] }} />
-      <T lang="en" token="small" tone="graphite" style={{ fontFamily: mobileFont("sans", "en") }}>{en.disclaimer}</T>
+      <T lang={lang} token="small" tone="graphite">{s.disclaimer}</T>
     </Page>
   );
 }

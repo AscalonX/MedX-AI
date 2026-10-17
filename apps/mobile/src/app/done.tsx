@@ -1,42 +1,43 @@
 import { color, space } from "@medx/shared";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { Pressable, View } from "react-native";
-import { Page, Rule, T } from "@/components/ui";
+import { View } from "react-native";
+import { Card, GradientHero, Page, T } from "@/components/ui";
 import { STR } from "@/i18n";
 import { useStore } from "@/store";
 
 export default function Done() {
-  const { lang, session, reset } = useStore();
+  const { lang, session } = useStore();
   const s = STR[lang];
   useEffect(() => { if (!session) router.replace("/"); }, [session]);
   if (!session) return null;
   const human = session.status === "needs_human";
+  const steps: [string, "done" | "pending"][] = [[s.stepSent, "done"], [s.stepReview, "pending"], [s.stepReviewed, "pending"]];
   return (
     <Page>
-      <T lang={lang} token="title" family="serif" weight="semibold" tone="inkSoft">MedX Bridge</T>
-      <View style={{ height: space[8] }} />
-      <T lang={lang} token="display" family="serif" weight="medium" accessibilityRole="header">{human ? s.humanTitle : s.doneTitle}</T>
-      <View style={{ height: space[6] }} />
-      {human && <T lang={lang} tone="inkSoft" style={{ marginBottom: space[6] }}>{s.humanBody}</T>}
-      <T lang={lang} token="small" tone="inkSoft">{s.doneCode}</T>
-      <T lang="en" token="code" weight="semibold" accessibilityLabel={`${s.doneCode} ${session.code.split("").join(" ")}`} style={{ marginVertical: space[2] }}>{session.code}</T>
-      <View style={{ height: space[6] }} />
-      <Rule strong />
-      {(human ? [s.doneNext1, s.doneNext3] : [s.doneNext1, s.doneNext3]).map((line, i) => (
-        <View key={i}>
-          <T lang={lang} style={{ paddingVertical: space[3] }}>{line}</T>
-          <Rule />
-        </View>
-      ))}
-      <View style={{ flexGrow: 1, minHeight: space[8] }} />
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => { reset(); router.replace("/"); }}
-        style={{ minHeight: 48, justifyContent: "center", alignSelf: "flex-start" }}
-      >
-        <T lang={lang} token="small" tone="inkSoft" style={{ textDecorationLine: "underline", textDecorationColor: color.graphite }}>{s.newIntake}</T>
-      </Pressable>
+      <GradientHero>
+        <T lang={lang} token="body" tone="onPrimary" style={{ opacity: 0.92 }}>{s.doneCode}</T>
+        <T lang="en" token="code" weight="bold" tone="onPrimary" accessibilityLabel={`${s.doneCode} ${session.code.split("").join(" ")}`} style={{ marginVertical: space[2] }}>{session.code}</T>
+        <T lang={lang} token="lead" weight="bold" tone="onPrimary" accessibilityRole="header">{human ? s.humanTitle : s.doneTitle}</T>
+      </GradientHero>
+
+      {human && <Card tone="warn" style={{ marginTop: space[4] }}><T lang={lang} tone="ink">{s.humanBody}</T></Card>}
+
+      <Card style={{ marginTop: space[4], gap: space[4] }}>
+        {steps.map(([label, st], i) => (
+          <View key={i} style={{ flexDirection: "row", alignItems: "center", gap: space[3] }} accessible accessibilityLabel={`${label}${st === "done" ? "" : ""}`}>
+            <View style={{ width: 24, height: 24, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: st === "done" ? color.teal : "transparent", borderWidth: st === "done" ? 0 : 2, borderColor: color.ruleStrong }}>
+              {st === "done" && <T lang="en" token="micro" weight="bold" tone="onPrimary" importantForAccessibility="no">{"✓"}</T>}
+            </View>
+            <T lang={lang} weight={st === "done" ? "bold" : "regular"} tone={st === "done" ? "ink" : "graphite"}>{label}</T>
+          </View>
+        ))}
+      </Card>
+
+      <Card style={{ marginTop: space[4], gap: space[3] }}>
+        <T lang={lang} token="body" weight="bold">{s.nextTitle}</T>
+        {[s.doneNext1, s.doneNext3].map((l, i) => <T key={i} lang={lang} token="body" tone="inkSoft">{l}</T>)}
+      </Card>
     </Page>
   );
 }

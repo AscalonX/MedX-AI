@@ -1,15 +1,15 @@
+import { color, radius, space, type as scale } from "@medx/shared";
 import type React from "react";
-import { color, mobileFont, space, type as scale } from "@medx/shared";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { TextInput, View } from "react-native";
 import Animated, { Easing, FadeIn, useReducedMotion } from "react-native-reanimated";
 import { addTurn } from "@/api";
-import { Button, Page, Rule, T } from "@/components/ui";
-import { friendly, LANG_NAME, STR } from "@/i18n";
+import { Badge, Card, Chip, fontLight, Page, Pill, sh, T } from "@/components/ui";
+import { friendly, STR } from "@/i18n";
 import { screenFor, useStore } from "@/store";
 
-const PITCH = 34; // ruled-line pitch (>= Thai line height at 19px)
+const MAX = 3;
 
 export default function Intake() {
   const { lang, session, set } = useStore();
@@ -18,28 +18,32 @@ export default function Intake() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [focus, setFocus] = useState(false);
   const input = useRef<React.ComponentRef<typeof TextInput>>(null);
-  const [h, setH] = useState(PITCH * 4);
-
-  useEffect(() => { if (!session) router.replace("/"); }, [session]);
   const answered = session?.turns.filter((t) => t.role === "patient").length ?? 0;
   useEffect(() => { if (!busy && !failed) input.current?.focus(); }, [busy, failed, answered]);
+  useEffect(() => { if (!session) router.replace("/"); }, [session]);
   if (!session) return null;
+
   // Ledger = redacted patient turns returned by the API, never the raw text typed.
   const ledger = session.turns.filter((t) => t.role === "patient").map((t) => friendly(t.text, lang));
-
-  const question = answered === 0 ? s.q1 : session.summary?.nextQuestion?.text[lang] ?? "";
-  const lines = Math.max(4, Math.ceil(h / PITCH));
+  const next = session.summary?.nextQuestion;
+  const question = answered === 0 ? s.q1 : next?.text[lang] ?? "";
+  const chips: string[] =
+    next?.field === "severity" ? Array.from({ length: 11 }, (_, n) => String(n))
+    : next?.field === "onset" || next?.field === "duration" ? [s.chipToday, s.chipYesterday, s.chipWeek]
+    : next?.field === "allergies" || next?.field === "medications" || next?.field === "medical_history" ? [s.chipNone]
+    : [];
 
   async function submit() {
     const t = text.trim();
     if (!t || busy || !session) return;
     setFailed(false); setBusy(true);
     try {
-      const next = await addTurn(session.id, t);
-      set({ session: next });
-      setText(""); setH(PITCH * 4);
-      router.replace(screenFor(next));
+      const nx = await addTurn(session.id, t);
+      set({ session: nx });
+      setText("");
+      router.replace(screenFor(nx));
     } catch {
       setFailed(true);
     } finally {
@@ -47,62 +51,44 @@ export default function Intake() {
     }
   }
 
-  const fade = FadeIn.duration(reduced ? 0 : 260).easing(Easing.bezier(0.2, 0.8, 0.2, 1));
+  const fade = FadeIn.duration(reduced ? 0 : 240).easing(Easing.bezier(0.22, 1, 0.36, 1));
+  const pct = Math.min(answered, MAX) / MAX;
 
   return (
     <Page>
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <T lang="en" token="small" tone="inkSoft" accessibilityLabel={`Code ${session.code}`}>{session.code}</T>
-        <T lang={lang} token="small" tone="inkSoft">{LANG_NAME[lang]}</T>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Badge lang="en" tone="tint" label={session.code} a11y={`Code ${session.code}`} />
+        {answered > 0 && <Badge lang={lang} label={s.pill(Math.min(answered, MAX))} />}
       </View>
-      <View style={{ height: space[6] }} />
-
-      {(ledger.length > 0 || busy) && (
-        <View accessibilityLabel={s.told} style={{ marginBottom: space[8] }}>
-          <T lang={lang} token="small" tone="inkSoft" style={{ marginBottom: space[2] }}>{s.told}</T>
-          <Rule />
-          {ledger.map((a, i) => (
-            <View key={i}>
-              <T lang={lang} token="body" style={{ paddingVertical: space[2] }}>{a}</T>
-              <Rule />
-            </View>
-          ))}
-          {busy && (
-            <View>
-              <T lang={lang} token="body" tone="graphite" style={{ paddingVertical: space[2] }}>{s.sending}…</T>
-              <Rule />
-            </View>
-          )}
-        </View>
-      )}
-
-      {answered > 0 && !busy && (
-        <T lang={lang} token="small" tone="inkSoft" style={{ marginBottom: space[2] }}>{s.counter(Math.min(answered, 3))}</T>
-      )}
+      <View accessibilityElementsHidden style={{ height: 4, borderRadius: 2, backgroundColor: color.muted, marginTop: space[3], overflow: "hidden" }}>
+        <View style={{ width: `${pct * 100}%`, height: 4, backgroundColor: color.ocean }} />
+      </View>
+      <View style={{ height: space[5] }} />
 
       {busy ? (
-        <View accessibilityLabel={s.sending} accessibilityLiveRegion="polite" style={{ height: scale.question.size * 1.2, justifyContent: "center" }}>
-          <View style={{ height: 1, backgroundColor: color.graphite, width: "70%" }} />
-        </View>
+        <Card style={{ minHeight: 96, justifyContent: "center" }} >
+          <View accessibilityLabel={s.sending} accessibilityLiveRegion="polite" style={{ height: 6, borderRadius: 3, width: "60%", backgroundColor: color.muted }} />
+        </Card>
       ) : (
         <Animated.View key={question} entering={fade}>
-          <T lang={lang} token="question" family="serif" weight="medium" accessibilityRole="header">{question}</T>
+          <Card>
+            <T lang={lang} token="question" weight="bold" accessibilityRole="header">{question}</T>
+          </Card>
         </Animated.View>
       )}
-      <View style={{ height: space[6] }} />
+      <View style={{ height: space[4] }} />
 
       {failed ? (
-        <View accessibilityRole="alert" style={{ gap: space[3] }}>
-          <T lang={lang} token="lead" family="serif" weight="medium" tone="signal">{s.deskTitle(session.code)}</T>
-          <T lang={lang} tone="inkSoft">{s.deskBody}</T>
-          <Button lang={lang} label={s.retry} onPress={submit} />
-        </View>
+        <Card tone="warn" style={{ gap: space[3] }}>
+          <View accessibilityRole="alert" style={{ gap: space[3] }}>
+            <T lang={lang} token="lead" weight="bold" tone="warn">{s.deskTitle(session.code)}</T>
+            <T lang={lang} tone="inkSoft">{s.deskBody}</T>
+            <View style={{ alignSelf: "flex-start" }}><Pill lang={lang} variant="quiet" label={s.retry} onPress={submit} /></View>
+          </View>
+        </Card>
       ) : !busy ? (
         <>
-          <Pressable accessible={false} onPress={() => input.current?.focus()} style={{ minHeight: lines * PITCH }}>
-            {Array.from({ length: lines }, (_, i) => (
-              <View key={i} pointerEvents="none" style={{ position: "absolute", left: 0, right: 0, top: (i + 1) * PITCH - 1, height: 1, backgroundColor: color.ruleStrong }} />
-            ))}
+          <Card>
             <TextInput
               ref={input}
               value={text}
@@ -110,22 +96,53 @@ export default function Intake() {
               multiline
               autoCorrect={false}
               spellCheck={false}
-              autoFocus
               textAlignVertical="top"
               accessibilityLabel={question}
               accessibilityHint={s.placeholderA11y}
-              onContentSizeChange={(e) => setH(e.nativeEvent.contentSize.height)}
-              cursorColor={color.ink}
-              selectionColor={color.inkSoft}
-              style={{ fontFamily: mobileFont("sans", lang), fontSize: scale.bodyPatient.size, lineHeight: PITCH, color: color.ink, padding: 0, margin: 0, minHeight: lines * PITCH, paddingBottom: 3, outlineStyle: "none" } as object}
+              onFocus={() => setFocus(true)}
+              onBlur={() => setFocus(false)}
+              cursorColor={color.ocean}
+              selectionColor={color.ocean}
+              style={{ fontFamily: fontLight, fontSize: scale.bodyPatient.size, lineHeight: Math.round(scale.bodyPatient.size * (lang === "th" ? 1.7 : 1.5)), color: color.ink, minHeight: 108, padding: space[3], borderRadius: radius.control, borderWidth: focus ? 2 : 1.5, borderColor: focus ? color.ocean : color.ruleStrong, backgroundColor: color.paper, outlineStyle: "none" } as object}
             />
-          </Pressable>
-          <T lang={lang} token="small" tone="graphite" style={{ marginTop: space[3] }}>{answered === 0 ? s.hint : s.hintFollow}</T>
+            <T lang={lang} token="small" tone="graphite" style={{ marginTop: space[3] }}>{answered === 0 ? s.hint : s.hintFollow}</T>
+          </Card>
+          {chips.length > 0 && (
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2], marginTop: space[3] }} accessibilityRole="radiogroup">
+              {chips.map((c) => (
+                <Chip key={c} lang={lang} label={c} selected={text === c} onPress={() => { setText(c); }} />
+              ))}
+            </View>
+          )}
+          <View style={{ height: space[5] }} />
+          <Pill lang={lang} label={s.cont} onPress={submit} disabled={!text.trim()} />
         </>
       ) : null}
 
-      <View style={{ flexGrow: 1, minHeight: space[8] }} />
-      {!failed && <Button lang={lang} label={busy ? s.sending : s.cont} onPress={submit} disabled={busy || !text.trim()} />}
+      {(ledger.length > 0 || busy) && (
+        <View accessibilityLabel={s.told} style={{ marginTop: space[8] }}>
+          <T lang={lang} token="small" weight="bold" tone="inkSoft" style={{ marginBottom: space[3] }}>{s.told}</T>
+          {ledger.map((a, i) => (
+            <Row key={i} last={i === ledger.length - 1 && !busy}>
+              <T lang={lang} token="body">{a}</T>
+            </Row>
+          ))}
+          {busy && <Row last><T lang={lang} token="body" tone="graphite">{s.sending}…</T></Row>}
+        </View>
+      )}
     </Page>
+  );
+}
+
+/** Timeline entry: dot + connector on the left, rounded card on the right. Not a chat bubble: no alignment, no tail. */
+function Row({ children, last }: { children: React.ReactNode; last?: boolean }) {
+  return (
+    <View style={{ flexDirection: "row", gap: space[3] }}>
+      <View style={{ alignItems: "center", width: 14 }}>
+        <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color.teal, marginTop: space[4] }} />
+        {!last && <View style={{ flex: 1, width: 2, backgroundColor: color.rule }} />}
+      </View>
+      <View style={[{ flex: 1, backgroundColor: color.sheet, borderRadius: radius.card, padding: space[4], marginBottom: space[3], borderWidth: 1, borderColor: color.rule }, { boxShadow: sh({ x: 0, y: 1, blur: 2, spread: 0, color: "rgba(15, 45, 80, 0.06)" }) } as object]}>{children}</View>
+    </View>
   );
 }
