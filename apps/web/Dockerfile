@@ -16,7 +16,7 @@ COPY apps/web/app ./apps/web/app
 COPY apps/web/components ./apps/web/components
 COPY apps/web/lib ./apps/web/lib
 COPY apps/web/public ./apps/web/public
-COPY apps/web/package.json apps/web/package-lock.json apps/web/tsconfig.json apps/web/next-env.d.ts apps/web/next.config.ts apps/web/postcss.config.mjs apps/web/eslint.config.mjs ./apps/web/
+COPY apps/web/package.json apps/web/package-lock.json apps/web/tsconfig.json apps/web/next.config.ts apps/web/postcss.config.mjs apps/web/eslint.config.mjs ./apps/web/
 WORKDIR /app/apps/web
 # Lint runs in CI/dev; skip here so a lint nit never blocks the image (type check still runs).
 RUN npx next build --turbopack

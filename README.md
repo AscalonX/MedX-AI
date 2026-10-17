@@ -1,5 +1,7 @@
 # MedX Bridge
 
+Live demo: [URL pending]
+
 Multilingual pre-visit intake where **every field points back to the patient's own words**. A patient describes the problem in Thai, Italian or English; the nurse gets a one-screen summary in her own language where **every field links to the exact patient sentence it came from**, unverified fields are shown as unsupported (never as fact), missing information triggers one follow-up question back to the patient, and red flags interrupt everything. Pharmacists get the same treatment for medication lists (extraction plus deterministic drug-safety alerts). Designed to run Gemma on AMD via the hackathon's AMD Token Factory (OpenAI-compatible); current results use a mock model until the endpoint is connected.
 
 AMD Developer Hackathon ACT III, Track 2 (Health and Wellbeing).
@@ -134,7 +136,7 @@ Unsupported claims are shown as pencil, not fact; PII redacted before storage or
 
 ## Team
 
-[TEAM NAMES]
+Team MedX. Built by a human lead orchestrating Claude (Opus/Sonnet) and OpenAI Codex agents in role-based lanes.
 
 ## License
 

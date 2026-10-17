@@ -49,6 +49,6 @@ Visual language: "Clinical paper" (`docs/design/DIRECTION.md`): warm off-white, 
 
 ## 8. What's next, and the team
 - **Message:** Prove it on real workflows before anyone relies on it.
-- **On slide:** Next: native-speaker review, clinician usability study, larger evaluation. Not a medical device. Team: [names and roles TBD].
+- **On slide:** Next: native-speaker review, clinician usability study, larger evaluation. Not a medical device. Team MedX.
 - **Visual:** Short ruled checklist left; team names set in serif on the right.
 - **Notes:** Next steps are validation, not features: native-speaker review of Thai and Italian, a clinician timing study, and ethics approval before any real data. Thank judges; invite questions.
