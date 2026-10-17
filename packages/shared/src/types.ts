@@ -16,6 +16,8 @@ export interface Turn {
   /** Patient text AFTER PII redaction (e.g. "[NAME_1]", "[PHONE_1]"). Raw text is never stored. */
   text: string;
   at: string; // ISO-8601
+  /** How the patient gave this answer. "voice" = on-device speech-to-text, confirmed by the patient before sending. */
+  inputMode?: "text" | "voice";
 }
 
 export type SessionStatus =

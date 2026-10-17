@@ -6,7 +6,7 @@ export interface CreateSessionReq { patientLang: Lang }
 export type CreateSessionRes = IntakeSession;
 
 /** POST /api/sessions/:id/turns — runs redact → red flags → (stop if escalated) → extract → verify → next question. */
-export interface AddTurnReq { text: string }
+export interface AddTurnReq { text: string; inputMode?: "text" | "voice" }
 export type AddTurnRes = IntakeSession;
 
 /** GET /api/sessions — clinician queue + ops, newest first, escalated pinned on top. */
