@@ -1,5 +1,5 @@
 {
-  "version": "1.1",
+  "version": "1.1.1",
   "negationCues": [
     " no ",
     " not ",
@@ -30,9 +30,9 @@
         "en": "Immediate clinician assessment; 12-lead ECG within 10 minutes; vital signs"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -161,9 +161,9 @@
         "en": "Prioritise assessment; 12-lead ECG within 10 minutes of arrival"
       },
       "patientMessage": {
-        "th": "กรุณาแจ้งพยาบาลที่เคาน์เตอร์ตอนนี้ คุณจะได้รับการตรวจก่อน",
-        "it": "Per favore lo dica subito all'infermiere al banco. Sarà visitato con priorità.",
-        "en": "Please tell the nurse at the desk now. You will be seen as a priority."
+        "th": "กรุณาแสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดูตอนนี้ หากอาการแย่ลงหรือรู้สึกไม่สบายมาก ให้แจ้งเจ้าหน้าที่ทันที หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "Mostri subito questa schermata al personale al banco. Se i sintomi peggiorano o si sente molto male, lo dica subito al personale; se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Please show this screen to the staff at the desk now. If your symptoms get worse or you feel very unwell, tell staff straight away; if you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -233,9 +233,9 @@
         "en": "Immediate clinician assessment; record onset / last-known-well time; activate stroke pathway"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -326,9 +326,9 @@
         "en": "Immediate clinician assessment; record onset / last-known-well time; activate stroke pathway"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -365,9 +365,9 @@
         "en": "Immediate clinician assessment; record onset / last-known-well time; activate stroke pathway"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -410,9 +410,9 @@
         "en": "Immediate airway/breathing assessment; SpO2 and respiratory rate"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -459,9 +459,9 @@
         "en": "Check SpO2 and respiratory rate; prioritise assessment"
       },
       "patientMessage": {
-        "th": "กรุณาแจ้งพยาบาลที่เคาน์เตอร์ตอนนี้ คุณจะได้รับการตรวจก่อน",
-        "it": "Per favore lo dica subito all'infermiere al banco. Sarà visitato con priorità.",
-        "en": "Please tell the nurse at the desk now. You will be seen as a priority."
+        "th": "กรุณาแสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดูตอนนี้ หากอาการแย่ลงหรือรู้สึกไม่สบายมาก ให้แจ้งเจ้าหน้าที่ทันที หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "Mostri subito questa schermata al personale al banco. Se i sintomi peggiorano o si sente molto male, lo dica subito al personale; se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Please show this screen to the staff at the desk now. If your symptoms get worse or you feel very unwell, tell staff straight away; if you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -507,9 +507,9 @@
         "en": "Immediate airway assessment; prepare IM adrenaline per protocol; blood pressure"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -636,9 +636,9 @@
         "en": "Do not leave the patient alone; immediate risk assessment; ask about overdose/ingestion; alert clinician"
       },
       "patientMessage": {
-        "th": "ขอบคุณที่บอกเรา คุณไม่ได้อยู่คนเดียว กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้ เจ้าหน้าที่จะอยู่กับคุณ หากไม่ได้อยู่ที่คลินิก โทร 1669 หรือสายด่วนสุขภาพจิต 1323",
-        "it": "Grazie per avercelo detto. Non è solo/a. Vada subito al banco dell'infermiere: qualcuno resterà con lei. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Thank you for telling us. You are not alone. Please go to the nurse desk now; someone will stay with you. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "ขอบคุณที่บอกเรา คุณไม่ได้อยู่คนเดียว ที่นี่มีคนพร้อมช่วยเหลือ กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่ หรือโทรคุยกับสายด่วน: ในประเทศไทย สายด่วนสุขภาพจิต 1323 ในอิตาลี Telefono Amico 02 2327 2327",
+        "it": "Grazie per avercelo detto. Qui ci sono persone che possono aiutarla. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale. Può anche parlare con una linea di ascolto: in Thailandia la linea per la salute mentale 1323, in Italia Telefono Amico 02 2327 2327.",
+        "en": "Thank you for telling us. You are not alone, and there are people here who can help. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number. You can also talk to a support line: in Thailand the mental health hotline 1323, in Italy Telefono Amico 02 2327 2327."
       },
       "match": [
         [
@@ -708,9 +708,9 @@
         "en": "Immediate clinician assessment; pulse and BP; direct pressure if wound; ask about anticoagulants"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -791,9 +791,9 @@
         "en": "Immediate clinician assessment; consider ectopic pregnancy; vital signs; hCG"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -869,9 +869,9 @@
         "en": "Immediate clinician assessment; consider subarachnoid haemorrhage; record onset time; neuro exam"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -935,9 +935,9 @@
         "en": "Immediate clinician assessment; capillary glucose; first seizure vs known epilepsy; duration; head injury"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -977,9 +977,9 @@
         "en": "Immediate clinician assessment; isolate; check rash for non-blanching; vital signs"
       },
       "patientMessage": {
-        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้และแสดงหน้าจอนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "I suoi sintomi richiedono un controllo immediato. Vada subito al banco dell'infermiere e mostri questo schermo. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการของคุณต้องได้รับการตรวจทันที กรุณาไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "I suoi sintomi devono essere controllati subito. Vada ora al banco dell'infermiere e mostri questa schermata al personale. Se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Your symptoms need to be checked right away. Please go to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -1038,9 +1038,9 @@
         "en": "Immediate clinician assessment; GCS, capillary glucose, vital signs"
       },
       "patientMessage": {
-        "th": "อาการนี้ต้องได้รับการตรวจทันที กรุณาพาผู้ป่วยไปที่เคาน์เตอร์พยาบาลเดี๋ยวนี้ หากไม่ได้อยู่ที่คลินิก โทร 1669",
-        "it": "Questi sintomi richiedono un controllo immediato. Porti subito la persona al banco dell'infermiere. Se non è in clinica, chiami il 1669 in Thailandia o il 112 in Europa.",
-        "en": "These symptoms need to be checked right away. Please bring the person to the nurse desk now. If you are not at the clinic, call 1669 in Thailand or 112 in Europe."
+        "th": "อาการนี้ต้องได้รับการตรวจทันที กรุณาพาผู้ป่วยไปที่เคาน์เตอร์พยาบาลตอนนี้และแสดงหน้าจอนี้ให้เจ้าหน้าที่ดู หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "Questi sintomi devono essere controllati subito. Accompagni ora la persona al banco dell'infermiere e mostri questa schermata al personale. Se non vi trovate in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "These symptoms need to be checked right away. Please bring the person to the nurse desk now and show this screen to the staff. If you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
@@ -1081,9 +1081,9 @@
         "en": "Prioritise assessment; 12-lead ECG; lying/standing BP; ask about chest pain or palpitations before the event"
       },
       "patientMessage": {
-        "th": "กรุณาแจ้งพยาบาลที่เคาน์เตอร์ตอนนี้ คุณจะได้รับการตรวจก่อน ระหว่างรอให้นั่งหรือนอนลง",
-        "it": "Per favore lo dica subito all'infermiere al banco. Sarà visitato con priorità. Nell'attesa resti seduto o sdraiato.",
-        "en": "Please tell the nurse at the desk now. You will be seen as a priority. While you wait, stay sitting or lying down."
+        "th": "กรุณาแสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดูตอนนี้ หากอาการแย่ลงหรือรู้สึกไม่สบายมาก ให้แจ้งเจ้าหน้าที่ทันที หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่ ระหว่างรอ ให้นั่งหรือนอนลง",
+        "it": "Mostri subito questa schermata al personale al banco. Se i sintomi peggiorano o si sente molto male, lo dica subito al personale; se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale. Nell'attesa rimanga in posizione seduta o sdraiata.",
+        "en": "Please show this screen to the staff at the desk now. If your symptoms get worse or you feel very unwell, tell staff straight away; if you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number. While you wait, stay sitting or lying down."
       },
       "match": [
         [
@@ -1125,9 +1125,9 @@
         "en": "Prioritise assessment; vital signs; pain score; pregnancy test if of childbearing potential"
       },
       "patientMessage": {
-        "th": "กรุณาแจ้งพยาบาลที่เคาน์เตอร์ตอนนี้ คุณจะได้รับการตรวจก่อน กรุณางดน้ำและอาหารไว้ก่อน",
-        "it": "Per favore lo dica subito all'infermiere al banco. Sarà visitato con priorità. Per ora non mangi e non beva.",
-        "en": "Please tell the nurse at the desk now. You will be seen as a priority. Please do not eat or drink for now."
+        "th": "กรุณาแสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดูตอนนี้ หากอาการแย่ลงหรือรู้สึกไม่สบายมาก ให้แจ้งเจ้าหน้าที่ทันที หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่ กรุณางดน้ำและอาหารไว้ก่อน",
+        "it": "Mostri subito questa schermata al personale al banco. Se i sintomi peggiorano o si sente molto male, lo dica subito al personale; se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale. Per ora non mangi e non beva.",
+        "en": "Please show this screen to the staff at the desk now. If your symptoms get worse or you feel very unwell, tell staff straight away; if you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number. Please do not eat or drink for now."
       },
       "match": [
         [
@@ -1197,9 +1197,9 @@
         "en": "Prioritise assessment; measure temperature; infant < 3 months with temperature ≥ 38 °C is high risk"
       },
       "patientMessage": {
-        "th": "กรุณาแจ้งพยาบาลที่เคาน์เตอร์ตอนนี้ ลูกของคุณจะได้รับการตรวจก่อน",
-        "it": "Per favore lo dica subito all'infermiere al banco. Il suo bambino sarà visitato con priorità.",
-        "en": "Please tell the nurse at the desk now. Your baby will be seen as a priority."
+        "th": "กรุณาแสดงหน้าจอนี้ให้เจ้าหน้าที่ที่เคาน์เตอร์ดูตอนนี้ หากลูกอาการแย่ลงหรือดูไม่สบายมาก ให้แจ้งเจ้าหน้าที่ทันที หากไม่ได้อยู่ที่คลินิก โทรเบอร์ฉุกเฉิน: ในประเทศไทย 1669 ในอิตาลี 112 ประเทศอื่นโทรเบอร์ฉุกเฉินในพื้นที่",
+        "it": "Mostri subito questa schermata al personale al banco. Se le condizioni del lattante peggiorano o sembrano gravi, lo dica subito al personale; se non si trova in clinica, chiami il numero di emergenza: in Thailandia 1669, in Italia 112, altrove il numero di emergenza locale.",
+        "en": "Please show this screen to the staff at the desk now. If your baby gets worse or seems very unwell, tell staff straight away; if you are not at the clinic, call the emergency number: in Thailand 1669, in Italy 112, elsewhere your local emergency number."
       },
       "match": [
         [
