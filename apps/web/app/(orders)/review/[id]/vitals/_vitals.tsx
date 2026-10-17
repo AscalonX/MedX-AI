@@ -2,8 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Consciousness, GetSessionRes, IntakeSession, VitalSigns, VitalsReq } from "@medx/shared";
 import { Badge, Button, Card, CardHeader, Field, Icon, Receipt, SegmentedControl } from "@/components/ui";
-import { useFrame } from "../../../../(clinician)/_frame";
-import { Head, Notice } from "../../../_bits";
+import { Head, Notice, ReadOnlyNote, noDash, useIdentity } from "../../../_bits";
 import { fixtureConfirm, fixtureSession, fixtureVitals } from "../../../_fixture";
 import { asSession, call, clockOf, tr, type TKey } from "../../../_lib";
 
@@ -25,7 +24,8 @@ const LEVELS = [1, 2, 3, 4, 5] as const;
 type Level = (typeof LEVELS)[number];
 
 export function Vitals({ id }: { id: string }) {
-  const { lang, reviewer } = useFrame();
+  const { lang, reviewer, role } = useIdentity("Vitals");
+  const canEnter = role === "nurse";
   const [session, setSession] = useState<IntakeSession | null>(null);
   const [fixture, setFixture] = useState(false);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -119,7 +119,7 @@ export function Vitals({ id }: { id: string }) {
       <Head id={id} title={tr("vitalsTitle", lang)} session={session} lang={lang} fixture={fixture} />
       {loadErr && <Notice>{tr("loadFail", lang)} {loadErr}</Notice>}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <Card>
+        {canEnter ? <Card>
           <CardHeader title={tr("vitalsTitle", lang)} />
           <p className="-mt-2 mb-4 text-small text-ink-soft">{tr("vitalsHint", lang)}</p>
           <form ref={formRef} onSubmit={save} noValidate className="space-y-4">
@@ -146,17 +146,19 @@ export function Vitals({ id }: { id: string }) {
             </div>
             <div>
               <p id="acvpu" className="mb-1.5 text-small font-semibold text-ink">{tr("acvpu", lang)}</p>
-              <div className="overflow-x-auto pb-1">
-                <SegmentedControl
-                  ariaLabel={tr("acvpu", lang)} size="sm" value={cons} onChange={(v) => setCons(v as Consciousness | "")}
-                  options={ACVPU.map((o) => ({ value: o.value as string, label: tr(o.label, lang) }))}
-                />
+              <div role="radiogroup" aria-label={tr("acvpu", lang)} className="flex flex-wrap gap-2">
+                {ACVPU.map((o) => (
+                  <label key={o.label} className={`flex h-10 cursor-pointer items-center rounded-full border px-4 text-small font-semibold ${cons === o.value ? "border-ink bg-ink text-sheet" : "border-rule-strong/60 bg-sheet text-ink-soft"} focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-ocean`}>
+                    <input type="radio" name="acvpu" checked={cons === o.value} onChange={() => setCons(o.value as Consciousness | "")} className="sr-only" />
+                    {tr(o.label, lang)}
+                  </label>
+                ))}
               </div>
             </div>
             {errs.form && <Notice>{errs.form}</Notice>}
             <Button type="submit" variant="primary" size="lg" disabled={busy} icon={<Icon name="activity" />}>{busy ? tr("saving", lang) : tr("save", lang)}</Button>
           </form>
-        </Card>
+        </Card> : <Card><ReadOnlyNote>{tr("nursesOnly", lang)}</ReadOnlyNote></Card>}
 
         <div className="space-y-5">
           {!triage ? (
@@ -172,7 +174,7 @@ export function Vitals({ id }: { id: string }) {
                     {triage.vitalAlerts.map((a) => (
                       <li key={a.id}>
                         <Badge tone={a.severity === "high" ? "signalOutline" : "pencil"} icon={<Icon name="triangle-alert" size={12} />} className="h-auto min-h-6 whitespace-normal py-1">
-                          {a.severity === "high" ? `${tr("high", lang)}: ` : `${tr("moderate", lang)}: `}{a.message[lang]}
+                          {a.severity === "high" ? `${tr("high", lang)}: ` : `${tr("moderate", lang)}: `}{noDash(a.message[lang])}
                         </Badge>
                       </li>
                     ))}
@@ -185,7 +187,7 @@ export function Vitals({ id }: { id: string }) {
                 <h2 className="mt-3 text-title font-bold text-ink">{tr("suggestedLevel", lang, { n: triage.suggestedLevel })}</h2>
                 <p className="text-small text-ink-soft">{tr("levelScale", lang)}{triage.warningScore !== undefined && <> {tr("warningScore", lang)}: <b>{triage.warningScore}</b></>}</p>
                 <ul className="mt-3 list-disc space-y-1 pl-5 text-body text-ink">
-                  {triage.reasons.map((r, i) => <li key={i}>{r[lang]}</li>)}
+                  {triage.reasons.map((r, i) => <li key={i}>{noDash(r[lang])}</li>)}
                 </ul>
 
                 {triage.confirmed && triage.suggestedLevel >= triage.confirmed.level ? (
@@ -200,7 +202,7 @@ export function Vitals({ id }: { id: string }) {
                       ...(triage.confirmed.note ? [{ label: tr("note", lang), value: triage.confirmed.note }] : []),
                     ]}
                   />
-                ) : (
+                ) : !canEnter ? null : (
                   <div className="mt-4 space-y-3 border-t border-rule/70 pt-4">
                     {triage.confirmed && (
                       <p role="alert" className="rounded-2xl border-l-4 border-signal bg-signal-tint px-4 py-2 text-body font-bold text-signal">
@@ -227,9 +229,9 @@ export function Vitals({ id }: { id: string }) {
           <p className="text-body text-ink-soft">{tr("noHistory", lang)}</p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[640px] text-left text-body">
+            <table className="w-full min-w-[760px] text-left text-body">
               <thead className="text-small text-ink-soft">
-                <tr>{(["time", "hr", "bp", "rr", "temp", "spo2", "pain", "by"] as TKey[]).map((h) => <th key={h} scope="col" className="py-2 pr-4 font-semibold">{h === "time" || h === "bp" || h === "by" ? tr(h, lang) : tr(h, lang).replace(/ \(.*\)/, "")}</th>)}</tr>
+                <tr>{(["time", "hr", "bp", "rr", "temp", "spo2", "o2col", "acvpuCol", "pain", "by"] as TKey[]).map((h) => <th key={h} scope="col" className="py-2 pr-4 font-semibold">{["time", "bp", "by", "o2col", "acvpuCol"].includes(h) ? tr(h, lang) : tr(h, lang).replace(/ \(.*\)/, "")}</th>)}</tr>
               </thead>
               <tbody className="divide-y divide-rule">
                 {hist.map((v, i) => <Row key={v.id} v={v} prev={hist[i + 1]} lang={lang} />)}
@@ -256,7 +258,9 @@ function Row({ v, prev, lang }: { v: VitalSigns; prev?: VitalSigns; lang: "en" |
       <td className="pr-4">{v.systolicBP !== undefined ? <Trend cur={v.systolicBP} prev={prev?.systolicBP} /> : "-"}{v.diastolicBP !== undefined && <span>/{v.diastolicBP}</span>}</td>
       <td className="pr-4"><Trend cur={v.respRate} prev={prev?.respRate} /></td>
       <td className="pr-4"><Trend cur={v.tempC} prev={prev?.tempC} /></td>
-      <td className="pr-4"><Trend cur={v.spo2} prev={prev?.spo2} />{v.onOxygen && <span className="ml-1 text-small text-ink-soft">O2</span>}</td>
+      <td className="pr-4"><Trend cur={v.spo2} prev={prev?.spo2} /></td>
+      <td className="pr-4">{v.onOxygen === undefined ? "-" : v.onOxygen ? "Yes" : "No"}</td>
+      <td className="pr-4">{v.consciousness ? v.consciousness.replace("_", " ") : "-"}</td>
       <td className="pr-4"><Trend cur={v.painScore} prev={prev?.painScore} /></td>
       <td className="text-ink-soft">{v.recordedBy}</td>
     </tr>

@@ -2,8 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ConsultState, ConsultSuggestion, GetSessionRes, IntakeSession, InvestigationOrderReq, Localized } from "@medx/shared";
 import { Button, Card, CardHeader, Field, Icon, Pill } from "@/components/ui";
-import { useFrame } from "../../../../(clinician)/_frame";
-import { Head, Notice } from "../../../_bits";
+import { Head, Notice, ReadOnlyNote, useIdentity } from "../../../_bits";
 import { CATALOG, fixtureConsider, fixtureInvestigation, fixtureSession } from "../../../_fixture";
 import { asSession, call, clockOf, tr, type TKey } from "../../../_lib";
 import { Meds } from "./_meds";
@@ -14,7 +13,8 @@ const CATS: { v: "all" | Cat; k: TKey }[] = [{ v: "all", k: "all" }, { v: "lab",
 interface Pick { code: string; label: Localized; category: Cat; fromSuggestionId?: string }
 
 export function Orders({ id }: { id: string }) {
-  const { lang, reviewer } = useFrame();
+  const { lang, reviewer, role } = useIdentity("Orders");
+  const canOrder = role === "doctor";
   const [session, setSession] = useState<IntakeSession | null>(null);
   const [fixture, setFixture] = useState(false);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -40,16 +40,18 @@ export function Orders({ id }: { id: string }) {
     <div className="cl-enter mx-auto max-w-6xl px-4 py-6 sm:px-6">
       <Head id={id} title={tr("ordersTitle", lang)} session={session} lang={lang} fixture={fixture} />
       {loadErr && <Notice>{tr("loadFail", lang)} {loadErr}</Notice>}
+      {!canOrder && <ReadOnlyNote>{tr("doctorsOnly", lang)}</ReadOnlyNote>}
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
-        <Investigations id={id} session={session} consider={consider} lang={lang} reviewer={reviewer} apply={apply} />
-        <Meds id={id} session={session} lang={lang} reviewer={reviewer} apply={apply} />
+        <Investigations id={id} session={session} consider={consider} lang={lang} reviewer={reviewer} apply={apply} readOnly={!canOrder} />
+        <Meds id={id} session={session} lang={lang} reviewer={reviewer} apply={apply} readOnly={!canOrder} />
       </div>
       <p className="mt-4 text-small text-ink-soft">{tr("prototype", lang)}</p>
     </div>
   );
 }
 
-function Investigations({ id, session, consider, lang, reviewer, apply }: {
+function Investigations({ id, session, consider, lang, reviewer, apply, readOnly }: {
+  readOnly: boolean;
   id: string; session: IntakeSession | null; consider: ConsultSuggestion[]; lang: "en" | "th" | "it"; reviewer: string; apply: (s: IntakeSession, fx: boolean) => void;
 }) {
   const [cat, setCat] = useState<"all" | Cat>("all");
@@ -91,7 +93,7 @@ function Investigations({ id, session, consider, lang, reviewer, apply }: {
               {chips.map(({ c, w }) => (
                 <li key={`${c.id}-${w.id}`}>
                   <button
-                    type="button" disabled={active.has(w.id)}
+                    type="button" disabled={readOnly || active.has(w.id)}
                     onClick={() => setPick({ code: w.id, label: w.label, category: catOf(w.id), fromSuggestionId: c.id })}
                     className="inline-flex h-9 items-center gap-1.5 rounded-full border border-dashed border-ocean/60 bg-ocean-tint px-3.5 text-small font-semibold text-ocean hover:bg-sheet focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean disabled:border-rule disabled:bg-muted disabled:text-graphite"
                   >
@@ -126,7 +128,7 @@ function Investigations({ id, session, consider, lang, reviewer, apply }: {
         {items.map((i) => (
           <li key={i.id}>
             <button
-              type="button" disabled={active.has(i.id)} onClick={() => setPick({ code: i.id, label: i.label, category: i.category })}
+              type="button" disabled={readOnly || active.has(i.id)} onClick={() => setPick({ code: i.id, label: i.label, category: i.category })}
               className="flex min-h-11 w-full items-center justify-between gap-2 rounded-control border border-rule-strong/50 bg-sheet px-3.5 py-2 text-left text-body font-semibold text-ink hover:border-ocean focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean disabled:bg-muted disabled:text-graphite"
             >
               {i.label[lang]}

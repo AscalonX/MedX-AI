@@ -1,21 +1,23 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { IntakeSession, Lang, MedAlert, MedicationOrder, MedicationOrderReq, SubmitOrderReq } from "@medx/shared";
 import { Badge, Button, Card, CardHeader, Field, Icon } from "@/components/ui";
-import { Notice, statusBadge } from "../../../_bits";
+import { Notice, noDash, statusBadge } from "../../../_bits";
 import { fixtureMedication, fixtureMedStatus } from "../../../_fixture";
 import { RULE_COUNTS, asSession, call, tr } from "../../../_lib";
 
 const EMPTY = { drugText: "", dose: "", route: "oral", frequency: "", duration: "" };
 type Apply = (s: IntakeSession, fx: boolean) => void;
 
-export function Meds({ id, session, lang, reviewer, apply }: { id: string; session: IntakeSession | null; lang: Lang; reviewer: string; apply: Apply }) {
+export function Meds({ id, session, lang, reviewer, apply, readOnly }: {
+  readOnly: boolean; id: string; session: IntakeSession | null; lang: Lang; reviewer: string; apply: Apply }) {
   const [f, setF] = useState(EMPTY);
   const [editing, setEditing] = useState<string | null>(null);
   const [errs, setErrs] = useState<Partial<Record<keyof typeof EMPTY, string>>>({});
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [formErr, setFormErr] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const meds = session?.orders?.medications ?? [];
   const set = (k: keyof typeof EMPTY) => (e: React.ChangeEvent<HTMLInputElement>) => setF((v) => ({ ...v, [k]: e.target.value }));
 
@@ -46,11 +48,19 @@ export function Meds({ id, session, lang, reviewer, apply }: { id: string; sessi
     finally { setBusy(false); }
   };
 
-  const edit = (m: MedicationOrder) => { setEditing(m.id); setF({ drugText: m.drugText, dose: m.dose, route: m.route, frequency: m.frequency, duration: m.duration ?? "" }); };
+  const edit = (m: MedicationOrder) => {
+    setEditing(m.id); setErrs({}); setFormErr(null);
+    setF({ drugText: m.drugText, dose: m.dose, route: m.route, frequency: m.frequency, duration: m.duration ?? "" });
+    setTimeout(() => { formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }); formRef.current?.querySelector("input")?.focus(); }, 50);
+  };
+  const editingOrder = meds.find((m) => m.id === editing);
   return (
     <Card>
       <CardHeader title={tr("medTitle", lang)} />
-      <form onSubmit={check} noValidate className="space-y-3">
+      {!readOnly && <form ref={formRef} onSubmit={check} noValidate className="space-y-3">
+        {editingOrder?.status === "returned" && editingOrder.pharmacist && (
+          <p className="rounded-xl bg-warn-tint px-3 py-2 text-body text-warn"><b>{tr("pharmacistNote", lang)}:</b> {editingOrder.pharmacist.note || "-"} <span className="text-small">({editingOrder.pharmacist.by})</span><br /><span className="text-small">{tr("returnedNote", lang)}</span></p>
+        )}
         <p className="text-small font-semibold text-ink-soft">{editing ? tr("editRx", lang) : tr("newRx", lang)}</p>
         <Field label={tr("drug", lang)} value={f.drugText} error={errs.drugText} onChange={set("drugText")} autoComplete="off" />
         <div className="grid grid-cols-2 gap-3">
@@ -64,11 +74,11 @@ export function Meds({ id, session, lang, reviewer, apply }: { id: string; sessi
           <Button type="submit" variant="primary" disabled={busy} icon={<Icon name="pill" size={16} />}>{busy ? tr("checking", lang) : editing ? tr("update", lang) : tr("check", lang)}</Button>
           {editing && <Button onClick={() => { setEditing(null); setF(EMPTY); }}>{tr("cancelPick", lang)}</Button>}
         </div>
-      </form>
+      </form>}
 
       {meds.length > 0 && (
         <ul className="mt-6 space-y-4">
-          {meds.map((m) => <OrderCard key={`${m.id}-${m.at}-${m.status}`} m={m} lang={lang} busy={busy} err={err} onEdit={() => edit(m)}
+          {meds.map((m) => <OrderCard key={`${m.id}-${m.at}-${m.status}`} m={m} lang={lang} busy={busy} err={err} readOnly={readOnly} onEdit={() => edit(m)}
             onSubmit={(overrides) => mutate(m.id, "submit", { orderedBy: reviewer, overrides })} onCancel={() => mutate(m.id, "cancel", { orderedBy: reviewer })} />)}
         </ul>
       )}
@@ -78,14 +88,15 @@ export function Meds({ id, session, lang, reviewer, apply }: { id: string; sessi
   );
 }
 
-function OrderCard({ m, lang, busy, err, onEdit, onSubmit, onCancel }: {
+function OrderCard({ m, lang, busy, err, readOnly, onEdit, onSubmit, onCancel }: {
+  readOnly: boolean;
   m: MedicationOrder; lang: Lang; busy: boolean; err: string | null; onEdit: () => void; onSubmit: (o: { alertId: string; reason: string }[]) => void; onCancel: () => void;
 }) {
   const [reasons, setReasons] = useState<Record<string, string>>(() => Object.fromEntries(m.overrides.map((o) => [o.alertId, o.reason])));
   const high = m.checks.filter((a) => a.severity === "high");
   const missing = high.filter((a) => ((reasons[a.id] ?? "").match(/\p{L}/gu)?.length ?? 0) < 5);
-  const editable = m.status === "draft" || m.status === "returned";
-  const done = m.status === "cancelled";
+  const editable = !readOnly && m.status === "draft";
+    const done = m.status === "cancelled";
   return (
     <li className={`rounded-2xl border border-rule bg-paper p-4 ${done ? "opacity-60" : ""}`}>
       <div className="flex flex-wrap items-center gap-2">
@@ -121,14 +132,20 @@ function OrderCard({ m, lang, busy, err, onEdit, onSubmit, onCancel }: {
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <Button variant="primary" disabled={busy || missing.length > 0} aria-describedby={missing.length ? `why-${m.id}` : undefined} icon={<Icon name="circle-check" size={16} />}
             onClick={() => onSubmit(high.map((a) => ({ alertId: a.id, reason: reasons[a.id]!.trim() })))}>
-            {busy ? tr("submitting", lang) : m.status === "returned" ? tr("editResubmit", lang) : tr("submit", lang)}
+            {busy ? tr("submitting", lang) : tr("submit", lang)}
           </Button>
           <Button onClick={onEdit}>{tr("edit", lang)}</Button>
-          <Button variant="quiet" disabled={busy} onClick={onCancel}>{tr("cancelOrder", lang)}</Button>
+          <CancelBtn busy={busy} lang={lang} onCancel={onCancel} />
           {missing.length > 0 && <span id={`why-${m.id}`} className="basis-full text-small font-semibold text-warn">{tr("submitBlocked", lang)}</span>}
         </div>
       )}
-      {m.status === "submitted" && <div className="mt-3"><Button variant="quiet" disabled={busy} onClick={onCancel}>{tr("cancelOrder", lang)}</Button></div>}
+      {!readOnly && m.status === "returned" && (
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button variant="primary" icon={<Icon name="pencil" size={16} />} onClick={onEdit}>{tr("editResubmit", lang)}</Button>
+          <CancelBtn busy={busy} lang={lang} onCancel={onCancel} />
+        </div>
+      )}
+      {!readOnly && m.status === "submitted" && <div className="mt-3"><CancelBtn busy={busy} lang={lang} onCancel={onCancel} /></div>}
     </li>
   );
 }
@@ -142,8 +159,8 @@ function AlertCard({ a, lang, children }: { a: MedAlert; lang: Lang; children?: 
         <Badge tone={high ? "signal" : "pencil"} icon={<Icon name="triangle-alert" size={12} />}>{high ? tr("high", lang) : tr("moderate", lang)}</Badge>
         <span className="text-micro font-semibold text-ink-soft">{unchecked ? tr("unchecked", lang) : a.kind.replace(/_/g, " ")}</span>
       </div>
-      <p className="mt-1 text-body font-semibold text-ink">{a.message[lang]}</p>
-      <p className="text-small text-ink-soft">{a.action[lang]}</p>
+      <p className="mt-1 text-body font-semibold text-ink">{noDash(a.message[lang])}</p>
+      <p className="text-small text-ink-soft">{noDash(a.action[lang])}</p>
       {a.evidence.map((e, i) => (
         <p key={i} className="mt-1.5 flex flex-wrap items-center gap-2 text-small text-ink">
           <Badge tone="ocean" icon={<Icon name="quote" size={12} />}>{tr("patientsWords", lang)}</Badge>
@@ -153,4 +170,15 @@ function AlertCard({ a, lang, children }: { a: MedAlert; lang: Lang; children?: 
       {children && <div className="mt-2">{children}</div>}
     </li>
   );
+}
+
+/** Two-step cancel: first click asks, second confirms. */
+function CancelBtn({ busy, lang, onCancel }: { busy: boolean; lang: Lang; onCancel: () => void }) {
+  const [ask, setAsk] = useState(false);
+  return ask ? (
+    <span className="inline-flex gap-2">
+      <Button variant="secondary" disabled={busy} onClick={onCancel}>{tr("confirmCancel", lang)}</Button>
+      <Button onClick={() => setAsk(false)}>{tr("keep", lang)}</Button>
+    </span>
+  ) : <Button variant="quiet" disabled={busy} onClick={() => setAsk(true)}>{tr("cancelOrder", lang)}</Button>;
 }

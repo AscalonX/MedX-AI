@@ -106,7 +106,7 @@ export const T = {
   stReturned: L("Returned by pharmacist", "เภสัชกรส่งกลับ", "Restituito dal farmacista"),
   stCancelled: L("Cancelled", "ยกเลิกแล้ว", "Annullato"),
   pharmacistNote: L("Pharmacist note", "บันทึกจากเภสัชกร", "Nota del farmacista"),
-  editResubmit: L("Edit and resubmit", "แก้ไขและส่งใหม่", "Modifica e reinvia"),
+  editResubmit: L("Edit prescription", "แก้ไขใบสั่งยา", "Modifica prescrizione"),
   patientsWords: L("From patient's words", "จากคำพูดของผู้ป่วย", "Dalle parole del paziente"),
   footer: L(
     "Checks use MedX rule set ({drugs} drugs, {ix} interactions). Not a complete drug-interaction check. The prescriber is responsible.",
@@ -116,6 +116,13 @@ export const T = {
   prototype: L("Research prototype. Supports clinicians; does not order, prescribe or decide triage.", "ต้นแบบงานวิจัย ช่วยบุคลากร ไม่สั่งตรวจ ไม่สั่งยา และไม่ตัดสินระดับคัดกรอง", "Prototipo di ricerca. Supporta i clinici; non ordina, non prescrive e non decide il triage."),
   considerations: L("Considerations from consult", "ประเด็นที่ควรพิจารณาจากการสนทนา", "Considerazioni dalla consulenza"),
   forReview: L("For clinician review, not a diagnosis.", "สำหรับบุคลากรพิจารณา ไม่ใช่การวินิจฉัย", "Per revisione clinica, non una diagnosi."),
+  doctorsOnly: L("Prescribing and ordering are for doctors. You can view orders but not change them.", "การสั่งยาและสั่งตรวจสำหรับแพทย์ คุณดูได้แต่แก้ไขไม่ได้", "Prescrizioni e ordini sono riservati ai medici. Puoi visualizzare ma non modificare."),
+  nursesOnly: L("Vitals are entered by nurses. You can view them but not change them.", "สัญญาณชีพบันทึกโดยพยาบาล คุณดูได้แต่แก้ไขไม่ได้", "I parametri vitali sono inseriti dagli infermieri. Puoi visualizzarli ma non modificarli."),
+  returnedNote: L("Returned by pharmacist. Change the prescription, press Check, then submit again.", "เภสัชกรส่งกลับ แก้ไขใบสั่งยา กดตรวจสอบ แล้วส่งใหม่", "Restituito dal farmacista. Modifica la prescrizione, premi Controlla, poi invia di nuovo."),
+  confirmCancel: L("Confirm cancel", "ยืนยันการยกเลิก", "Conferma annullamento"),
+  keep: L("Keep", "เก็บไว้", "Mantieni"),
+  o2col: L("On O2", "ออกซิเจน", "O2"),
+  acvpuCol: L("ACVPU", "ACVPU", "ACVPU"),
   failed: L("Request failed", "ดำเนินการไม่สำเร็จ", "Richiesta non riuscita"),
 } satisfies Record<string, Localized>;
 export type TKey = keyof typeof T;

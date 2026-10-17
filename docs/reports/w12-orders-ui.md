@@ -42,3 +42,10 @@ Run with Playwright against :3000; screenshots v9-vitals-live.png, v9-orders-liv
 - MF-6/7: alerts with ruleId MR-DOSE-UNCHECKED or MR-ALLERGY-UNKNOWN render as a bold amber "Not checked" card. NOT live-verified: the server did not emit them yet (Ibuprofen "some tablets" returned no checks).
 - MF-8: override reason needs at least 5 letters (client), submit stays disabled otherwise.
 - tsc and eslint 'app/(orders)' clean. Live: write against an unknown session showed "Session not found" and added no history row.
+
+## UX audit P0/P1 fixes (w16)
+- P0-2: a returned order shows the pharmacist note, and "Edit prescription" opens the form pre-filled (drug, dose, route, frequency, duration) with the note above it. Nothing is re-sent until the doctor edits and presses Check, then Submit; the drug can be changed. Returned orders no longer have a one-click resubmit. Live-verified (order stayed "Returned" after opening the form).
+- P0-3: `useIdentity` (in `_bits.tsx`) reads and writes `ROLE_STORAGE_KEY` and `reviewerStorageKey(role)` from `staff.ts`. Doctor role stays doctor with "Dr. Marco Bianchi" on Orders and Vitals. Orders: read-only with "Prescribing and ordering are for doctors" for nurse/pharmacist/ops (no form, no submit/cancel/order buttons). Vitals: entry and triage confirm for nurses only; doctors view with a note. Live-verified for nurse and doctor.
+- P1/P2: per-page titles ("Vitals | MedX", "Orders | MedX"); em dashes in server text shown as commas; two-step Cancel order; ACVPU is now wrapping radio chips (no clipping); history table gains On O2 and ACVPU columns.
+- Note: `tsc` currently reports an error in `lib/pipeline/pharmacyExtraction.ts` (not my area). `app/(orders)` is clean.
+- Caveat: the shared frame (`(clinician)/_frame.tsx`) still holds role in React state; my pages sync it from storage on mount, so the header follows. Pharmacist/ops stored roles are treated as read-only here.
