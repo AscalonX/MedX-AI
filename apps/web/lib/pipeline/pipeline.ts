@@ -8,7 +8,7 @@ import { nextQuestion } from './nextQuestion';
 import { checkRedFlags } from './redflags';
 import { redFlagScreen } from './redFlagScreen';
 import { redact } from './redact';
-import { appendAudit, getAudit, getSession, getSessions, saveSession, withSessionLock } from './store';
+import { appendAudit, getAudit, getSession, getSessions, hasClientTurnId, saveSession, withSessionLock } from './store';
 import { words } from './verify';
 import { mergePharmacy, mockPharmacy, pharmacyEntries } from './pharmacyExtraction';
 import { aliases } from './prompts';
@@ -16,7 +16,6 @@ import { quickAnswer } from './quickAnswers';
 import { assessTriage } from './triage';
 export type { ModelClient } from './llm';
 export const TURN_TIMEOUT_MS = 40000;
-type InternalTurn = IntakeSession['turns'][number] & { clientTurnId?: string };
 
 export class PipelineError extends Error {
   constructor(message: string, public code: 'bad_request' | 'not_found', public status?: number) { super(message); }
@@ -146,12 +145,11 @@ export async function addTurn(sessionId: string, rawText: string, inputMode?: 't
 export async function addTurnInLock(sessionId: string, rawText: string, inputMode?: 'text' | 'voice', clientTurnId?: string) {
   if (clientTurnId !== undefined && (typeof clientTurnId !== 'string' || !clientTurnId.trim() || clientTurnId.length > 200)) throw new PipelineError('Invalid clientTurnId', 'bad_request');
   const current = requireSession(sessionId);
-  if (clientTurnId !== undefined && (current.turns as InternalTurn[]).some(t => t.clientTurnId === clientTurnId)) return current;
+  if (clientTurnId !== undefined && hasClientTurnId(sessionId, clientTurnId)) return current;
   const events: { type: AuditEvent['type']; payload: Record<string, unknown> }[] = [];
   const session = await runTurn(current, rawText, { inputMode, audit: (type, payload) => events.push({ type, payload }) });
   if (session.triage) session.triage = assessTriage(session);
-  if (clientTurnId !== undefined) (session.turns.find(t => t.role === 'patient' && !current.turns.some(old => old.id === t.id)) as InternalTurn).clientTurnId = clientTurnId;
-  saveSession(session);
+  saveSession(session, clientTurnId);
   for (const e of events) appendAudit(sessionId, e.type, 'system', e.payload);
   return session;
 }

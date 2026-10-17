@@ -96,8 +96,10 @@ describe('doctor orders and prescribing gates', () => {
   it('validates catalog codes and returns updated session with a submitted investigation', async () => {
     const id = createSession('en').id;
     expect((await investigation(request({ orderedBy: 'dr', code: 'invented' }), ctx(id))).status).toBe(400);
-    const response = await investigation(request({ orderedBy: 'dr', code: 'ecg', fromSuggestionId: 'consider:chest' }), ctx(id));
-    expect(response.status).toBe(200); expect((await response.json()).orders.investigations[0]).toMatchObject({ code: 'ecg', fromSuggestionId: 'consider:chest', status: 'submitted' });
+    await addConsultTurn(id, { text: 'Chest pain', speaker: 'patient', mode: 'doctor' });
+    const suggestion = (await getConsult(id, 'doctor')).suggestions.find(x => x.kind === 'consider')!;
+    const response = await investigation(request({ orderedBy: 'dr', code: 'ecg', fromSuggestionId: suggestion.id }), ctx(id));
+    expect(response.status).toBe(200); expect((await response.json()).orders.investigations[0]).toMatchObject({ code: 'ecg', fromSuggestionId: suggestion.id, status: 'submitted' });
     expect(getAudit(id).at(-1)?.type).toBe('order_submitted');
   });
   it.each([['500 mg', 'every 6 hours', 500, 4], ['1 g', 'bid', 1000, 2], ['50 mcg', 'daily', 0.05, 1], ['500 mg', '3 times per day', 500, 3], ['one tablet', 'as needed', undefined, undefined]])('parses %s / %s conservatively', (dose, frequency, doseMg, timesPerDay) => {
@@ -119,7 +121,7 @@ describe('doctor orders and prescribing gates', () => {
     const other = await make(s.id, { drugText: 'naproxen' }); expect(other.checks.some((a: { kind: string }) => a.kind === 'duplicate_therapy')).toBe(true);
     expect(other.checks.some((a: { kind: string }) => a.kind === 'interaction')).toBe(false);
   });
-  it('requires all high overrides, returns with note, rechecks edits, resubmits, verifies, and cancels with audit', async () => {
+  it('requires all high overrides, returns with note, rechecks edits, resubmits, verifies, and rejects cancellation', async () => {
     const id = createSession('en').id, o = await make(id, { dose: '1500 mg' }); const context = ctx(id, o.id);
     expect((await submit(request({ orderedBy: 'dr', overrides: [] }), context)).status).toBe(409);
     expect((await submit(request({ orderedBy: 'dr', overrides: [{ alertId: o.checks[0].id, reason: ' ' }] }), context)).status).toBe(400);
@@ -136,10 +138,11 @@ describe('doctor orders and prescribing gates', () => {
     expect(edited.checks).toEqual([expect.objectContaining({ ruleId: 'MR-ALLERGY-UNKNOWN', severity: 'moderate' })]);
     expect((await submit(request({ orderedBy: 'dr', overrides: [] }), context)).status).toBe(200);
     expect((await pharmacy(request({ reviewerId: 'ph', action: 'verify' }), context)).status).toBe(200);
-    expect((await cancel(request({ orderedBy: 'dr', reason: 'No longer needed' }), context)).status).toBe(200);
-    expect(getSession(id)!.orders!.medications[0].status).toBe('cancelled');
+    const audit = getAudit(id);
+    expect((await cancel(request({ orderedBy: 'dr', reason: 'No longer needed' }), context)).status).toBe(409);
+    expect(getSession(id)!.orders!.medications[0].status).toBe('verified');
     expect(getAudit(id).filter(a => a.type === 'order_pharmacy_action')).toHaveLength(2);
-    expect(getAudit(id).at(-1)?.payload).toMatchObject({ action: 'cancel', orderId: o.id });
+    expect(getAudit(id)).toEqual(audit);
     expect((await submit(request({ orderedBy: 'dr', overrides: [] }), context)).status).toBe(409);
   });
   it('rechecks new interactions at verify and blocks stale overrides', async () => {

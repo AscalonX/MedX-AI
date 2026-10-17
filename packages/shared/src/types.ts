@@ -183,6 +183,7 @@ export type AuditType =
   | "order_drafted"
   | "order_submitted"
   | "order_pharmacy_action"
+  | "order_cancelled"
   | "takeover";
 
 export interface AuditEvent {

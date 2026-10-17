@@ -221,17 +221,17 @@ Medicines and allergies are given **already split** (one entry per medicine/alle
 
 ## Dose range (doctor medication orders, v1.1)
 
-`| D | lang | expect | drug as typed | dose mg | times per day |`. MR-DOSE-01 = single dose above `doseRange.maxSingleMg`; MR-DOSE-02 = dose × times/day above `doseRange.maxDailyMg`. Severity high (doctor documents an override reason; pharmacist verifies or returns). Wording is "outside the usual adult range — check", never an instruction.
+`| D | lang | expect | drug as typed | dose mg | times per day |`. MR-DOSE-RANGE = one alert per order for single dose above `doseRange.maxSingleMg` and/or dose × times/day above `doseRange.maxDailyMg`, listing each exceeded limit. Severity high (doctor documents an override reason; pharmacist verifies or returns). MR-DOSE-UNCHECKED = moderate alert when the drug/range is unknown or dose/frequency cannot be parsed. Wording is "outside the usual adult range — check" or "Dose not checked — verify against a full reference", never an instruction.
 
 | D | lang | expect | drug | mg | per day |
 |---|---|---|---|---|---|
-| D | en | !MR-DOSE-01 | Paracetamol | 1000 | 4 |
-| D | en | !MR-DOSE-02 | Paracetamol | 1000 | 4 |
-| D | en | MR-DOSE-02 | Tylenol | 1000 | 6 |
-| D | it | MR-DOSE-01 | Tachipirina | 2000 | 1 |
-| D | th | MR-DOSE-02 | ไอบูโพรเฟน | 800 | 4 |
-| D | it | !MR-DOSE-02 | Brufen | 400 | 3 |
-| D | en | MR-DOSE-01 | amlodipine | 20 | 1 |
-| D | en | MR-DOSE-02 | tramadol | 100 | 6 |
-| D | th | !MR-DOSE-01 | วาร์ฟาริน | 5 | 1 |
-| D | en | !MR-DOSE-01 | vitamin D | 5000 | 1 |
+| D | en | !MR-DOSE-RANGE | Paracetamol | 1000 | 4 |
+| D | en | !MR-DOSE-UNCHECKED | Paracetamol | 1000 | 4 |
+| D | en | MR-DOSE-RANGE | Tylenol | 1000 | 6 |
+| D | it | MR-DOSE-RANGE | Tachipirina | 2000 | 1 |
+| D | th | MR-DOSE-RANGE | ไอบูโพรเฟน | 800 | 4 |
+| D | it | !MR-DOSE-RANGE | Brufen | 400 | 3 |
+| D | en | MR-DOSE-RANGE | amlodipine | 20 | 1 |
+| D | en | MR-DOSE-RANGE | tramadol | 100 | 6 |
+| D | th | !MR-DOSE-RANGE | วาร์ฟาริน | 5 | 1 |
+| D | en | MR-DOSE-UNCHECKED | vitamin D | 5000 | 1 |

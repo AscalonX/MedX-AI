@@ -170,10 +170,8 @@ Sections, in order: **presenting_complaint · history · medications · allergie
 ## 11. Doctor orders and prescribing checks
 
 - `MedicationOrder.checks` reuse the pharmacy engine (PHARMACY-SPEC §5) against allergies, current meds, other new orders and pregnancy, plus **dose_range**:
-  - MR-DOSE-01: single dose > `doseRange.maxSingleMg`;
-  - MR-DOSE-02: dose × timesPerDay > `doseRange.maxDailyMg`;
-  - both high; wording "Dose is outside the usual adult range — check".
-- A drug that is unknown or has no `doseRange` gets no dose alert (and the unknown drug gets `unknown_medication`).
+  - MR-DOSE-RANGE: one high alert per order when the single dose > `doseRange.maxSingleMg` or dose × timesPerDay > `doseRange.maxDailyMg`; lists each exceeded limit; wording "Dose is outside the usual adult range — check".
+  - MR-DOSE-UNCHECKED: moderate alert when the drug/range is unknown or dose/frequency cannot be parsed; "Dose not checked — verify against a full reference". An unknown drug also gets `unknown_medication`.
 - High alerts need a documented doctor override reason. The pharmacist then verifies or returns the order.
 - The AI never proposes a drug, dose, route or frequency. Considerations carry guideline links only.
 

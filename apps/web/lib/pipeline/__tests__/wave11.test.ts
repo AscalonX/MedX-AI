@@ -76,7 +76,9 @@ describe('ambient patient and clinician safety boundaries', () => {
     const [a, b] = await Promise.all([addConsultTurn(s.id, req, options), addConsultTurn(s.id, req, options)]);
     expect(a).toEqual(b); expect(getSession(s.id)!.turns.filter(t => t.role === speaker)).toHaveLength(1);
     expect(getAudit(s.id).filter(a => a.type === 'consult_turn')).toHaveLength(1);
-    const saved = JSON.parse(readFileSync(path.join(dir, 'store.json'), 'utf8')); expect(saved.sessions[0].turns[0].clientTurnId).toBe('same-1');
+    const saved = JSON.parse(readFileSync(path.join(dir, 'store.json'), 'utf8'));
+    expect(saved.sessions[0].turns[0]).not.toHaveProperty('clientTurnId');
+    expect(saved.clientTurnIds).toContainEqual([s.id, ['same-1']]);
     const closed = getSession(s.id)!; closed.status = 'taken_over'; saveSession(closed);
     await expect(addConsultTurn(s.id, req, options)).resolves.toEqual(a);
   });

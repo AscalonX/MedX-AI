@@ -173,7 +173,9 @@ describe('turn retry and budget contracts', () => {
     expect(responses.map(r => r.status)).toEqual([200, 200]);
     expect(await responses[0].json()).toEqual(await responses[1].json());
     const saved = getSession(s.id)!; expect(saved.turns.filter(t => t.role === 'patient')).toHaveLength(1);
-    expect(JSON.parse(readFileSync(path.join(dir, 'store.json'), 'utf8')).sessions[0].turns[0].clientTurnId).toBe('retry-1');
+    const disk = JSON.parse(readFileSync(path.join(dir, 'store.json'), 'utf8'));
+    expect(disk.sessions[0].turns[0]).not.toHaveProperty('clientTurnId');
+    expect(disk.clientTurnIds).toContainEqual([s.id, ['retry-1']]);
     saved.status = 'taken_over'; saveSession(saved); const audit = getAudit(s.id);
     const duplicate = await turn(request(value), context(s.id));
     expect(duplicate.status).toBe(200); expect(await duplicate.json()).toEqual(saved); expect(getAudit(s.id)).toEqual(audit);

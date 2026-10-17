@@ -11,7 +11,7 @@ import { aliases, CONSULT_SYSTEM, consultPrompt } from './prompts';
 import { checkRedFlags } from './redflags';
 import { redact } from './redact';
 import { localized, object, shortString } from './schema';
-import { appendAudit, getConsultRecord, getSession, saveConsultRecord, saveSession, withSessionLock, type ConsultRecord } from './store';
+import { appendAudit, getConsultRecord, getSession, hasClientTurnId, saveConsultRecord, saveSession, withSessionLock, type ConsultRecord } from './store';
 import { QUESTIONS } from './templates';
 import { norm, verifyDetailed, words } from './verify';
 
@@ -102,6 +102,23 @@ export function modelSuggestions(data: unknown, s: IntakeSession): ConsultSugges
   return result;
 }
 export interface ConsultOptions { rules?: ConsultRuleFile; client?: ModelClient }
+const questionStops = new Set('a an the i you your we he she it they is am are was were be been do does did have has had how what when where which who would could can should please ask about clarify confirm or and of to for in on at any some mi ti si il lo la le gli un una di da del della e o che come ha hai avete sei sono per al alla chiedere paziente คุณ ผม ฉัน ครับ ค่ะ ที่ และ หรือ มี เป็น ได้ ไหม หรือไม่ อะไร อย่างไร'.split(' '));
+function questionText(suggestion: ConsultSuggestion, lang: 'en' | 'it' | 'th') {
+  return suggestion.text[lang].replace(/^.*?:\s*/u, '').replace(/^(?:ask|clarify|confirm|chiedere|สอบถามผู้ป่วย)\s*/iu, '');
+}
+function contentTokens(text: string, lang: 'en' | 'it' | 'th') {
+  return new Set(words(norm(text).t, lang).map(w => w.segment === 'old' ? 'age' : w.segment).filter(w => !questionStops.has(w)));
+}
+function ruleAnswer(s: IntakeSession, suggestion: ConsultSuggestion, later: IntakeSession['turns'], rules: ConsultRuleFile) {
+  const rule = rules.rules.find(r => r.id === suggestion.ruleId);
+  if (!rule || suggestion.kind !== 'rule_out' || suggestion.id.startsWith('rule_out:flag:')) return false;
+  // A repeated trigger (e.g. "headache") is not an answer to "sudden or gradual?".
+  return (['en', 'it', 'th'] as const).some(lang => {
+    const triggers = contentTokens(rule.match.flat().join(' '), lang);
+    const answerTokens = [...contentTokens(questionText(suggestion, lang), lang)].filter(t => !triggers.has(t));
+    return later.some(turn => answerTokens.some(token => contentTokens(turn.text, lang).has(token)) && !!verifyDetailed(turn.text, s.turns, turn.id, false, false));
+  });
+}
 async function refresh(s: IntakeSession, record: ConsultRecord, options: ConsultOptions = {}) {
   const rules = options.rules || loadConsultRules();
   const patients = s.turns.filter(t => t.role === 'patient');
@@ -136,6 +153,17 @@ async function refresh(s: IntakeSession, record: ConsultRecord, options: Consult
   // Stable statuses survive re-ranking, changed rules, disappearing fields and reloads.
   record.suggestions = candidates.map(x => ({ ...x, status: old.get(x.id)?.status || 'open' }));
   for (const x of old.values()) if (x.status !== 'open' && !record.suggestions.some(c => c.id === x.id)) record.suggestions.push(x);
+  for (const x of record.suggestions) if (x.status === 'asked') {
+    const after = record.askedAfterTurn?.[x.id];
+    if (after === undefined) continue;
+    const later = s.turns.slice(after).filter(t => t.role === 'patient');
+    const field = s.summary?.fields.find(f => f.key === x.field);
+    const answered = field && isPresent(field) && field.value && evidenceFor(s, field.evidence).some(e => later.some(t => t.id === e.turnId));
+    if (answered || ruleAnswer(s, x, later, rules)) {
+      x.status = 'answered';
+      appendAudit(s.id, 'consult_suggestion', 'system', { suggestionId: x.id, status: 'answered', trigger: 'patient_evidence' });
+    }
+  }
   // Model questions rank after required prompts; doctor rule considerations precede model items.
   const rank = (x: ConsultSuggestion) => x.id.startsWith('rule_out:flag:') ? 0 : x.kind === 'rule_out' ? 1 : x.source === 'rule' && x.kind === 'ask_next' ? 2 : x.source === 'rule' ? 3 : 4;
   record.suggestions.sort((a, b) => rank(a) - rank(b));
@@ -154,15 +182,14 @@ export async function getConsult(id: string, mode: ConsultMode, options: Consult
     await refresh(s, record, options); saveConsultRecord(id, record); return state(s, record, mode);
   });
 }
-/** Unique normalized question tokens covered by utterance / all question tokens >= .5.
- * Compare each localized question, removing only clinician prompt prefixes.
+/** At least half of the unique content tokens, and at least one content token.
+ * Stop-words and clinician prompt prefixes cannot mark small talk as asked.
  */
 export function askedMatch(utterance: string, suggestion: ConsultSuggestion) {
-  const tokens = (t: string, lang: 'en' | 'it' | 'th') => new Set(words(norm(t).t, lang).map(w => w.segment));
   return (['en', 'it', 'th'] as const).some(lang => {
-    const question = suggestion.text[lang].replace(/^.*?:\s*/u, '').replace(/^(?:ask|clarify|confirm|chiedere|สอบถามผู้ป่วย)\s*/iu, '');
-    const q = tokens(question, lang); const said = tokens(utterance, lang);
-    return q.size > 0 && [...q].filter(w => said.has(w)).length / q.size >= 0.5;
+    const q = contentTokens(questionText(suggestion, lang), lang); const said = contentTokens(utterance, lang);
+    const overlap = [...q].filter(w => said.has(w)).length;
+    return overlap >= 1 && overlap / q.size >= 0.5;
   });
 }
 export async function addConsultTurn(id: string, req: ConsultTurnReq, options: ConsultOptions = {}) {
@@ -171,16 +198,17 @@ export async function addConsultTurn(id: string, req: ConsultTurnReq, options: C
   if (req.clientTurnId !== undefined && !shortString(req.clientTurnId, 200)) throw new PipelineError('Invalid clientTurnId', 'bad_request');
   return withSessionLock(id, async () => {
     let s = sessionFor(id); const record = getConsultRecord(id);
-    const duplicate = req.clientTurnId && s.turns.some(t => (t as typeof t & { clientTurnId?: string }).clientTurnId === req.clientTurnId);
+    const duplicate = req.clientTurnId && hasClientTurnId(id, req.clientTurnId);
     if (duplicate) return state(s, record, req.mode);
     if (!['collecting', 'awaiting_review', 'needs_human', 'escalated'].includes(s.status)) throw new PipelineError('Session no longer accepts consult turns', 'bad_request', 409);
     if (req.speaker === 'patient') s = await addTurnInLock(id, req.text, 'voice', req.clientTurnId);
     else {
       await refresh(s, record, options);
-      const turn = { id: randomUUID(), role: 'clinician' as const, lang: s.patientLang, text: redact(req.text.normalize('NFC')).text, at: new Date().toISOString(), inputMode: 'voice' as const, ...(req.clientTurnId ? { clientTurnId: req.clientTurnId } : {}) };
-      s.turns.push(turn); s.updatedAt = turn.at; saveSession(s);
+      const turn = { id: randomUUID(), role: 'clinician' as const, lang: s.patientLang, text: redact(req.text.normalize('NFC')).text, at: new Date().toISOString(), inputMode: 'voice' as const };
+      s.turns.push(turn); s.updatedAt = turn.at; saveSession(s, req.clientTurnId);
       for (const x of record.suggestions) if (x.status === 'open' && x.kind !== 'consider' && askedMatch(turn.text, x)) {
-        x.status = 'asked'; appendAudit(id, 'consult_suggestion', 'clinician', { suggestionId: x.id, status: 'asked', trigger: 'speech', turnId: turn.id });
+        x.status = 'asked'; (record.askedAfterTurn ||= {})[x.id] = s.turns.length;
+        appendAudit(id, 'consult_suggestion', 'clinician', { suggestionId: x.id, status: 'asked', trigger: 'speech', turnId: turn.id });
       }
     }
     const turn = s.turns.filter(t => t.role === req.speaker).at(-1)!;
@@ -196,7 +224,11 @@ export async function reviewConsultSuggestion(id: string, suggestionId: string, 
   return withSessionLock(id, () => {
     const s = sessionFor(id); const record = getConsultRecord(id); const x = record.suggestions.find(x => x.id === suggestionId);
     if (!x) throw new PipelineError('Suggestion not found', 'not_found');
-    if (x.status !== status) { x.status = status; saveConsultRecord(id, record); appendAudit(id, 'consult_suggestion', 'clinician', { suggestionId, status }, actor); }
+    if (x.status !== status) {
+      x.status = status;
+      if (status === 'asked') (record.askedAfterTurn ||= {})[x.id] = s.turns.length;
+      saveConsultRecord(id, record); appendAudit(id, 'consult_suggestion', 'clinician', { suggestionId, status }, actor);
+    }
     return state(s, record, x.mode.includes('nurse') ? 'nurse' : 'doctor');
   });
 }
@@ -245,7 +277,7 @@ export function draftConsultNote(s: IntakeSession, suggestions: ConsultSuggestio
   for (const f of s.summary?.redFlags || []) add(`flag:${f.ruleId}`, 'red_flags', { en: `Flag for clinician review: ${f.label.en}`, it: `Segnalazione per revisione clinica: ${f.label.it}`, th: `ข้อเตือนให้บุคลากรทบทวน: ${f.label.th}` }, f.evidence);
   for (const x of suggestions.filter(x => x.mode.includes(mode))) {
     if (x.kind === 'consider' && x.source === 'rule' && mode === 'doctor' && x.status !== 'dismissed') add(`suggestion:${x.id}`, 'considerations', x.text, x.evidence);
-    else if (x.kind !== 'consider' && !x.field && !x.id.startsWith('rule_out:flag:')) {
+    else if (x.kind !== 'consider' && x.status !== 'answered' && !x.field && !x.id.startsWith('rule_out:flag:')) {
       const prefix = x.status === 'dismissed' ? localizedText('Not asked (dismissed): ', 'Non chiesto (scartato): ', 'ไม่ได้ถาม (ยกเลิก): ') : x.status === 'asked' ? localizedText('Asked, no answer recorded: ', 'Chiesto, nessuna risposta registrata: ', 'ถามแล้ว ยังไม่บันทึกคำตอบ: ') : localizedText('');
       add(`suggestion:${x.id}`, 'open_questions', { en: prefix.en + x.text.en, it: prefix.it + x.text.it, th: prefix.th + x.text.th }, x.evidence);
     }
@@ -259,6 +291,7 @@ export async function consultNote(id: string, req: ConsultNoteReq, options: Cons
   consultMode(req.mode); const actor = reviewer(req.reviewerId);
   if (!['draft', 'sign'].includes(req.action) || (req.edits !== undefined && (!Array.isArray(req.edits) || req.edits.length > 100 || req.edits.some(e => !object(e) || !shortString(e.lineId, 300) || !shortString(e.text, 2000) || Object.keys(e).some(k => !['lineId', 'text'].includes(k)))))) throw new PipelineError('Invalid note request', 'bad_request');
   if (req.action === 'draft' && req.edits?.length) throw new PipelineError('Edits require sign action', 'bad_request');
+  if (req.action === 'sign' && req.mode !== 'doctor') throw new PipelineError('Only doctor mode can sign a consult note', 'bad_request', 403);
   return withSessionLock(id, async () => {
     const s = sessionFor(id); const record = getConsultRecord(id);
     if (req.action === 'sign' && s.summary?.redFlags.some(f => !f.review)) throw new PipelineError('Every red flag requires clinician review before signing', 'bad_request', 409);
@@ -267,7 +300,7 @@ export async function consultNote(id: string, req: ConsultNoteReq, options: Cons
       await refresh(s, record, options); record.notes[req.mode] = draftConsultNote(s, record.suggestions, req.mode);
       appendAudit(id, 'summary_generated', 'clinician', { event: 'consult_note_drafted', mode: req.mode, lineCount: record.notes[req.mode]!.lines.length }, actor);
     } else {
-      const note = record.notes[req.mode];
+      const note = structuredClone(record.notes[req.mode]);
       if (!note) throw new PipelineError('Draft a note before signing', 'bad_request', 409);
       const ids = new Set<string>();
       for (const edit of req.edits || []) {
@@ -276,9 +309,13 @@ export async function consultNote(id: string, req: ConsultNoteReq, options: Cons
         if (line.section === 'red_flags') throw new PipelineError('Red-flag note lines cannot be edited', 'bad_request');
         ids.add(edit.lineId); line.text = localizedText(redact(edit.text.trim()).text); line.status = 'edited';
       }
+      // Only the missing-fields summary is informational. Every other unsupported
+      // line needs an explicit doctor edit, including a resolution like "Not assessed".
+      if (note.lines.some(l => l.status === 'unsupported' && !(l.id === 'missing:fields' && l.section === 'open_questions'))) throw new PipelineError('Resolve every unsupported note line with an edit before signing', 'bad_request', 409);
       note.lines = note.lines.filter(l => l.section !== 'considerations' || (ids.has(l.id) && record.suggestions.some(x => l.id === `suggestion:${x.id}` && x.kind === 'consider' && x.source === 'rule' && x.status !== 'dismissed')));
       const keptConsiderationIds = note.lines.filter(l => l.section === 'considerations').map(l => l.id);
       const at = new Date().toISOString(); note.signed = { reviewerId: actor, at };
+      record.notes[req.mode] = note;
       appendAudit(id, 'consult_note_signed', 'clinician', { mode: req.mode, editedLineIds: [...ids], keptConsiderationIds, lineCount: note.lines.length }, actor, at);
     }
     saveConsultRecord(id, record); return state(s, record, req.mode);

@@ -4,7 +4,15 @@ import catalog from '@medx/shared/src/investigations.json';
 import { conflict, invalid, optionalText, properties, sessionFor, text, written } from './clinicalWrites';
 import { checkMedRules, lookupDrug, MEDRULES, stableId } from './medrules';
 import { PipelineError } from './pipeline';
-import { withSessionLock } from './store';
+import { shortString } from './schema';
+import { getConsultRecord, withSessionLock } from './store';
+
+// References are opaque server-issued identities, not prose. Validate shape here
+// and membership below before saving; redacting a numeric hash breaks provenance.
+function reference(value: unknown, name: string, max = 200): string {
+  if (!shortString(value, max)) invalid(`Invalid ${name}`);
+  return value.trim();
+}
 
 export function parsePrescription(dose: string, frequency: string): { doseMg?: number; timesPerDay?: number } {
   const amount = dose.trim().match(/^(\d+(?:\.\d+)?)\s*(mg|g|mcg|μg)\.?$/iu);
@@ -74,16 +82,18 @@ export function investigationOrder(id: string, req: unknown) {
   properties(req, ['orderedBy', 'code', 'reason', 'fromSuggestionId']);
   const actor = text(req.orderedBy, 'orderedBy', 200); const code = text(req.code, 'code', 200);
   const item = catalog.items.find(i => i.id === code); if (!item) invalid('Unknown investigation code');
-  const reason = optionalText(req.reason, 'reason'); const fromSuggestionId = optionalText(req.fromSuggestionId, 'fromSuggestionId', 300);
+  const reason = optionalText(req.reason, 'reason'); const fromSuggestionId = req.fromSuggestionId === undefined ? undefined : reference(req.fromSuggestionId, 'fromSuggestionId', 300);
   return withSessionLock(id, () => {
-    const s = sessionFor(id); const o = { id: randomUUID(), code, label: item.label, category: item.category as 'lab' | 'imaging' | 'ecg' | 'other', orderedBy: actor, at: new Date().toISOString(), status: 'submitted' as const, ...(reason ? { reason } : {}), ...(fromSuggestionId ? { fromSuggestionId } : {}) };
+    const s = sessionFor(id);
+    if (fromSuggestionId && !getConsultRecord(id).suggestions.some(x => x.id === fromSuggestionId)) invalid('Unknown consult suggestion for this session');
+    const o = { id: randomUUID(), code, label: item.label, category: item.category as 'lab' | 'imaging' | 'ecg' | 'other', orderedBy: actor, at: new Date().toISOString(), status: 'submitted' as const, ...(reason ? { reason } : {}), ...(fromSuggestionId ? { fromSuggestionId } : {}) };
     (s.orders ||= { medications: [], investigations: [] }).investigations.push(o);
     return written(s, 'order_submitted', actor, { orderId: o.id, kind: 'investigation', code, fromSuggestionId });
   });
 }
 export function medicationOrder(id: string, req: unknown) {
   properties(req, ['orderedBy', 'orderId', 'drugText', 'dose', 'route', 'frequency', 'duration']);
-  const actor = text(req.orderedBy, 'orderedBy', 200); const orderId = optionalText(req.orderId, 'orderId', 200);
+  const actor = text(req.orderedBy, 'orderedBy', 200); const orderId = req.orderId === undefined ? undefined : reference(req.orderId, 'orderId');
   const drugText = text(req.drugText, 'drugText', 300), dose = text(req.dose, 'dose', 200), route = text(req.route, 'route', 100), frequency = text(req.frequency, 'frequency', 200), duration = optionalText(req.duration, 'duration', 200);
   return withSessionLock(id, () => {
     const s = sessionFor(id); const old = orderId ? orderFor(s, orderId) : undefined;
@@ -104,7 +114,7 @@ export function medicationAction(id: string, orderId: string, action: 'submit' |
   if (!Array.isArray(overrides) || overrides.length > 100) invalid('Invalid overrides');
   const seen = new Set<string>();
   const parsed = overrides.map(value => {
-    properties(value, ['alertId', 'reason']); const alertId = text(value.alertId, 'alertId', 200), reason = text(value.reason, 'override reason');
+    properties(value, ['alertId', 'reason']); const alertId = reference(value.alertId, 'alertId'), reason = text(value.reason, 'override reason');
     if ((reason.match(/[\p{L}\p{N}]/gu) || []).length < 5) invalid('Override reason must contain at least five letters or digits');
     if (seen.has(alertId)) invalid('Duplicate override'); seen.add(alertId); return { alertId, reason, by: actor, at: new Date().toISOString() };
   });
@@ -112,6 +122,7 @@ export function medicationAction(id: string, orderId: string, action: 'submit' |
     const s = sessionFor(id), o = orderFor(s, orderId); refresh(s);
     if (action === 'cancel') {
       if (o.status === 'cancelled') conflict('Order already cancelled');
+      if (o.status === 'verified') conflict('Verified orders cannot be cancelled');
       o.status = 'cancelled'; refresh(s);
       // Contract has no cancellation audit type; record the action explicitly.
       return written(s, 'order_drafted', actor, { orderId, action: 'cancel', ...(note ? { reason: note } : {}) });

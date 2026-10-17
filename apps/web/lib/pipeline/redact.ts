@@ -23,6 +23,8 @@ export function redact(input: string) {
     if (matches.length) counts.set(type, base + matches.length);
   };
   replace('EMAIL', /[\p{L}\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)+/gu);
+  // Record identifiers must be classified before phone/national-ID patterns.
+  replace('ID', /(?:\b(?:HN|MRN|patient\s+id|hospital\s+(?:number|no\.?)|medical\s+record(?:\s+(?:number|no\.?))?|numero\s+di\s+cartella)\b|เลขที่โรงพยาบาล)\s*(?:is\s*)?[:：#]?\s*\d(?:[ -]?\d){0,19}(?!\d)/giu);
   replace('ID', /(?<!\d)(?:\d{13}|\d-\d{4}-\d{5}-\d{2}-\d)(?!\d)/g);
   replace('ID', /\b[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]\b/gi);
   replace('DOB', /(?:date\s+of\s+birth|dob|born(?:\s+on)?|data\s+di\s+nascita|nat[oa]\s+il|วันเกิด|เกิดวันที่|เกิดเมื่อ)\s*(?:is\s*)?[:：]?\s*(?:\d{1,4}[\/.-]\d{1,2}[\/.-]\d{1,4}|\d{1,2}\s+[\p{L}.]+\s+\d{2,4})/giu);
@@ -38,17 +40,19 @@ export function redact(input: string) {
   const capitalised = String.raw`(?=\p{Script=Latin})\p{Lu}[\p{Script=Latin}\p{M}'’-]*`;
   const latinName = new RegExp(`^${capitalised}(?:\\s+${capitalised}){0,2}`, 'u');
   const explicitName = /^(?=\p{Script=Latin})[\p{L}][\p{Script=Latin}\p{M}'’-]*/u;
-  const stop = /^(?:svenut[oa]|stanc[oa]|incinta|allergic[oa]?|malat[oa]|nato|nata|cadut[oa]|sudat[oa]|tired|sick|pregnant|allergic|having|have|ho|ha|e|and|with|con|da|since|chest|pain|headache|fever|dolore|febbre|tosse|molto|not|non|no)$/iu;
-  const triggers = /\b(?:my\s+name\s+is|i['’]m\s+called|i\s+am\s+called|mi\s+chiamo|sono|i['’]m)\s+/giu;
+  const stop = /^(?:svenut[oa]|stanc[oa]|incinta|allergic[oa]?|malat[oa]|nato|nata|cadut[oa]|sudat[oa]|tired|sick|pregnant|allergic|dizzy|feverish|nauseous|breathless|wheezing|vomiting|confused|faint|weak|sweaty|short|having|have|ho|ha|e|and|with|con|da|since|chest|pain|headache|fever|dolore|febbre|tosse|molto|not|non|no|i|here|doctor)$/iu;
+  const triggers = /(?:\b(?:my\s+name\s+is|i['’]m\s+called|i\s+am\s+called|mi\s+chiamo|sono|i['’]m|i\s+am|Mr\.?|Mrs\.?|Ms\.?|Miss|Dr\.?|Signor|Signora|Sig\.?|hello|hi|yes\s+doctor[, ]*)|นางสาว|นาง|นาย|คุณ|ผม|ฉัน)\s+/giu;
   const spans = [...text.matchAll(triggers)].flatMap(m => {
     const end = m.index! + m[0].length;
-    const implicit = /^(?:sono|i['’]m)\s+$/iu.test(m[0]);
-    const name = (implicit ? latinName : explicitName).exec(text.slice(end));
+    const implicit = /^(?:sono|i['’]m|i\s+am|ผม|ฉัน)\s+$/iu.test(m[0]);
+    const explicit = /^(?:my\s+name\s+is|i['’]m\s+called|i\s+am\s+called|mi\s+chiamo)\s+$/iu.test(m[0]);
+    const name = (explicit ? explicitName : latinName).exec(text.slice(end));
     if (!name) return [];
     let length = 0;
     for (const token of name[0].matchAll(/\S+/gu)) { if (stop.test(token[0])) break; length = token.index! + token[0].length; }
     if (!length) return [];
-    if (!implicit) {
+    if (implicit && text.slice(end, end + length).trim().split(/\s+/u).length < 2) return [];
+    if (explicit) {
       const second = /^\s+([\p{Script=Latin}][\p{Script=Latin}\p{M}'’-]*)/u.exec(text.slice(end + length));
       if (second && !stop.test(second[1])) length += second[0].length;
     }
@@ -59,8 +63,11 @@ export function redact(input: string) {
   }
   // Strong symptom stems also stop an unspaced introduction. Short stems
   // such as ชา are checked only at the start of a token (สมชาย is a name).
-  const strongThaiStops = 'เจ็บ|ปวด|หายใจ|เหงื่อ|แพ้|ไข้|แน่น|เวียน|หมดสติ|ไม่|กินยา|ตั้งครรภ์|อายุ|อ่อนแรง|เลือด|อาเจียน|หอบ|บวม|ผื่น|หน้ามืด|เป็นลม|ซึม|สับสน|กลืน|พูด|เดิน|ตามัว|มองเห็น|คอแข็ง|ฆ่าตัว|อยากตาย';
+  const strongThaiStops = 'เจ็บ|ปวด|หายใจ|เหงื่อ|แพ้|ไข้|แน่น|เวียน|หมดสติ|ไม่|กินยา|ตั้งครรภ์|อายุ|อ่อนแรง|เลือด|อาเจียน|หอบ|บวม|ผื่น|หน้ามืด|เป็น|รู้สึก|กำลัง|มี|ซึม|สับสน|กลืน|พูด|เดิน|ตามัว|มองเห็น|คอแข็ง|ฆ่าตัว|อยากตาย';
   const thaiToken = `(?!(?:${thaiClinicalPattern}|${strongThaiStops}|ไอ|ชา|ชัก|มีอาการ|ท้อง|และ|แต่|ครับ|ค่ะ))(?:(?!(?:${strongThaiStops}))[\\p{Script=Thai}]){1,20}`;
   replace('NAME', new RegExp(`(?:ดิฉันชื่อ|ฉันชื่อ|ผมชื่อ|สวัสดี(?:ค่ะ|ครับ)[ \\t]+ชื่อ)\\s*${thaiToken}(?:[ \\t]+${thaiToken})?`, 'gu'));
+  replace('NAME', new RegExp(`(?:นางสาว|นาง|นาย|คุณ)[ \\t]*${thaiToken}(?:[ \\t]+${thaiToken})?`, 'gu'));
+  replace('NAME', new RegExp(`(?:ผม|ฉัน)[ \\t]*${thaiToken}(?:[ \\t]+${thaiToken})?`, 'gu'));
+  replace('NAME', new RegExp(`\\b(?:Mr\\.?|Mrs\\.?|Ms\\.?|Miss|Dr\\.?|Signor|Signora|Sig\\.?)[ \\t]+${thaiToken}(?:[ \\t]+${thaiToken})?`, 'giu'));
   return { text, positions, replaced: [...counts].map(([type, count]) => ({ type, count })) };
 }
