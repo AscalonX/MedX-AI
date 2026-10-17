@@ -79,11 +79,11 @@ export function sortQueue(list: IntakeSession[]): IntakeSession[] {
   );
 }
 
-export function waited(fromIso: string, now: number): string {
+export function waited(fromIso: string, now: number, unit = "min"): string {
   const min = Math.max(0, Math.floor((now - Date.parse(fromIso)) / 60000));
-  if (min < 60) return `${min} min`;
+  if (min < 60) return `${min} ${unit}`;
   const h = Math.floor(min / 60);
-  return h < 48 ? `${h} h ${min % 60} min` : `${Math.floor(h / 24)} d`;
+  return h < 48 ? `${h} h ${min % 60} ${unit}` : `${Math.floor(h / 24)} d`;
 }
 export const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 

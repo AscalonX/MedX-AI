@@ -4,8 +4,13 @@ import type { AuditEvent, Evidence, ExtractedField, FieldKey, IntakeSession, Lan
 import { Badge, Button, EvidenceHighlight, FieldValue, RedFlagInterrupt, type Mark } from "@/components/ui";
 import { Morph as LangMorph } from "./_morph";
 import {
-  ABSTAIN_REASON, FIELD_GROUPS, FIELD_LABEL, LANG_NAME, STATUS_LABEL, STEP_LABEL, auditLine, clock, fetchSession, post, topSeverity, waited,
+  FIELD_GROUPS, FIELD_LABEL, LANG_NAME, STEP_LABEL, auditLine, clock, fetchSession, post, topSeverity, waited,
 } from "./_lib";
+import { tr, type TKey } from "./_i18n";
+
+const STATUS_KEY: Record<IntakeSession["status"], TKey> = {
+  collecting: "stCollecting", escalated: "urgent", awaiting_review: "stReview", needs_human: "needsHuman", approved: "stApproved", taken_over: "stTakenOver",
+};
 import { useClinician } from "./_shell";
 
 type Sel = { type: "field"; key: FieldKey } | { type: "flag"; key: string };
@@ -23,20 +28,24 @@ export function Workspace({ id }: { id: string }) {
   const [auditOpen, setAuditOpen] = useState(false);
   const [prev, setPrev] = useState<Partial<Record<FieldKey, string>>>({});
   const busyRef = useRef(false);
+  const gen = useRef(0); // bumped on every mutation and id change; older GET responses are dropped
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
     if (busyRef.current) return;
+    const g = gen.current;
     try {
       const d = await fetchSession(id);
-      setData((cur) => (cur && cur.session.id !== id ? cur : d));
+      if (g !== gen.current) return; // a mutation or navigation happened while this was in flight
+      setData(d);
       setLoadError(null);
     } catch (e) {
-      setLoadError((e as Error).message);
+      if (g === gen.current) setLoadError((e as Error).message);
     }
   }, [id]);
 
   useEffect(() => {
+    gen.current++;
     setData(null); setSel(null); setEditing(null); setPrev({}); setActionError(null); setAuditOpen(false); setLoadError(null);
     scrollRef.current?.scrollTo({ top: 0 });
     load();
@@ -55,17 +64,17 @@ export function Workspace({ id }: { id: string }) {
   }, []);
 
   const run = useCallback(async (fn: () => Promise<unknown>) => {
-    busyRef.current = true; setBusy(true); setActionError(null);
+    gen.current++; busyRef.current = true; setBusy(true); setActionError(null);
     try { await fn(); return true; }
     catch (e) { setActionError((e as Error).message); return false; }
-    finally { busyRef.current = false; setBusy(false); await load(); refreshQueue(); }
+    finally { gen.current++; busyRef.current = false; setBusy(false); await load(); refreshQueue(); }
   }, [load, refreshQueue]);
 
   if (!data) {
     return (
       <section aria-busy="true" aria-label="Loading intake" className="flex flex-1 flex-col gap-4 bg-sheet p-6 shadow-sheet">
         {loadError ? (
-          <p role="alert" className="text-body text-signal">Could not load this intake: {loadError}. <button className="underline" onClick={load}>Try again</button></p>
+          <p role="alert" className="text-body text-signal">{tr("loadFailed", lang)}: {loadError}. <button className="underline" onClick={load}>{tr("retry", lang)}</button></p>
         ) : (
           [0, 1, 2, 3, 4].map((i) => <span key={i} className="mx-blank !block !h-5 !w-full" />)
         )}
@@ -126,43 +135,42 @@ export function Workspace({ id }: { id: string }) {
         <h1 className="text-title">{session.code}</h1>
         <span lang={session.patientLang} className="text-body text-ink-soft">{LANG_NAME[session.patientLang]}</span>
         <span className="text-small text-ink-soft">
-          started {clock(session.createdAt)}
-          {session.status !== "approved" && now > 0 && <>, waiting {waited(session.createdAt, now)}</>}
+          {tr("started", lang)} {clock(session.createdAt)}
+          {session.status !== "approved" && now > 0 && <>, {tr("waiting", lang)} {waited(session.createdAt, now, tr("min", lang))}</>}
         </span>
-        <StatusBadge s={session} />
+        <StatusBadge s={session} lang={lang} />
         <button
           type="button"
           onClick={() => setDrawer(true)}
           aria-controls="transcript"
           className="ml-auto text-small underline underline-offset-4 min-[1280px]:hidden"
         >
-          Patient&apos;s words
+          {tr("patientsWords", lang)}
         </button>
       </header>
       <div className="flex flex-col gap-2 px-6 empty:hidden">
         {screenDown && (
           <p role="status" className="border-y border-rule py-2 text-small text-ink-soft">
-            Model safety screen unavailable. Rules still active.
+            {tr("screenDown", lang)}
           </p>
         )}
         {session.status === "collecting" && (
-          <p className="border-y border-rule py-2 text-small text-ink-soft">The patient is still answering. Review opens when the summary is ready.</p>
+          <p className="border-y border-rule py-2 text-small text-ink-soft">{tr("stillAnswering", lang)}</p>
         )}
         {closed && (
           <p className="border-y border-rule py-2 text-small text-ink-soft">
-            Taken over{takeoverBy ? ` by ${takeoverBy}` : ""}. A person is handling this intake.{summary && !summary.abstained ? " The summary below is read only." : ""}
+            {tr("takenOver", lang)}{takeoverBy ? ` ${tr("takenOverBy", lang)} ${takeoverBy}` : ""}. {tr("personHandling", lang)}{summary && !summary.abstained ? ` ${tr("readOnly", lang)}` : ""}
           </p>
         )}
       </div>
 
       {!summary ? (
-        <p className="px-6 py-6 text-body text-ink-soft">No answers yet. The summary appears when the patient writes.</p>
+        <p className="px-6 py-6 text-body text-ink-soft">{tr("noAnswers", lang)}</p>
       ) : summary.abstained ? (
         <div className="flex flex-col gap-3 px-6 py-6">
-          <h2 className="text-title">This intake needs a person to review it.</h2>
+          <h2 className="text-title">{tr("needsPerson", lang)}</h2>
           <p className="max-w-[60ch] text-body text-ink-soft">
-            {summary.abstainReason ? ABSTAIN_REASON[summary.abstainReason] : "The system could not produce a summary it can stand behind."} No values are shown.
-            Read the patient&apos;s words and take over.
+            {summary.abstainReason ? tr(`ar_${summary.abstainReason}` as TKey, lang) : tr("abstainFallback", lang)} {tr("noValuesShown", lang)}
           </p>
         </div>
       ) : (
@@ -208,12 +216,12 @@ export function Workspace({ id }: { id: string }) {
           <Unknowns fields={fields} lang={lang} />
           {summary.nextQuestion && session.status === "collecting" && (
             <p className="border-t border-rule px-6 py-3 text-small text-ink-soft">
-              Follow-up asked ({LANG_NAME[session.patientLang]}): <LangMorph text={summary.nextQuestion.text} lang={lang} />
+              {tr("followUp", lang)} ({LANG_NAME[session.patientLang]}): <LangMorph text={summary.nextQuestion.text} lang={lang} />
             </p>
           )}
         </div>
       )}
-      <Provenance s={session} />
+      <Provenance s={session} lang={lang} />
     </>
   );
 
@@ -222,7 +230,26 @@ export function Workspace({ id }: { id: string }) {
       <p aria-live="polite" className="sr-only">{announce}</p>
       <section aria-label={`Summary for ${session.code}`} className="flex min-h-0 min-w-0 flex-col bg-sheet shadow-sheet">
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto">
-          {hits.length > 0 ? (
+          {hits.length > 0 && !pendingFlags && hits.some((h) => h.review?.action === "false_alarm") ? (
+            // RedFlagInterrupt's collapsed strip always says "Acknowledged", so false alarms get their own one-line strip.
+            <>
+              <section
+                role="status"
+                lang={lang}
+                className={`flex flex-wrap items-baseline gap-x-3 px-6 py-2 text-small font-medium ${hits.some((h) => h.severity === "emergency") ? "bg-signal text-on-signal" : "border-y-2 border-signal bg-signal-tint text-ink"}`}
+              >
+                <span className="font-serif text-lead">{tr("redFlag", lang)}</span>
+                <span>{hits.map((h) => h.label[lang]).join("; ")}</span>
+                <span className="ml-auto">
+                  {hits.every((h) => h.review?.action === "false_alarm")
+                    ? tr("falseAlarmNoted", lang)
+                    : hits.map((h) => `${h.ruleId}: ${tr(h.review?.action === "false_alarm" ? "falseAlarmNoted" : "acknowledged", lang)}`).join("; ")}
+                </span>
+              </section>
+              <FlagReview hits={hits} lang={lang} busy={busy} selected={sel?.type === "flag" ? sel.key : null} onShow={(r) => select({ type: "flag", key: r })} onReview={(a) => sendReview([], [a])} />
+              {sheet}
+            </>
+          ) : hits.length > 0 ? (
             <RedFlagInterrupt
               key={id}
               hits={hits}
@@ -241,12 +268,13 @@ export function Workspace({ id }: { id: string }) {
           )}
         </div>
         <ActionBar
+          lang={lang}
           busy={busy}
           canAct={canAct}
           closed={closed}
           blocked={pendingFlags}
           supportedCount={supportedCount}
-          error={actionError ?? (loadError ? `Not refreshed: ${loadError}` : null)}
+          error={actionError ?? (loadError ? `${tr("notRefreshed", lang)}: ${loadError}` : null)}
           audit={audit}
           open={auditOpen}
           onToggle={() => setAuditOpen((o) => !o)}
@@ -257,7 +285,7 @@ export function Workspace({ id }: { id: string }) {
 
       <aside
         id="transcript"
-        aria-label="Patient's words"
+        aria-label={tr("patientsWords", lang)}
         className={[
           "flex min-h-0 flex-col bg-sheet shadow-sheet",
           "max-[1279px]:fixed max-[1279px]:inset-y-0 max-[1279px]:right-0 max-[1279px]:z-20 max-[1279px]:w-[400px] max-[1279px]:max-w-full max-[1279px]:shadow-sheet-lifted",
@@ -266,11 +294,11 @@ export function Workspace({ id }: { id: string }) {
         ].join(" ")}
       >
         <div className="flex items-center border-b border-rule px-4 py-3">
-          <h2 className="text-body">Patient&apos;s words</h2>
-          <button type="button" onClick={() => setDrawer(false)} className="ml-auto text-small underline underline-offset-4 min-[1280px]:hidden">Close</button>
+          <h2 className="text-body">{tr("patientsWords", lang)}</h2>
+          <button type="button" onClick={() => setDrawer(false)} className="ml-auto text-small underline underline-offset-4 min-[1280px]:hidden">{tr("close", lang)}</button>
         </div>
         <ol className="min-h-0 flex-1 overflow-y-auto">
-          {session.turns.length === 0 && <li className="p-4 text-small text-ink-soft">No words yet.</li>}
+          {session.turns.length === 0 && <li className="p-4 text-small text-ink-soft">{tr("noWords", lang)}</li>}
           {session.turns.map((t, i) => {
             const marks = marksFor(t.id);
             const hasActive = marks.some((m) => m.active);
@@ -278,7 +306,7 @@ export function Workspace({ id }: { id: string }) {
               <li key={t.id} className="border-b border-rule px-4 py-3">
                 <p className="flex gap-2 text-micro text-ink-soft">
                   <span>{i + 1}</span><span>{clock(t.at)}</span>
-                  <span>{t.role === "patient" ? "Patient" : "Question"}</span>
+                  <span>{t.role === "patient" ? tr("patient", lang) : tr("question", lang)}</span>
                   <span lang={t.lang}>{LANG_NAME[t.lang]}</span>
                 </p>
                 {t.role === "patient" ? (
@@ -295,10 +323,10 @@ export function Workspace({ id }: { id: string }) {
   );
 }
 
-function StatusBadge({ s }: { s: IntakeSession }) {
+function StatusBadge({ s, lang }: { s: IntakeSession; lang: Lang }) {
   const sev = topSeverity(s);
-  if (s.status === "escalated") return <Badge tone={sev === "emergency" ? "signal" : "signalOutline"}>{sev === "emergency" ? "Emergency" : "Urgent"}</Badge>;
-  return <Badge tone={s.status === "approved" ? "ink" : s.status === "needs_human" || s.status === "collecting" ? "pencil" : "outline"}>{STATUS_LABEL[s.status]}</Badge>;
+  if (s.status === "escalated") return <Badge tone={sev === "emergency" ? "signal" : "signalOutline"}>{tr(sev === "emergency" ? "emergency" : "urgent", lang)}</Badge>;
+  return <Badge tone={s.status === "approved" ? "ink" : s.status === "needs_human" || s.status === "collecting" ? "pencil" : "outline"}>{tr(STATUS_KEY[s.status], lang)}</Badge>;
 }
 
 function FlagReview({ hits, lang, busy, selected, onShow, onReview }: {
@@ -307,7 +335,7 @@ function FlagReview({ hits, lang, busy, selected, onShow, onReview }: {
   const [falseFor, setFalseFor] = useState<string | null>(null);
   const [note, setNote] = useState("");
   return (
-    <ul aria-label="Red flag review" className="border-b-2 border-signal bg-sheet">
+    <ul aria-label={tr("flagReview", lang)} className="border-b-2 border-signal bg-sheet">
       {hits.map((h) => (
         <li key={h.ruleId} className="flex flex-col gap-2 border-b border-rule px-6 py-3 last:border-b-0">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
@@ -319,19 +347,19 @@ function FlagReview({ hits, lang, busy, selected, onShow, onReview }: {
               className={`text-left text-small ${selected === h.ruleId ? "bg-paper" : ""} underline underline-offset-4`}
             >
               <span className="font-medium">{h.ruleId}</span>
-              <span className="sr-only">, show in the patient&apos;s words</span>
+              <span className="sr-only">, {tr("showInWords", lang)}</span>
             </button>
-            {h.source === "model" ? <Badge tone="pencil">Model-suggested, confirm</Badge> : <Badge tone="outline">Rule</Badge>}
+            {h.source === "model" ? <Badge tone="pencil">{tr("modelSuggested", lang)}</Badge> : <Badge tone="outline">{tr("rule", lang)}</Badge>}
             <span className="text-small text-ink-soft"><LangMorph text={h.label} lang={lang} /></span>
             {h.review ? (
               <span className="ml-auto text-small text-ink-soft">
-                {h.review.action === "acknowledge" ? "Acknowledged" : "Marked false alarm"} by {h.review.reviewerId}, {clock(h.review.at)}
-                {h.review.note ? `. Note: ${h.review.note}` : ""}
+                {tr(h.review.action === "acknowledge" ? "acknowledgedBy" : "falseAlarmBy", lang)} {h.review.reviewerId}, {clock(h.review.at)}
+                {h.review.note ? `. ${tr("note", lang)}: ${h.review.note}` : ""}
               </span>
             ) : (
               <span className="ml-auto flex gap-2">
-                <Button className="h-7! px-2! text-small!" disabled={busy} onClick={() => onReview({ ruleId: h.ruleId, action: "acknowledge" })}>Acknowledge</Button>
-                <Button className="h-7! px-2! text-small!" disabled={busy} onClick={() => { setFalseFor(h.ruleId); setNote(""); }}>Mark false alarm</Button>
+                <Button className="h-7! px-2! text-small!" disabled={busy} onClick={() => onReview({ ruleId: h.ruleId, action: "acknowledge" })}>{tr("acknowledge", lang)}</Button>
+                <Button className="h-7! px-2! text-small!" disabled={busy} onClick={() => { setFalseFor(h.ruleId); setNote(""); }}>{tr("falseAlarm", lang)}</Button>
               </span>
             )}
           </div>
@@ -340,13 +368,13 @@ function FlagReview({ hits, lang, busy, selected, onShow, onReview }: {
               className="flex flex-wrap items-center gap-2"
               onSubmit={(e) => { e.preventDefault(); if (note.trim()) { onReview({ ruleId: h.ruleId, action: "false_alarm", note: note.trim() }); setFalseFor(null); } }}
             >
-              <label className="text-small text-ink-soft" htmlFor={`fa-${h.ruleId}`}>Why is this a false alarm? The flag stays on the record.</label>
+              <label className="text-small text-ink-soft" htmlFor={`fa-${h.ruleId}`}>{tr("falseAlarmWhy", lang)}</label>
               <input
                 id={`fa-${h.ruleId}`} autoFocus required value={note} onChange={(e) => setNote(e.target.value)} maxLength={500}
                 className="h-8 min-w-64 flex-1 rounded-control border border-rule-strong bg-sheet px-2 text-body"
               />
-              <Button type="submit" variant="primary" className="h-8! px-3!" disabled={busy || !note.trim()}>Record false alarm</Button>
-              <Button className="h-8! px-3!" onClick={() => setFalseFor(null)}>Cancel</Button>
+              <Button type="submit" variant="primary" className="h-8! px-3!" disabled={busy || !note.trim()}>{tr("recordFalseAlarm", lang)}</Button>
+              <Button className="h-8! px-3!" onClick={() => setFalseFor(null)}>{tr("cancel", lang)}</Button>
             </form>
           )}
         </li>
@@ -367,7 +395,7 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
   const label = (
     <span className="flex flex-col">
       <span className="text-small font-medium text-ink-soft"><LangMorph text={FIELD_LABEL[f.key]} lang={lang} /></span>
-      {f.required && <span className="text-micro text-graphite">required</span>}
+      {f.required && <span className="text-micro text-graphite">{tr("required", lang)}</span>}
     </span>
   );
   const sm = "h-7! px-2! text-small!";
@@ -383,9 +411,9 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
             onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }}
             className="h-9 min-w-56 flex-1 rounded-control border border-rule-strong bg-sheet px-3 text-body hover:border-ink"
           />
-          <Button type="submit" variant="primary" className={sm} disabled={busy || !draft.trim()}>Save</Button>
-          <Button className={sm} onClick={onCancel}>Cancel</Button>
-          {current && <p className="basis-full text-micro text-ink-soft">The old value stays visible, struck through.</p>}
+          <Button type="submit" variant="primary" className={sm} disabled={busy || !draft.trim()}>{tr("save", lang)}</Button>
+          <Button className={sm} onClick={onCancel}>{tr("cancel", lang)}</Button>
+          {current && <p className="basis-full text-micro text-ink-soft">{tr("oldStruck", lang)}</p>}
         </form>
       </li>
     );
@@ -409,26 +437,26 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
           <FieldValue field={f} lang={lang} previousValue={previous} reviewer={reviewerOf} />
           {(f.status === "supported" || f.status === "approved") && f.valueOriginal && f.valueOriginal !== current && (
             <span className="text-micro text-ink-soft">
-              Patient wrote: <span lang={patientLang}>{f.valueOriginal}</span>
+              {tr("patientWrote", lang)} <span lang={patientLang}>{f.valueOriginal}</span>
             </span>
           )}
-          {f.required && f.status === "missing" && <span className="text-micro font-medium text-ink">{stopped ? "Required, not captured: the intake stopped at the red flag." : "Required and not known. Ask the patient."}</span>}
+          {f.required && f.status === "missing" && <span className="text-micro font-medium text-ink">{tr(stopped ? "reqStopped" : "reqMissing", lang)}</span>}
         </span>
       </button>
       {selected && canAct && (
         <div className="flex flex-wrap items-center gap-2 pb-2.5 pl-[184px] pr-6">
-          {f.status === "supported" && <Button className={sm} variant="primary" disabled={busy || blocked} onClick={onApprove}>Approve</Button>}
-          {unsupported && <Button className={sm} variant="primary" disabled={busy || blocked} onClick={() => onSave(current)}>Confirm as written</Button>}
-          <Button className={sm} disabled={busy} onClick={startEdit}>{f.status === "missing" ? "Fill in" : "Edit"}</Button>
-          {f.status !== "missing" && !confirmReject && <Button className={sm} variant="quiet" disabled={busy} onClick={() => setConfirmReject(true)}>Reject</Button>}
+          {f.status === "supported" && <Button className={sm} variant="primary" disabled={busy || blocked} onClick={onApprove}>{tr("approve", lang)}</Button>}
+          {unsupported && <Button className={sm} variant="primary" disabled={busy || blocked} onClick={() => onSave(current)}>{tr("confirmAsWritten", lang)}</Button>}
+          <Button className={sm} disabled={busy} onClick={startEdit}>{tr(f.status === "missing" ? "fillIn" : "edit", lang)}</Button>
+          {f.status !== "missing" && !confirmReject && <Button className={sm} variant="quiet" disabled={busy} onClick={() => setConfirmReject(true)}>{tr("reject", lang)}</Button>}
           {confirmReject && (
             <>
-              <span className="text-small text-ink-soft">Remove this value and its evidence?</span>
-              <Button className={sm} disabled={busy} onClick={() => { setConfirmReject(false); onReject(); }}>Reject value</Button>
-              <Button className={sm} variant="quiet" onClick={() => setConfirmReject(false)}>Keep</Button>
+              <span className="text-small text-ink-soft">{tr("removeValue", lang)}</span>
+              <Button className={sm} disabled={busy} onClick={() => { setConfirmReject(false); onReject(); }}>{tr("rejectValue", lang)}</Button>
+              <Button className={sm} variant="quiet" onClick={() => setConfirmReject(false)}>{tr("keep", lang)}</Button>
             </>
           )}
-          {blocked && (f.status === "supported" || unsupported) && <span className="text-micro text-ink-soft">Acknowledge the red flag before approving.</span>}
+          {blocked && (f.status === "supported" || unsupported) && <span className="text-micro text-ink-soft">{tr("ackFirst", lang)}</span>}
         </div>
       )}
     </li>
@@ -444,34 +472,36 @@ function Unknowns({ fields, lang }: { fields: ExtractedField[]; lang: Lang }) {
     <span key={f.key}>{i > 0 && ", "}<LangMorph text={FIELD_LABEL[f.key]} lang={lang} /></span>
   ));
   return (
-    <section aria-label="Not known or unverified" className="flex flex-col gap-1 border-t border-rule px-6 py-3 text-small">
-      {missing.length > 0 && <p className="text-ink-soft"><span className="font-medium">Not known:</span> {join(missing)}</p>}
-      {pencil.length > 0 && <p className="text-graphite"><span className="font-medium">Unverified, pencil only:</span> {join(pencil)}</p>}
+    <section aria-label={`${tr("notKnown", lang)} ${tr("unverifiedPencil", lang)}`} className="flex flex-col gap-1 border-t border-rule px-6 py-3 text-small">
+      {missing.length > 0 && <p className="text-ink-soft"><span className="font-medium">{tr("notKnown", lang)}</span> {join(missing)}</p>}
+      {pencil.length > 0 && <p className="text-graphite"><span className="font-medium">{tr("unverifiedPencil", lang)}</span> {join(pencil)}</p>}
     </section>
   );
 }
 
-function Provenance({ s }: { s: IntakeSession }) {
+function Provenance({ s, lang }: { s: IntakeSession; lang: Lang }) {
   const calls = s.summary?.modelCalls ?? [];
   if (!calls.length) return null;
-  const amd = calls.some((c) => c.provider === "amd-tokenfactory");
-  const model = calls.find((c) => c.provider === (amd ? "amd-tokenfactory" : "mock"))?.model ?? "";
+  // Attribute per step: the headline follows the extract call that succeeded, never a failed or unrelated call.
+  const ex = [...calls].reverse().find((c) => c.step === "extract" && c.ok);
+  const head = !ex ? null : ex.provider === "amd-tokenfactory" ? "Gemma · AMD Instinct" : tr("mockModel", lang);
+  const name = (p: string) => (p === "amd-tokenfactory" ? "AMD" : "mock");
   return (
     <footer className="mt-2 flex flex-col gap-0.5 border-t border-rule px-6 py-4 text-micro text-ink-soft">
       <p>
-        <span className="font-medium">{amd ? "Gemma · AMD Instinct" : "Mock model, not AMD"}</span> ({model}).{" "}
+        {head && <><span className="font-medium">{head}</span> ({ex!.model}). </>}
         {calls.map((c, i) => (
-          <span key={i}>{i > 0 && ", "}{STEP_LABEL[c.step] ?? c.step} {c.latencyMs} ms{c.ok ? "" : " (failed)"}</span>
+          <span key={i}>{i > 0 && ", "}{STEP_LABEL[c.step] ?? c.step}: {name(c.provider)} {c.latencyMs} ms{c.ok ? "" : ` (${tr("failed", lang)})`}</span>
         ))}
-        . Generated {clock(s.summary!.generatedAt)}.
+        . {tr("generated", lang)} {clock(s.summary!.generatedAt)}.
       </p>
-      <p>Decision support. Research prototype. Clinician confirms.</p>
+      <p>{tr("decisionSupport", lang)}</p>
     </footer>
   );
 }
 
-function ActionBar({ busy, canAct, closed, blocked, supportedCount, error, audit, open, onToggle, onApproveAll, onTakeover }: {
-  busy: boolean; canAct: boolean; closed: boolean; blocked: boolean; supportedCount: number; error: string | null; audit: AuditEvent[];
+function ActionBar({ lang, busy, canAct, closed, blocked, supportedCount, error, audit, open, onToggle, onApproveAll, onTakeover }: {
+  lang: Lang; busy: boolean; canAct: boolean; closed: boolean; blocked: boolean; supportedCount: number; error: string | null; audit: AuditEvent[];
   open: boolean; onToggle: () => void; onApproveAll: () => void; onTakeover: (reason: string) => void;
 }) {
   const [taking, setTaking] = useState(false);
@@ -480,7 +510,7 @@ function ActionBar({ busy, canAct, closed, blocked, supportedCount, error, audit
     <div className="shrink-0 border-t border-rule bg-sheet">
       {open && (
         <div id="audit" className="max-h-56 overflow-y-auto border-b border-rule px-6 py-3">
-          <h2 className="pb-1 font-sans text-small font-medium">Audit trail</h2>
+          <h2 className="pb-1 font-sans text-small font-medium">{tr("auditTrail", lang)}</h2>
           <table className="w-full text-small">
             <tbody>
               {audit.map((e) => (
@@ -498,22 +528,22 @@ function ActionBar({ busy, canAct, closed, blocked, supportedCount, error, audit
       <div className="flex flex-wrap items-center gap-2 px-6 py-3">
         {taking ? (
           <form className="flex flex-1 flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); onTakeover(reason.trim()); setTaking(false); }}>
-            <label htmlFor="takeover-reason" className="text-small text-ink-soft">Reason (optional)</label>
+            <label htmlFor="takeover-reason" className="text-small text-ink-soft">{tr("reasonOptional", lang)}</label>
             <input id="takeover-reason" autoFocus value={reason} maxLength={300} onChange={(e) => setReason(e.target.value)} className="h-9 min-w-48 flex-1 rounded-control border border-rule-strong bg-sheet px-3 text-body" />
-            <Button type="submit" variant="primary" disabled={busy}>Take over</Button>
-            <Button onClick={() => setTaking(false)}>Cancel</Button>
+            <Button type="submit" variant="primary" disabled={busy}>{tr("takeOver", lang)}</Button>
+            <Button onClick={() => setTaking(false)}>{tr("cancel", lang)}</Button>
           </form>
         ) : (
           <>
             <Button variant="primary" disabled={busy || !canAct || supportedCount === 0 || blocked} onClick={onApproveAll}>
-              Approve supported fields{supportedCount > 0 ? ` (${supportedCount})` : ""}
+              {tr("approveSupported", lang)}{supportedCount > 0 ? ` (${supportedCount})` : ""}
             </Button>
-            <Button disabled={busy || closed} onClick={() => setTaking(true)}>Take over intake</Button>
-            {blocked && <span className="text-small text-ink-soft">Acknowledge the red flag first.</span>}
+            <Button disabled={busy || closed} onClick={() => setTaking(true)}>{tr("takeOverIntake", lang)}</Button>
+            {blocked && <span className="text-small text-ink-soft">{tr("ackFirstShort", lang)}</span>}
           </>
         )}
         <Button variant="quiet" className="ml-auto" aria-expanded={open} aria-controls="audit" onClick={onToggle}>
-          {open ? "Hide audit trail" : "Audit trail"}
+          {tr(open ? "hideAudit" : "auditTrail", lang)}
         </Button>
       </div>
     </div>

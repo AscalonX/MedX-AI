@@ -5,7 +5,12 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { IntakeSession, Lang } from "@medx/shared";
 import { Badge } from "@/components/ui";
 import { Morph as LangMorph } from "./_morph";
-import { LANG_OPTIONS, REVIEWERS, STATUS_LABEL, clock, fetchQueue, sortQueue, topSeverity, waited } from "./_lib";
+import { LANG_OPTIONS, REVIEWERS, clock, fetchQueue, sortQueue, topSeverity, waited } from "./_lib";
+import { tr, type TKey } from "./_i18n";
+
+const STATUS_KEY: Record<IntakeSession["status"], TKey> = {
+  collecting: "stCollecting", escalated: "urgent", awaiting_review: "stReview", needs_human: "needsHuman", approved: "stApproved", taken_over: "stTakenOver",
+};
 
 type Ctx = { lang: Lang; setLang: (l: Lang) => void; reviewer: string; setReviewer: (r: string) => void; now: number; refreshQueue: () => void };
 const C = createContext<Ctx | null>(null);
@@ -60,15 +65,15 @@ export function Shell({ children }: { children: ReactNode }) {
       <div className="flex h-dvh flex-col overflow-clip">
         <header className="flex h-12 shrink-0 items-center gap-4 border-b border-rule px-4 min-[1280px]:px-6">
           <Link href="/" className="font-serif text-lead font-medium">MedX Bridge</Link>
-          <span className="hidden text-small text-ink-soft min-[960px]:inline">Clinician review</span>
+          <span className="hidden text-small text-ink-soft min-[960px]:inline">{tr("clinicianReview", lang)}</span>
           <div className="ml-auto flex items-center gap-4">
             <label className="flex items-center gap-2 text-small text-ink-soft">
-              <span className="hidden min-[1100px]:inline">Signed in as</span>
+              <span className="hidden min-[1100px]:inline">{tr("signedInAs", lang)}</span>
               <select
                 value={reviewer}
                 onChange={(e) => setReviewer(e.target.value)}
                 className="h-8 rounded-control border border-rule-strong bg-sheet px-2 text-small text-ink"
-                aria-label="Signed in as"
+                aria-label={tr("signedInAs", lang)}
               >
                 {REVIEWERS.map((r) => <option key={r}>{r}</option>)}
               </select>
@@ -92,20 +97,20 @@ export function Shell({ children }: { children: ReactNode }) {
         </header>
 
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 px-4 pb-4 pt-4 min-[960px]:grid-cols-[288px_minmax(0,1fr)] min-[1280px]:px-6 min-[1280px]:pb-6">
-          <nav aria-label="Intake queue" className="flex min-h-0 flex-col bg-sheet shadow-sheet max-[959px]:hidden">
-            <h2 className="border-b border-rule px-4 py-3 text-body">Queue</h2>
-            <QueueList sorted={sorted} error={error} activeId={id} />
+          <nav aria-label={tr("queue", lang)} className="flex min-h-0 flex-col bg-sheet shadow-sheet max-[959px]:hidden">
+            <h2 className="border-b border-rule px-4 py-3 text-body">{tr("queue", lang)}</h2>
+            <QueueList sorted={sorted} error={error} activeId={id} retry={refreshQueue} />
           </nav>
           <div className="min-[960px]:hidden">
             <label className="flex flex-col gap-1 text-small text-ink-soft">
-              Intake queue
+              {tr("queue", lang)}
               <select
                 value={id ?? ""}
                 onChange={(e) => e.target.value && router.push(`/review/${e.target.value}`)}
                 className="h-10 rounded-control border border-rule-strong bg-sheet px-2 text-body text-ink"
               >
-                <option value="">Select an intake</option>
-                {sorted?.map((s) => <option key={s.id} value={s.id}>{s.code} {STATUS_LABEL[s.status]}</option>)}
+                <option value="">{tr("selectIntake", lang)}</option>
+                {sorted?.map((s) => <option key={s.id} value={s.id}>{s.code} {tr(STATUS_KEY[s.status], lang)}</option>)}
               </select>
             </label>
           </div>
@@ -116,8 +121,16 @@ export function Shell({ children }: { children: ReactNode }) {
   );
 }
 
-function QueueList({ sorted, error, activeId }: { sorted: IntakeSession[] | null; error: string | null; activeId?: string }) {
+function QueueList({ sorted, error, activeId, retry }: { sorted: IntakeSession[] | null; error: string | null; activeId?: string; retry: () => void }) {
   const { lang, now } = useClinician();
+  if (!sorted && error) {
+    return (
+      <div role="alert" className="flex flex-col items-start gap-2 p-4 text-small">
+        <p className="text-signal">{tr("queueFailed", lang)}: {error}</p>
+        <button type="button" onClick={retry} className="underline underline-offset-4">{tr("retry", lang)}</button>
+      </div>
+    );
+  }
   if (!sorted) {
     return (
       <div aria-busy="true" className="flex flex-col gap-3 p-4" aria-label="Loading queue">
@@ -127,9 +140,9 @@ function QueueList({ sorted, error, activeId }: { sorted: IntakeSession[] | null
   }
   return (
     <>
-      {error && <p role="status" className="border-b border-rule px-4 py-2 text-small text-signal">Queue not refreshed: {error}. Retrying.</p>}
+      {error && <p role="status" className="border-b border-rule px-4 py-2 text-small text-signal">{tr("queueStale", lang)}: {error}.</p>}
       {sorted.length === 0 ? (
-        <p className="p-4 text-small text-ink-soft">No intakes yet. New ones appear here.</p>
+        <p className="p-4 text-small text-ink-soft">{tr("queueEmpty", lang)}</p>
       ) : (
         <ul className="min-h-0 flex-1 overflow-y-auto">
           {sorted.map((s) => {
@@ -148,22 +161,26 @@ function QueueList({ sorted, error, activeId }: { sorted: IntakeSession[] | null
                   <span className="flex items-center gap-2">
                     <span className="font-medium tabular-nums">{s.code}</span>
                     {s.status === "escalated" ? (
-                      <Badge tone={sev === "emergency" ? "signal" : "signalOutline"}>{sev === "emergency" ? "Emergency" : "Urgent"}</Badge>
+                      <Badge tone={sev === "emergency" ? "signal" : "signalOutline"}>{tr(sev === "emergency" ? "emergency" : "urgent", lang)}</Badge>
                     ) : (
-                      <Badge tone={s.status === "approved" ? "ink" : s.status === "needs_human" || s.status === "collecting" ? "pencil" : "outline"}>{STATUS_LABEL[s.status]}</Badge>
+                      <Badge tone={s.status === "approved" ? "ink" : s.status === "needs_human" || s.status === "collecting" ? "pencil" : "outline"}>{tr(STATUS_KEY[s.status], lang)}</Badge>
                     )}
                     <span className="ml-auto whitespace-nowrap text-micro text-ink-soft">
-                      {s.status === "approved" ? clock(s.updatedAt) : now ? waited(s.createdAt, now) : ""}
+                      {s.status === "approved" ? clock(s.updatedAt) : now ? waited(s.createdAt, now, tr("min", lang)) : ""}
                     </span>
                   </span>
                   <span className="truncate text-small text-ink-soft">
-                    {s.status === "escalated" && pending && "Not acknowledged. "}
+                    {s.status === "escalated" && pending && `${tr("notAcked", lang)} `}
                     {s.status === "escalated" && s.summary?.redFlags[0] ? (
                       <LangMorph text={s.summary.redFlags[0].label} lang={lang} />
-                    ) : cc?.value ? (
+                    ) : s.summary?.abstained || s.status === "needs_human" ? (
+                      <span className="text-graphite">{tr("needsHuman", lang)}</span>
+                    ) : cc?.value && ["supported", "edited", "approved"].includes(cc.status) ? (
                       <LangMorph text={cc.value} lang={lang} />
+                    ) : cc?.value ? (
+                      <span className="text-graphite">{tr("unverified", lang)}</span>
                     ) : (
-                      <span className="text-graphite">No complaint yet</span>
+                      <span className="text-graphite">{tr("noComplaint", lang)}</span>
                     )}
                   </span>
                 </Link>
