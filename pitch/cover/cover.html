@@ -1,0 +1,37 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Sans+Thai:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=block" rel="stylesheet">
+<style>
+  :root { --paper:#F3EEE4; --ink:#16130F; --pencil:#9A938A; --rule:#D9D1C3; --hl:#F2D64B; --signal:#C2321C; }
+  * { margin:0; box-sizing:border-box; }
+  body { width:1600px; height:900px; background:var(--paper); color:var(--ink); font-family:"IBM Plex Sans Thai",sans-serif; overflow:hidden; position:relative; }
+  /* faint form rules, like a clinical intake sheet */
+  .sheet { position:absolute; inset:0; background:repeating-linear-gradient(to bottom, transparent 0 55px, var(--rule) 55px 56px); opacity:.55; }
+  .margin { position:absolute; top:0; bottom:0; left:120px; width:1px; background:var(--signal); opacity:.35; }
+  .wrap { position:absolute; left:180px; top:110px; right:120px; }
+  .kicker { font-family:"IBM Plex Mono",monospace; font-size:20px; letter-spacing:.14em; text-transform:uppercase; color:var(--pencil); }
+  h1 { font-family:"Instrument Serif",serif; font-weight:400; font-size:190px; line-height:.9; letter-spacing:-.02em; margin-top:22px; }
+  h1 i { font-style:italic; }
+  .lines { margin-top:56px; display:grid; grid-template-columns:1fr; gap:14px; font-size:34px; }
+  .line { display:flex; align-items:baseline; gap:22px; }
+  .lang { font-family:"IBM Plex Mono",monospace; font-size:18px; color:var(--pencil); width:40px; }
+  .hl { background:linear-gradient(transparent 18%, var(--hl) 18% 88%, transparent 88%); padding:0 6px; margin:0 -6px; }
+  .pencil { color:var(--pencil); font-style:italic; }
+  .flag { position:absolute; right:120px; top:118px; border:2px solid var(--signal); color:var(--signal); font-family:"IBM Plex Mono",monospace; font-size:18px; letter-spacing:.12em; padding:10px 16px; text-transform:uppercase; transform:rotate(3deg); }
+  .foot { position:absolute; left:180px; right:120px; bottom:70px; display:flex; justify-content:space-between; font-family:"IBM Plex Mono",monospace; font-size:20px; color:var(--ink); border-top:2px solid var(--ink); padding-top:18px; }
+  .foot span:last-child { color:var(--pencil); }
+</style></head>
+<body>
+  <div class="sheet"></div><div class="margin"></div>
+  <div class="flag">Red flag → nurse now</div>
+  <div class="wrap">
+    <div class="kicker">Pre-visit intake · B-042</div>
+    <h1>MedX <i>Bridge</i></h1>
+    <div class="lines">
+      <div class="line"><span class="lang">IT</span><span>Da stamattina ho un <span class="hl">dolore al petto</span> e sudo freddo.</span></div>
+      <div class="line"><span class="lang">TH</span><span>ปวดหัวมา <span class="hl">สามวัน</span> กินพาราแล้วไม่ดีขึ้น</span></div>
+      <div class="line"><span class="lang">EN</span><span>Allergic to… <span class="pencil">not stated — ask the patient</span></span></div>
+    </div>
+  </div>
+  <div class="foot"><span>Every field traced to the patient's own words.</span><span>Gemma on AMD Instinct</span></div>
+</body></html>

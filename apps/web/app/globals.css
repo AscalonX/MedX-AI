@@ -1,26 +1,226 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * MedX Bridge, "Clinical paper". Source of truth: packages/shared/src/tokens.ts.
+ * Spec: docs/design/DIRECTION.md. Light only, on purpose (paper world, lit clinic rooms).
+ * Utilities: bg-sheet, text-ink, text-graphite, border-rule, bg-signal, font-serif,
+ * text-body, ease-pen, duration-sweep, rounded-control ...
+ */
+
+@theme {
+  /* colour: mirrors tokens.color (tokens-sync.test.ts checks this) */
+  --color-desk: #E3E1D7;
+  --color-paper: #EEEDE5;
+  --color-sheet: #F7F6F1;
+  --color-ink: #1C2026;
+  --color-ink-soft: #464B53;
+  --color-graphite: #5C5F65;
+  --color-rule: #C9C6BB;
+  --color-rule-strong: #827F77;
+  --color-highlighter: #F2DE4B;
+  --color-signal: #B3121B;
+  --color-signal-tint: #F4DCD7;
+  --color-on-signal: #F7F6F1;
+
+  /* type: Latin face first, Thai face for Thai glyphs (per-glyph fallback) */
+  --font-serif: var(--font-newsreader), var(--font-noto-serif-thai), Georgia, serif;
+  --font-sans: var(--font-plex-sans), var(--font-plex-sans-thai), system-ui, sans-serif;
+
+  --text-micro: 12px;
+  --text-micro--line-height: 1.4;
+  --text-small: 13px;
+  --text-small--line-height: 1.45;
+  --text-body: 15px;
+  --text-body--line-height: 1.5;
+  --text-body-patient: 19px;
+  --text-body-patient--line-height: 1.5;
+  --text-lead: 19px;
+  --text-lead--line-height: 1.4;
+  --text-title: 24px;
+  --text-title--line-height: 1.25;
+  --text-title--letter-spacing: -0.01em;
+  --text-question: 30px;
+  --text-question--line-height: 1.2;
+  --text-question--letter-spacing: -0.015em;
+  --text-display: 38px;
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.02em;
+  --text-code: 64px;
+  --text-code--line-height: 1;
+  --text-code--letter-spacing: -0.02em;
+
+  /* shape: paper corners */
+  --radius-control: 3px;
+
+  --shadow-sheet: 0 1px 2px rgba(60, 52, 30, 0.1);
+  --shadow-sheet-lifted: 0 6px 18px rgba(60, 52, 30, 0.14);
+
+  /* motion: mirrors tokens.easing / tokens.duration */
+  --ease-pen: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-marker: cubic-bezier(0.55, 0.05, 0.25, 1);
+  --ease-interrupt: cubic-bezier(0.7, 0, 0.2, 1);
+  --duration-quick: 120ms;
+  --duration-base: 220ms;
+  --duration-morph: 260ms;
+  --duration-sweep: 520ms;
+  --duration-interrupt: 420ms;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Thai needs taller lines for stacked vowels and tone marks (tokens.type[*].lineHeightThai). */
+:lang(th) {
+  line-height: 1.7;
+}
+:lang(th) :is(.italic, em, i, q) {
+  font-style: normal; /* Thai has no true italic; never fake-slant it */
+}
+:lang(th) :is(h1, h2, h3, .text-title, .text-question, .text-display) {
+  line-height: 1.45;
+  letter-spacing: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html {
+    background: var(--color-desk);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums lining-nums;
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--color-rule-strong) transparent;
+    scrollbar-width: thin;
+  }
+  body {
+    min-height: 100dvh;
+    background: var(--color-desk);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-serif);
+    font-weight: 500;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  ::selection {
+    background: var(--color-highlighter);
+    color: var(--color-ink);
+  }
+  input,
+  textarea {
+    caret-color: var(--color-ink);
+  }
+  a {
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+    border-radius: var(--radius-control);
+  }
+  ::placeholder {
+    color: var(--color-graphite);
+    opacity: 1;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ---------- Signature marks (see DIRECTION.md section 6) ---------- */
+
+/* (a) Highlighter. Chisel-tip ends via the angled gradient; the sweep animates background-size. */
+.mx-mark {
+  color: inherit;
+  background-color: transparent;
+  background-image: linear-gradient(
+    100deg,
+    transparent 0.18em,
+    color-mix(in srgb, var(--color-highlighter) 92%, transparent) 0.3em,
+    var(--color-highlighter) calc(100% - 0.3em),
+    transparent calc(100% - 0.12em)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 58%;
+  background-size: 0% 82%;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  padding-inline: 0.12em;
+  margin-inline: -0.12em;
+  border-radius: 1px;
+}
+.mx-mark[data-active="true"] {
+  background-size: 100% 82%;
+  transition: background-size var(--duration-sweep) var(--ease-marker);
+  transition-delay: var(--mx-sweep-delay, 0ms);
+}
+.mx-mark[data-active="false"] {
+  transition: background-size var(--duration-quick) linear;
+}
+
+/* (b) Pencil: graphite, lighter weight, a broken pencil underline. */
+.mx-pencil {
+  color: var(--color-graphite);
+  font-weight: 400;
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: color-mix(in srgb, var(--color-graphite) 70%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+/* Blank form line for a missing field. */
+.mx-blank {
+  display: inline-block;
+  min-width: 8em;
+  border-bottom: 1px solid var(--color-rule-strong);
+  height: 1.1em;
+  vertical-align: baseline;
+}
+
+/* (e) Language morph: new text settles like ink. */
+@keyframes mx-ink-in {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    letter-spacing: 0.02em;
+  }
+}
+.mx-morph {
+  animation: mx-ink-in var(--duration-morph) var(--ease-pen) both;
+}
+
+/* (c) Red-flag band: grows its grid row, which pushes the summary down. */
+.mx-interrupt {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-interrupt) var(--ease-interrupt);
+}
+.mx-interrupt[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.mx-interrupt > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Edited value: single-line strike through the old value, like a chart correction. */
+.mx-struck {
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--color-ink);
+  color: var(--color-ink-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
 }

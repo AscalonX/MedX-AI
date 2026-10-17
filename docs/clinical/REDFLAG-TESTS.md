@@ -1,4 +1,4 @@
-# Red-flag matcher test cases (v1.0)
+# Red-flag matcher test cases (v1.1)
 
 For: AI engineer (unit tests for the red-flag engine). Source rules: `packages/shared/src/redflags.json`.
 Run the reference check: `node docs/clinical/check-redflags.mjs` (exit 0 = all rows pass).
@@ -8,6 +8,8 @@ Run the reference check: `node docs/clinical/check-redflags.mjs` (exit 0 = all r
 1. Normalise patient text: Unicode NFC → lower-case → curly quotes `’ ‘` → `'` → collapse whitespace → **prefix one space** (so Latin cues like `" no "` match at the start of the text).
 2. A term matches as a plain substring (Thai has no word spaces).
 3. An occurrence is **negated** if any `negationCue` appears inside the `negationWindowChars` (14) characters immediately before it.
+3a. **(v1.1) Clause boundary:** before checking cues, cut the window at the last `,` `.` `;` `:` `!` `?` newline, or contrast word ` but ` / ` ma ` / ` però ` / ` pero ` / `แต่`, keeping only the text after it (for the space-delimited words keep the trailing space, so a following ` non ` still matches). Negation never crosses a clause: "I'm not well, I want to die" must fire.
+3b. Cues are matched **with their spaces exactly as written in the JSON** (`" no "`, not `"no"`). Never trim them: a trimmed `no` matches inside `sono`, `buongiorno`, `nonna`, `notte` and silently negates real red flags.
 4. A term counts if **at least one** of its occurrences is not negated. A group passes if any term counts. A rule fires if **every** group passes.
 5. `requires` is not used by any v1.0 rule (on purpose: extracted fields come from the model, and the model must never be able to stop a rule).
 6. Evidence for a hit = the matched term occurrence (turnId, quote, offsets) in the original, un-normalised turn text.
@@ -163,6 +165,36 @@ Run the reference check: `node docs/clinical/check-redflags.mjs` (exit 0 = all r
 | RF-FEVER-INF-01 | th | fire | ทารกตัวร้อนมาก |
 | RF-FEVER-INF-01 | th | no | ไข้มาสองวัน |
 
+### Added in v1.1 (gaps exposed by the synthetic cases + clause-boundary negation + engine regression guards)
+
+| rule | lang | expect | text |
+|---|---|---|---|
+| RF-CHEST-01 | it | fire | Ho un dolore forte al petto e sudo freddo |
+| RF-CHEST-01 | it | fire | Forte dolore al petto, sudore freddo |
+| RF-CHEST-01 | it | no | Dolore forte al petto quando tossisco, non sudo |
+| RF-CHEST-02 | it | fire | Dolori al petto da stamattina |
+| RF-CHEST-02 | en | fire | My chest is tight since lunch |
+| RF-STROKE-02 | th | fire | เพื่อนบอกว่าปากผมเบี้ยวไปข้างนึง |
+| RF-STROKE-02 | en | fire | My face looks lopsided |
+| RF-STROKE-02 | it | fire | Ho la bocca un po' storta |
+| RF-STROKE-02 | it | no | Ho preso una storta alla caviglia |
+| RF-STROKE-02 | th | no | ไม่มีอาการปากเบี้ยว หมอเบี้ยวนัด |
+| RF-STROKE-02 | en | no | Face rash for three days |
+| RF-STROKE-03 | th | fire | แขนซ้ายก็ยกไม่ค่อยขึ้น |
+| RF-STROKE-03 | en | fire | I can't lift my left arm |
+| RF-STROKE-03 | it | fire | Non riesco ad alzare bene il braccio destro |
+| RF-STROKE-03 | en | no | Warm feeling, I can't lift heavy boxes |
+| RF-STROKE-03 | th | no | ปวดแขนเวลายกของ |
+| RF-STROKE-03 | it | no | Mi fa male il braccio quando lo alzo |
+| RF-SUICIDE-01 | en | fire | I'm not well, I want to die |
+| RF-SUICIDE-01 | it | fire | Non sto bene, voglio morire |
+| RF-SUICIDE-01 | it | fire | Non so perché voglio morire |
+| RF-CHEST-02 | th | fire | ไม่มีอาการไอ แต่เจ็บหน้าอก |
+| RF-CHEST-02 | en | fire | No cough but chest pain since noon |
+| RF-SYNC-01 | it | fire | Sono svenuto stamattina |
+| RF-CHEST-02 | it | fire | Buongiorno, ho dolore al petto |
+| RF-PREG-01 | it | fire | Mia nonna dice che sono incinta e ho perdite di sangue |
+
 ## Known false positives (accepted on purpose: they fail safe)
 
 These fire today and the test asserts that, so nobody "fixes" them by accident without a clinical decision.
@@ -174,6 +206,10 @@ A false alarm costs the nurse ~5 s (the evidence quote is shown); a missed red f
 | RF-BREATH-01 | th | fire | คัดจมูกหายใจไม่ออก |
 | RF-PREG-01 | th | fire | ไม่ได้ตั้งครรภ์ แต่ปวดท้อง |
 | RF-SUICIDE-01 | en | fire | I don't want to die, I'm scared |
+| RF-SUICIDE-01 | it | fire | Non ho pensieri suicidi |
+| RF-STROKE-03 | en | fire | My arm is sore and I can't move my neck |
+
+Why (suicide denial): the cue in "Non ho pensieri suicidi" is 16 chars before `suicid`; widening the window to catch it would also negate "Non so perché voglio morire" (a real red flag), so the denial stays a fail-safe false alarm.
 
 Why: bare Thai `ไม่` / `ไม่ได้` are deliberately **not** negation cues. They are too common inside red-flag phrases
 (`หายใจไม่ได้ เจ็บหน้าอก` would otherwise negate the chest pain; `ไม่มีแรง แน่นหน้าอก` likewise). Thai negation is

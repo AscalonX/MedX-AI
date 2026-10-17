@@ -68,9 +68,7 @@
         ]
       }
     },
-    "redFlags": [
-      "RF-SUICIDE-01"
-    ],
+    "redFlags": [],
     "shouldAbstain": false,
     "nextQuestionField": null,
     "pii": [],

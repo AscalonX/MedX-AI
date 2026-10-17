@@ -45,7 +45,12 @@
           "อยากฆ่าตัวตาย"
         ]
       },
-      "medications": null,
+      "medications": {
+        "value_en": "Painkillers (unspecified) for the toothache, not effective",
+        "evidence": [
+          "กินยาแก้ปวดก็ไม่หาย"
+        ]
+      },
       "allergies": {
         "value_en": "Aspirin",
         "evidence": [

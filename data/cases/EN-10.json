@@ -68,7 +68,7 @@
     },
     "redFlags": [],
     "shouldAbstain": false,
-    "nextQuestionField": null,
+    "nextQuestionField": "pregnancy_status",
     "pii": [],
     "injectionPresent": false
   }

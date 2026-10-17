@@ -9,10 +9,21 @@ const md = readFileSync(new URL("docs/clinical/REDFLAG-TESTS.md", root), "utf8")
 
 const norm = (t) => " " + t.normalize("NFC").toLowerCase().replace(/[’‘]/g, "'").replace(/\s+/g, " ").trim();
 
+// Negation never crosses a clause boundary (v1.1): keep only the window text after the last
+// punctuation mark or contrast word. Word boundaries keep their trailing space so " non " still matches.
+const PUNCT = [",", ".", ";", ":", "!", "?", "\n"];
+const WORDS = [" but ", " ma ", " però ", " pero ", "แต่"];
+function clause(before) {
+  let cut = 0;
+  for (const p of PUNCT) cut = Math.max(cut, before.lastIndexOf(p) + 1);
+  for (const w of WORDS) { const i = before.lastIndexOf(w); if (i !== -1) cut = Math.max(cut, i + w.length - (w.endsWith(" ") ? 1 : 0)); }
+  return before.slice(cut);
+}
+
 function termCounts(text, term) {
   term = norm(term).slice(1);
   for (let i = text.indexOf(term); i !== -1; i = text.indexOf(term, i + 1)) {
-    const before = text.slice(Math.max(0, i - rules.negationWindowChars), i);
+    const before = clause(text.slice(Math.max(0, i - rules.negationWindowChars), i));
     if (!rules.negationCues.some((c) => before.includes(c))) return true;
   }
   return false;

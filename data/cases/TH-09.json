@@ -74,9 +74,7 @@
         ]
       }
     },
-    "redFlags": [
-      "RF-CHEST-02"
-    ],
+    "redFlags": [],
     "shouldAbstain": false,
     "nextQuestionField": null,
     "pii": [],
