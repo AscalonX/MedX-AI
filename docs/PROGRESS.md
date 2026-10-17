@@ -18,3 +18,4 @@
 ## Engine backlog (next Codex wave)
 - redact.ts: name triggers case-insensitive ("Sono Marco Rossi" leaked) — reported by mobile builder 15:05.
 - mock provider: an answer to a follow-up must fill the asked field (mock repeats the severity question 3×).
+- pharmacy-review: accept "" for dose/frequency/reaction as explicit clear (pharmacist builder CR, 15:20).
