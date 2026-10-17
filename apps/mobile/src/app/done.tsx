@@ -35,7 +35,7 @@ export default function Done() {
       try {
         const r = await getSession(id);
         if (!alive) return;
-        setReviewedAt(r.reviewedAt);
+        if (r.session.status === "approved" || r.session.status === "taken_over") setReviewedAt(new Date().toISOString()); // no audit for patients: time = when this phone saw it
         update(r.session);
         if (r.session.status === "escalated") router.replace("/redflag"); // a red flag can never be missed
       } catch { /* offline: keep what we show, try again */ }
@@ -54,7 +54,7 @@ export default function Done() {
   if (!session) return null;
   const human = session.status === "needs_human";
   const steps: [string, St, string][] = [
-    [s.stepSent, "done", hhmm(session.turns.at(-1)?.at ?? session.updatedAt)],
+    [s.stepSent, "done", hhmm(session.turns.at(-1)?.at)],
     [s.stepReview, final ? "done" : "active", ""],
     [s.stepReviewed, final ? "done" : "pending", final ? hhmm(reviewedAt) : ""],
   ];
@@ -64,10 +64,10 @@ export default function Done() {
   return (
     <Page>
       <GradientHero style={{ overflow: "hidden" }}>
-        {!human && <View pointerEvents="none" style={{ position: "absolute", right: 4, bottom: 0, width: 110, height: 110, alignItems: "center", justifyContent: "flex-end" }}><View style={{ position: "absolute", bottom: 10, width: 88, height: 88, borderRadius: 44, backgroundColor: "rgba(255,255,255,0.16)" }} /><Mascot pose="happy" size={100} /></View>}
+        {(session.status === "awaiting_review" || final) && <View pointerEvents="none" style={{ position: "absolute", right: 4, bottom: 0, width: 110, height: 110, alignItems: "center", justifyContent: "flex-end" }}><View style={{ position: "absolute", bottom: 10, width: 88, height: 88, borderRadius: 44, backgroundColor: "rgba(255,255,255,0.16)" }} /><Mascot pose="happy" size={100} /></View>}
         <T lang={lang} token="body" tone="onPrimary" style={{ opacity: 0.92 }}>{s.doneCode}</T>
         <T lang="en" token="code" weight="bold" tone="onPrimary" accessibilityLabel={`${s.doneCode} ${session.code.split("").join(" ")}`} style={{ marginVertical: space[2] }}>{session.code}</T>
-        <T lang={lang} token="lead" weight="bold" tone="onPrimary" accessibilityRole="header" accessibilityLiveRegion="polite" style={human ? undefined : { maxWidth: "66%" }}>{title}</T>
+        <T lang={lang} token="lead" weight="bold" tone="onPrimary" accessibilityRole="header" accessibilityLiveRegion="polite" style={session.status === "awaiting_review" || final ? { maxWidth: "66%" } : undefined}>{title}</T>
       </GradientHero>
 
       {human && !final && <Card tone="warn" style={{ marginTop: space[4] }}><T lang={lang} tone="ink">{s.humanBody}</T></Card>}

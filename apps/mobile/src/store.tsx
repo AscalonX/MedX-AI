@@ -1,9 +1,9 @@
-import type { IntakeSession, Lang } from "@medx/shared";
+import type { Lang } from "@medx/shared";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, type Href } from "expo-router";
 import { Platform } from "react-native";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { getSession } from "@/api";
+import { getSession, toPatient, type PatientView as IntakeSession } from "@/api";
 
 type S = { lang: Lang; session: IntakeSession | null; speak: boolean };
 type Ctx = S & { ready: boolean; restored: IntakeSession | null; offline: boolean; set: (p: Partial<S>) => void; reset: () => void; update: (s: IntakeSession) => void };
@@ -42,6 +42,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
         if (raw) {
           const saved = JSON.parse(raw) as { session: IntakeSession | null; lang: Lang };
+          if (saved.session) saved.session = toPatient(saved.session); // drop clinician fields from old stored copies
           if (saved.lang) setS((o) => ({ ...o, lang: saved.lang }));
           if (saved.session) {
             // Validate against the server: the stored copy is never trusted. 404 or no answer after a retry: forget it, go Home.

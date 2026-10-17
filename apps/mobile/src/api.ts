@@ -1,5 +1,21 @@
 import { Platform } from "react-native";
-import type { AddTurnReq, CreateSessionReq, IntakeSession, Lang } from "@medx/shared";
+import type { AddTurnReq, CreateSessionReq, Lang, Localized, RedFlagSeverity, SessionStatus } from "@medx/shared";
+
+/** The server projection for patients (GET ?view=patient / POST with x-medx-client: patient). The app never needs, and never keeps, clinician data. */
+export interface PatientView {
+  id: string; code: string; patientLang: Lang; status: SessionStatus;
+  turns: { id: string; role: "patient" | "assistant"; text: string; at?: string; inputMode?: "text" | "voice" }[];
+  summary: null | { nextQuestion: { field: string; text: Localized } | null; redFlags: { patientMessage: Localized; severity: RedFlagSeverity }[]; abstained: boolean };
+}
+/** Whitelist: drop anything else the server (or an old stored copy) might carry. */
+export function toPatient(x: PatientView): PatientView {
+  const sm = x.summary;
+  return {
+    id: x.id, code: x.code, patientLang: x.patientLang, status: x.status,
+    turns: (x.turns ?? []).filter((t) => t.role === "patient").map((t) => ({ id: t.id, role: "patient", text: t.text, at: t.at, inputMode: t.inputMode })),
+    summary: sm ? { nextQuestion: sm.nextQuestion ? { field: sm.nextQuestion.field, text: sm.nextQuestion.text } : null, redFlags: (sm.redFlags ?? []).map((r) => ({ patientMessage: r.patientMessage, severity: r.severity })), abstained: !!sm.abstained } : null,
+  };
+}
 
 // Web (served under /patient by the Next app) defaults to same-origin; native defaults to the local API.
 const BASE = process.env.EXPO_PUBLIC_API_URL ?? (Platform.OS === "web" ? "" : "http://localhost:3000");
@@ -17,7 +33,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   const t = setTimeout(() => ctl.abort(), TIMEOUT_MS);
   try {
     const r = await fetch(`${BASE}${path}`, {
-      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), signal: ctl.signal,
+      method: "POST", headers: { "content-type": "application/json", "x-medx-client": "patient" }, body: JSON.stringify(body), signal: ctl.signal,
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     return (await r.json()) as T;
@@ -27,20 +43,19 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 }
 
 export const createSession = (patientLang: Lang) =>
-  post<IntakeSession>("/api/sessions", { patientLang } satisfies CreateSessionReq);
+  post<PatientView>("/api/sessions", { patientLang } satisfies CreateSessionReq).then(toPatient);
 /** clientTurnId lets the server dedupe: a retry with the same id never appends the answer twice. */
 export const addTurn = (id: string, text: string, inputMode: "text" | "voice" = "text", clientTurnId?: string) =>
-  post<IntakeSession>(`/api/sessions/${id}/turns`, { text, inputMode, clientTurnId } satisfies AddTurnReq);
+  post<PatientView>(`/api/sessions/${id}/turns`, { text, inputMode, clientTurnId } satisfies AddTurnReq).then(toPatient);
 
-export async function getSession(id: string): Promise<{ session: IntakeSession; reviewedAt: string | null }> {
+export async function getSession(id: string): Promise<{ session: PatientView }> {
   const ctl = new AbortController();
   const t = setTimeout(() => ctl.abort(), 8000);
   try {
-    const r = await fetch(`${BASE}/api/sessions/${id}`, { signal: ctl.signal });
+    const r = await fetch(`${BASE}/api/sessions/${id}?view=patient`, { signal: ctl.signal });
     if (!r.ok) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
-    const j = (await r.json()) as { session: IntakeSession; audit?: { type: string; at: string }[] };
-    const rev = (j.audit ?? []).filter((a) => a.type === "review" || a.type === "takeover").pop();
-    return { session: j.session, reviewedAt: rev?.at ?? null };
+    const j = (await r.json()) as { session: PatientView };
+    return { session: toPatient(j.session) };
   } finally {
     clearTimeout(t);
   }
