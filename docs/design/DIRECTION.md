@@ -205,6 +205,32 @@ On change, text morphs in place: opacity 0, blur 3px, 2px down, settling over `m
 
 Patient quotes are never translated in place.
 
+### 6f. Receipts (approval and sign-off)
+Use `Receipt` when the status reaches `approved` (clinician) or after a pharmacy sign-off:
+- **Header:** a teal check disc and the title, e.g. "Intake approved".
+- **Rows:** label/value pairs on a quiet inset, e.g. "Approved by: Nurse A. Rossi", "Time: 15:28", "Fields: 7, 4 from patient's words, 3 edited".
+- **Footer:** the next action, e.g. a primary "Next case".
+
+The receipt is a polite `role="status"` region and takes focus when it appears, so focus never drops to `<body>`.
+
+### 6g. Counting numbers (ops)
+Use `CountUp` for ops tiles. It counts from 0 on first load and from the previous value on change, with `pen` easing over about 900 ms.
+- Under reduced motion the number appears instantly.
+- Screen readers hear only the final value.
+- The number sits in a minimum-width box, because SCBXBeta2 digits are proportional.
+
+### 6h. Shell accessibility
+- **`AppShell` language:** sets `document.documentElement.lang` and `lang` on the shell root to the UI language, so the `:lang(th)` rules (line height, tracking, no italics) and screen-reader voices follow the toggle.
+- **`AppShell` chrome text:** role names, language and nav labels, the skip link and the disclaimer are localized from `shellLabels[lang]`. Pages can override any string with `labels`.
+- **Skip link:** "Skip to content" jumps to `#main-content`.
+- **`SegmentedControl`:** a real radiogroup with one tab stop. Arrow keys, Home and End move the selection.
+- **Focus ring:** every focusable primitive shows a 2px ocean ring with a 2px offset, in every state.
+- **`RedFlagInterrupt`:**
+  - it is `role="alert"` until acknowledged, then a polite `role="status"` strip;
+  - after Acknowledge, focus moves to the strip;
+  - Italian button: "Visto, confermo" (not "Preso in carico", which is too close to "Prendi in carico", Take over);
+  - Thai button: "รับทราบ"; the done state stays "รับทราบแล้ว".
+
 ## 7. Icons
 
 Lucide geometry, 24 grid, 1.75 stroke, round caps, `currentColor`, 16 to 22px. Icons always come with a text label, except close/back, which get an aria-label.
@@ -346,7 +372,7 @@ All numbers in wireframes are layout samples; real values come from the API. A n
 
 ## 9. Copy tone
 
-Calm, plain, friendly, short. Say what happens next. Never diagnose, never reassure falsely. Greetings are time-of-day only ("Good morning"), never chatty. Clinician copy is verb-first ("Approve supported fields", "Assess now"). No exclamation marks, no emoji, no em dashes. Italian uses formal "Lei"; Thai uses neutral polite "กรุณา".
+Calm, plain, friendly, short. Say what happens next. Never diagnose, never reassure falsely. Greetings are time-of-day only ("Good morning"), never chatty. Clinician copy is verb-first ("Approve supported fields", "Assess now"). No exclamation marks, no emoji. **No em dashes (—) or en dashes (–) anywhere in UI copy**: use a comma, a full stop or a colon, and a plain hyphen for ranges ("1-2 days"). `components/ui/ui.test.ts` fails if a design-system component contains either character. Badges read "Mock, not AMD", never "MOCK — not AMD". Times use `Intl.DateTimeFormat(lang, { hour: "2-digit", minute: "2-digit", hour12: false })`. Italian uses formal "Lei"; Thai uses neutral polite "กรุณา".
 - **Patient keys:** "Tell us what brings you in" / "Raccontaci perché è qui oggi" / "บอกเราว่าวันนี้มาด้วยอาการอะไร". A native check is still pending.
 - **Red-flag patient text:** comes from `redflags.json` (Doctor).
 
@@ -366,7 +392,7 @@ v1 names now mean:
 
 New utilities: `bg-primary-gradient`, `bg-signal-gradient`, `rounded-card`, `rounded-hero`, `text-stat`, `bg-teal-tint`, `bg-ocean-tint`, `bg-warn-tint`, `text-teal`, `text-ocean`, `text-warn`, `bg-muted`, `shadow-hero`, and `.mx-skeleton`.
 
-New primitives: `Card`, `CardHeader`, `GradientHero`, `HeroAction`, `StatTile`, `SegmentedControl`, `Pill`, `AppShell`, `Avatar`, `EmptyState`, `Icon`.
+New primitives: `Card`, `CardHeader`, `GradientHero`, `HeroAction`, `StatTile`, `SegmentedControl`, `Pill`, `AppShell`, `Avatar`, `EmptyState`, `Icon`, `Receipt`, `CountUp`.
 
 Checklist:
 - Use tokens and primitives only; no raw hex.

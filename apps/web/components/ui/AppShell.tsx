@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import type { Lang } from "@medx/shared";
 import { Avatar } from "./Avatar";
 import { SegmentedControl } from "./SegmentedControl";
@@ -16,7 +16,43 @@ export interface ShellNavItem {
   alert?: number;
 }
 
-const roleLabel: Record<ShellRole, string> = { nurse: "Nurse", doctor: "Doctor", pharmacist: "Pharmacist", ops: "Ops" };
+export interface ShellLabels {
+  roles: Record<ShellRole, string>;
+  roleGroup: string;
+  language: string;
+  nav: string;
+  skip: string;
+  disclaimer: string;
+}
+
+/** Built-in chrome copy. Pages may override any string with `labels` (native-speaker review pending for th/it). */
+export const shellLabels: Record<Lang, ShellLabels> = {
+  en: {
+    roles: { nurse: "Nurse", doctor: "Doctor", pharmacist: "Pharmacist", ops: "Ops" },
+    roleGroup: "Role",
+    language: "Language",
+    nav: "Main",
+    skip: "Skip to content",
+    disclaimer: "Research prototype. Supports clinicians; does not diagnose.",
+  },
+  it: {
+    roles: { nurse: "Infermiere", doctor: "Medico", pharmacist: "Farmacista", ops: "Gestione" },
+    roleGroup: "Ruolo",
+    language: "Lingua",
+    nav: "Principale",
+    skip: "Vai al contenuto",
+    disclaimer: "Prototipo di ricerca. Supporta i clinici; non fa diagnosi.",
+  },
+  th: {
+    roles: { nurse: "พยาบาล", doctor: "แพทย์", pharmacist: "เภสัชกร", ops: "ปฏิบัติการ" },
+    roleGroup: "บทบาท",
+    language: "ภาษา",
+    nav: "เมนูหลัก",
+    skip: "ข้ามไปยังเนื้อหา",
+    disclaimer: "ต้นแบบเพื่อการวิจัย ช่วยสนับสนุนแพทย์ ไม่ใช่การวินิจฉัย",
+  },
+};
+
 const langLabel: Record<Lang, string> = { th: "ไทย", it: "IT", en: "EN" };
 
 /**
@@ -33,6 +69,7 @@ export function AppShell({
   lang,
   onLangChange,
   actions,
+  labels,
   children,
 }: {
   nav: ShellNavItem[];
@@ -44,10 +81,26 @@ export function AppShell({
   lang: Lang;
   onLangChange?: (l: Lang) => void;
   actions?: ReactNode;
+  /** Override chrome strings (defaults follow `lang`). Role names may be partial. */
+  labels?: Partial<Omit<ShellLabels, "roles">> & { roles?: Partial<Record<ShellRole, string>> };
   children: ReactNode;
 }) {
+  const base = shellLabels[lang];
+  const t = { ...base, ...labels, roles: { ...base.roles, ...labels?.roles } };
+
+  // The UI language must reach `lang` so :lang(th) rules and screen-reader voices apply.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
+
   return (
-    <div className="min-h-[100dvh] lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
+    <div lang={lang} className="min-h-[100dvh] lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-sheet focus:px-4 focus:py-2 focus:text-small focus:font-semibold focus:text-ocean focus:shadow-sheet-lifted"
+      >
+        {t.skip}
+      </a>
       <aside className="flex flex-col gap-6 border-b border-rule/70 bg-sheet/70 px-4 py-4 lg:sticky lg:top-0 lg:h-[100dvh] lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
         <div className="flex items-center gap-2.5">
           <span aria-hidden="true" className="grid size-9 place-items-center rounded-xl bg-primary-gradient text-body font-extrabold text-on-primary">M</span>
@@ -55,22 +108,22 @@ export function AppShell({
         </div>
         {onRoleChange && (
           <SegmentedControl
-            ariaLabel="Role"
+            ariaLabel={t.roleGroup}
             size="sm"
             layout="grid2"
             value={role}
             onChange={onRoleChange}
-            options={roles.map((r) => ({ value: r, label: roleLabel[r] }))}
+            options={roles.map((r) => ({ value: r, label: t.roles[r] }))}
           />
         )}
-        <nav aria-label="Main" className="flex gap-1 overflow-x-auto lg:flex-col">
+        <nav aria-label={t.nav} className="flex gap-1 overflow-x-auto lg:flex-col">
           {nav.map((n) => (
             <Link
               key={n.href}
               href={n.href}
               aria-current={n.active ? "page" : undefined}
               className={cx(
-                "flex h-11 shrink-0 items-center gap-3 rounded-full px-4 text-body font-semibold transition-colors duration-quick ease-pen",
+                "flex h-11 shrink-0 items-center gap-3 rounded-full px-4 text-body font-semibold transition-colors duration-quick ease-pen focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean",
                 n.active ? "bg-teal-tint text-teal" : "text-ink-soft hover:bg-paper hover:text-ink",
               )}
             >
@@ -80,7 +133,7 @@ export function AppShell({
             </Link>
           ))}
         </nav>
-        <p className="mt-auto hidden text-micro text-graphite lg:block">Research prototype. Supports clinicians; does not diagnose.</p>
+        <p className="mt-auto hidden text-micro text-graphite lg:block">{t.disclaimer}</p>
       </aside>
       <div className="flex min-w-0 flex-col">
         <header className="flex flex-wrap items-center gap-4 px-6 pb-2 pt-5">
@@ -92,7 +145,7 @@ export function AppShell({
             {actions}
             {onLangChange && (
               <SegmentedControl
-                ariaLabel="Language"
+                ariaLabel={t.language}
                 size="sm"
                 value={lang}
                 onChange={onLangChange}
@@ -102,7 +155,7 @@ export function AppShell({
             <Avatar name={userName} size={40} />
           </div>
         </header>
-        <main className="min-w-0 flex-1 px-6 pb-8 pt-4">{children}</main>
+        <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 px-6 pb-8 pt-4 focus:outline-none">{children}</main>
       </div>
     </div>
   );

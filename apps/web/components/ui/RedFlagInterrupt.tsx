@@ -1,13 +1,14 @@
 "use client";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Lang, RedFlagHit } from "@medx/shared";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
 
 const copy = {
   heading: { th: "สัญญาณอันตราย", it: "Segnale d'allarme", en: "Red flag" },
-  ack: { th: "รับทราบแล้ว", it: "Preso in carico", en: "Acknowledge" },
-  acked: { th: "รับทราบแล้ว", it: "Preso in carico", en: "Acknowledged" },
+  // Italian avoids "Preso in carico", which reads like "Prendi in carico" (Take over).
+  ack: { th: "รับทราบ", it: "Visto, confermo", en: "Acknowledge" },
+  acked: { th: "รับทราบแล้ว", it: "Visto e confermato", en: "Acknowledged" },
   said: { th: "ผู้ป่วยพูดว่า", it: "Il paziente ha detto", en: "Patient said" },
 } as const;
 
@@ -40,14 +41,22 @@ export function RedFlagInterrupt({
   }, [hits.length]);
   const emergency = hits.some((h) => h.severity === "emergency");
 
+  // After Acknowledge, focus moves to the collapsed strip (never drops to <body>) and it is announced politely.
+  const stripRef = useRef<HTMLParagraphElement>(null);
+  const wasAcked = useRef(acknowledged);
+  useEffect(() => {
+    if (acknowledged && !wasAcked.current) stripRef.current?.focus();
+    wasAcked.current = acknowledged;
+  }, [acknowledged]);
+
   return (
     <div className="flex flex-col">
       <div className="mx-interrupt" data-open={open}>
         <div>
           <div className="p-3 pb-0">
             <section
-              role="alert"
-              aria-live="assertive"
+              role={acknowledged ? "status" : "alert"}
+              aria-live={acknowledged ? "polite" : "assertive"}
               lang={lang}
               className={
                 emergency
@@ -56,7 +65,11 @@ export function RedFlagInterrupt({
               }
             >
               {acknowledged ? (
-                <p className="flex flex-wrap items-center gap-3 px-5 py-3 text-small font-medium">
+                <p
+                  ref={stripRef}
+                  tabIndex={-1}
+                  className="flex flex-wrap items-center gap-3 rounded-card px-5 py-3 text-small font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean"
+                >
                   <Icon name="triangle-alert" size={16} className={emergency ? "" : "text-signal"} />
                   <span className="font-bold">{copy.heading[lang]}</span>
                   <span>{hits.map((h) => h.label[lang]).join("; ")}</span>

@@ -1,8 +1,9 @@
-export { AppShell, type ShellNavItem, type ShellRole } from "./AppShell";
+export { AppShell, shellLabels, type ShellLabels, type ShellNavItem, type ShellRole } from "./AppShell";
 export { Avatar } from "./Avatar";
 export { Badge } from "./Badge";
 export { Button, type ButtonProps } from "./Button";
 export { Card, CardHeader } from "./Card";
+export { CountUp } from "./CountUp";
 export { EmptyState } from "./EmptyState";
 export { EvidenceHighlight } from "./EvidenceHighlight";
 export { Field } from "./Field";
@@ -11,6 +12,7 @@ export { Icon, type IconName } from "./Icon";
 export { InkConfidence } from "./InkConfidence";
 export { LangMorph } from "./LangMorph";
 export { FieldValue, PencilField } from "./PencilField";
+export { Receipt } from "./Receipt";
 export { RedFlagInterrupt } from "./RedFlagInterrupt";
 export { Pill, SegmentedControl } from "./SegmentedControl";
 export { segments, type Mark, type Segment } from "./segments";

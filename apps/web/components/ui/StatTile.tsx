@@ -8,7 +8,7 @@ const tones = {
   signal: "text-signal", // only for counts of urgent things
 } as const;
 
-/** Big bold tabular number on a card. `value` null renders a dash-free placeholder, never 0. */
+/** Big bold number on a card. `value` may be a <CountUp />. Null renders a visible "No data yet" pill, never 0. */
 export function StatTile({
   label,
   value,
@@ -16,14 +16,17 @@ export function StatTile({
   hint,
   icon,
   tone = "default",
+  emptyLabel = "No data yet",
   className,
 }: {
   label: ReactNode;
-  value: string | number | null;
+  value: ReactNode | null;
   unit?: ReactNode;
   hint?: ReactNode;
   icon?: ReactNode;
   tone?: keyof typeof tones;
+  /** Visible text when `value` is null (localize it). */
+  emptyLabel?: ReactNode;
   className?: string;
 }) {
   return (
@@ -33,7 +36,7 @@ export function StatTile({
         {icon && <span className="grid size-8 place-items-center rounded-full bg-paper text-ocean">{icon}</span>}
       </div>
       {value === null ? (
-        <span className="mx-blank !h-8 !w-24" aria-label="No data yet" />
+        <span className="inline-flex h-8 w-fit items-center rounded-full bg-muted px-3 text-small text-graphite">{emptyLabel}</span>
       ) : (
         <p className={cx("text-stat font-extrabold tabular-nums", tones[tone])}>
           {value}

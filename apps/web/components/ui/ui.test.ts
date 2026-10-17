@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { color, inkLevel } from "@medx/shared/src/tokens";
@@ -33,6 +33,15 @@ describe("tokens", () => {
     for (const [k, hex] of Object.entries(color)) {
       const name = k.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
       expect(css, k).toContain(`--color-${name}: ${hex};`);
+    }
+  });
+});
+
+describe("copy rules", () => {
+  it("no em or en dashes in design-system component copy", () => {
+    for (const f of readdirSync(__dirname).filter((n) => n.endsWith(".tsx"))) {
+      const src = readFileSync(join(__dirname, f), "utf8");
+      expect(src, f).not.toMatch(/[\u2013\u2014]/);
     }
   });
 });
