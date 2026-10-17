@@ -9,7 +9,7 @@ type S = {
   doneTitle: string; doneCode: string; doneNext1: string; doneNext2: string; doneNext3: string; newIntake: string;
   humanTitle: string; humanBody: string;
   deskTitle: (code: string) => string; deskBody: string; retry: string; deskNoCode: string;
-  tabHome: string; tabVisit: string; tabHelp: string; tabNew: string; micStart: string; micStop: string; listening: string; confirmTitle: string; confirmSub: string; send: string; tryAgain: string; speakToggle: string; micDenied: string; micUnavailable: string; noSpeech: string; tabLang: string; hello: string; greetSub: string; heroTitle: string; heroSub: string; start: string;
+  tabHome: string; tabVisit: string; tabHelp: string; tabNew: string; chipYes: string; chipNo: string; chipUnknown: string; reviewedTitle: string; reviewedNext: string; reviewingNote: string; stepAt: (t: string) => string; micStart: string; micStop: string; listening: string; confirmTitle: string; confirmSub: string; send: string; tryAgain: string; speakToggle: string; micDenied: string; micUnavailable: string; noSpeech: string; tabLang: string; hello: string; greetSub: string; heroTitle: string; heroSub: string; start: string;
   howTitle: string; how: [string, string][]; privacyTitle: string; pill: (n: number) => string;
   chipNone: string; chipToday: string; chipYesterday: string; chipWeek: string; chipSeverityA11y: (n: number) => string;
   helpTitle: string; helpBody: string; helpEmergency: string; stepSent: string; stepReview: string; stepReviewed: string; nextTitle: string; sentTitle: string;
@@ -20,6 +20,7 @@ export const STR: Record<Lang, S> = {
   en: {
     micStart: "Tap to speak", micStop: "Stop listening", listening: "Listening", confirmTitle: "Is this what you said?", confirmSub: "Check the words and fix any mistake before sending.", send: "Send", tryAgain: "Try again", speakToggle: "Read questions aloud",
     micDenied: "The microphone is off. You can type your answer instead.", micUnavailable: "Voice is not available here. You can type your answer instead.", noSpeech: "We did not hear anything. Try again, or type your answer.",
+    chipYes: "Yes", chipNo: "No", chipUnknown: "Not sure", reviewedTitle: "A nurse has reviewed your answers.", reviewedNext: "A nurse will call you.", reviewingNote: "A nurse is reading your answers now.", stepAt: (t) => `at ${t}`,
     tabHome: "Home", tabVisit: "My visit", tabHelp: "Help", tabNew: "New intake", tabLang: "Language", hello: "Hello", greetSub: "Welcome to MedX Bridge",
     heroTitle: "Tell us what brings you in today", heroSub: "A nurse will read it before your visit.", start: "Start",
     howTitle: "How it works", how: [["Describe", "Write in your own words."], ["A nurse reviews", "Before your visit."], ["You're called", "At the desk."]],
@@ -50,6 +51,7 @@ export const STR: Record<Lang, S> = {
   it: {
     micStart: "Tocchi per parlare", micStop: "Smetti di ascoltare", listening: "In ascolto", confirmTitle: "È questo che ha detto?", confirmSub: "Controlli le parole e corregga eventuali errori prima di inviare.", send: "Invia", tryAgain: "Riprova", speakToggle: "Leggi le domande ad alta voce",
     micDenied: "Il microfono è spento. Può scrivere la risposta.", micUnavailable: "La voce non è disponibile qui. Può scrivere la risposta.", noSpeech: "Non abbiamo sentito nulla. Riprovi o scriva la risposta.",
+    chipYes: "Sì", chipNo: "No", chipUnknown: "Non so", reviewedTitle: "Un infermiere ha letto le sue risposte.", reviewedNext: "Un infermiere la chiamerà.", reviewingNote: "Un infermiere sta leggendo le sue risposte.", stepAt: (t) => `alle ${t}`,
     tabHome: "Home", tabVisit: "Visita", tabHelp: "Aiuto", tabNew: "Nuova scheda", tabLang: "Lingua", hello: "Ciao", greetSub: "Benvenuto in MedX Bridge",
     heroTitle: "Ci dica perché è venuto oggi", heroSub: "Un infermiere lo leggerà prima della visita.", start: "Inizia",
     howTitle: "Come funziona", how: [["Descriva", "Scriva con parole sue."], ["Lo legge un infermiere", "Prima della visita."], ["La chiamano", "Al banco."]],
@@ -80,6 +82,7 @@ export const STR: Record<Lang, S> = {
   th: {
     micStart: "แตะเพื่อพูด", micStop: "หยุดฟัง", listening: "กำลังฟัง", confirmTitle: "คุณพูดแบบนี้ใช่ไหม", confirmSub: "ตรวจดูคำและแก้ไขที่ผิดก่อนส่ง", send: "ส่ง", tryAgain: "ลองอีกครั้ง", speakToggle: "อ่านคำถามออกเสียง",
     micDenied: "ไมโครโฟนปิดอยู่ คุณพิมพ์คำตอบแทนได้", micUnavailable: "ใช้เสียงไม่ได้ในที่นี้ คุณพิมพ์คำตอบแทนได้", noSpeech: "ไม่ได้ยินเสียง ลองอีกครั้ง หรือพิมพ์คำตอบ",
+    chipYes: "ใช่", chipNo: "ไม่ใช่", chipUnknown: "ไม่แน่ใจ", reviewedTitle: "พยาบาลตรวจดูคำตอบของคุณแล้ว", reviewedNext: "พยาบาลจะเรียกคุณ", reviewingNote: "พยาบาลกำลังอ่านคำตอบของคุณ", stepAt: (t) => `เวลา ${t}`,
     tabHome: "หน้าแรก", tabVisit: "การมาพบ", tabHelp: "ช่วยเหลือ", tabNew: "เริ่มแบบฟอร์มใหม่", tabLang: "ภาษา", hello: "สวัสดี", greetSub: "ยินดีต้อนรับสู่ MedX Bridge",
     heroTitle: "บอกเราว่าวันนี้คุณมาด้วยเรื่องอะไร", heroSub: "พยาบาลจะอ่านคำตอบของคุณก่อนเรียกตรวจ", start: "เริ่ม",
     howTitle: "ทำงานอย่างไร", how: [["เล่าอาการ", "เขียนด้วยคำพูดของคุณเอง"], ["พยาบาลตรวจดู", "ก่อนเรียกตรวจ"], ["เรียกชื่อคุณ", "ที่เคาน์เตอร์"]],

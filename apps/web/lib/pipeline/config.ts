@@ -23,5 +23,5 @@ export function applyRequiredFields(fields: ExtractedField[]): ExtractedField[] 
 }
 export function providerInfo() {
   const mock = process.env.MODEL_PROVIDER === 'mock';
-  return { name: mock ? 'mock' : 'amd-tokenfactory', model: mock ? 'deterministic-mock' : process.env.AMD_MODEL || 'unconfigured', hardware: process.env.AMD_HARDWARE_LABEL || 'AMD (via Token Factory)' };
+  return { name: mock ? 'mock' : 'amd-tokenfactory', model: mock ? 'deterministic-mock' : process.env.AMD_MODEL || 'unconfigured', hardware: mock ? '\u2014' : process.env.AMD_HARDWARE_LABEL || 'AMD (via Token Factory)' };
 }

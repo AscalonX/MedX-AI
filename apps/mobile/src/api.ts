@@ -22,3 +22,17 @@ export const createSession = (patientLang: Lang) =>
   post<IntakeSession>("/api/sessions", { patientLang } satisfies CreateSessionReq);
 export const addTurn = (id: string, text: string, inputMode: "text" | "voice" = "text") =>
   post<IntakeSession>(`/api/sessions/${id}/turns`, { text, inputMode } satisfies AddTurnReq);
+
+export async function getSession(id: string): Promise<{ session: IntakeSession; reviewedAt: string | null }> {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const r = await fetch(`${BASE}/api/sessions/${id}`, { signal: ctl.signal });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const j = (await r.json()) as { session: IntakeSession; audit?: { type: string; at: string }[] };
+    const rev = (j.audit ?? []).filter((a) => a.type === "review" || a.type === "takeover").pop();
+    return { session: j.session, reviewedAt: rev?.at ?? null };
+  } finally {
+    clearTimeout(t);
+  }
+}

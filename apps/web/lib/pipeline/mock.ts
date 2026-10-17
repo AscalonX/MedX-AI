@@ -4,6 +4,7 @@ import type { ModelExtraction } from './schema';
 import { FIELD_KEYS } from './config';
 import { QUESTIONS } from './templates';
 import { mockPharmacy } from './pharmacyExtraction';
+import { applyQuickAnswer } from './quickAnswers';
 
 /** Deliberately narrow deterministic demo extractor, not an evaluation oracle. */
 export function mockJSON(req: ChatRequest): unknown {
@@ -23,7 +24,6 @@ export function mockJSON(req: ChatRequest): unknown {
   }
   const context = /^Patient language: [^\n]*\n\nFOLLOW-UP CONTEXT\nAsked field: (\w+); answer turn: (T\d+)\n/.exec(req.user);
   if (context && FIELD_KEYS.includes(context[1] as FieldKey)) askedByTurn.set(context[2], context[1] as FieldKey);
-  let noAllergyAnswer: { turn: string; quote: string } | undefined;
   const patterns: Partial<Record<FieldKey, [RegExp, Localized][]>> = {
     chief_complaint: [
       [/(?:headache|mal di testa|ปวดหัว|ปวดศีรษะ)/i, { en: 'headache', it: 'mal di testa', th: 'ปวดหัว' }],
@@ -34,7 +34,7 @@ export function mockJSON(req: ChatRequest): unknown {
       [/(?:mal di gola)/i, { en: 'sore throat', it: 'mal di gola', th: 'เจ็บคอ' }],
       [/(?:febbre)/i, { en: 'fever', it: 'febbre', th: 'มีไข้' }],
     ],
-    onset: [[/(?:since yesterday|started yesterday|da ieri|ตั้งแต่เมื่อวาน|เริ่มเมื่อวาน)/i, { en: 'since yesterday', it: 'da ieri', th: 'ตั้งแต่เมื่อวาน' }], [/(?:for two days|da due giorni)/i, { en: 'two days ago', it: 'da due giorni', th: 'สองวันก่อน' }], [/yesterday evening/i, { en: 'yesterday evening', it: 'ieri sera', th: 'เมื่อวานตอนเย็น' }], [/da stamattina/i, { en: 'this morning', it: 'da stamattina', th: 'เช้าวันนี้' }]],
+    onset: [[/(?:since today|da oggi|ตั้งแต่วันนี้)/i, { en: 'since today', it: 'da oggi', th: 'ตั้งแต่วันนี้' }], [/(?:this week|questa settimana|สัปดาห์นี้)/i, { en: 'this week', it: 'questa settimana', th: 'สัปดาห์นี้' }], [/(?:since yesterday|started yesterday|da ieri|ตั้งแต่เมื่อวาน|เริ่มเมื่อวาน)/i, { en: 'since yesterday', it: 'da ieri', th: 'ตั้งแต่เมื่อวาน' }], [/(?:for two days|da due giorni)/i, { en: 'two days ago', it: 'da due giorni', th: 'สองวันก่อน' }], [/yesterday evening/i, { en: 'yesterday evening', it: 'ieri sera', th: 'เมื่อวานตอนเย็น' }], [/da stamattina/i, { en: 'this morning', it: 'da stamattina', th: 'เช้าวันนี้' }]],
     associated_symptoms: [[/(?:no other symptoms|nessun altro sintomo|ไม่มีอาการอื่น)/i, { en: 'no other symptoms', it: 'nessun altro sintomo', th: 'ไม่มีอาการอื่น' }], [/(?:nausea|คลื่นไส้)/i, { en: 'nausea', it: 'nausea', th: 'คลื่นไส้' }]],
     medications: [[/(?:no (?:medicines|medications)|don't take any medication|nessun farmaco|non prendo farmaci|ไม่มียาที่ใช้|ไม่ได้กินยา)/i, { en: 'no medicines', it: 'nessun farmaco', th: 'ไม่ได้กินยา' }], [/(?:paracetamol(?:o)?|พาราเซตามอล)/i, { en: 'paracetamol', it: 'paracetamolo', th: 'พาราเซตามอล' }], [/daily multivitamin/i, { en: 'daily multivitamin', it: 'multivitaminico giornaliero', th: 'วิตามินรวมทุกวัน' }]],
     allergies: [[/(?:no (?:known )?allergies|nessuna allergia|non sono allergico a nulla|ไม่มีประวัติแพ้|ไม่แพ้ยา)/i, { en: 'no known allergies', it: 'nessuna allergia nota', th: 'ไม่มีประวัติแพ้' }]],
@@ -56,23 +56,7 @@ export function mockJSON(req: ChatRequest): unknown {
     if (field === 'onset' && /^(?:yesterday|ieri|เมื่อวาน)[.!]?$/i.test(answer)) {
       put(field, answer, { en: 'yesterday', it: 'ieri', th: 'เมื่อวาน' });
     }
-    if (field && /^(?:no|none|ไม่|ไม่มี|ไม่ใช่)[.!]?$/i.test(answer)) {
-      const denials: Partial<Record<FieldKey, Localized>> = {
-        medications: { en: 'no medicines', it: 'nessun farmaco', th: 'ไม่ได้กินยา' },
-        allergies: { en: 'no known allergies', it: 'nessuna allergia nota', th: 'ไม่มีประวัติแพ้' },
-        associated_symptoms: { en: 'no other symptoms', it: 'nessun altro sintomo', th: 'ไม่มีอาการอื่น' },
-        pregnancy_status: { en: 'not pregnant', it: 'non in gravidanza', th: 'ไม่ตั้งครรภ์' },
-      };
-      const value = denials[field];
-      if (value) {
-        put(field, answer, value); result.fields[field]!.certainty = 'medium';
-        if (field === 'allergies') noAllergyAnswer = { turn: alias, quote: answer };
-      }
-    }
-    if (field === 'severity' && /^(?:10|[0-9])(?:[.!])?$/.test(answer)) {
-      const n = `${parseInt(answer, 10)}/10`;
-      put(field, answer, { en: n, it: n, th: `ระดับ ${n}` });
-    }
+    if (field) applyQuickAnswer(result, field, text, alias);
     if (field === 'age' && /^\d{1,3}(?:[.!])?$/.test(answer) && parseInt(answer, 10) <= 120) {
       const n = parseInt(answer, 10); put(field, answer, { en: `${n} years`, it: `${n} anni`, th: `${n} ปี` });
     }
@@ -82,5 +66,5 @@ export function mockJSON(req: ChatRequest): unknown {
     }
   }
   const pharmacy = mockPharmacy(turns.map(([, alias, text]) => ({ alias, text })));
-  return { ...result, ...pharmacy, noKnownAllergies: pharmacy.noKnownAllergies ?? noAllergyAnswer ?? null };
+  return { ...result, ...pharmacy, noKnownAllergies: pharmacy.noKnownAllergies ?? result.noKnownAllergies ?? null };
 }

@@ -17,6 +17,38 @@ export function isModelFlag(flag: { source?: "rule" | "model"; ruleId: string })
   return flag.source === "model" || flag.ruleId.startsWith("MODEL-");
 }
 
+/** Count intakes needing acknowledgement, once per intake, including incomplete escalations. */
+export function pendingEscalations(sessions: IntakeSession[]) {
+  return sessions.filter(s => s.status === "escalated" && (!s.summary?.redFlags.length || s.summary.redFlags.some(f => !f.review)))
+    .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt) || a.id.localeCompare(b.id));
+}
+
+export function highAlertsOpen(sessions: IntakeSession[]) {
+  return sessions.reduce((total, s) => total + (s.summary?.medAlerts?.filter(a => a.severity === "high" && !a.review).length ?? 0), 0);
+}
+
+// Never hide an escalation or recorded safety flag, even if its patient turn is missing.
+export function isEmptySession(session: IntakeSession) {
+  return !session.turns.some(t => t.role === "patient" && t.text.trim())
+    && session.status !== "escalated" && !session.summary?.redFlags.length && !session.summary?.medAlerts?.length;
+}
+
+export interface OpsHealth { provider: string; model: string; hardware?: string }
+
+export function isHealth(value: unknown): value is OpsHealth {
+  return object(value) && text(value.provider) && text(value.model) && (value.hardware === undefined || text(value.hardware));
+}
+
+export function isMockProvider(provider: string) {
+  return provider.toLowerCase().includes("mock");
+}
+
+export function healthHardware(health: OpsHealth) {
+  // Fail closed if an older health endpoint claims accelerator hardware for a mock.
+  if (!health.hardware?.trim() || /^[\s\u2014\u2013-]+$/.test(health.hardware)) return undefined;
+  return isMockProvider(health.provider) && /amd|instinct|rocm/i.test(health.hardware) ? undefined : health.hardware;
+}
+
 /** Recheck exact patient evidence before permitting an ink-rendered complaint. */
 export function verifiedComplaint(session: IntakeSession): ExtractedField {
   const field = session.summary?.fields.find(f => f.key === "chief_complaint");

@@ -46,12 +46,13 @@ export default function Intake() {
   const chips: string[] =
     next?.field === "severity" ? Array.from({ length: 11 }, (_, n) => String(n))
     : next?.field === "onset" || next?.field === "duration" ? [s.chipToday, s.chipYesterday, s.chipWeek]
+    : next?.field === "pregnancy_status" ? [s.chipYes, s.chipNo, s.chipUnknown]
     : next?.field === "allergies" || next?.field === "medications" || next?.field === "medical_history" ? [s.chipNone]
     : [];
 
-  async function submit() {
-    const mode = fromVoice ? "voice" : "text";
-    const t = text.trim();
+  async function submit(override?: string) {
+    const mode = override === undefined && fromVoice ? "voice" : "text";
+    const t = (override ?? text).trim();
     if (!t || busy || !session) return;
     setFailed(false); setBusy(true);
     try {
@@ -103,7 +104,7 @@ export default function Intake() {
           <View accessibilityRole="alert" style={{ gap: space[3] }}>
             <T lang={lang} token="lead" weight="bold" tone="warn">{s.deskTitle(session.code)}</T>
             <T lang={lang} tone="inkSoft">{s.deskBody}</T>
-            <View style={{ alignSelf: "flex-start" }}><Pill lang={lang} variant="quiet" label={s.retry} onPress={submit} /></View>
+            <View style={{ alignSelf: "flex-start" }}><Pill lang={lang} variant="quiet" label={s.retry} onPress={() => submit()} /></View>
           </View>
         </Card>
       ) : !busy ? (
@@ -148,20 +149,20 @@ export default function Intake() {
             )}
           </Card>
           {chips.length > 0 && v.phase !== "confirm" && v.phase !== "listening" && (
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2], marginTop: space[3] }} accessibilityRole="radiogroup">
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: space[2], marginTop: space[3] }}>
               {chips.map((c) => (
-                <Chip key={c} lang={lang} label={c} selected={text === c} onPress={() => { setText(c); }} />
+                <Chip key={c} lang={lang} label={c} a11y={next?.field === "severity" ? s.chipSeverityA11y(Number(c)) : c} onPress={() => { setText(c); submit(c); }} />
               ))}
             </View>
           )}
           <View style={{ height: space[5] }} />
           {v.phase === "confirm" ? (
             <View style={{ gap: space[3] }}>
-              <Pill lang={lang} label={s.send} onPress={submit} disabled={!text.trim()} />
+              <Pill lang={lang} label={s.send} onPress={() => submit()} disabled={!text.trim()} />
               <Pill lang={lang} variant="quiet" label={s.tryAgain} onPress={() => { v.reset(); setText(""); setFromVoice(false); }} />
             </View>
           ) : (
-            <Pill lang={lang} label={s.cont} onPress={submit} disabled={!text.trim() || v.phase === "listening"} />
+            <Pill lang={lang} label={s.cont} onPress={() => submit()} disabled={!text.trim() || v.phase === "listening"} />
           )}
         </>
       ) : null}

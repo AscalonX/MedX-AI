@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { IntakeSession, Lang, OpsMetrics } from "@medx/shared";
 import { EmptyState, Icon, LangMorph } from "@/components/ui";
 import { copy, locale, statusCopy, stepCopy } from "../i18n";
-import { recordedCalls, statusOrder, stepOrder } from "../ops-data";
+import { isMockProvider, recordedCalls, statusOrder, stepOrder, type OpsHealth } from "../ops-data";
 import styles from "../ops.module.css";
 
 export function StatusChart({ sessions, lang }: { sessions: IntakeSession[]; lang: Lang }) {
@@ -23,8 +23,9 @@ export function StatusChart({ sessions, lang }: { sessions: IntakeSession[]; lan
   );
 }
 
-export function LatencyChart({ sessions, metrics, lang }: { sessions: IntakeSession[]; metrics: OpsMetrics; lang: Lang }) {
-  const calls = recordedCalls(sessions);
+export function LatencyChart({ sessions, metrics, health, lang }: { sessions: IntakeSession[]; metrics: OpsMetrics; health: OpsHealth; lang: Lang }) {
+  const mock = isMockProvider(health.provider);
+  const calls = recordedCalls(sessions).filter(call => !isMockProvider(call.provider));
   const groups = stepOrder.map(step => ({ step, calls: calls.filter(c => c.step === step) })).filter(g => g.calls.length);
   const p50 = metrics.modelLatencyMs.p50;
   const p95 = metrics.modelLatencyMs.p95;
@@ -38,8 +39,8 @@ export function LatencyChart({ sessions, metrics, lang }: { sessions: IntakeSess
   const groupWidth = plotWidth / Math.max(1, groups.length);
   return (
     <figure className={styles.latencyChart}>
-      <figcaption><div className={styles.chartHeading}><h2><LangMorph text={copy.latency} lang={lang} /></h2><span>{calls.length} <LangMorph text={copy.calls} lang={lang} /></span></div><p className={styles.note}><LangMorph text={copy.latencyNote} lang={lang} /></p></figcaption>
-      {calls.length === 0 ? <EmptyState icon={<Icon name="activity" />} title={<LangMorph text={copy.noCalls} lang={lang} />} /> : <>
+      <figcaption><div className={styles.chartHeading}><h2><LangMorph text={copy.latency} lang={lang} /></h2>{!mock && <span>{calls.length} <LangMorph text={copy.calls} lang={lang} /></span>}</div>{!mock && <p className={styles.note}><LangMorph text={copy.latencyNote} lang={lang} /></p>}</figcaption>
+      {mock ? <p className={styles.statusPill}>{copy.mockLatency[lang]}</p> : calls.length === 0 ? <EmptyState icon={<Icon name="activity" />} title={<LangMorph text={copy.noCalls} lang={lang} />} /> : <>
         <div className={styles.tableScroll} tabIndex={0} role="region" aria-label={copy.latency[lang]}>
           <div style={{ minWidth: plotWidth + 150 }}>
             <svg className={styles.latencySvg} viewBox={`0 0 ${plotWidth + 150} 166`} role="img" aria-label={copy.latency[lang]}>

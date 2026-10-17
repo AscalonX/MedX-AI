@@ -1,38 +1,45 @@
-import type { IntakeSession, Lang, OpsMetrics } from "@medx/shared";
+import type { Lang, OpsMetrics } from "@medx/shared";
 import { Card, Icon, LangMorph, StatTile } from "@/components/ui";
 import { copy, locale } from "../i18n";
+import { healthHardware, isMockProvider, type OpsHealth } from "../ops-data";
+import { useCountProgress } from "./CountUp";
+import { Blank, duration } from "./Queue";
 import styles from "../ops.module.css";
 
-export function MetricStrip({ metrics, sessions, lang }: { metrics: OpsMetrics; sessions: IntakeSession[]; lang: Lang }) {
-  const percent = (value: number) => new Intl.NumberFormat(locale[lang], { style: "percent", maximumFractionDigits: 1 }).format(value);
-  const milliseconds = (value: number | null) => value === null ? null : new Intl.NumberFormat(locale[lang], { maximumFractionDigits: 1 }).format(value);
-  const alerts = sessions.reduce((total, session) => total + (Array.isArray(session.summary?.medAlerts) ? session.summary.medAlerts.filter(alert => alert && !alert.review).length : 0), 0);
+export function MetricStrip({ metrics, health, lang }: { metrics: OpsMetrics; health: OpsHealth; lang: Lang }) {
+  const progress = useCountProgress();
+  const percent = (value: number) => new Intl.NumberFormat(locale[lang], { style: "percent", maximumFractionDigits: 1 }).format(value * progress);
+  const milliseconds = (value: number | null) => value === null ? null : new Intl.NumberFormat(locale[lang], { maximumFractionDigits: 1 }).format(value * progress);
+  const mock = isMockProvider(health.provider);
   return (
     <section aria-label={copy.ledger[lang]}>
       <div className={styles.metricStrip}>
         <StatTile label={<LangMorph text={copy.autoCaptured} lang={lang} />} value={percent(metrics.autoCapturedRate)} tone="teal" icon={<Icon name="circle-check" size={18} />} />
         <StatTile label={<LangMorph text={copy.abstain} lang={lang} />} value={percent(metrics.abstainRate)} icon={<Icon name="circle-minus" size={18} />} />
-        <StatTile label={<LangMorph text={copy.latencyP50} lang={lang} />} value={milliseconds(metrics.modelLatencyMs.p50)} unit="ms" tone="ocean" icon={<Icon name="activity" size={18} />} />
-        <StatTile label={<LangMorph text={copy.latencyP95} lang={lang} />} value={milliseconds(metrics.modelLatencyMs.p95)} unit="ms" tone="ocean" icon={<Icon name="clock" size={18} />} />
-        <StatTile label={<LangMorph text={copy.pharmacyAlerts} lang={lang} />} value={alerts} hint={<LangMorph text={copy.pharmacyNote} lang={lang} />} icon={<Icon name="pill" size={18} />} />
+        {(["p50", "p95"] as const).map(key => <div key={key} className={styles.metricCell}>
+          {mock || metrics.modelLatencyMs[key] === null ? <Card><p className={styles.metricLabel}>{copy[key === "p50" ? "latencyP50" : "latencyP95"][lang]}</p><span className={styles.statusPill}>{mock ? copy.mockLatency[lang] : copy.unavailable[lang]}</span></Card>
+            : <StatTile label={copy[key === "p50" ? "latencyP50" : "latencyP95"][lang]} value={milliseconds(metrics.modelLatencyMs[key])} unit="ms" tone="ocean" icon={<Icon name="activity" size={18} />} />}
+        </div>)}
+        <Card><p className={styles.metricLabel}>{copy.medianReview[lang]}</p>{metrics.medianReviewSeconds === null ? <Blank label={copy.unavailable[lang]} /> : <p className={styles.metricValue}>{duration(metrics.medianReviewSeconds * progress, lang)}</p>}</Card>
       </div>
       <p className={styles.note}><LangMorph text={copy.metricsNote} lang={lang} /></p>
     </section>
   );
 }
 
-export function ProviderPill({ provider }: { provider: OpsMetrics["provider"] }) {
-  const mock = provider.name.toLowerCase().includes("mock");
-  const label = mock ? "MOCK — not AMD" : provider.model.toLowerCase().includes("gemma") && /amd|instinct|rocm/i.test(provider.hardware) ? "Gemma · AMD Instinct (ROCm)" : `${provider.model} · ${provider.hardware}`;
-  return <span className={styles.providerPill} lang="en"><Icon name={mock ? "circle-minus" : "activity"} size={18} />{label}</span>;
+export function ProviderPill({ health, lang }: { health: OpsHealth; lang: Lang }) {
+  const mock = isMockProvider(health.provider);
+  const hardware = healthHardware(health);
+  return <span className={styles.providerPill}><Icon name={mock ? "circle-minus" : "activity"} size={18} />{mock ? copy.mock[lang] : `${health.model}${hardware ? ` · ${hardware}` : ""}`}</span>;
 }
 
-export function ProviderPlate({ provider, lang }: { provider: OpsMetrics["provider"]; lang: Lang }) {
+export function ProviderPlate({ health, lang }: { health: OpsHealth; lang: Lang }) {
+  const values = { provider: health.provider, model: health.model, hardware: healthHardware(health) };
   return (
     <Card className={styles.provider} aria-labelledby="provider-title">
       <h2 id="provider-title"><LangMorph text={copy.system} lang={lang} /></h2>
-      <ProviderPill provider={provider} />
-      <dl className={styles.providerValues}>{(["name", "model", "hardware"] as const).map(key => <div key={key}><dt><LangMorph text={key === "name" ? copy.provider : copy[key]} lang={lang} /></dt><dd>{provider[key]}</dd></div>)}</dl>
+      <ProviderPill health={health} lang={lang} />
+      <dl className={styles.providerValues}>{(["provider", "model", "hardware"] as const).map(key => <div key={key}><dt><LangMorph text={copy[key]} lang={lang} /></dt><dd>{values[key] ?? <Blank label={copy.unavailable[lang]} />}</dd></div>)}</dl>
       <p className={styles.note}><LangMorph text={copy.providerNote} lang={lang} /></p>
     </Card>
   );

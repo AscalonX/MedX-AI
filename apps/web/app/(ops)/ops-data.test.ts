@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ExtractedField, IntakeSession, OpsMetrics, RedFlagHit, SessionStatus } from "@medx/shared";
-import { isEmergency, isMetrics, isModelFlag, isSessions, orderedQueue, recordedCalls, verifiedComplaint, waitingSeconds } from "./ops-data";
+import type { ExtractedField, IntakeSession, MedAlert, OpsMetrics, RedFlagHit, SessionStatus } from "@medx/shared";
+import { healthHardware, highAlertsOpen, isEmptySession, isEmergency, isHealth, isMetrics, isModelFlag, isSessions, orderedQueue, pendingEscalations, recordedCalls, verifiedComplaint, waitingSeconds } from "./ops-data";
 
 const localized = { en: "headache", it: "mal di testa", th: "ปวดหัว" };
 const field: ExtractedField = { key: "chief_complaint", value: localized, valueOriginal: "headache", status: "supported", confidence: 0.9, required: true, evidence: [{ turnId: "turn-1", quote: "headache", start: 0, end: 8 }] };
@@ -68,6 +68,41 @@ describe("ops queue and evidence boundary", () => {
 });
 
 describe("ops data integrity", () => {
+  it("counts pending intakes once and opens the oldest regardless of severity", () => {
+    const oldest = session("escalated", "oldest");
+    oldest.summary!.redFlags = [{ ...flag, severity: "urgent" }, { ...flag, severity: "urgent" }];
+    const newer = session("escalated", "newer");
+    newer.createdAt = "2026-10-17T02:00:00Z";
+    newer.summary!.redFlags = [flag];
+    const reviewed = session("escalated", "reviewed");
+    reviewed.summary!.redFlags = [{ ...flag, review: { action: "acknowledge", reviewerId: "nurse", at: reviewed.updatedAt } }];
+    expect(pendingEscalations([newer, reviewed, oldest]).map(s => s.id)).toEqual(["oldest", "newer"]);
+    expect(pendingEscalations([{ ...oldest, summary: null }])).toHaveLength(1);
+    reviewed.summary!.redFlags[0].review!.action = "false_alarm";
+    expect(pendingEscalations([reviewed])).toHaveLength(0);
+  });
+  it("hides only empty sessions without safety flags", () => {
+    const empty = { ...session(), turns: [] };
+    expect(isEmptySession(empty)).toBe(true);
+    expect(isEmptySession(session())).toBe(false);
+    expect(isEmptySession({ ...empty, status: "escalated" })).toBe(false);
+    empty.summary!.redFlags = [flag];
+    expect(isEmptySession(empty)).toBe(false);
+  });
+  it("counts only high medication alerts still awaiting a pharmacist review", () => {
+    const s = session();
+    const alert: MedAlert = { id: "high", ruleId: "MR-ALLERGY-01", kind: "allergy_conflict", severity: "high", message: localized, action: localized, medIds: [], allergyIds: [], evidence: [], source: "synthetic" };
+    s.summary!.medAlerts = [alert, { ...alert, id: "moderate", severity: "moderate" }, { ...alert, id: "reviewed", review: { action: "acknowledge", reviewerId: "pharmacist", at: s.updatedAt } }];
+    expect(highAlertsOpen([s])).toBe(1);
+  });
+  it("uses health hardware verbatim and never invents an AMD claim for mock", () => {
+    expect(isHealth({ provider: "mock", model: "deterministic-mock" })).toBe(true);
+    expect(isHealth({ provider: "mock", model: "test", hardware: 1 })).toBe(false);
+    expect(healthHardware({ provider: "mock", model: "test", hardware: "None (mock)" })).toBe("None (mock)");
+    expect(healthHardware({ provider: "mock", model: "test", hardware: "AMD" })).toBeUndefined();
+    expect(healthHardware({ provider: "mock", model: "test", hardware: "\u2014" })).toBeUndefined();
+    expect(healthHardware({ provider: "amd-tokenfactory", model: "test", hardware: "AMD MI300X" })).toBe("AMD MI300X");
+  });
   it("accepts empty snapshots, null measurements and real zero measurements", () => {
     expect(isSessions([])).toBe(true);
     expect(isSessions([session()])).toBe(true);

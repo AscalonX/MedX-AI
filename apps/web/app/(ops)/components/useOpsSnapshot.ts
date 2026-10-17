@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import type { ListSessionsRes, MetricsRes } from "@medx/shared/src/api";
-import { isMetrics, isSessions } from "../ops-data";
+import { isHealth, isMetrics, isSessions, type OpsHealth } from "../ops-data";
 
-export interface OpsSnapshot { sessions: ListSessionsRes; metrics: MetricsRes; fetchedAt: number }
+export interface OpsSnapshot { sessions: ListSessionsRes; metrics: MetricsRes; health: OpsHealth; fetchedAt: number }
 
 export function useOpsSnapshot() {
   const [snapshot, setSnapshot] = useState<OpsSnapshot | null>(null);
@@ -23,15 +23,16 @@ export function useOpsSnapshot() {
       const timeout = window.setTimeout(() => controller?.abort(), 8000);
       setRefreshing(true);
       try {
-        const [sessionsResponse, metricsResponse] = await Promise.all([
+        const [sessionsResponse, metricsResponse, healthResponse] = await Promise.all([
           fetch("/api/sessions", { cache: "no-store", signal: controller.signal }),
           fetch("/api/metrics", { cache: "no-store", signal: controller.signal }),
+          fetch("/api/health", { cache: "no-store", signal: controller.signal }),
         ]);
-        if (!sessionsResponse.ok || !metricsResponse.ok) throw new Error("HTTP error");
-        const [sessions, metrics]: [unknown, unknown] = await Promise.all([sessionsResponse.json(), metricsResponse.json()]);
-        if (!isSessions(sessions) || !isMetrics(metrics)) throw new Error("Invalid response");
+        if (!sessionsResponse.ok || !metricsResponse.ok || !healthResponse.ok) throw new Error("HTTP error");
+        const [sessions, metrics, health]: [unknown, unknown, unknown] = await Promise.all([sessionsResponse.json(), metricsResponse.json(), healthResponse.json()]);
+        if (!isSessions(sessions) || !isMetrics(metrics) || !isHealth(health)) throw new Error("Invalid response");
         if (!disposed) {
-          setSnapshot({ sessions, metrics, fetchedAt: Date.now() });
+          setSnapshot({ sessions, metrics, health, fetchedAt: Date.now() });
           setError(false);
         }
       } catch {

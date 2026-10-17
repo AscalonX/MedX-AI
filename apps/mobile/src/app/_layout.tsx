@@ -1,14 +1,21 @@
 import { color } from "@medx/shared";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { View } from "react-native";
 import { TabBar } from "@/components/tabbar";
-import { StoreProvider } from "@/store";
+import { screenFor, StoreProvider, useStore } from "@/store";
 
 SplashScreen.preventAutoHideAsync();
+
+/** After storage is read, send the patient back to where their session belongs (red flag always wins). */
+function Restore() {
+  const { restored } = useStore();
+  useEffect(() => { if (restored) router.replace(screenFor(restored)); }, [restored]);
+  return null;
+}
 
 export default function Root() {
   // Exact names SCBXBeta2-{Light,Regular,Bold}: also what tokens' mobileFont() returns.
@@ -25,6 +32,7 @@ export default function Root() {
       <StatusBar style="dark" />
       <View style={{ flex: 1, backgroundColor: color.paper }}>
         <Stack screenOptions={{ headerShown: false, animation: "none", contentStyle: { backgroundColor: color.paper }, gestureEnabled: false }} />
+        <Restore />
         <TabBar />
       </View>
     </StoreProvider>

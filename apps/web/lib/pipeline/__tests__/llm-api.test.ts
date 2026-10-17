@@ -99,12 +99,13 @@ const context = (id: string) => ({ params: Promise.resolve({ id }) });
 describe('HTTP contracts and CORS', () => {
   beforeEach(() => vi.stubEnv('MODEL_PROVIDER', 'mock'));
   it('returns health metadata without credentials and permits preflight', async () => {
-    const h = health(); expect(await h.json()).toEqual({ provider: 'mock', model: 'deterministic-mock' }); expect(h.headers.has('Access-Control-Allow-Origin')).toBe(false); expect(OPTIONS().status).toBe(204);
+    const h = health(); expect(await h.json()).toEqual({ provider: 'mock', model: 'deterministic-mock', hardware: '\u2014' }); expect(h.headers.has('Access-Control-Allow-Origin')).toBe(false); expect(OPTIONS().status).toBe(204);
   });
   it('creates, lists, gets, adds turns, reviews and returns metrics', async () => {
     const created = await create(post({ patientLang: 'en' })); expect(created.status).toBe(201); const s = await created.json();
-    const sessions = await (await list()).json(); expect(sessions[0].id).toBe(s.id);
+    expect(await (await list()).json()).toEqual([]);
     const added = await add(post({ text: complete }), context(s.id)); expect(added.status).toBe(200); expect((await added.json()).status).toBe('awaiting_review');
+    const sessions = await (await list()).json(); expect(sessions[0].id).toBe(s.id);
     const fetched = await (await get(new Request('http://localhost'), context(s.id))).json(); expect(fetched.session.id).toBe(s.id); expect(fetched.audit.length).toBeGreaterThan(0);
     const edited = await review(post({ reviewerId: 'synthetic-reviewer', actions: [{ fieldKey: 'chief_complaint', action: 'edit', newValue: 'Clinician text' }] }), context(s.id)); expect(edited.status).toBe(200); expect((await edited.json()).summary.fields.find((f: { key: string }) => f.key === 'chief_complaint').status).toBe('edited');
     const m = await (await metrics()).json(); expect(m.sessionsToday).toBe(1); expect(m.provider.name).toBe('mock');

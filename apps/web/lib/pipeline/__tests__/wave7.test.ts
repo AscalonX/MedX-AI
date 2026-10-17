@@ -238,6 +238,7 @@ it('P2 stream body cap counts bytes and cancels before buffering the rest', asyn
   expect(cancelled).toBe(true); expect(pulls).toBeLessThanOrEqual(3);
 });
 it('P2 hardware claims only use configured label or the neutral default', () => {
+  vi.stubEnv('MODEL_PROVIDER', 'amd');
   vi.stubEnv('AMD_HARDWARE_LABEL', ''); expect(providerInfo().hardware).toBe('AMD (via Token Factory)');
   vi.stubEnv('AMD_HARDWARE_LABEL', 'Confirmed demo host'); expect(providerInfo().hardware).toBe('Confirmed demo host');
 });

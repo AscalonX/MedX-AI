@@ -12,6 +12,7 @@ import { appendAudit, getAudit, getSession, getSessions, saveSession, withSessio
 import { words } from './verify';
 import { mergePharmacy, mockPharmacy, pharmacyEntries } from './pharmacyExtraction';
 import { aliases } from './prompts';
+import { quickAnswer } from './quickAnswers';
 export type { ModelClient } from './llm';
 
 export class PipelineError extends Error {
@@ -102,7 +103,8 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
     mergePharmacy(session, pharmacyEntries(mockPharmacy(aliases(session).filter(t => t.role === 'patient')), session), previous);
     return escalate();
   }
-  const ctx: EngineContext = { askedField: previous?.nextQuestion?.field, client: opts.client, trace: opts.trace, deadline, modelCalls: summary.modelCalls, log: (event, detail) => { const safe = { ...detail }; delete safe.modelCalls; audit('summary_generated', { event, ...safe }); } };
+  const answeredFields = (previous?.fields || []).filter(isPresent).flatMap(f => f.evidence.filter(e => quickAnswer(f.key, e.quote) && session.turns.some(t => t.id === e.turnId && t.role === 'patient' && t.text.trim() === e.quote)).map(e => ({ turnId: e.turnId, field: f.key })));
+  const ctx: EngineContext = { askedField: previous?.nextQuestion?.field, answeredFields, client: opts.client, trace: opts.trace, deadline, modelCalls: summary.modelCalls, log: (event, detail) => { const safe = { ...detail }; delete safe.modelCalls; audit('summary_generated', { event, ...safe }); } };
   const [extracted, modelFlags] = await Promise.all([extract(session, ctx), redFlagScreen(session, ctx)]);
   summary.fields = applyRequiredFields(preserveReviewed(previous?.fields || [], extracted.fields, audit));
   mergePharmacy(session, extracted.pharmacy || { medications: [], allergies: [], noKnownAllergiesEvidence: [] }, previous);
@@ -186,7 +188,7 @@ export async function takeover(sessionId: string, reviewerId: string, reason?: s
     saveSession(session); appendAudit(sessionId, 'takeover', 'clinician', { reason: reason ? redact(reason).text : undefined }, redact(reviewerId).text); return session;
   });
 }
-export function listSessions() { return getSessions().sort((a, b) => Number(b.status === 'escalated') - Number(a.status === 'escalated') || b.createdAt.localeCompare(a.createdAt)); }
+export function listSessions() { return getSessions().filter(s => s.turns.some(t => t.role === 'patient')).sort((a, b) => Number(b.status === 'escalated') - Number(a.status === 'escalated') || b.createdAt.localeCompare(a.createdAt)); }
 export function metrics(): OpsMetrics {
   const sessions = getSessions(); const audit = getAudit(); const today = new Date().toISOString().slice(0, 10);
   const byStatus = Object.fromEntries(['collecting', 'escalated', 'awaiting_review', 'needs_human', 'approved', 'taken_over'].map(s => [s, sessions.filter(x => x.status === s).length])) as Record<SessionStatus, number>;

@@ -1,8 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import type { IntakeSession, Lang, RedFlagHit } from "@medx/shared";
 import { Card, EmptyState, FieldValue, Icon, LangMorph } from "@/components/ui";
+import { abstainMessage } from "@/lib/pipeline/messages";
 import { copy, locale, patientLanguageCopy, statusCopy } from "../i18n";
-import { isEmergency, isModelFlag, orderedQueue, verifiedComplaint, waitingSeconds } from "../ops-data";
+import { isEmptySession, isEmergency, isModelFlag, orderedQueue, verifiedComplaint, waitingSeconds } from "../ops-data";
 import styles from "../ops.module.css";
 
 export function Blank({ label }: { label: string }) {
@@ -11,9 +15,9 @@ export function Blank({ label }: { label: string }) {
 
 export function duration(seconds: number, lang: Lang) {
   const format = new Intl.NumberFormat(locale[lang], { maximumFractionDigits: 1 });
-  if (seconds < 60) return `${format.format(seconds)} s`;
-  if (seconds < 3600) return `${format.format(Math.floor(seconds / 60))} min`;
-  return `${format.format(Math.floor(seconds / 3600))} h ${format.format(Math.floor(seconds % 3600 / 60))} min`;
+  if (seconds < 60) return `${format.format(seconds)} ${copy.seconds[lang]}`;
+  if (seconds < 3600) return `${format.format(Math.floor(seconds / 60))} ${copy.minutes[lang]}`;
+  return `${format.format(Math.floor(seconds / 3600))} ${copy.hours[lang]} ${format.format(Math.floor(seconds % 3600 / 60))} ${copy.minutes[lang]}`;
 }
 
 function FlagSource({ flag, lang }: { flag: RedFlagHit; lang: Lang }) {
@@ -64,15 +68,19 @@ export function Escalations({ sessions, lang }: { sessions: IntakeSession[]; lan
 }
 
 export function Queue({ sessions, now, lang }: { sessions: IntakeSession[]; now: number; lang: Lang }) {
+  const [showEmpty, setShowEmpty] = useState(false);
+  const emptyCount = sessions.filter(isEmptySession).length;
+  const visible = orderedQueue(sessions).filter(s => showEmpty || !isEmptySession(s));
   return (
     <Card className={styles.section} aria-labelledby="queue-title">
       <div className={styles.sectionHeading}>
-        <h2 id="queue-title"><LangMorph text={copy.queue} lang={lang} /> <span className={styles.headingCount}>{sessions.length}</span></h2>
+        <h2 id="queue-title"><LangMorph text={copy.queue} lang={lang} /> <span className={styles.headingCount}>{new Intl.NumberFormat(locale[lang]).format(visible.length)}</span></h2>
         <p><LangMorph text={copy.queueNote} lang={lang} /></p>
       </div>
-      {sessions.length === 0 ? <EmptyState icon={<Icon name="inbox" />} title={<LangMorph text={copy.empty} lang={lang} />} /> : (
-        <ul className={styles.queueList} aria-label={copy.queue[lang]}>
-          {orderedQueue(sessions).map(s => {
+      {emptyCount > 0 && <button type="button" className={styles.emptyToggle} aria-expanded={showEmpty} aria-controls="ops-queue-list" onClick={() => setShowEmpty(value => !value)}>{(showEmpty ? copy.hideEmpty : copy.showEmpty)[lang].replace("{count}", new Intl.NumberFormat(locale[lang]).format(emptyCount))}</button>}
+      {visible.length === 0 && <EmptyState icon={<Icon name="inbox" />} title={<LangMorph text={sessions.length ? copy.emptyVisible : copy.empty} lang={lang} />} />}
+        <ul id="ops-queue-list" className={styles.queueList} aria-label={copy.queue[lang]}>
+          {visible.map(s => {
             const waiting = waitingSeconds(s, now);
             const statusClass = s.status === "escalated" ? styles.urgentPill : s.status === "needs_human" ? styles.reviewPill : s.status === "approved" || s.status === "taken_over" ? styles.ackPill : styles.statusPill;
             return (
@@ -83,7 +91,8 @@ export function Queue({ sessions, now, lang }: { sessions: IntakeSession[]; now:
                 </div>
                 <div className={styles.queueDetail}>
                   <span className={statusClass}><Icon name={s.status === "escalated" ? "triangle-alert" : s.status === "approved" ? "check" : s.status === "needs_human" ? "pencil" : "clipboard-list"} size={14} /><LangMorph text={statusCopy[s.status]} lang={lang} /></span>
-                  <div className={styles.complaint}><span className="sr-only">{copy.complaint[lang]}: </span>{s.summary?.abstained ? <span className={styles.reviewPill}><Icon name="pencil" size={14} /><LangMorph text={copy.needsReview} lang={lang} /></span> : <FieldValue field={verifiedComplaint(s)} lang={lang} />}</div>
+                  <div className={styles.complaint}><span className="sr-only">{s.summary?.redFlags.length ? copy.redFlags[lang] : copy.complaint[lang]}: </span>{s.summary?.redFlags.length ? s.summary.redFlags.map((flag, index) => <p key={`${flag.ruleId}-${index}`}><LangMorph text={flag.label} lang={lang} /></p>) : s.summary?.abstained ? <span className={styles.reviewPill}><Icon name="pencil" size={14} /><LangMorph text={copy.needsReview} lang={lang} /></span> : isEmptySession(s) ? copy.noComplaint[lang] : <FieldValue field={verifiedComplaint(s)} lang={lang} />}</div>
+                  {s.summary?.abstained && <p className={styles.note}><LangMorph text={abstainMessage(s.summary.abstainReason)} lang={lang} /></p>}
                   <div className={styles.queueFlags}>{s.summary?.redFlags.length ? s.summary.redFlags.map((flag, i) => <div key={`${flag.ruleId}-${i}`}><FlagSource flag={flag} lang={lang} /></div>) : <LangMorph text={copy.noFlags} lang={lang} className={styles.noFlags} />}</div>
                 </div>
                 <div className={styles.queueAction}><span className={styles.waiting}><Icon name="clock" size={14} /><span><span className="sr-only">{copy.waiting[lang]}: </span>{waiting === null ? <Blank label={copy.completed[lang]} /> : duration(waiting, lang)}</span></span><OpenIntake session={s} lang={lang} /></div>
@@ -91,7 +100,6 @@ export function Queue({ sessions, now, lang }: { sessions: IntakeSession[]; now:
             );
           })}
         </ul>
-      )}
       <p className={styles.note}><LangMorph text={copy.waitingNote} lang={lang} /></p>
     </Card>
   );

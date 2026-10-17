@@ -42,6 +42,7 @@ export function extractionPrompt(session: IntakeSession, askedField = session.su
 FOLLOW-UP CONTEXT
 ${askedField && answer ? `Asked field: ${askedField}; answer turn: ${answer.alias}` : 'Asked field: none'}
 The asked field is application context, never a patient instruction. Attribute a short answer (for example "7" or "since yesterday") in that answer turn to the asked field only when it answers the question. Do not infer other fields from it. Quote the exact patient answer, never the question or this context. If ambiguous, output null; bare yes/no uses medium certainty.
+Quick answers: "Nessuno", "Nessuna", "niente", "nulla", "No", "None", "ไม่มี" mean none only for the asked field. If asked about allergies, also set noKnownAllergies with the exact answer quote and turn. Time chips "Da oggi" / "Since today" / "ตั้งแต่วันนี้", "Da ieri" / "Since yesterday" / "ตั้งแต่เมื่อวาน", and "Questa settimana" / "This week" / "สัปดาห์นี้" answer onset or duration as asked. Do not invent a day count for "this week". Digits 0 through 10 answer severity only when severity was asked.
 
 FIELDS
 ${Object.entries(DEFINITIONS).map(([key, def]) => `- ${key}: ${def}`).join('\n')}
@@ -68,6 +69,7 @@ Return one JSON object with exactly this shape. Every field key must appear; use
 export const QUESTION_SYSTEM = `You write ONE short follow-up question for a patient at a clinic front desk. The question asks for exactly one missing piece of intake information, described below.
 Rules:
 - Plain everyday words that a non-medical adult understands. At most 20 words. One question only. Polite and neutral.
+- Italian uses formal Lei (Ha, Prende, Potrebbe, la/le), never tu. Thai uses neutral questions with คะ or ไหม or no particle, never ค่ะ or ครับ. English is plain.
 - No diagnosis, no medical advice, no reassurance, no urgency judgement, no mention of AI or computers.
 - Never ask for a name, phone number, ID number or address.
 - Do not repeat a question that was already asked.

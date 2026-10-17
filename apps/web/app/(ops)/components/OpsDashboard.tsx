@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Lang } from "@medx/shared";
-import { AppShell, Button, Card, GradientHero, Icon, LangMorph, type ShellRole } from "@/components/ui";
+import { Button, Card, GradientHero, Icon, LangMorph, type ShellRole } from "@/components/ui";
 import { copy, locale, statusCopy } from "../i18n";
 import { StatusChart, LatencyChart } from "./Charts";
-import { Blank, duration, Escalations, Queue } from "./Queue";
+import { Blank, Escalations, Queue } from "./Queue";
+import { highAlertsOpen, pendingEscalations } from "../ops-data";
+import { CountUp } from "./CountUp";
+import { OpsShell } from "./OpsShell";
 import { MetricStrip, ProviderPill, ProviderPlate } from "./SystemLedger";
 import { useOpsSnapshot } from "./useOpsSnapshot";
 import styles from "../ops.module.css";
@@ -15,6 +19,7 @@ export function OpsDashboard() {
   const [lang, setLang] = useState<Lang>("en");
   const router = useRouter();
   const { snapshot, error, refreshing, retry } = useOpsSnapshot();
+  const pending = snapshot ? pendingEscalations(snapshot.sessions) : [];
   const date = snapshot ? new Intl.DateTimeFormat(locale[lang], { weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Bangkok" }).format(snapshot.fetchedAt) : null;
   const time = snapshot ? new Intl.DateTimeFormat(locale[lang], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Asia/Bangkok" }).format(snapshot.fetchedAt) : null;
   const changeRole = (role: ShellRole) => {
@@ -23,12 +28,7 @@ export function OpsDashboard() {
   };
   return (
     <div className={styles.desk} lang={lang}>
-      <AppShell role="ops" onRoleChange={changeRole} greeting={<LangMorph text={copy.greeting} lang={lang} />} userName={copy.headNurse[lang]} lang={lang} onLangChange={setLang}
-        nav={[
-          { href: "/review", label: copy.queue[lang], icon: <Icon name="clipboard-list" size={18} /> },
-          { href: "/pharmacy", label: copy.pharmacy[lang], icon: <Icon name="pill" size={18} /> },
-          { href: "/ops", label: copy.title[lang], icon: <Icon name="activity" size={18} />, active: true },
-        ]}>
+      <OpsShell onRoleChange={changeRole} lang={lang} onLangChange={setLang}>
         <div className={styles.board}>
           <div className={styles.pageHeading}>
             <div><h1><LangMorph text={copy.title} lang={lang} /></h1><p>{date ?? <Blank label={copy.loading[lang]} />}</p></div>
@@ -41,26 +41,27 @@ export function OpsDashboard() {
           </div>
           {error && <Card className={styles.error} role="alert"><div><p><LangMorph text={copy.error} lang={lang} /></p>{snapshot && <p className={styles.note}><LangMorph text={copy.stale} lang={lang} /></p>}</div><Button onClick={retry} disabled={refreshing}><LangMorph text={copy.retry} lang={lang} /></Button></Card>}
           {snapshot ? <>
-            <GradientHero title={<LangMorph text={copy.frontDesk} lang={lang} />}>
+            <GradientHero title={<LangMorph text={copy.frontDesk} lang={lang} />}
+              action={pending[0] ? <Link className={styles.heroLink} href={`/review/${encodeURIComponent(pending[0].id)}`}><LangMorph text={copy.openOldest} lang={lang} /><span className="sr-only"> {pending[0].code}</span><Icon name="chevron-right" size={18} /></Link> : <p><LangMorph text={copy.allAcknowledged} lang={lang} /></p>}>
               <div className={styles.heroTop}>
-                <div><p className={styles.heroNumber}>{new Intl.NumberFormat(locale[lang]).format(snapshot.metrics.sessionsToday)}</p><p><LangMorph text={copy.sessionsToday} lang={lang} /></p></div>
-                <ProviderPill provider={snapshot.metrics.provider} />
+                <div className={styles.heroCount}><p className={`${styles.heroNumber} ${pending.length > 0 ? styles.heroUrgent : ""}`}><CountUp value={pending.length} lang={lang} /></p><p><LangMorph text={copy.pendingEscalations} lang={lang} /></p></div>
+                <ProviderPill health={snapshot.health} lang={lang} />
               </div>
               <dl className={styles.heroStats}>
-                <div><dt><LangMorph text={copy.escalations} lang={lang} /></dt><dd>{snapshot.metrics.escalations}</dd></div>
-                <div><dt><LangMorph text={statusCopy.awaiting_review} lang={lang} /></dt><dd>{snapshot.metrics.byStatus.awaiting_review}</dd></div>
-                <div><dt><LangMorph text={copy.medianReview} lang={lang} /></dt><dd>{snapshot.metrics.medianReviewSeconds === null ? <Blank label={copy.unavailable[lang]} /> : duration(snapshot.metrics.medianReviewSeconds, lang)}</dd></div>
+                <div><dt><LangMorph text={statusCopy.awaiting_review} lang={lang} /></dt><dd><CountUp value={snapshot.metrics.byStatus.awaiting_review} lang={lang} /></dd></div>
+                <div><dt><LangMorph text={copy.pharmacyAlerts} lang={lang} /></dt><dd><CountUp value={highAlertsOpen(snapshot.sessions)} lang={lang} /></dd></div>
+                <div><dt><LangMorph text={copy.sessionsToday} lang={lang} /></dt><dd><CountUp value={snapshot.metrics.sessionsToday} lang={lang} /></dd></div>
               </dl>
             </GradientHero>
-            <MetricStrip metrics={snapshot.metrics} sessions={snapshot.sessions} lang={lang} />
+            <MetricStrip metrics={snapshot.metrics} health={snapshot.health} lang={lang} />
             <Escalations sessions={snapshot.sessions} lang={lang} />
             <Queue sessions={snapshot.sessions} now={snapshot.fetchedAt} lang={lang} />
-            <div className={styles.charts}><StatusChart sessions={snapshot.sessions} lang={lang} /><LatencyChart sessions={snapshot.sessions} metrics={snapshot.metrics} lang={lang} /></div>
-            <ProviderPlate provider={snapshot.metrics.provider} lang={lang} />
+            <div className={styles.charts}><StatusChart sessions={snapshot.sessions} lang={lang} /><LatencyChart sessions={snapshot.sessions} metrics={snapshot.metrics} health={snapshot.health} lang={lang} /></div>
+            <ProviderPlate health={snapshot.health} lang={lang} />
           </> : !error && <Card className={styles.loading} aria-busy="true" aria-label={copy.loading[lang]}><p role="status"><LangMorph text={copy.loading} lang={lang} /></p><div aria-hidden="true" className={styles.loadingLines}>{Array.from({ length: 6 }, (_, i) => <div key={i} className="mx-skeleton" />)}</div></Card>}
           <footer className={styles.footer}><p><LangMorph text={copy.footer} lang={lang} /></p><span lang="en">MedX Bridge · ACT III</span></footer>
         </div>
-      </AppShell>
+      </OpsShell>
     </div>
   );
 }

@@ -6,8 +6,10 @@ import { aliases, EXTRACTION_SYSTEM, extractionPrompt } from './prompts';
 import { languageOK, validateExtraction } from './schema';
 import { verifyDetailed, words } from './verify';
 import { pharmacyEntries } from './pharmacyExtraction';
+import { applyQuickAnswer } from './quickAnswers';
 export interface EngineContext {
   askedField?: FieldKey;
+  answeredFields?: { turnId: string; field: FieldKey }[];
   client?: ModelClient;
   trace?: (e: { step: PipelineStep; raw: unknown }) => void;
   deadline: number;
@@ -60,6 +62,13 @@ export async function extract(session: IntakeSession, ctx: EngineContext) {
   const model = validation.data;
   let proposed = 0; let failed = 0;
   const aliasTurns = aliases(session);
+  const patientTurns = aliasTurns.filter(t => t.role === 'patient');
+  for (const t of patientTurns) {
+    const field = t === patientTurns.at(-1) ? ctx.askedField : ctx.answeredFields?.find(a => a.turnId === t.id)?.field;
+    // Restore an earlier chip only when the provider has no newer evidence.
+    // A later explicit allergy or other correction must take precedence.
+    if (field && (t === patientTurns.at(-1) || !model.fields[field] || model.fields[field]?.evidence.some(e => e.turn === t.alias))) applyQuickAnswer(model, field, t.text, t.alias);
+  }
   const fields: ExtractedField[] = emptyFields().map(base => {
     const f = model.fields[base.key]; if (!f) return base;
     proposed++;

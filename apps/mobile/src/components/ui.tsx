@@ -58,9 +58,9 @@ export function Pill({ lang, label, onPress, disabled, variant = "gradient", ton
   );
 }
 
-export function Chip({ lang, label, onPress, selected }: { lang: Lang; label: string; onPress?: () => void; selected?: boolean }) {
+export function Chip({ lang, label, onPress, selected, a11y }: { lang: Lang; label: string; onPress?: () => void; selected?: boolean; a11y?: string }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: !!selected }} onPress={onPress}
+    <Pressable accessibilityRole="button" accessibilityLabel={a11y ?? label} aria-label={a11y ?? label} accessibilityState={{ selected: !!selected }} onPress={onPress}
       style={{ minHeight: 44, minWidth: 44, paddingHorizontal: space[4], borderRadius: radius.pill, justifyContent: "center", alignItems: "center", backgroundColor: selected ? color.tealTint : color.sheet, borderWidth: 1.5, borderColor: selected ? color.teal : color.rule }}>
       <T lang={lang} token="body" weight={selected ? "bold" : "regular"} tone={selected ? "teal" : "ink"}>{label}</T>
     </Pressable>
