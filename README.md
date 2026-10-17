@@ -2,21 +2,37 @@
 
 Live demo: [URL pending]
 
-Multilingual pre-visit intake where **every field points back to the patient's own words**. A patient describes the problem in Thai, Italian or English; the nurse gets a one-screen summary in her own language where **every field links to the exact patient sentence it came from**, unverified fields are shown as unsupported (never as fact), missing information triggers one follow-up question back to the patient, and red flags interrupt everything. Pharmacists get the same treatment for medication lists (extraction plus deterministic drug-safety alerts). Designed to run Gemma on AMD via the hackathon's AMD Token Factory (OpenAI-compatible); current results use a mock model until the endpoint is connected.
+One patient journey in one product: **patient, nurse, doctor, pharmacist**. Every field points back to the patient's own words. Fin the dolphin is the mascot: a helper, never the decider.
+
+**Features**
+- **Patient app** (Thai, Italian, English; English is the primary demo language): guided intake by voice or text; a voice agent reads each question and the patient checks the transcript before sending; live status when a nurse has read the answers.
+- **Nurse**: consult assistant for history-taking (ambient listening, "ask next" and "rule out" question popups, live summary with a source quote per field); vitals with a NEWS2-based triage *suggestion* that the nurse confirms.
+- **Doctor**: consult assistant with "considerations" for clinician judgement (labelled "AI suggestion for clinician judgement, not a diagnosis", with workup ideas and guideline links); an evidence-linked draft note the doctor signs; orders (investigations and prescriptions) with deterministic checks (allergy, interaction, duplicate, pregnancy, dose range) and a written reason to override a high alert.
+- **Pharmacist**: verifies or returns each prescription with a note, and reconciles the medicines the patient named (brand to generic).
+- **Safety**: deterministic red-flag rules run before any model; an add-only Gemma safety screen; unsupported fields shown as "needs check"; abstain and "needs human review"; nothing final until a clinician approves; append-only audit log.
+- **Ops dashboard**: queue by urgency, escalations, abstain rate, model labels (honest "mock model" label until the AMD endpoint is connected).
+
+Designed to run Gemma on AMD via the hackathon's AMD Token Factory (OpenAI-compatible); current results use a mock model until the endpoint is connected.
 
 AMD Developer Hackathon ACT III, Track 2 (Health and Wellbeing).
 
-> **Claim boundary.** Research prototype and clinical decision support. It *supports* clinicians and *flags for review*; it never diagnoses, treats, prescribes or decides urgency on its own. **Synthetic data only**, not clinically validated, not a medical device.
+> **Claim boundary.** Research prototype and clinical decision support. It *supports* clinicians and *flags for review*; it never diagnoses, orders, prescribes or decides triage on its own; people confirm every step. **Synthetic data only**, not clinically validated, not a medical device.
 
 ## Screenshots
 
-| Patient app (Expo) | Red flag (Thai) | Clinician review |
-|---|---|---|
-| ![home](docs/reports/screens/v2b-mobile-1-home-en.png) | ![red flag](docs/reports/screens/v2b-mobile-7-redflag-th.png) | ![review](docs/reports/screens/v2b-review-awaiting_review.png) |
+Real screenshots of the built app (synthetic data). Deck: [pitch/deck/MedX-deck.pdf](pitch/deck/MedX-deck.pdf).
 
-| Escalated case | Pharmacist | Ops |
+| Nurse consult assistant | Nurse vitals and triage suggestion | Doctor orders and considerations |
 |---|---|---|
-| ![escalated](docs/reports/screens/v2b-review-escalated.png) | ![pharmacy](docs/reports/screens/v2b-pharmacy-live-B017-highlight.png) | ![ops](docs/reports/screens/v2-ops.png) |
+| ![consult](pitch/deck/img/consult-nurse.png) | ![vitals](pitch/deck/img/vitals.png) | ![orders](pitch/deck/img/orders.png) |
+
+| Prescribing checks and override | Pharmacist verify or return | Red flag (Thai) |
+|---|---|---|
+| ![checks](pitch/deck/img/rx-check.png) | ![pharmacist](pitch/deck/img/pharm-rx.png) | ![red flag](pitch/deck/img/redflag.png) |
+
+| Patient app: voice confirm | Patient app: live status | Doctor draft note |
+|---|---|---|
+| ![voice](pitch/deck/img/m-voice.jpg) | ![status](pitch/deck/img/m-status.jpg) | ![note](pitch/deck/img/doctor-note.png) |
 
 ## How it works
 
@@ -104,7 +120,7 @@ Also: `AMD_JSON_SCHEMA=false` disables `response_format` json_schema if an endpo
 ## Tests
 
 ```bash
-npm --prefix apps/web test      # vitest: 1,119 tests in 14 files (red flags, redaction, verifier, med rules, API, ops metrics)
+npm --prefix apps/web test      # vitest: 1,382 tests in 19 files (red flags, redaction, verifier, med rules, API, ops metrics)
 ```
 
 ## Evaluation

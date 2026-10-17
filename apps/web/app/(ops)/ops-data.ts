@@ -86,7 +86,7 @@ export function isSessions(value: unknown): value is IntakeSession[] {
   return Array.isArray(value) && value.every(s => object(s) && text(s.id) && text(s.code)
     && ["th", "it", "en"].includes(String(s.patientLang)) && statusOrder.includes(s.status as SessionStatus)
     && timestamp(s.createdAt) && timestamp(s.updatedAt)
-    && Array.isArray(s.turns) && s.turns.every(t => object(t) && text(t.id) && ["patient", "assistant"].includes(String(t.role)) && text(t.text))
+    && Array.isArray(s.turns) && s.turns.every(t => object(t) && text(t.id) && ["patient", "assistant", "clinician"].includes(String(t.role)) && text(t.text))
     && (s.summary === null || (object(s.summary) && typeof s.summary.abstained === "boolean"
       && Array.isArray(s.summary.fields) && s.summary.fields.every(f => object(f) && text(f.key)
         && ["supported", "unsupported", "missing", "edited", "approved"].includes(String(f.status))
@@ -94,7 +94,7 @@ export function isSessions(value: unknown): value is IntakeSession[] {
       && Array.isArray(s.summary.redFlags) && s.summary.redFlags.every(f => object(f) && text(f.ruleId) && localized(f.label)
         && ["emergency", "urgent"].includes(String(f.severity)) && (f.source === undefined || ["rule", "model"].includes(String(f.source)))
         && (f.review === undefined || (object(f.review) && ["acknowledge", "false_alarm"].includes(String(f.review.action)) && text(f.review.reviewerId))))
-      && Array.isArray(s.summary.modelCalls) && s.summary.modelCalls.every(c => object(c) && stepOrder.includes(c.step as PipelineStep)
+      && Array.isArray(s.summary.modelCalls) && s.summary.modelCalls.every(c => object(c) && text(c.step)
         && ["mock", "amd-tokenfactory"].includes(String(c.provider)) && text(c.model) && number(c.latencyMs) && typeof c.ok === "boolean"))));
 }
 

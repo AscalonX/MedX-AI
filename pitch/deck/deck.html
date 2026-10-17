@@ -28,7 +28,7 @@ h2{font-size:68px;line-height:1.08;font-weight:700;margin-top:60px;max-width:150
 .s1{background:var(--grad);color:#fff;padding:0}
 .s1 .brand,.s1 .pg{color:#fff}.s1 .logo{background:#fff;color:var(--teal)}
 .s1 h1{font-size:140px;line-height:1;font-weight:700;letter-spacing:-.02em;position:absolute;left:110px;top:200px}
-.s1 .tag{position:absolute;left:110px;top:540px;font-size:38px;line-height:1.3;max-width:700px;font-weight:300}
+.s1 .tag{position:absolute;left:110px;top:410px;font-size:36px;line-height:1.3;max-width:860px;font-weight:300}
 .s1 .meta{position:absolute;left:110px;bottom:90px;font-size:26px;line-height:1.5;opacity:.92}
 .s1 .rev{position:absolute;right:150px;top:150px;width:880px;transform:rotate(0)}
 .s1 .ph{position:absolute;right:110px;top:300px;width:270px}
@@ -62,21 +62,29 @@ ul.l{list-style:none;font-size:30px;line-height:1.4}
 ul.l li{padding-left:34px;position:relative;margin-bottom:14px}
 ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16px;border-radius:5px;background:var(--grad)}
 .nb{font-size:20px;color:var(--gr)}
-</style></head><body>
 
-<!-- 1 -->
+.fin{position:absolute;pointer-events:none}
+.cap2{font-size:24px;color:var(--soft);line-height:1.38}
+.cap2 b{color:var(--ink)}
+.tbl td{font-size:23px;padding:7px 14px}
+.biz{display:flex;flex-direction:column;gap:12px;margin-top:30px}
+.biz .row{align-items:flex-start;font-size:24px}
+.biz .row .q{flex:0 0 330px;width:330px;font-size:24px}
+.lev{display:flex;gap:22px;margin-top:22px}
+.lev .card{flex:1;padding:20px 24px;font-size:23px;line-height:1.3}
+.lev b{display:block;font-size:26px;margin-bottom:6px;color:var(--teal)}
+</style></head><body>
 <section class="slide s1">
  <div class="brand"><div class="logo">M</div>MedX</div><div class="pg">AMD Developer Hackathon ACT III · Track 2</div>
- <h1>MedX<br>Bridge</h1>
- <div class="tag">Multilingual intake for nurses and pharmacists. Every field points back to the patient's own words.</div>
- <div class="meta">Research prototype. Supports clinicians; does not diagnose.<br>Synthetic data only. github.com/KingPhuripol/medx-bridge</div>
- <img class="shot rev" src="img/review.png" style="top:130px;border:0;box-shadow:0 24px 60px rgba(0,0,0,.28)">
- <img class="phone ph" src="img/m-status.jpg" style="right:70px;top:520px;width:260px">
+ <h1>MedX</h1>
+ <div class="tag">One patient journey, from the first words to the pharmacy. Every field points back to the patient's own words.</div>
+ <div class="meta">Research prototype. Supports clinicians; does not diagnose, order, prescribe or decide triage.<br>Synthetic data only. github.com/KingPhuripol/medx-bridge</div>
+ <img class="shot" src="img/consult-nurse.png" style="position:absolute;right:110px;top:150px;width:800px;border:0;box-shadow:0 24px 60px rgba(0,0,0,.28)">
+ <div style="position:absolute;left:110px;top:600px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.18)"></div>
+ <img class="fin" src="img/fin-wave.svg" style="left:118px;top:595px;width:224px">
+ <div style="position:absolute;left:390px;top:660px;font-size:26px;line-height:1.35;max-width:560px;opacity:.95">Meet Fin. Like a dolphin's echolocation, MedX hears what others miss, and stays a helper, never the decider.</div>
 </section>
-
-<!-- 2 -->
-<section class="slide">
- <div class="brand"><div class="logo">M</div>MedX</div><div class="pg">2 / 8</div>
+<section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">2 / 10</div>
  <h2>A language gap and a wrong medicine list are both safety events</h2>
  <div class="stat">
   <div class="card"><div class="big">49.1%<small> vs 29.5%</small></div><div class="cap"><b>Physical harm in adverse events</b>, limited-English patients vs English speakers, six US hospitals. Communication errors caused 52.4% vs 35.9%.<sup>1</sup></div></div>
@@ -84,132 +92,111 @@ ul.l li:before{content:"";position:absolute;left:0;top:14px;width:16px;height:16
   <div class="card"><div class="big">49.2%<small> vs 27.0%</small></div><div class="cap"><b>Doctor's day on EHR and desk work</b> vs face time with the patient, four specialties.<sup>3</sup></div></div>
  </div>
  <div class="sub" style="margin-top:36px;font-size:28px">Thailand had 32.97 million foreign tourist arrivals in 2025.<sup>4</sup> At the desk, the patient and the staff often do not share a language.</div>
- <div class="foot">1 Divi et al., Int J Qual Health Care 2007 (PMID 17277013). 2 Studies M1 to M6 in docs/research/PHARMACY-PROBLEM.md; settings differ, so a range is shown. 3 Sinsky et al., Ann Intern Med 2016 (PMID 27595430). 4 Ministry of Tourism and Sports via Bernama, 6 Jan 2026. Full list: docs/research/PROBLEM.md.</div>
-</section>
-
-<!-- 3 -->
-<section class="slide">
- <div class="brand"><div class="logo">M</div>MedX</div><div class="pg">3 / 8</div>
- <h2 style="max-width:900px;font-size:60px">Three people, one intake, before the consult</h2>
- <div style="position:absolute;left:110px;top:330px;width:880px;display:flex;flex-direction:column;gap:22px">
-  <div class="row"><div class="q">Patient</div>Speaks or types in Thai, Italian or English. A voice agent reads the question aloud; the patient checks and corrects the transcript before it is sent.</div>
-  <div class="row"><div class="q">Nurse</div>Reads an English summary (design goal: quick to scan). Clicks a field to see the patient's own sentence. Approves, edits or takes over.</div>
-  <div class="row"><div class="q">Pharmacist</div>Reconciles the medicines the patient named, brand to generic, with alerts on duplicate paracetamol, allergy conflicts and interactions.</div>
-  <div class="row"><div class="q">Clinic manager</div>Sees the queue by urgency, escalations, abstain rate and model latency.</div>
+<div class=foot>1 Divi et al., Int J Qual Health Care 2007 (PMID 17277013). 2 Studies M1 to M6 in docs/research/PHARMACY-PROBLEM.md; settings differ, so a range is shown. 3 Sinsky et al., Ann Intern Med 2016 (PMID 27595430). 4 Ministry of Tourism and Sports via Bernama, 6 Jan 2026. Full list: docs/research/PROBLEM.md.</div></section>
+<section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">3 / 10</div>
+ <h2 style="font-size:60px;max-width:900px">One patient journey, four people</h2>
+ <div style="position:absolute;left:110px;top:330px;width:900px;display:flex;flex-direction:column;gap:18px">
+  <div class="row"><div class="q">1 Patient</div>Speaks or types in Thai, Italian or English. The patient checks the voice transcript before sending.</div>
+  <div class="row"><div class="q">2 Nurse</div>History-taking with a consult assistant, vitals, and a triage suggestion the nurse confirms.</div>
+  <div class="row"><div class="q">3 Doctor</div>Considerations for clinical judgement, a draft note to sign, and orders with automatic checks.</div>
+  <div class="row"><div class="q">4 Pharmacist</div>Verifies or returns each prescription, and reconciles the medicines the patient named.</div>
+  <div class="cap2" style="margin-top:6px">A clinic manager sees the queue, escalations and abstain rate. At every step a human decides; the AI never diagnoses, orders, prescribes or decides triage.</div>
  </div>
  <img class="phone" src="img/m-voice.jpg" style="position:absolute;left:1090px;top:200px;width:310px">
  <img class="phone" src="img/m-status.jpg" style="position:absolute;left:1470px;top:200px;width:310px">
- <div style="position:absolute;left:1090px;top:870px;width:700px;font-size:24px;color:var(--soft);line-height:1.35">Left: the patient confirms what the voice agent heard. Right: after the nurse approves, the patient's phone ticks "Reviewed" in the patient's language.</div>
- <div class="foot">Real screenshots from the built app (Expo patient app on web, Italian UI). "2 to 3 minutes per intake" is a design assumption, not a cited figure.</div>
-</section>
-
-<!-- 4 -->
-<section class="slide">
- <div class="brand"><div class="logo">M</div>MedX</div><div class="pg">4 / 8</div>
- <h2 style="font-size:56px;margin-top:50px">Rules first, Gemma second, a human last</h2>
- <div class="flow">
-  <div class="step"><h4>1 Redact</h4>Names, phone, ID become tokens before any storage or model call.<small>code</small></div><div class="arrow">&rarr;</div>
-  <div class="step red"><h4>2 Red-flag rules</h4>18 rules, every turn. A hit stops the intake; no model can clear it.<small>code, no model</small></div><div class="arrow">&rarr;</div>
-  <div class="lanes">
-   <div class="step gem"><h4>3a Gemma on AMD</h4>Extract, translate, one quote per field.<small>model</small></div>
-   <div class="step gem"><h4>3b Gemma safety screen</h4>Add-only: raises, never clears.<small>model, in parallel</small></div>
-  </div><div class="arrow">&rarr;</div>
-  <div class="step"><h4>4 Verify</h4>Code checks each quote exists. None: "needs check".<small>code</small></div><div class="arrow">&rarr;</div>
-  <div class="step"><h4>5 Ask or hand over</h4>One follow-up question, or abstain.<small>model + code</small></div><div class="arrow">&rarr;</div>
-  <div class="step" style="border:3px solid var(--ink)"><h4>6 Clinician</h4>Approve, edit, take over. Audit log.<small>human</small></div>
+ <div class="cap2" style="position:absolute;left:1090px;top:870px;width:700px">Left: the patient confirms what the voice agent heard. Right: the patient's phone shows when a nurse has read the answers.</div>
+<div class=foot>Real screenshots from the built app (Expo patient app on web, Italian UI; English is the primary demo language). Voice input uses the phone's speech service.</div></section>
+<section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">4 / 10</div>
+ <h2 style="font-size:56px;max-width:1700px">Nurse: ask the next question, then confirm the triage</h2>
+ <img class="shot" src="img/consult-nurse.png" style="position:absolute;left:110px;top:250px;width:790px">
+ <img class="shot" src="img/vitals.png" style="position:absolute;left:940px;top:250px;width:870px">
+ <div class="cap2" style="position:absolute;left:940px;top:850px;width:870px"><b>Left, consult assistant:</b> it listens, keeps a live summary where each field links to the patient's words, and pops up "ask next" and "rule out" questions. <b>Right, vitals:</b> a NEWS2-based triage level is only a suggestion; the nurse confirms it.</div>
+<div class=foot>Screens: nurse consult assistant and vitals, synthetic case B-012, built app. Speech is processed by the browser speech service. Triage level is a suggestion that the nurse confirms.</div></section>
+<section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">5 / 10</div>
+ <h2 style="font-size:56px;max-width:1700px">Doctor: considerations, a draft note, orders with checks</h2>
+ <img class="shot" src="img/orders.png" style="position:absolute;left:110px;top:250px;width:900px">
+ <img class="shot" src="img/doctor-note.png" style="position:absolute;left:1050px;top:250px;width:760px">
+ <div class="cap2" style="position:absolute;left:1050px;top:640px;width:760px"><b>Draft visit note:</b> built from the patient's words; anything not found shows "Needs check". The doctor reviews and signs.</div>
+ <div class="cap2" style="position:absolute;left:1050px;top:760px;width:760px"><b>Next:</b> orders. Prescriptions are checked by rules, not by the AI, and are shown on the next slide.</div>
+ <div class="cap2" style="position:absolute;left:110px;top:800px;width:900px"><b>Considered, not ordered:</b> workup ideas and guideline links appear for the doctor only, labelled "for clinician review, not a diagnosis". The AI never orders; the doctor does.</div>
+<div class=foot>Screens: doctor orders view and draft note, synthetic cases, built app.</div></section>
+<section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">6 / 10</div>
+ <h2 style="font-size:56px;max-width:1700px">Prescribing checks, an override reason, a pharmacist loop</h2>
+ <img class="shot" src="img/rx-check.png" style="position:absolute;left:110px;top:250px;width:440px">
+ <img class="shot" src="img/pharm-rx.png" style="position:absolute;left:600px;top:250px;width:1000px">
+ <div class="cap2" style="position:absolute;left:110px;top:860px;width:470px;font-size:21px"><b>Doctor:</b> rule-based checks (allergy, interaction, duplicate, pregnancy, dose range); a high alert needs a written reason.</div>
+ <div class="cap2" style="position:absolute;left:600px;top:905px;width:1210px"><b>Pharmacist:</b> sees the alert and the doctor's reason, then verifies or returns the order with a note. Returned orders come back to the doctor to edit and resubmit.</div>
+<div class=foot>Screens: doctor prescribing view and pharmacist queue, synthetic cases, built app. Checks use a small rule set (59 drugs, 18 interactions), not a complete drug-interaction check.</div></section>
+<section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">7 / 10</div>
+ <h2 style="font-size:56px;max-width:1000px">Safety by design, in five answers</h2>
+ <div class="rows" style="width:1060px;gap:12px;margin-top:30px">
+  <div class="row"><div class="q">Wrong or unsupported answers</div>No verified quote means "needs check". Quotes must match the patient's words. Injection handling is not yet evaluated end to end.</div>
+  <div class="row"><div class="q">Sensitive information</div>Pattern-based redaction before storage or any model call; imperfect. Synthetic data only. Keys stay server-side.</div>
+  <div class="row"><div class="q">Uncertain results</div>Confidence on every field. Low confidence or provider failure: abstain, "needs human review".</div>
+  <div class="row r"><div class="q">High-risk decisions</div>Red-flag rules run before any model. The Gemma screen is add-only: "model-suggested, confirm". Triage and orders are confirmed by people.</div>
+  <div class="row"><div class="q">Human review</div>Nothing is final until a clinician approves. Overrides need a reason. Every action is in the audit log.</div>
  </div>
- <div style="display:flex;gap:44px;margin-top:30px;align-items:flex-start">
-  <img class="shot" src="img/review.png" style="width:560px;height:330px;object-fit:cover;object-position:top">
-  <div style="font-size:26px;line-height:1.4;color:var(--soft);max-width:1000px"><span class="chip">From patient's words</span><p style="margin-top:18px">Each field in the nurse view carries the quote it came from, in the patient's own words, and a confidence bar. The highlighted sentence is the proof. Fields without a quote are shown as "needs check", never as fact.</p><p style="margin-top:18px">Provider error, schema error or low confidence gives "needs human review", not a guess.</p></div>
- </div>
- <div class="foot">Design: docs/ai/DESIGN.md. Rules: docs/clinical/SPEC.md (18 rules, 175 reference tests). Screenshot: nurse review screen, synthetic case B-003.</div>
-</section>
-
-<!-- 5 -->
-<section class="slide">
- <div class="brand"><div class="logo">M</div>MedX</div><div class="pg">5 / 8</div>
- <h2 style="font-size:60px;max-width:1000px">Safety by design, in five answers</h2>
- <div class="rows" style="width:1040px;gap:12px;margin-top:36px">
-  <div class="row"><div class="q">Wrong or unsupported answers</div>No verified quote means "needs check". Output is schema-checked; quotes must match the patient's words. Injection handling is not yet evaluated end to end.</div>
-  <div class="row"><div class="q">Sensitive information</div>Redaction before storage or any model call. Synthetic data only. Keys stay server-side.</div>
-  <div class="row"><div class="q">Uncertain results</div>Confidence is shown on every field. Low confidence or provider failure: abstain, "needs human review".</div>
-  <div class="row r"><div class="q">High-risk decisions</div>Rules run before any model. The Gemma screen is add-only, shown as "model-suggested, confirm".</div>
-  <div class="row"><div class="q">Human review</div>Nothing is final until a clinician approves. Every action is in the append-only audit log.</div>
- </div>
- <img class="shot" src="img/redflag.png" style="position:absolute;left:1220px;top:210px;width:620px">
- <div style="position:absolute;left:1220px;top:610px;width:620px;font-size:26px;color:var(--soft);line-height:1.4">Thai patient, chest pain and sweating in the first message: the nurse screen is interrupted, the patient's sentence is highlighted, the nurse acknowledges or marks a false alarm with a reason. The patient phone shows a calm "go to the desk now" screen.</div>
- <img class="phone" src="img/m-red.jpg" style="position:absolute;left:1500px;top:790px;width:0;display:none">
- <div class="foot">Mechanisms and code paths: pitch/SAFETY.md. Cross-vendor review: Claude read-only reviewed the Codex engine (docs/reports/w6-engine-review.md) and QA scripts hit every route (docs/reports/w7-qa-bugs.md); findings fixed with regression tests; remaining limitations are listed in the submission.</div>
-</section>
-
-<!-- 6 -->
-<section class="slide">
- <div class="brand"><div class="logo">M</div>MedX</div><div class="pg">6 / 8</div>
+ <img class="shot" src="img/redflag.png" style="position:absolute;left:1230px;top:210px;width:580px">
+ <div class="cap2" style="position:absolute;left:1230px;top:670px;width:580px">Thai patient, chest pain and sweating in the first message: the nurse screen is interrupted and the patient's sentence is highlighted. The patient's phone shows a calm "go to the desk now" screen.</div>
+<div class=foot>Code paths: pitch/SAFETY.md. Limits: voice uses Apple or Google speech services; the demo has no clinician login. Cross-vendor review: Claude reviewed the Codex engine, Codex reviewed UI work, plus QA and a clinical safety review (docs/reports); findings fixed with regression tests. LIMITATIONS MARKER: replace with the safety reviewer's paragraph.</div></section>
+<section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">8 / 10</div>
  <h2 style="font-size:54px;max-width:1700px">Evidence we can show, and the gap that motivated the screen</h2>
- <div style="display:flex;gap:40px;margin-top:34px">
-  <div class="card" style="padding:16px 30px;flex:1.1">
-   <table>
+ <div style="display:flex;gap:40px;margin-top:30px">
+  <div class="card" style="padding:14px 30px;flex:1.1">
+   <table class="tbl">
     <tr><th>What</th><th>Count</th><th>Where</th></tr>
     <tr><td>Synthetic cases (40 intake + 12 medication)</td><td class="num">52</td><td class="nb">data/cases</td></tr>
     <tr><td>Blind holdout cases, written without seeing the rules</td><td class="num">18</td><td class="nb">data/holdout</td></tr>
     <tr><td>Red-flag rules / reference tests</td><td class="num">18 / 175</td><td class="nb">docs/clinical</td></tr>
     <tr><td>Drugs in dictionary / reference tests</td><td class="num">59 / 194</td><td class="nb">docs/clinical</td></tr>
-    <tr><td>Automated tests, all passing</td><td class="num">1,119</td><td class="nb">apps/web, vitest</td></tr>
+    <tr><td>Automated tests, all passing</td><td class="num">1,382</td><td class="nb">apps/web, vitest</td></tr>
    </table>
   </div>
-  <div class="card hero" style="padding:40px 46px;flex:1">
+  <div class="card hero" style="padding:36px 44px;flex:1">
    <div style="font-size:26px;opacity:.9">Small synthetic blind holdout (18 cases), keyword rules alone</div>
-   <div style="font-size:120px;font-weight:700;line-height:1.1;margin-top:8px">7 of 10</div>
-   <div style="font-size:28px;line-height:1.35">emergencies escalated; 3 of 8 non-emergencies raised a false alarm. Misses were lay wording that keyword lists cannot cover. That is why Gemma adds a safety screen.</div>
+   <div style="font-size:110px;font-weight:700;line-height:1.1;margin-top:6px">7 of 10</div>
+   <div style="font-size:26px;line-height:1.35">emergencies escalated; 3 of 8 non-emergencies raised a false alarm. Misses were lay wording keyword lists cannot cover. That is why Gemma adds a safety screen.</div>
+   <div style="font-size:22px;line-height:1.35;margin-top:18px;opacity:.95">Designed to run Gemma on AMD via the hackathon's AMD Token Factory (OpenAI-compatible). Until the endpoint is connected, current results use a mock model.</div>
   </div>
  </div>
- <div class="card" style="margin-top:26px;padding:20px 38px;display:flex;gap:44px;font-size:26px;align-items:center">
-  <div style="flex:0 0 330px;font-weight:700">With the Gemma screen</div>
-  <div>Holdout recall <span class="pend">[pending AMD run]</span></div><div>Asserted-field precision <span class="pend">[pending AMD run]</span></div><div>Unsupported rate, verifier on vs off <span class="pend">[pending AMD run]</span></div>
+ <div class="card" style="margin-top:24px;padding:18px 36px;display:flex;gap:36px;font-size:25px;align-items:center">
+  <div style="flex:0 0 300px;font-weight:700">With Gemma via AMD Token Factory</div>
+  <div>Holdout recall <span class="pend">[pending AMD run]</span></div><div>Precision <span class="pend">[pending AMD run]</span></div><div>Latency p50 / p95 <span class="pend">[pending AMD run]</span></div>
  </div>
- <div class="foot">Synthetic evaluation, research prototype, small n; not clinically validated. Holdout result: eval/results/holdout-rules-only.md, recorded before any change. Test count: npx vitest run in apps/web, 17 Oct 2026. Pre-declared metrics: docs/ai/METRICS.md.</div>
-</section>
-
-<!-- 7 -->
-<section class="slide">
- <div class="brand"><div class="logo">M</div>MedX</div><div class="pg">7 / 8</div>
- <h2 style="font-size:56px;max-width:1700px">Gemma via AMD Token Factory, behind one gateway</h2>
- <div style="display:flex;gap:34px;margin-top:34px;align-items:stretch">
-  <div class="step" style="flex:0.8;font-size:26px"><h4>Clients</h4>Patient app (Expo), clinician, pharmacist and ops web (Next.js)</div><div class="arrow">&rarr;</div>
-  <div class="step" style="flex:1;font-size:26px"><h4>API and pipeline</h4>Redact, rules, verify, audit. Provider SDKs stay inside one adapter.</div><div class="arrow">&rarr;</div>
-  <div class="step gem" style="flex:1.1;font-size:26px"><h4>AMD Token Factory</h4>Designed to run Gemma on AMD. OpenAI-compatible; endpoint and model id come from environment variables.</div>
+<div class=foot>Synthetic evaluation, research prototype, small n; not clinically validated. Holdout: eval/results/holdout-rules-only.md, recorded before any change. Test count: npx vitest run in apps/web, 17 Oct 2026. Pre-declared metrics: docs/ai/METRICS.md.</div></section>
+<section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">9 / 10</div>
+ <h2 style="font-size:56px;max-width:1700px">Business case: who buys, and why</h2>
+ <div class="cap2" style="margin-top:14px;font-size:27px;max-width:1700px"><b>Buyer:</b> private hospitals and clinics with international patients, and clinics in tourist areas (Thailand had 32.97M foreign arrivals in 2025<sup>1</sup>).</div>
+ <div class="biz">
+  <div class="row"><div class="q">CEO / CFO</div>Interpreter cost and patient throughput at the front desk.</div>
+  <div class="row"><div class="q">Head nurse</div>Documentation time: nurses spent 20.9% to 28.1% of a shift documenting in one observed study.<sup>2</sup></div>
+  <div class="row"><div class="q">Doctors</div>AI they can verify: each field links to the patient's sentence; nothing is final until the doctor signs.</div>
+  <div class="row"><div class="q">Quality and risk team</div>Medication errors: 13% to 59% of patients had an admission-list error across six studies.<sup>3</sup></div>
  </div>
- <div style="display:flex;gap:44px;margin-top:34px;align-items:flex-start">
-  <img class="shot" src="img/ops.png" style="width:680px;height:370px;object-fit:cover;object-position:top">
-  <div style="font-size:26px;line-height:1.4;max-width:980px">
-   <ul class="l">
-    <li>Three jobs for Gemma (designed): extract and translate, add-only safety screen, next question.</li>
-    <li>Current results use a mock model until the endpoint is connected; the ops screen says so ("Mock model, not AMD") instead of showing invented latency.</li>
-    <li>Latency p50 / p95 per turn: <span class="pend">[pending AMD run]</span></li>
-    <li>Model variant chosen on a dev split: <span class="pend">[pending AMD run]</span></li>
-   </ul>
-  </div>
+ <div class="lev">
+  <div class="card"><b>Throughput</b>One structured intake in the clinician's language.</div>
+  <div class="card"><b>Safety</b>Red flags, prescribing checks, pharmacist loop, audit log.</div>
+  <div class="card"><b>Trust</b>Evidence-linked fields, honest abstain and "needs check".</div>
+  <div class="card" style="border:3px solid var(--teal)"><b>Next step: pilot</b>One clinic, measured before and after. ROI figures to come from the pilot, not from this deck.</div>
  </div>
- <div class="foot">Designed to run Gemma on AMD via Token Factory; the key was still pending, so current results use a mock model. Budget: turn p50 at most 6 s, p95 at most 12 s (docs/ai/DESIGN.md section 7), to be measured and reported either way.</div>
-</section>
-
-<!-- 8 -->
-<section class="slide">
- <div class="brand"><div class="logo">M</div>MedX</div><div class="pg">8 / 8</div>
- <h2 style="font-size:60px;max-width:1100px">Next: prove it with clinicians before anyone relies on it</h2>
- <div style="display:flex;gap:44px;margin-top:44px;align-items:flex-start">
+<div class=foot>1 Ministry of Tourism and Sports via Bernama, 6 Jan 2026. 2 J Clin Nurs 2021 (PMID 33590554), ward nurses in one hospital. 3 Studies M1 to M6, docs/research/PHARMACY-PROBLEM.md; settings differ. No savings figure is claimed; none has been measured.</div></section>
+<section class="slide"><div class=brand><div class=logo>M</div>MedX</div><div class="pg">10 / 10</div>
+ <h2 style="font-size:56px;max-width:1500px">Next: prove it with clinicians before anyone relies on it</h2>
+ <div style="display:flex;gap:44px;margin-top:40px;align-items:flex-start">
   <div style="flex:1">
-   <ul class="l">
-    <li>Run the pre-declared evaluation on Gemma on AMD and publish every result, including misses.</li>
+   <ul class="l" style="font-size:28px">
+    <li>Run the pre-declared evaluation on Gemma via AMD Token Factory and publish every result, including misses.</li>
     <li>Native-speaker review of Thai and Italian text.</li>
-    <li>Timed study with nurses and pharmacists, then ethics approval before any real data.</li>
-    <li>Not a medical device. Supports clinicians; never diagnoses, prescribes or decides urgency.</li>
+    <li>A timed pilot with nurses, doctors and pharmacists, then ethics approval before any real data.</li>
+    <li>Not a medical device. Supports clinicians; never diagnoses, orders, prescribes or decides triage.</li>
    </ul>
-   <div class="card hero" style="margin-top:40px;padding:34px 44px;font-size:30px;line-height:1.4">Open source, MIT.<br>github.com/KingPhuripol/medx-bridge<br><span style="opacity:.85;font-size:24px">Team MedX. Built by a human lead orchestrating Claude (Opus/Sonnet) and OpenAI Codex agents in role-based lanes.</span></div>
+   <div class="card hero" style="margin-top:34px;padding:30px 40px;font-size:28px;line-height:1.4;position:relative;overflow:hidden">Open source, MIT.<br>github.com/KingPhuripol/medx-bridge<br><span style="font-size:22px;opacity:.9">Team MedX. Built by a human lead orchestrating Claude (Opus/Sonnet) and OpenAI Codex agents in role-based lanes.</span></div>
   </div>
-  <img class="shot" src="img/pharmacy.png" style="width:820px">
+  <div style="flex:0 0 520px;text-align:center;position:relative">
+   <div style="width:420px;height:420px;border-radius:50%;background:var(--grad);margin:20px auto 0;position:relative"><img src="img/fin-happy.svg" style="position:absolute;left:30px;top:20px;width:360px"></div>
+   <div style="font-size:28px;margin-top:26px;line-height:1.35">Fin hears what others miss.<br>The people decide.</div>
+  </div>
  </div>
- <div class="foot">Screenshot: pharmacist reconciliation, synthetic case B-010: Tachipirina and Efferalgan both contain paracetamol, flagged as a maximum-dose risk; sign-off is blocked until the alert is handled by the pharmacist.</div>
 </section>
 <script>var n=+location.hash.slice(1);if(n){document.querySelectorAll(".slide").forEach(function(e,i){if(i+1!==n)e.style.display="none"});document.body.style.background="#fff"}</script>
 </body></html>
