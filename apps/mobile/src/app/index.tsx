@@ -1,98 +1,65 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { color, LANGS, layout, mobileFont, space, type Lang } from "@medx/shared";
+import { router } from "expo-router";
+import { useState } from "react";
+import { ActivityIndicator, Pressable, View } from "react-native";
+import { createSession } from "@/api";
+import { Page, Rule, T, Button } from "@/components/ui";
+import { LANG_NAME, STR } from "@/i18n";
+import { useStore } from "@/store";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function Pick() {
+  const { set, reset } = useStore();
+  const [busy, setBusy] = useState<Lang | null>(null);
+  const [failed, setFailed] = useState<Lang | null>(null);
+  const en = STR.en;
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
+  async function choose(l: Lang) {
+    setFailed(null); setBusy(l); reset(); set({ lang: l });
+    try {
+      set({ session: await createSession(l), answers: [] });
+      router.replace("/intake");
+    } catch {
+      setFailed(l);
+    } finally {
+      setBusy(null);
+    }
   }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
+    <Page>
+      <T lang="en" token="title" family="serif" weight="semibold">MedX Bridge</T>
+      <View style={{ height: space[8] }} />
+      <T lang="en" token="question" family="serif" weight="medium">{en.pickTitle}</T>
+      <View style={{ height: space[3] }} />
+      <T lang="en" tone="inkSoft">{en.pickSub}</T>
+      <View style={{ height: space[8] }} />
+      <Rule strong />
+      {LANGS.map((l) => (
+        <View key={l}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={LANG_NAME[l]}
+            accessibilityHint={STR[l].pickA11y(LANG_NAME[l])}
+            disabled={busy !== null}
+            onPress={() => choose(l)}
+            style={({ pressed }) => ({ minHeight: layout.hitTarget + space[3], flexDirection: "row", alignItems: "center", justifyContent: "space-between", transform: [{ translateY: pressed ? 1 : 0 }] })}
+          >
+            <T lang={l} token="lead" weight="medium">{LANG_NAME[l]}</T>
+            {busy === l ? <ActivityIndicator color={color.inkSoft} /> : <T lang="en" token="lead" tone="inkSoft" importantForAccessibility="no">{">"}</T>}
+          </Pressable>
+          <Rule strong />
+        </View>
+      ))}
+      {failed && (
+        <View style={{ marginTop: space[5], gap: space[3] }} accessibilityRole="alert">
+          <T lang={failed} tone="signal" weight="medium">{STR[failed].deskNoCode}</T>
+          <Button lang={failed} label={STR[failed].retry} onPress={() => choose(failed)} />
+        </View>
+      )}
+      <View style={{ height: space[6] }} />
+      <T lang="en" token="small" tone="inkSoft">{en.privacy}</T>
+      <View style={{ flexGrow: 1, minHeight: space[6] }} />
+      <T lang="en" token="small" tone="graphite" style={{ fontFamily: mobileFont("sans", "en") }}>{en.disclaimer}</T>
+    </Page>
   );
 }
-
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
-
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
-});
