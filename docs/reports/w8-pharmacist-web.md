@@ -40,3 +40,10 @@ Not verified in the browser: th and it renderings of the new strings (wording is
 - Verify via the UI returned the updated session and showed the teal "Order verified" receipt. Return via the UI with a note showed the amber "Returned to Dr. M. Rossi" receipt with the note. Direct calls: return without note gives 400 "Return requires a note"; re-reviewing a non-submitted order gives 409 "Only submitted orders can be reviewed by pharmacy"; the UI shows server errors as "Server refused: <reason>". A verify 409 for a missing override cannot be produced from the UI because Verify is disabled client-side first, and the doctor's submit already enforces overrides.
 - th/it strings added for all order copy (queue tab, card, statuses, checks, override, blockers, receipts); wording is mine, not native-reviewed. Product name in titles is "MedX".
 - Screen: docs/reports/screens/v9-pharmacy-prescriptions-live.png.
+
+## w16 UX fixes
+- Severity colours now match Orders everywhere (prescription card, reconciliation alerts, queue): High is always the red chip and accent, Moderate always amber; a handled High alert keeps its red chip.
+- `kindTitle()`: rule IDs containing UNCHECKED are titled "Dose not checked" (th/it too), not "Dose outside usual range".
+- Prescription queue rows show the High chip even when the prescriber overrode it (plus the "Prescriber override" chip); high orders stay pinned.
+- Staff and persistence: reviewer list comes from `staffFor("pharmacist")` (default Pharmacist Laura Conti), stored under `reviewerStorageKey("pharmacist")`; the surface writes `ROLE_STORAGE_KEY` on open and when the role switch is used, so /review opens as the chosen role. Fixture prescriber is the STAFF doctor; no hard-coded names remain in the folder.
+- Verified in the browser on live /pharmacy (identity and role stored) and on fixtures (queue chips). Not touched: the raw "medrules 1.1" source text and the "No medicines/No alerts" wording above a high-alert prescription.

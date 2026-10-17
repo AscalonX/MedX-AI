@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import type { AuditEvent, IntakeSession, Lang, PharmacyReviewReq } from "@medx/shared";
 import { AppShell, Badge, Icon, type ShellRole } from "@/components/ui";
 import { FIXTURES } from "./_fixtures";
+import { ROLE_STORAGE_KEY, reviewerStorageKey } from "@medx/shared";
 import { C as CH, L, PHARMACISTS, setDisplayLang, applyReview, fetchQueue, hasMedData, hasOrders, openFlags, openHigh, post, sortQueue } from "./_lib";
 
 export interface Entry { session: IntakeSession; fixture: boolean }
@@ -48,13 +49,14 @@ export function Shell({ children }: { children: ReactNode }) {
   useEffect(() => {
     const l = store.get("medx.lang");
     if (l === "th" || l === "it" || l === "en") setLangState(l);
-    const r = store.get("medx.pharmacist");
+    const r = store.get(reviewerStorageKey("pharmacist"));
     if (r && PHARMACISTS.includes(r)) setReviewerState(r);
+    store.set(ROLE_STORAGE_KEY, "pharmacist"); // this surface owns the role while it is open
     setFixtures(FIXTURES);
     setForceFix(new URLSearchParams(window.location.search).has("fixtures")); // after mount: fixture timestamps are computed per page load
   }, []);
   const setLang = (l: Lang) => { setLangState(l); store.set("medx.lang", l); };
-  const setReviewer = (r: string) => { setReviewerState(r); store.set("medx.pharmacist", r); };
+  const setReviewer = (r: string) => { setReviewerState(r); store.set(reviewerStorageKey("pharmacist"), r); };
 
   // Polls are single-flight, suspended during mutations, and every GET that started before a mutation
   // began or finished is discarded by the generation counter.
@@ -135,7 +137,7 @@ export function Shell({ children }: { children: ReactNode }) {
   const hour = now ? new Date(now).getHours() : 12;
   const greeting = (hour < 12 ? L("สวัสดีตอนเช้า", "Buongiorno", "Good morning") : hour < 18 ? L("สวัสดีตอนบ่าย", "Buon pomeriggio", "Good afternoon") : L("สวัสดีตอนเย็น", "Buonasera", "Good evening"))[lang];
   const router = useRouter();
-  const switchRole = (r: ShellRole) => { if (r === "ops") router.push("/ops"); else if (r !== "pharmacist") router.push("/review"); };
+  const switchRole = (r: ShellRole) => { store.set(ROLE_STORAGE_KEY, r); if (r === "ops") router.push("/ops"); else if (r !== "pharmacist") router.push("/review"); };
 
   return (
     <C.Provider value={{ lang, setLang, reviewer, setReviewer, now, entries, error, refresh, submit, submitOrder, fixtureAudit }}>

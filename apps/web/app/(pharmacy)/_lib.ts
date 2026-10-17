@@ -1,3 +1,4 @@
+import { staffFor } from "@medx/shared";
 import type {
   MedicationOrder, AllergyEntry, AuditEvent, Evidence, RedFlagHit, GetSessionRes, IntakeSession, Lang, Localized, MedAlert, MedAlertKind, MedicationEntry,
   PharmacyReviewReq,
@@ -10,7 +11,7 @@ export const LANG_OPTIONS: { lang: Lang; label: string }[] = [
 ];
 export const LANG_NAME: Record<Lang, string> = { th: "ไทย", it: "Italiano", en: "English" };
 /** Local stand-in for sign-in. Prototype only: no authentication. */
-export const PHARMACISTS = ["Pharmacist M. Bianchi", "Pharmacist K. Suwan"];
+export const PHARMACISTS = staffFor("pharmacist").map((m) => m.name);
 
 export const L = (th: string, it: string, en: string): Localized => ({ th, it, en });
 
@@ -58,6 +59,9 @@ export const pharmStatus = (s: IntakeSession) => s.pharmacyStatus ?? "pending";
 
 /** Only the explicit contract field counts as no known allergies. */
 export const hasNka = (s: IntakeSession) => (s.summary?.noKnownAllergiesEvidence?.length ?? 0) > 0;
+/** Title for a check or alert: an unchecked dose must not read as "outside range". */
+export const kindTitle = (a: { kind: MedAlertKind; ruleId: string }): Localized =>
+  /UNCHECKED/.test(a.ruleId) ? L("ยังไม่ได้ตรวจขนาดยา", "Dose non verificata", "Dose not checked") : KIND_LABEL[a.kind];
 export const hasMedData = (s: IntakeSession) => !!s.summary?.medications;
 export const alertsOf = (s: IntakeSession): MedAlert[] => s.summary?.medAlerts ?? [];
 export const medsOf = (s: IntakeSession): MedicationEntry[] => s.summary?.medications ?? [];

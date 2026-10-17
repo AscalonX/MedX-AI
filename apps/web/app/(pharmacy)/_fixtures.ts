@@ -3,6 +3,8 @@
 // Synthetic patients. Evidence offsets are computed from the turn text so every quote verifies.
 import type { MedicationOrder, AllergyEntry, Evidence, ExtractedField, IntakeSession, Lang, MedAlert, MedicationEntry, RedFlagHit, Turn } from "@medx/shared";
 
+import { staffFor } from "@medx/shared";
+const DOCTOR = staffFor("doctor")[0].name;
 const base = Date.now();
 const iso = (minAgo: number) => new Date(base - minAgo * 60000).toISOString();
 
@@ -154,7 +156,7 @@ const fx5 = session({
 
 // ---- doctor medication orders (submitted, with deterministic checks) ----
 const ord = (id: string, drugText: string, generic: string, drugClass: string, dose: string, frequency: string, duration: string, checks: MedAlert[], overrides: MedicationOrder["overrides"], minAgo: number): MedicationOrder =>
-  ({ id, drugText, generic, drugClass, dose, route: "oral", frequency, duration, orderedBy: "Dr. M. Rossi", at: iso(minAgo), status: "submitted", checks, overrides });
+  ({ id, drugText, generic, drugClass, dose, route: "oral", frequency, duration, orderedBy: DOCTOR, at: iso(minAgo), status: "submitted", checks, overrides });
 const chk = (id: string, kind: MedAlert["kind"], severity: MedAlert["severity"], en: string, act: string, src: string): MedAlert =>
   ({ id, ruleId: `MR-${kind.toUpperCase().slice(0, 6)}-O`, kind, severity, medIds: [], allergyIds: [], evidence: [], source: src, message: L(en, en, en), action: L(act, act, act) });
 fx1.orders = { investigations: [], medications: [
@@ -167,7 +169,7 @@ fx3.orders = { investigations: [], medications: [
   ord("fx3-o1", "Diclofenac 50 mg", "Diclofenac", "nsaid", "50 mg", "every 8 hours", "5 days",
     [chk("fx3-o1-c1", "interaction", "high", "Diclofenac with warfarin raises the risk of bleeding.", "Check the plan with the prescriber.", "NSAID with warfarin: increased bleeding risk"),
      chk("fx3-o1-c2", "dose_range", "moderate", "150 mg per day is at the upper end of the usual range.", "Confirm the duration.", "Dictionary daily range")],
-    [{ alertId: "fx3-o1-c1", reason: "INR checked this morning (2.4); short course with gastric protection; patient counselled.", by: "Dr. M. Rossi", at: iso(5) }], 5),
+    [{ alertId: "fx3-o1-c1", reason: "INR checked this morning (2.4); short course with gastric protection; patient counselled.", by: DOCTOR, at: iso(5) }], 5),
   ord("fx3-o2", "Naproxen 500 mg", "Naproxen", "nsaid", "500 mg", "twice daily", "7 days",
     [chk("fx3-o2-c1", "interaction", "high", "Naproxen with warfarin raises the risk of bleeding.", "Return to the prescriber to confirm the plan.", "NSAID with warfarin: increased bleeding risk")], [], 3)] };
 

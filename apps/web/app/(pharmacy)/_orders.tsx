@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useState } from "react";
 import type { Lang, Localized, MedicationOrder } from "@medx/shared";
 import { Badge, Button, Card, CardHeader, EmptyState, Field, Icon, LangMorph } from "@/components/ui";
-import { U, KIND_LABEL, L, clock, openHighChecks, orderTitle, overrideOf, ordersOf, pendingOrders, waited } from "./_lib";
+import { U, kindTitle, L, clock, openHighChecks, orderTitle, overrideOf, ordersOf, pendingOrders, waited } from "./_lib";
 import { usePharmacy } from "./_shell";
 
 const sm = "h-8! px-3! text-small!";
@@ -41,6 +41,7 @@ const OL = {
   none: L("ไม่มีใบสั่งยารออยู่", "Nessuna prescrizione in attesa", "No prescriptions waiting"),
   noneBody: L("คำสั่งที่แพทย์ส่งมาจะปรากฏที่นี่เพื่อตรวจสอบ", "Gli ordini inviati dai medici compaiono qui per la verifica.", "Orders submitted by doctors appear here for verification."),
   highNoOverride: (n: number) => L(`สูง ${n} ไม่มีเหตุผลแพทย์`, `${n} alti, nessuna deroga`, `${n} high, no override`),
+  highN: (n: number) => L(`สูง ${n}`, `${n} alti`, `${n} high`),
   toCheck: (n: number) => L(`ต้องตรวจ ${n}`, `${n} da verificare`, `${n} to check`),
   noRule: L("ไม่มีการแจ้งเตือนจากกฎ", "Nessun avviso dalle regole", "No rule alerts"),
 };
@@ -70,13 +71,12 @@ function OrderCard({ o, lang, busy, onAction }: { o: MedicationOrder; lang: Lang
         <ul className="mt-3 flex flex-col gap-2">
           {o.checks.map((c) => {
             const ov = overrideOf(o, c.id);
-            const high = c.severity === "high" && !ov;
-            const unchecked = /UNCHECKED|UNKNOWN/.test(c.ruleId); // the rule could not check: shown as needs-check, never as safe
+            
             return (
-              <li key={c.id} className={`rounded-xl p-3 ${high ? "border border-signal/50 bg-signal-tint ring-1 ring-signal/20" : c.severity === "high" || unchecked ? "border border-warn/30 bg-warn-tint" : "border border-rule/70 bg-paper"}`}>
+              <li key={c.id} className={`rounded-xl p-3 ${c.severity === "high" ? "border border-signal/50 bg-signal-tint ring-1 ring-signal/20" : "border border-warn/30 bg-warn-tint"}`}>
                 <p className="flex flex-wrap items-center gap-2">
-                  <Badge tone={c.severity === "high" ? (high ? "signalOutline" : "pencil") : unchecked ? "pencil" : "outline"} icon={<Icon name="triangle-alert" size={14} />}>{c.severity === "high" ? OL.high[lang] : OL.moderate[lang]}</Badge>
-                  <span className="font-bold"><LangMorph text={KIND_LABEL[c.kind]} lang={lang} /></span>
+                  <Badge tone={c.severity === "high" ? "signalOutline" : "pencil"} icon={<Icon name="triangle-alert" size={14} />}>{c.severity === "high" ? OL.high[lang] : OL.moderate[lang]}</Badge>
+                  <span className="font-bold"><LangMorph text={kindTitle(c)} lang={lang} /></span>
                   <span className="text-micro text-ink-soft">{c.ruleId}</span>
                 </p>
                 <p className="mt-1 text-body"><LangMorph text={c.message} lang={lang} /></p>
@@ -148,13 +148,14 @@ export function PrescriptionsCard({ sessionId, orders, lang, busy, fixture, run 
 export function PrescriptionQueue() {
   const { entries, now, lang } = usePharmacy();
   const rows = (entries ?? []).flatMap(({ session, fixture }) => pendingOrders(session).map((o) => ({ session, fixture, o })))
-    .sort((a, b) => Number(openHighChecks(b.o).length > 0) - Number(openHighChecks(a.o).length > 0) || a.o.at.localeCompare(b.o.at));
+    .sort((a, b) => Number(b.o.checks.some((c) => c.severity === "high")) - Number(a.o.checks.some((c) => c.severity === "high")) || a.o.at.localeCompare(b.o.at));
   if (!entries) return <div aria-busy="true" className="flex flex-col gap-3 p-5">{[0, 1].map((i) => <span key={i} className="mx-blank !block !h-14 !w-full !rounded-2xl" />)}</div>;
   if (rows.length === 0) return <EmptyState icon={<Icon name="inbox" />} title={OL.none[lang]} body={OL.noneBody[lang]} />;
   return (
     <ul className="flex flex-col gap-3 p-4 pt-1">
       {rows.map(({ session: s, fixture, o }) => {
-        const high = openHighChecks(o).length;
+        const high = o.checks.filter((c) => c.severity === "high").length;
+        const open = openHighChecks(o).length;
         const mod = o.checks.length - o.checks.filter((c) => c.severity === "high").length;
         const overridden = o.overrides.length;
         return (
@@ -166,7 +167,7 @@ export function PrescriptionQueue() {
                 <span className="block text-small text-ink-soft">{s.code} · {o.orderedBy}{fixture ? " · fixture" : ""}</span>
               </span>
               <span className="flex flex-wrap items-center gap-2">
-                {high > 0 && <Badge tone="signalOutline">{OL.highNoOverride(high)[lang]}</Badge>}
+                {high > 0 && <Badge tone="signalOutline">{open > 0 ? OL.highNoOverride(open)[lang] : OL.highN(high)[lang]}</Badge>}
                 {overridden > 0 && <Badge tone="pencil">{OL.override[lang]}</Badge>}
                 {mod > 0 && <Badge tone="outline">{OL.toCheck(mod)[lang]}</Badge>}
                 {o.checks.length === 0 && <span className="text-small text-ink-soft">{OL.noRule[lang]}</span>}

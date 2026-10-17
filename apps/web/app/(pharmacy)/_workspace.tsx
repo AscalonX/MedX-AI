@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AllergyEntry, AllergyReviewAction, AuditEvent, IntakeSession, Lang, MedAlert, MedAlertReviewAction, MedicationEntry, MedReviewAction } from "@medx/shared";
 import { Badge, Button, Card, CardHeader, EvidenceHighlight, Field, GradientHero, Icon, InkConfidence, LangMorph, PencilField, type Mark } from "@/components/ui";
 import {
-  C, KIND_LABEL, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, signOffEvent, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
+  C, kindTitle, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, signOffEvent, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
   medsOf, openHigh, pharmStatus, redFlagsOf, selEvidence, selKey, waited, type Sel,
 } from "./_lib";
 import { ABSTAIN } from "./_lib";
@@ -574,9 +574,9 @@ function AlertItem({ a, lang, meds, busy, locked, selected, linked, onSelect, on
   return (
     <li className={cls("flex flex-col gap-2 rounded-2xl p-4", high ? "border border-signal/50 bg-signal-tint ring-1 ring-signal/20" : amber ? "border border-warn/30 bg-warn-tint" : "border border-rule/70 bg-sheet", (selected || linked) && !high && !amber && "bg-paper")}>
       <button type="button" data-row aria-pressed={selected} aria-controls="transcript" onClick={onSelect} className={cls("flex flex-wrap items-center gap-x-2 gap-y-1 text-left", selected && "underline underline-offset-4")}>
-        <span aria-hidden="true" className={cls("grid size-8 place-items-center rounded-full", high ? "bg-signal text-on-signal" : amber ? "bg-warn text-on-primary" : "bg-muted text-graphite")}><Icon name="triangle-alert" size={16} /></span>
-        <Badge tone={high ? "signalOutline" : amber ? "pencil" : "outline"}>{a.severity === "high" ? L("สูง", "Alto", "High")[lang] : L("ปานกลาง", "Moderato", "Moderate")[lang]}</Badge>
-        <span className="text-body font-bold"><LangMorph text={KIND_LABEL[a.kind]} lang={lang} /></span>
+        <span aria-hidden="true" className={cls("grid size-8 place-items-center rounded-full", high ? "bg-signal text-on-signal" : amber ? "bg-warn text-on-primary" : a.severity === "high" ? "bg-signal-tint text-signal" : "bg-muted text-graphite")}><Icon name="triangle-alert" size={16} /></span>
+        <Badge tone={a.severity === "high" ? "signalOutline" : "pencil"}>{a.severity === "high" ? L("สูง", "Alto", "High")[lang] : L("ปานกลาง", "Moderato", "Moderate")[lang]}</Badge>
+        <span className="text-body font-bold"><LangMorph text={kindTitle(a)} lang={lang} /></span>
         <span className="text-micro text-ink-soft">{a.ruleId}<span className="sr-only">, show in the patient&apos;s words</span></span>
       </button>
       <p className="text-body"><LangMorph text={a.message} lang={lang} /></p>
