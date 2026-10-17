@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>MedX banner</title>
+<!-- README / social banner 1280x640. Rendered by docs/design/logo/export.sh -> readme-banner.png -->
+<style>
+@font-face{font-family:"SCBXBeta2";src:url("../../../apps/web/app/fonts/SCBXBeta2-Regular.otf");font-weight:400}
+@font-face{font-family:"SCBXBeta2";src:url("../../../apps/web/app/fonts/SCBXBeta2-Bold.otf");font-weight:700}
+*{margin:0;box-sizing:border-box}
+body{width:1280px;height:640px;overflow:hidden;position:relative;font-family:"SCBXBeta2",system-ui,sans-serif;color:#fff;
+  background:linear-gradient(128deg,#0B8A7F 0%,#0A8077 16%,#1468B4 58%,#1A5FC4 76%,#123F8E 100%)}
+.blob{position:absolute;border-radius:50%}
+.b1{width:760px;height:760px;left:-300px;top:-460px;background:rgba(255,255,255,.06)}
+.b2{width:520px;height:520px;right:-160px;top:-240px;background:rgba(255,255,255,.05)}
+.waves{position:absolute;left:0;right:0;bottom:0;height:240px}
+.bubble{position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(255,255,255,.08)}
+.bubble::after{content:"";position:absolute;width:28%;height:28%;left:20%;top:18%;border-radius:50%;background:rgba(255,255,255,.75)}
+.lockup{position:absolute;left:96px;top:196px;height:132px}
+.tag{position:absolute;left:100px;top:376px;font-size:52px;font-weight:700;letter-spacing:-.02em}
+.tag span{font-weight:400;opacity:.92}
+.fin{position:absolute;right:92px;top:150px;width:330px;
+  filter:drop-shadow(4px 0 0 #fff) drop-shadow(-4px 0 0 #fff) drop-shadow(0 4px 0 #fff) drop-shadow(0 -4px 0 #fff) drop-shadow(0 30px 30px rgba(0,0,0,.35))}
+</style></head><body>
+<span class="blob b1"></span><span class="blob b2"></span>
+<svg class="waves" viewBox="0 0 1280 240" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M0 110C180 60 340 150 530 110C720 70 880 30 1070 70C1170 90 1230 104 1280 96V240H0Z" fill="rgba(255,255,255,.07)"/>
+  <path d="M0 165C210 130 380 195 610 165C830 136 990 110 1280 150V240H0Z" fill="rgba(255,255,255,.07)"/>
+  <path d="M0 205C240 186 450 226 700 205C930 186 1100 184 1280 198V240H0Z" fill="rgba(8,30,80,.28)"/>
+</svg>
+<span class="bubble" style="left:880px;top:150px;width:30px;height:30px"></span>
+<span class="bubble" style="left:852px;top:98px;width:18px;height:18px"></span>
+<span class="bubble" style="left:900px;top:60px;width:12px;height:12px"></span>
+<img class="lockup" src="lockup-white.svg" alt="MedX">
+<p class="tag">Every word, <span>understood.</span></p>
+<img class="fin" src="../../../pitch/cover/img/fin-wave-poster.svg" alt="">
+</body></html>

@@ -464,3 +464,45 @@ Fin is **a helper, not a clinician**. Fin never gives advice, never speaks clini
 - Landing page: `<GradientHero mascot="wave" ... />`.
 - Empty states: `<EmptyState mascot="pointing" | "happy" ... />`.
 - React Native: render `mascotPoses[pose]` with `react-native-svg`, prefixing gradient ids per instance.
+
+## 12. Logo: MedX "Echo X"
+
+**Concept.** A medical plus turned 45° into an X. Three arms are solid. The fourth (top right) becomes two sound/echo arcs radiating from the centre. The mark says medicine and listening at once, and the echo arcs nod to Fin's echolocation. I chose it over "Wave X" (a sine stroke, muddy at small sizes) and "Fluke X" (a curved X, too generic); see `docs/design/logo/concepts.png`. There is no red cross, no heart-pulse line and no stethoscope.
+
+**Files.** All in `docs/design/logo/`; all vector, with no font dependency.
+- **Generator:** `build.py` regenerates every SVG and `apps/web/components/ui/logoSvg.ts`. It converts the "Med" letters from SCBXBeta2 Bold to outlines with custom kerning; the X is the mark itself.
+- **PNG exports:** `export.sh`.
+
+| Asset | Files |
+|---|---|
+| Mark | `mark-color.svg` (teal-to-ocean), `mark-white.svg`, `mark-ink.svg`; `mark-small-color.svg` (small-size cut: heavier bars, one arc) |
+| Wordmark | `wordmark-{color,white,ink}.svg` ("Med" in ink or white, X = mark) |
+| Lockup | `lockup-{color,white,ink}.svg` (gradient tile + wordmark). On gradient or dark, use `white` (white tile, ocean mark) |
+| App icon | `app-icon.svg`, `app-icon-1024.png` (full-bleed gradient square; iOS/Android apply the corner mask); `app-icon-rounded.svg` for slides |
+| Favicon | `favicon.svg`, `favicon-16.png`, `favicon-32.png`, `apple-touch-icon-180.png` (also wired to `apps/web/app/icon.svg`, `favicon.ico`, `apple-icon.png`) |
+| Banner | `readme-banner.html`, `readme-banner.png` (1280x640) |
+| Review sheets | `review-sheet.png` |
+
+**Web.** `<Logo />` (lockup or mark, color or white) in `components/ui`. `AppShell` uses it in the sidebar.
+
+**Clear space.** Keep at least the width of one bar of the X clear on every side. In practice:
+- around the lockup: 25% of the tile height;
+- around the mark: 15% of its size.
+
+**Minimum size.**
+- Lockup: 24px tall on screen (tile 24px).
+- Mark: 16px, using the small cut (`favicon.svg` / `mark-small-color.svg`) at 24px and below.
+
+**Colour.**
+- Full colour on light surfaces (`desk`, `paper`, white).
+- White on the teal-to-ocean gradient, on photos, or on ink.
+- Ink mono for single-colour print.
+- Never red. Never on the red-flag or signal gradient.
+
+**Don'ts.**
+- Don't rotate the mark back into a plus. Don't add a cross or a heart line.
+- Don't recolour the arcs separately from the bars.
+- Don't set "MedX" in a live font instead of the outlined wordmark.
+- Don't stretch the logo, add effects or glows, or outline it.
+- Don't put the full-colour logo on the gradient (use white).
+- Don't place Fin overlapping the logo.

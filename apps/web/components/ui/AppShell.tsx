@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, type ReactNode } from "react";
 import type { Lang } from "@medx/shared";
 import { Avatar } from "./Avatar";
+import { Logo } from "./Logo";
 import { SegmentedControl } from "./SegmentedControl";
 import { cx } from "./cx";
 
@@ -103,8 +104,7 @@ export function AppShell({
       </a>
       <aside className="flex flex-col gap-6 border-b border-rule/70 bg-sheet/70 px-4 py-4 lg:sticky lg:top-0 lg:h-[100dvh] lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
         <div className="flex items-center gap-2.5">
-          <span aria-hidden="true" className="grid size-9 place-items-center rounded-xl bg-primary-gradient text-body font-extrabold text-on-primary">M</span>
-          <span className="text-lead font-extrabold tracking-tight text-ink">MedX</span>
+          <Logo height={34} />
         </div>
         {onRoleChange && (
           <SegmentedControl

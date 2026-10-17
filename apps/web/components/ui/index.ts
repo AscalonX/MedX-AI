@@ -11,6 +11,7 @@ export { GradientHero, HeroAction } from "./GradientHero";
 export { Icon, type IconName } from "./Icon";
 export { InkConfidence } from "./InkConfidence";
 export { LangMorph } from "./LangMorph";
+export { Logo } from "./Logo";
 export { Mascot } from "./Mascot";
 export { FieldValue, PencilField } from "./PencilField";
 export { Receipt } from "./Receipt";
