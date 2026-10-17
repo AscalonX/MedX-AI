@@ -1,4 +1,4 @@
-# Eval harness (design; implemented in wave 2)
+# Eval harness (implemented in wave 2: `eval/run.ts`)
 
 Measures the metrics pre-declared in `docs/ai/METRICS.md` by running the real pipeline (`apps/web/lib/pipeline`) on the synthetic case set. It imports the pipeline directly; nothing goes over HTTP.
 
@@ -36,15 +36,18 @@ runTurn(session: IntakeSession, text: string, opts?: {
 }): Promise<IntakeSession>
 ```
 
-## Modes
+## Running it (no extra install: uses `vite-node`, which ships with vitest in apps/web)
 ```
-npm run eval -- --provider amd|mock --split dev|test|all --cases data/cases --concurrency 4 [--limit N]
-npm run eval:faults          # M5 fault injection with the mock client: 6 scenarios × 3 languages
-npm run eval:report -- eval/runs/<ts>   # rescore a stored run, then regenerate REPORT.md (no model calls)
+cd apps/web
+MODEL_PROVIDER=mock npx vite-node ../../eval/run.ts -- --split all            # mock smoke run, labelled "not evidence"
+AMD_BASE_URL=… AMD_API_KEY=… AMD_MODEL=… npx vite-node ../../eval/run.ts -- --split dev   # model selection / tuning, dev only
+AMD_BASE_URL=… AMD_API_KEY=… AMD_MODEL=… npx vite-node ../../eval/run.ts -- --split test  # frozen config, once
+npx vite-node ../../eval/run.ts -- --rescore ../../eval/runs/<ts>             # rescore a stored run, no model calls
 ```
-- AMD mode reads `AMD_BASE_URL`, `AMD_API_KEY`, `AMD_MODEL` from env and refuses to start if they are missing. It prints model id and host, never the key.
-- Concurrency ≤ 4, honours `Retry-After` on 429, and checks `X-RateLimit-Remaining-*`.
-- Scoring is a pure function of `results.json`, so the M3 ablation, the manual-judgement merge and threshold tables can be recomputed without calling the model again.
+- `--split dev|test|all` selects from the 40 cases (from `data/cases/index.json`); the 18 holdout cases always run and only feed red-flag metrics (M11). `--limit N` caps the case count.
+- AMD mode refuses to start without the three env vars. It prints model id and host, never the key. Runs sequentially (concurrency 1), so the per-key rate limit is never exceeded.
+- Every run also does M5 fault injection (6 scenarios × 3 languages) with injected clients. Each patient turn is fed through `runTurn`; after an escalation, the remaining turns are still fed to prove that no model calls follow.
+- Arms (a) and (b) of M11 are computed directly with `checkRedFlags(turns, undefined, ruleFile)` on the redacted patient turns. Arm (c) is read from the pipeline's `source: "model"` hits. Until the pipeline makes `red_flags` model calls, it is reported as "not run: screen not implemented".
 
 ## Outputs
 ```
@@ -56,7 +59,7 @@ eval/runs/<ISO-timestamp>/
   manual.csv       # M1 and M6 manual-judgement sheet (blank columns for 2 raters + doctor)
 eval/REPORT.md     # generated from the latest test run, plus links to every earlier run
 ```
-`eval/runs/` holds synthetic data only and is committed for reproducibility. No real patient data, ever.
+`eval/runs/` is git-ignored (repo `.gitignore`); `eval/REPORT.md` is the committed artifact and names the run id. Synthetic data only.
 
 ## REPORT.md layout
 1. Header: date, run id, commit hashes, model, provider, "synthetic evaluation, research prototype".

@@ -6,7 +6,7 @@ import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { IntakeSession, Lang, RedFlagRuleFile, Turn } from '@medx/shared';
+import type { IntakeSession, Lang, RedFlagRuleFile, Turn } from '../packages/shared/src/types';
 import type { ChatRequest, ChatResult, ModelClient } from '../apps/web/lib/pipeline/llm';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
