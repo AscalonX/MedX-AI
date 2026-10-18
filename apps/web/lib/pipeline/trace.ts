@@ -87,6 +87,18 @@ export function deriveTrace(session: IntakeSession, audit: AuditEvent[], consult
   if ((s?.medications?.length || 0) + (s?.allergies?.length || 0) > 0 || alerts.length) {
     medNode = add('med_rules', { at: s!.generatedAt, actor: 'rule', detail: `${s?.medications?.length || 0} medicine(s), ${s?.allergies?.length || 0} allergy entr${(s?.allergies?.length || 0) === 1 ? 'y' : 'ies'}; alerts: ${[...new Set(alerts.map(a => a.ruleId))].join(', ') || 'none'}`, evidence: [...(s?.medications || []), ...(s?.allergies || [])].flatMap(e => e.evidence), parents: [root], edge: 'medications' });
   }
+  // Medicine-pack photo: a model step that only SUGGESTS; the pharmacist's confirm/discard hangs off it. Counts only, no names.
+  const photoEv = of('med_photo_suggested'); const photoDecisions = of('med_photo_decision');
+  if (photoEv.length) {
+    const ok = photoEv.filter(e => e.payload.outcome === 'suggested'); const call = photoEv.at(-1)!.payload.modelCall as { latencyMs?: number } | undefined;
+    const n = ok.reduce((t, e) => t + (Array.isArray(e.payload.items) ? e.payload.items.length : 0), 0);
+    const photo = add('extract', { at: photoEv.at(-1)!.at, actor: 'model', status: ok.length === photoEv.length ? 'ok' : 'failed', ids: photoEv, latencyMs: num(call?.latencyMs), parents: [medNode || root], edge: 'photo',
+      label: { en: 'Medicine photo read (model, suggestion only)', it: 'Lettura foto farmaco (modello, solo suggerimento)', th: 'โมเดลอ่านรูปถ่ายยา (เสนอเท่านั้น)' },
+      detail: `${photoEv.length} photo(s), ${n} suggested medicine(s), ${photoEv.length - ok.length} needing human review` });
+    if (photoDecisions.length) add('pharmacist_action', { at: photoDecisions.at(-1)!.at, actor: 'human', ids: photoDecisions, parents: [photo], edge: 'confirm / discard',
+      label: { en: 'Pharmacist decided on photo suggestions', it: 'Il farmacista ha deciso sui suggerimenti della foto', th: 'เภสัชกรตัดสินใจกับรายการยาจากรูปถ่าย' },
+      detail: `${photoDecisions.filter(e => e.payload.action === 'confirm').length} confirmed, ${photoDecisions.filter(e => e.payload.action === 'discard').length} discarded` });
+  }
   const orderEv = of('order_drafted', 'order_submitted', 'order_cancelled'); let orderNode: string | undefined;
   const meds = session.orders?.medications || []; const invs = session.orders?.investigations || [];
   if (orderEv.length || meds.length || invs.length) {

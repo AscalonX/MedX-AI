@@ -204,6 +204,8 @@ export function auditLine(e: AuditEvent, lang: Lang, ctx: AuditCtx = {}): string
       const n = [p.medActions, p.allergyActions, p.alertActions].reduce<number>((a, x) => a + (Array.isArray(x) ? x.length : 0), 0);
       return withParts(t("au_pharmacy_review"), [n > 0 && t("au_items_n", { n }), p.complete === true && t("au_signed_off")]);
     }
+    case "med_photo_suggested": return t(p.outcome === "suggested" ? "au_med_photo" : "au_med_photo_none");
+    case "med_photo_decision": return t(p.action === "confirm" ? "au_med_photo_ok" : "au_med_photo_no");
     case "consult_turn": {
       const who = p.speaker === "patient" ? tr("actor_patient", lang) : tr("actor_clinician", lang);
       const input = p.inputMode === "voice" ? t("au_spoken") : t("au_typed");

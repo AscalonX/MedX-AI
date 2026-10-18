@@ -44,6 +44,16 @@ Object.assign(EXTRACTION_SCHEMA.properties, {
   noKnownAllergies: { anyOf: [{ type: 'null' }, { type: 'object', additionalProperties: false, required: ['turn', 'quote'], properties: quoteProperties }] },
 });
 EXTRACTION_SCHEMA.required.push('medications', 'allergies', 'noKnownAllergies');
+const nullStr = { anyOf: [{ type: 'null' }, str(60)] };
+export const MED_PHOTO_SCHEMA = { type: 'object', additionalProperties: false, required: ['items'], properties: { items: { type: 'array', maxItems: 6, items: { type: 'object', additionalProperties: false, required: ['name', 'strength', 'form'], properties: { name: str(120), strength: nullStr, form: nullStr } } } } };
+export interface MedPhotoItem { name: string; strength: string | null; form: string | null }
+/** `{ items: [{ name, strength, form }] }`; extra keys on an item are dropped (small vision models add some), a missing key or wrong type is null (caller abstains). Control characters are rejected. */
+export function validateMedPhoto(data: unknown): MedPhotoItem[] | null {
+  if (!object(data) || Object.keys(data).some(k => k !== 'items') || !Array.isArray(data.items) || data.items.length > 6) return null;
+  const clean = (x: unknown, max: number) => x === null || (shortString(x, max) && !/[\u0000-\u001f<>]/.test(x));
+  if (!data.items.every(i => object(i) && clean(i.name, 120) && i.name !== null && clean(i.strength, 60) && clean(i.form, 60))) return null;
+  return (data.items as MedPhotoItem[]).map(i => ({ name: i.name.trim(), strength: i.strength?.trim() ?? null, form: i.form?.trim() ?? null }));
+}
 export const QUESTION_SCHEMA = { type: 'object', additionalProperties: false, required: ['field', 'question'], properties: { field: { type: 'string', enum: FIELD_KEYS }, question: loc } };
 export const SCREEN_CATEGORIES = ['CHEST', 'STROKE', 'BREATH', 'ANAPH', 'SUICIDE', 'BLEED', 'PREG', 'HEAD', 'SEIZ', 'MENING', 'CONSC', 'SYNC', 'ABD', 'FEVER-INF'] as const;
 export type ScreenCategory = typeof SCREEN_CATEGORIES[number];
