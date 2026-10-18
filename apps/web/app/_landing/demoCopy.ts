@@ -222,7 +222,7 @@ export interface LaunchCopy {
 export const LAUNCH_COPY: Record<Lang, LaunchCopy> = {
   en: {
     opening: "Opening the demo as {name}",
-    preparing: "Preparing a synthetic case at this step. This takes a few seconds.",
+    preparing: "Preparing a synthetic case at this step: the model replays the patient intake. This can take up to a minute.",
     patient: "Opening the patient app with a fresh intake.",
     ops: "Opening the clinic operations dashboard.",
     manual: "Open it now",
@@ -231,7 +231,7 @@ export const LAUNCH_COPY: Record<Lang, LaunchCopy> = {
   },
   th: {
     opening: "กำลังเปิดเดโมในนาม {name}",
-    preparing: "กำลังเตรียมเคสสังเคราะห์ในขั้นตอนนี้ ใช้เวลาไม่กี่วินาที",
+    preparing: "กำลังเตรียมเคสสังเคราะห์ในขั้นตอนนี้ โมเดลกำลังเล่นบทซักประวัติคนไข้ซ้ำ อาจใช้เวลาถึงหนึ่งนาที",
     patient: "กำลังเปิดแอปผู้ป่วยพร้อมการซักประวัติใหม่",
     ops: "กำลังเปิดแดชบอร์ดการดำเนินงานของคลินิก",
     manual: "เปิดทันที",
@@ -240,7 +240,7 @@ export const LAUNCH_COPY: Record<Lang, LaunchCopy> = {
   },
   it: {
     opening: "Apertura della demo come {name}",
-    preparing: "Preparazione di un caso sintetico a questo passo. Richiede qualche secondo.",
+    preparing: "Preparazione di un caso sintetico a questo passo: il modello ripete l’anamnesi del paziente. Può richiedere fino a un minuto.",
     patient: "Apertura dell'app del paziente con una nuova accoglienza.",
     ops: "Apertura della dashboard operativa della clinica.",
     manual: "Apri ora",
