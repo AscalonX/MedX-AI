@@ -12,16 +12,19 @@ import type { ChatRequest, ChatResult, ModelClient } from '../apps/web/lib/pipel
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const argv = process.argv.slice(2);
 const arg = (k: string) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1] : undefined; };
+// EVAL_PIPELINE=pipeline-relaxed runs a throw-away copy with a 150 s turn cap and 30 s screen timeout (model quality, not product timeouts).
+const PIPE = process.env.EVAL_PIPELINE || 'pipeline';
+const imp = (m: string) => import(/* @vite-ignore */ path.join(ROOT, 'apps/web/lib', PIPE, m));
 process.env.MEDX_STORE_PATH ||= path.join(ROOT, 'eval/.tmp-store.json'); // runTurn never persists; this only guards against accidental writes
 
 // Pipeline is imported after env setup so its modules see MEDX_STORE_PATH.
-const P = await import('../apps/web/lib/pipeline/pipeline');
-const { checkRedFlags } = await import('../apps/web/lib/pipeline/redflags');
-const { redact } = await import('../apps/web/lib/pipeline/redact');
-const { verifyDetailed, words } = await import('../apps/web/lib/pipeline/verify');
-const { validateExtraction } = await import('../apps/web/lib/pipeline/schema');
-const { providerInfo } = await import('../apps/web/lib/pipeline/config');
-const { chatJSON } = await import('../apps/web/lib/pipeline/llm');
+const P = await imp('pipeline');
+const { checkRedFlags } = await imp('redflags');
+const { redact } = await imp('redact');
+const { verifyDetailed, words } = await imp('verify');
+const { validateExtraction } = await imp('schema');
+const { providerInfo } = await imp('config');
+const { chatJSON } = await imp('llm');
 
 // Live-provider client (eval only). The AMD developer API allows ~20 requests/min and effectively one in-flight request per key
 // (429 "token_concurrency_rate_limit_exceeded"; first dev run: 18/28 cases abstained on 429). The pipeline fires extract and the
@@ -334,7 +337,7 @@ if (rescore) {
   if (argv.includes('--no-holdout')) H.cases = [];
   const git = (c: string) => { try { return execSync(c, { cwd: ROOT }).toString().trim(); } catch { return 'unknown'; } };
   const startedAt = new Date().toISOString();
-  cfg = { startedAt, split, provider, baseHost: process.env.AMD_BASE_URL ? new URL(process.env.AMD_BASE_URL).host : null, gitSha: git('git rev-parse --short HEAD'), dirty: git('git status --porcelain') !== '', metricsSha: sha('docs/ai/METRICS.md'), promptSha: sha('apps/web/lib/pipeline/prompts.ts'), rulesSha: sha('packages/shared/src/redflags.json'), rulesV10Sha: sha('eval/redflags.v1.0.frozen.json'), caseFiles: cases.map(c => c.id), holdoutFiles: H.cases.map(c => c.id), invalidFiles: [...A.bad, ...H.bad], concurrency: 1, llmTimeoutMs: process.env.LLM_TIMEOUT_MS || 'default (extract 25000, screen 12000, question 8000; turn cap 40000)', screen2: process.env.AMD_MODEL_SCREEN2 || null, fallbackModel: process.env.AMD_MODEL_FALLBACK || null };
+  cfg = { startedAt, split, provider, baseHost: process.env.AMD_BASE_URL ? new URL(process.env.AMD_BASE_URL).host : null, gitSha: git('git rev-parse --short HEAD'), dirty: git('git status --porcelain') !== '', metricsSha: sha('docs/ai/METRICS.md'), promptSha: sha('apps/web/lib/pipeline/prompts.ts'), rulesSha: sha('packages/shared/src/redflags.json'), rulesV10Sha: sha('eval/redflags.v1.0.frozen.json'), caseFiles: cases.map(c => c.id), holdoutFiles: H.cases.map(c => c.id), invalidFiles: [...A.bad, ...H.bad], concurrency: 1, pipeline: PIPE, llmTimeoutMs: process.env.LLM_TIMEOUT_MS || 'default (extract 25000, screen 12000, question 8000; turn cap 40000)', screen2: process.env.AMD_MODEL_SCREEN2 || null, fallbackModel: process.env.AMD_MODEL_FALLBACK || null };
   console.log(`provider=${provider.name} model=${provider.model} split=${split} cases=${cases.length} holdout=${H.cases.length}${cfg.invalidFiles.length ? ` invalid=${cfg.invalidFiles.join('; ')}` : ''}`);
   results = [];
   for (const c of [...cases, ...H.cases]) { const r = await runCase(c, process.env.MODEL_PROVIDER === 'mock' ? undefined : liveClient); results.push(r); console.log(`${c.id.padEnd(6)} ${r.finalStatus}${r.error ? ' ERROR ' + r.error : ''}`); }
