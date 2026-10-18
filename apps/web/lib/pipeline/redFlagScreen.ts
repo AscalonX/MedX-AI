@@ -24,6 +24,11 @@ export async function redFlagScreen(session: IntakeSession, ctx: EngineContext, 
   if (second) { const log = ctx.log; ctx = { ...ctx, log: log && ((event, detail) => log(event, { ...detail, screen: 'second', model: second.model })) }; }
   const request: ChatRequest = { step: 'red_flags', system: SCREEN_SYSTEM, user: screenPrompt(session), schemaName: 'red_flag_screen', timeoutMs: second?.timeoutMs ?? 12000, ...(second ? { model: second.model } : {}) };
   let result = await invoke(request, ctx);
+  // Shared Token Factory key: one capped retry on a 429 (token concurrency), only with time to spare in the turn.
+  if (!result.call.ok && result.retryAfterMs !== undefined && result.retryAfterMs <= 2000 && ctx.deadline - Date.now() > 8000) {
+    await new Promise(resolve => setTimeout(resolve, result.retryAfterMs));
+    result = await invoke(request, ctx);
+  }
   const unavailable = () => { ctx.log?.('screen_unavailable', { modelCalls: ctx.modelCalls.filter(c => c.step === 'red_flags') }); return []; };
   if (!result.call.ok && result.failure !== 'schema_error') return unavailable();
   let validation = validateScreen(result.data);

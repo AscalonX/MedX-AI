@@ -44,8 +44,8 @@ export const pickupPending = (s: PatientView | null | undefined) => s?.pickup?.s
 // Web (served under /patient by the Next app) defaults to same-origin; native defaults to the local API.
 const BASE = process.env.EXPO_PUBLIC_API_URL ?? (Platform.OS === "web" ? "" : "http://localhost:3000");
 
-// Server allows 40 s per turn (header x-medx-timeout-ms: 40000); the client waits 45 s so a valid slow turn is not reported as failed.
-const TIMEOUT_MS = 45000;
+// Server allows 52 s per turn (header x-medx-timeout-ms: 52000); the client waits 58 s so a valid slow turn is not reported as failed.
+const TIMEOUT_MS = 58000;
 export const isTimeout = (e: unknown) => (e as { name?: string })?.name === "AbortError";
 
 export function uuid(): string {

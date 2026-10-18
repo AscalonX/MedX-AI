@@ -18,7 +18,8 @@ import { aliases } from './prompts';
 import { quickAnswer } from './quickAnswers';
 import { assessTriage } from './triage';
 export type { ModelClient } from './llm';
-export const TURN_TIMEOUT_MS = 40000;
+// Sized for Gemma-4-31B-IT on Token Factory (long extractions take 20-40 s); stays under the routes' 60 s maxDuration.
+export const TURN_TIMEOUT_MS = 52000;
 
 export { PipelineError };
 /** Seeded demo cases get a stable id (same link after every reset): sha256('medx-demo:' + demoCaseId), UUID-shaped. */

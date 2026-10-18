@@ -192,9 +192,9 @@ describe('turn retry and budget contracts', () => {
     const s = createSession('en'); const response = await turn(request({ text: 'Headache', clientTurnId: id }), context(s.id));
     expect(response.status).toBe(400); expect(getSession(s.id)!.turns).toEqual([]);
   });
-  it.each([{ text: 'Headache' }, { text: '' }, { text: 123 }])('exposes 40000ms on success and errors: %j', async value => {
+  it.each([{ text: 'Headache' }, { text: '' }, { text: 123 }])('exposes TURN_TIMEOUT_MS on success and errors: %j', async value => {
     const response = await turn(request(value), context(createSession('en').id));
-    expect(response.headers.get('x-medx-timeout-ms')).toBe('40000');
+    expect(response.headers.get('x-medx-timeout-ms')).toBe(String(TURN_TIMEOUT_MS));
     expect(response.headers.get('Access-Control-Expose-Headers')).toContain('x-medx-timeout-ms');
   });
   it('caps a slow next-question model call within the whole-turn budget', async () => {

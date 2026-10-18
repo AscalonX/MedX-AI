@@ -24,6 +24,7 @@ async function healthBody() {
     status: store.ok ? 'ok' : 'degraded',
     provider: info.name,
     model: info.model,
+    ...(info.extractModel ? { extractModel: info.extractModel } : {}),
     hardware: info.hardware,
     providerConfigured: info.name === 'mock' || Boolean(process.env.AMD_BASE_URL && process.env.AMD_API_KEY && process.env.AMD_MODEL),
     store: store.kind,

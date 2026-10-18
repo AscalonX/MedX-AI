@@ -138,7 +138,7 @@ async function refresh(s: IntakeSession, record: ConsultRecord, options: Consult
     if (patients.length && !escalated && !s.summary?.abstained) {
       let failure: 'provider_error' | 'schema_error' | undefined;
       try {
-        const response = await (options.client || chatJSON)({ step: 'next_question', schemaName: 'consult_suggestions', system: CONSULT_SYSTEM, user: consultPrompt(s), timeoutMs: 8000 });
+        const response = await (options.client || chatJSON)({ step: 'next_question', schemaName: 'consult_suggestions', system: CONSULT_SYSTEM, user: consultPrompt(s), timeoutMs: 11000 });
         record.modelCalls.push(response.call);
         const suggestions = response.call.ok ? modelSuggestions(response.data, s) : null;
         if (suggestions === null) {

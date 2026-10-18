@@ -19,7 +19,7 @@ export interface EngineContext {
 export async function invoke(req: ChatRequest, ctx: EngineContext): Promise<ChatResult> {
   const controller = new AbortController();
   const configured = Number(process.env.LLM_TIMEOUT_MS);
-  const timeoutMs = Math.max(1, Math.min(ctx.deadline - Date.now(), req.timeoutMs ?? (configured > 0 ? configured : req.step === 'next_question' ? 8000 : 25000)));
+  const timeoutMs = Math.max(1, Math.min(ctx.deadline - Date.now(), req.timeoutMs ?? (configured > 0 ? configured : req.step === 'next_question' ? 11000 : 40000)));
   let closed = false; let last: ModelCall | undefined;
   const onCall = (call: ModelCall) => { if (!closed) { ctx.modelCalls.push(call); last = call; } };
   let timer: ReturnType<typeof setTimeout>;
@@ -40,21 +40,27 @@ export async function invoke(req: ChatRequest, ctx: EngineContext): Promise<Chat
 }
 function failCall(call: ModelCall, error: string) { call.ok = false; call.error = error; }
 export async function extract(session: IntakeSession, ctx: EngineContext) {
-  const request: ChatRequest = { step: 'extract', system: EXTRACTION_SYSTEM, user: extractionPrompt(session, ctx.askedField), schemaName: 'intake_extraction' };
+  // AMD_EXTRACT_MODEL: optional Token Factory model for the long structured extraction (the screen and next question
+  // stay on AMD_MODEL). Every call records its own model id, so the trace and audit show which model produced what.
+  const extractModel = process.env.AMD_EXTRACT_MODEL || undefined;
+  const request: ChatRequest = { step: 'extract', system: EXTRACTION_SYSTEM, user: extractionPrompt(session, ctx.askedField), schemaName: 'intake_extraction', ...(extractModel ? { model: extractModel } : {}) };
   let result = await invoke(request, ctx);
+  // Shared Token Factory key: other provider errors get one retry (on AMD_MODEL_FALLBACK when set) if the turn still has
+  // time; a timed-out call is not worth a short retry. A Retry-After over 2 s abstains at once.
+  const primary = request.model || process.env.AMD_MODEL;
   if (!result.call.ok && result.failure !== 'schema_error' && result.data === null) {
+    const rateLimited = result.retryAfterMs !== undefined;
     const delay = result.retryAfterMs ?? 500;
-    if (delay <= 2000 && Date.now() + delay < ctx.deadline) {
+    if (delay <= 2000 && Date.now() + delay < ctx.deadline && (rateLimited || ctx.deadline - Date.now() >= 15000)) {
       await new Promise(resolve => setTimeout(resolve, delay));
-      result = await invoke({ ...request, model: process.env.AMD_MODEL_FALLBACK || process.env.AMD_MODEL }, ctx);
+      result = await invoke({ ...request, model: process.env.AMD_MODEL_FALLBACK || primary }, ctx);
     }
     // The shared AMD key is concurrency-limited: on 429 only, back off and retry (alternating models) while the turn deadline allows.
-    // A long Retry-After (> 2 s) still abstains at once.
     for (let i = 0; i < 3 && result.retryAfterMs !== undefined && result.retryAfterMs <= 2000 && !result.call.ok && result.data === null; i++) {
       const wait = Math.min(Math.max(result.retryAfterMs, 1000 * 2 ** i), 4000);
       if (Date.now() + wait + 5000 >= ctx.deadline) break;
       await new Promise(resolve => setTimeout(resolve, wait));
-      result = await invoke({ ...request, model: i % 2 ? process.env.AMD_MODEL_FALLBACK || process.env.AMD_MODEL : process.env.AMD_MODEL }, ctx);
+      result = await invoke({ ...request, model: i % 2 ? process.env.AMD_MODEL_FALLBACK || primary : primary }, ctx);
     }
   }
   if (!result.call.ok && result.failure !== 'schema_error' && result.data === null) return { fields: emptyFields(), reason: 'provider_error' as const, proposed: 0, failed: 0, language: undefined };

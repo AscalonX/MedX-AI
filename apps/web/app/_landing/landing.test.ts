@@ -18,7 +18,7 @@ import { FEATURE_STILLS } from "./Features";
 import { modelLabel } from "./HealthChip";
 import { LANDING_SECTION_IDS, Landing } from "./Landing";
 import { landingNavLinks } from "./nav";
-import { fill } from "./site";
+import { PROMO_PATH, PROMO_POSTER_PATH, PROMO_TRACK_PATHS, VIDEO_PATH, VIDEO_POSTER_PATH, VIDEO_TRACK_PATHS, fill } from "./site";
 
 // vitest.config.ts compiles TSX with the classic runtime (React.createElement): give the components a global React.
 await vi.hoisted(async () => {
@@ -218,7 +218,15 @@ describe("landing page structure (M-07)", () => {
   });
 });
 
-describe("product video (promo /media/medx-promo.mp4, walkthrough /media/medx-demo.mp4)", () => {
+describe(`product video (promo ${PROMO_PATH}, walkthrough ${VIDEO_PATH})`, () => {
+  it("ships each cut under a new name: the narrated walkthrough and the voiced promo, never the cached silent names", () => {
+    // /media is cached for a year (next.config.ts): a new cut under an old name would keep serving the old file.
+    expect(VIDEO_PATH).toBe("/media/medx-demo-narrated.mp4");
+    expect(VIDEO_TRACK_PATHS[0]).toBe("/media/medx-demo-narrated.en.vtt");
+    expect(PROMO_PATH).toBe("/media/medx-promo-vo.mp4");
+    expect(PROMO_TRACK_PATHS[0]).toBe("/media/medx-promo-vo.en.vtt");
+  });
+
   it("shows a graceful poster-only state while the file is missing", () => {
     const v = videoInfo(join(tmpdir(), "medx-landing-no-media-here"));
     expect(v).toEqual({ src: null, poster: null, track: null, audio: false, kind: null, walkthrough: null });
@@ -234,11 +242,11 @@ describe("product video (promo /media/medx-promo.mp4, walkthrough /media/medx-de
     try {
       mkdirSync(join(dir, "media"));
       const box = (type: string, handler: string) => Buffer.concat([Buffer.from([0, 0, 0, 33]), Buffer.from(type), Buffer.alloc(8), Buffer.from(handler), Buffer.alloc(13)]);
-      writeFileSync(join(dir, "media/medx-demo.mp4"), Buffer.concat([box("hdlr", "vide"), box("hdlr", "soun")]));
-      writeFileSync(join(dir, "media/medx-demo-poster.jpg"), "x");
-      writeFileSync(join(dir, "media/medx-demo.en.vtt"), "WEBVTT");
+      writeFileSync(join(dir, VIDEO_PATH), Buffer.concat([box("hdlr", "vide"), box("hdlr", "soun")]));
+      writeFileSync(join(dir, VIDEO_POSTER_PATH), "x");
+      writeFileSync(join(dir, VIDEO_TRACK_PATHS[0]), "WEBVTT");
       // No promo yet: the walkthrough is the primary video and there is no secondary action.
-      expect(videoInfo(dir)).toEqual({ src: "/media/medx-demo.mp4", poster: "/media/medx-demo-poster.jpg", track: "/media/medx-demo.en.vtt", audio: true, kind: "walkthrough", walkthrough: null });
+      expect(videoInfo(dir)).toEqual({ src: VIDEO_PATH, poster: VIDEO_POSTER_PATH, track: VIDEO_TRACK_PATHS[0], audio: true, kind: "walkthrough", walkthrough: null });
       expect(hasAudioTrack(box("hdlr", "vide"))).toBe(false);
     } finally {
       rmSync(dir, { recursive: true, force: true });
@@ -249,17 +257,17 @@ describe("product video (promo /media/medx-promo.mp4, walkthrough /media/medx-de
     const dir = mkdtempSync(join(tmpdir(), "medx-landing-promo-"));
     try {
       mkdirSync(join(dir, "media"));
-      writeFileSync(join(dir, "media/medx-promo-poster.jpg"), "x");
+      writeFileSync(join(dir, PROMO_POSTER_PATH), "x");
       // Poster only, no video yet: the promo poster stands in, still no player.
-      expect(videoInfo(dir)).toEqual({ src: null, poster: "/media/medx-promo-poster.jpg", track: null, audio: false, kind: null, walkthrough: null });
-      writeFileSync(join(dir, "media/medx-promo.mp4"), "no boxes");
-      writeFileSync(join(dir, "media/medx-demo.mp4"), "no boxes");
-      writeFileSync(join(dir, "media/medx-demo-poster.jpg"), "x");
+      expect(videoInfo(dir)).toEqual({ src: null, poster: PROMO_POSTER_PATH, track: null, audio: false, kind: null, walkthrough: null });
+      writeFileSync(join(dir, PROMO_PATH), "no boxes");
+      writeFileSync(join(dir, VIDEO_PATH), "no boxes");
+      writeFileSync(join(dir, VIDEO_POSTER_PATH), "x");
       const v = videoInfo(dir);
-      expect(v.src).toBe("/media/medx-promo.mp4");
-      expect(v.poster).toBe("/media/medx-promo-poster.jpg");
+      expect(v.src).toBe(PROMO_PATH);
+      expect(v.poster).toBe(PROMO_POSTER_PATH);
       expect(v.kind).toBe("promo");
-      expect(v.walkthrough).toEqual({ src: "/media/medx-demo.mp4", poster: "/media/medx-demo-poster.jpg", track: null, audio: false });
+      expect(v.walkthrough).toEqual({ src: VIDEO_PATH, poster: VIDEO_POSTER_PATH, track: null, audio: false });
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
