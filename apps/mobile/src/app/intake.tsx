@@ -9,6 +9,7 @@ import { Alert as AlertIcon, Speaker } from "@/components/icons";
 import { Mascot } from "@/components/mascot";
 import { Enter, MS, Press, ProgressBar, Shimmer } from "@/components/motion";
 import { LevelBars, MicButton } from "@/components/mic";
+import { useListen } from "@/tts";
 import { LOCALE, useVoice } from "@/voice";
 import { Badge, Card, cardShadow, Chip, Page, Pill, sh, T } from "@/components/ui";
 import { fontFor } from "@/fonts";
@@ -32,6 +33,7 @@ export default function Intake() {
   const [sampleId, setSampleId] = useState<string | null>(null);
   const v = useVoice(lang, (t) => { setText(t); setFromVoice(true); setSampleId(null); });
   const [speakTouched, setSpeakTouched] = useState(false);
+  const tts = useListen();
   const [inputW, setInputW] = useState(0);
   const input = useRef<React.ComponentRef<typeof TextInput>>(null);
   const gen = useRef(0); // request generation: only the newest request may apply its response
@@ -54,7 +56,17 @@ export default function Intake() {
     Speech.speak(qText, { language: LOCALE[lang], rate: 0.95 });
     return () => { Speech.stop(); };
   }, [speak, qText, busy, lang]);
+  // Question changed (or sending): stop any read-aloud of the old one.
+  useEffect(() => { tts.stop(); }, [qText, busy]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!session) return null;
+  // "Listen": the server voice reads the question the system produced; if it is unavailable the device voice does. Never autoplays.
+  async function listen() {
+    if (!session) return;
+    if (tts.state !== "idle") { tts.stop(); return; }
+    Speech.stop();
+    const ok = await tts.listen(answered === 0 ? { kind: "first_question", lang } : { kind: "next_question", lang, sessionId: session.id });
+    if (!ok && qText) Speech.speak(qText, { language: LOCALE[lang], rate: 0.95 });
+  }
 
   // Ledger = redacted patient turns returned by the API, never the raw text typed.
   const ledger = session.turns.filter((t) => t.role === "patient").map((t) => friendly(t.text, lang));
@@ -142,6 +154,11 @@ export default function Intake() {
         <Enter key={question} dy={4} ms={MS.morph}>
           <Card style={{ flexDirection: "row", gap: space[3], alignItems: "flex-start" }}>
             <View style={{ flex: 1 }}><T lang={lang} token="question" weight="bold" accessibilityRole="header">{question}</T></View>
+            <Pressable accessibilityRole="button" accessibilityLabel={tts.state === "idle" ? s.listen : s.listenStop} hitSlop={4} onPress={listen}
+              style={{ minHeight: 44, borderRadius: radius.pill, paddingHorizontal: space[3], flexDirection: "row", alignItems: "center", gap: space[1], backgroundColor: tts.state === "idle" ? color.muted : color.tealTint }}>
+              <Speaker color={tts.state === "idle" ? color.graphite : color.teal} />
+              <T lang={lang} token="small" weight="semibold" tone={tts.state === "idle" ? "inkSoft" : "teal"}>{tts.state === "idle" ? s.listen : tts.state === "loading" ? `${s.listen}…` : s.listenStop}</T>
+            </Pressable>
             <Pressable accessibilityRole="switch" accessibilityLabel={s.speakToggle} accessibilityState={{ checked: speak }} hitSlop={4}
               onPress={() => { setSpeakTouched(true); if (speak) Speech.stop(); set({ speak: !speak }); }}
               style={{ width: 44, height: 44, borderRadius: radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: speak ? color.tealTint : color.muted }}>
