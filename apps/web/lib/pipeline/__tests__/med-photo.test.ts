@@ -27,7 +27,10 @@ describe('validateMedPhoto', () => {
   it('accepts the strict shape and trims', () => {
     expect(validateMedPhoto({ items: [{ name: ' Tylenol ', strength: '500 mg', form: null }] })).toEqual([{ name: 'Tylenol', strength: '500 mg', form: null }]);
   });
-  it.each([null, [], { items: 'x' }, { items: [{ name: 'a' }] }, { items: [{ name: '', strength: null, form: null }] }, { items: [{ name: 'a', strength: null, form: null, extra: 1 }] },
+  it('drops extra item keys that small vision models add', () => {
+    expect(validateMedPhoto({ items: [{ name: 'AMOXIL', strength: '500 mg', form: 'Capsules', quantity: '21 capsules' }] })).toEqual([{ name: 'AMOXIL', strength: '500 mg', form: 'Capsules' }]);
+  });
+  it.each([null, [], { items: 'x' }, { items: [{ name: 'a' }] }, { items: [{ name: '', strength: null, form: null }] }, 
     { items: [{ name: 'a', strength: null, form: null }], note: 'x' }, { items: [{ name: '<b>x</b>', strength: null, form: null }] }, { items: Array(7).fill({ name: 'a', strength: null, form: null }) }])('rejects %j', v => {
     expect(validateMedPhoto(v)).toBeNull();
   });
