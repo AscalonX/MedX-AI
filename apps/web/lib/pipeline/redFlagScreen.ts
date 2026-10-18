@@ -16,6 +16,11 @@ const CATEGORY_RULE: Record<ScreenCategory, string> = {
 export async function redFlagScreen(session: IntakeSession, ctx: EngineContext): Promise<RedFlagHit[]> {
   const request: ChatRequest = { step: 'red_flags', system: SCREEN_SYSTEM, user: screenPrompt(session), schemaName: 'red_flag_screen', timeoutMs: 12000 };
   let result = await invoke(request, ctx);
+  // Shared Token Factory key: one capped retry on a 429 (token concurrency), only with time to spare in the turn.
+  if (!result.call.ok && result.retryAfterMs !== undefined && result.retryAfterMs <= 2000 && ctx.deadline - Date.now() > 8000) {
+    await new Promise(resolve => setTimeout(resolve, result.retryAfterMs));
+    result = await invoke(request, ctx);
+  }
   const unavailable = () => { ctx.log?.('screen_unavailable', { modelCalls: ctx.modelCalls.filter(c => c.step === 'red_flags') }); return []; };
   if (!result.call.ok && result.failure !== 'schema_error') return unavailable();
   let validation = validateScreen(result.data);

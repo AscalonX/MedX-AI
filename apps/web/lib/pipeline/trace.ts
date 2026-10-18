@@ -40,7 +40,10 @@ export function deriveTrace(session: IntakeSession, audit: AuditEvent[], consult
   turnStarts.forEach((start, n) => {
     const group = events.slice(start, turnStarts[n + 1] ?? events.length);
     const turn = group[0]; const pii = group.find(e => e.type === 'pii_redacted'); const flag = group.find(e => e.type === 'red_flag');
-    const summaryEv = group.find(e => e.type === 'summary_generated'); const abst = group.find(e => e.type === 'abstained');
+    // A turn can log two summary events (the screen-completed marker first, then the summary): read the model calls
+    // from the one that carries them, or the trace wrongly reports "Rules only" / "No extraction call".
+    const summaries = group.filter(e => e.type === 'summary_generated');
+    const summaryEv = summaries.find(e => Array.isArray(e.payload.modelCalls)) || summaries[0]; const abst = group.find(e => e.type === 'abstained');
     const input = add('input', { at: turn.at, actor: 'human', detail: `Turn ${n + 1} (${String(turn.payload.inputMode || 'text')})`, ids: [turn], parents: [tail] });
     const spans = Array.isArray(pii?.payload.replaced) ? (pii!.payload.replaced as { type: string; count: number }[]) : [];
     const redact = add('redact', { at: (pii || turn).at, actor: 'rule', detail: spans.length ? spans.map(r => `${r.type} x${r.count}`).join(', ') + ' replaced' : 'No personal data found', ids: pii ? [pii] : [], parents: [input] });

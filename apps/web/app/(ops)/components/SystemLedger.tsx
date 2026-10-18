@@ -30,7 +30,9 @@ export function MetricStrip({ metrics, health, lang }: { metrics: OpsMetrics; he
 export function ProviderPill({ health, lang }: { health: OpsHealth; lang: Lang }) {
   const mock = isMockProvider(health.provider);
   const hardware = healthHardware(health);
-  return <span className={styles.providerPill}><Icon name={mock ? "circle-minus" : "activity"} size={18} />{mock ? copy.mock[lang] : `${health.model}${hardware ? ` · ${hardware}` : ""}`}</span>;
+  const extract = (health as { extractModel?: unknown }).extractModel;
+  const models = typeof extract === "string" && extract ? `${health.model} + ${extract}` : health.model;
+  return <span className={styles.providerPill}><Icon name={mock ? "circle-minus" : "activity"} size={18} />{mock ? copy.mock[lang] : `${models}${hardware ? ` · ${hardware}` : ""}`}</span>;
 }
 
 export function ProviderPlate({ health, lang }: { health: OpsHealth; lang: Lang }) {

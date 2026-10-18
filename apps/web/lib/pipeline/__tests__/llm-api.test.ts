@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import type { Lang } from '@medx/shared';
 import { chatJSON } from '../llm';
 import type { ModelClient } from '../llm';
-import { createSession, runTurn } from '../pipeline';
+import { createSession, runTurn, TURN_TIMEOUT_MS } from '../pipeline';
 import { FIELD_KEYS } from '../config';
 import { GET as health, OPTIONS } from '../../../app/api/health/route';
 import { GET as list, POST as create } from '../../../app/api/sessions/route';
@@ -29,7 +29,7 @@ describe('AMD client transport', () => {
     const fetcher = vi.fn().mockResolvedValue(envelope('```json\n{"fields":{}}\n```')); vi.stubGlobal('fetch', fetcher);
     const result = await chatJSON(req); expect(result.data).toEqual({ fields: {} }); expect(result.call.ok).toBe(true); expect(result.call.provider).toBe('amd-tokenfactory'); expect(result.call.latencyMs).toBeGreaterThanOrEqual(0);
     const [url, init] = fetcher.mock.calls[0]; expect(url).toBe(`${process.env.AMD_BASE_URL}/chat/completions`); expect(init.headers.Authorization).toBe('Bearer synthetic-key-do-not-log');
-    expect(JSON.parse(init.body)).toMatchObject({ model: 'synthetic-model', temperature: 0, top_p: 1, max_tokens: 3000, stream: false, response_format: { type: 'json_object' } });
+    expect(JSON.parse(init.body)).toMatchObject({ model: 'synthetic-model', temperature: 0, top_p: 1, max_tokens: 1500, stream: false, response_format: { type: 'json_object' } });
   });
   it('retries without response_format after 400, recording both attempts', async () => {
     const fetcher = vi.fn().mockResolvedValueOnce(new Response('unsupported response_format', { status: 400 })).mockResolvedValueOnce(envelope('{"ok":true}')); vi.stubGlobal('fetch', fetcher);
@@ -87,10 +87,10 @@ describe('fault injection, six scenarios in all languages', () => {
     expect(s.status).toBe('needs_human'); expect(s.summary?.abstained).toBe(true); expect(s.summary?.abstainReason).toBe(fault === 'quotes' ? 'low_confidence' : ['shape', 'malformed'].includes(fault) ? 'schema_error' : 'provider_error');
     expect(s.summary?.fields.filter(f => f.status === 'supported')).toHaveLength(0); expect(s.summary?.nextQuestion).toBeNull();
   });
-  it('enforces the 40-second whole-turn cap even when injected clients ignore abort', async () => {
+  it('enforces the whole-turn cap even when injected clients ignore abort', async () => {
     vi.useFakeTimers(); vi.stubEnv('LLM_TIMEOUT_MS', '100000');
     const client: ModelClient = () => new Promise(() => undefined);
-    const promise = runTurn(createSession('en', { persist: false }), 'I have a mild headache', { client }); await vi.advanceTimersByTimeAsync(40000);
+    const promise = runTurn(createSession('en', { persist: false }), 'I have a mild headache', { client }); await vi.advanceTimersByTimeAsync(TURN_TIMEOUT_MS);
     expect((await promise).summary?.abstainReason).toBe('provider_error');
   });
 });

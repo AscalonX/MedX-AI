@@ -16,7 +16,7 @@ Research prototype, synthetic data only. This guide covers the public demo on Ve
 | Region | `sin1` (Singapore) |
 | Shared store | Neon serverless Postgres (`DATABASE_URL`, set by the Neon integration in all environments) |
 | Cron | `GET /api/cron/reset`, daily at 03:00 ICT |
-| Model | `MODEL_PROVIDER=mock` until an AMD Token Factory key is configured |
+| Model | `MODEL_PROVIDER=amd`: the hackathon's AMD Token Factory (OpenAI-compatible). `AMD_MODEL=Gemma-4-31B-IT` runs the add-only red-flag screen and the next question; `AMD_EXTRACT_MODEL=DeepSeek-V4-Flash` runs the long structured extraction. `mock` stays the offline default for local runs |
 
 ## 2. Project settings (Vercel dashboard, Settings → Build and Deployment)
 
@@ -68,7 +68,7 @@ Set in Settings → Environment Variables. Never commit real values; `.env` and 
 
 | Variable | Production value | Notes |
 |---|---|---|
-| `MODEL_PROVIDER` | `mock` | Set it explicitly. Anything other than `mock` selects the AMD provider |
+| `MODEL_PROVIDER` | `amd` | Set it explicitly. Anything other than `mock` selects the AMD provider; `mock` is the deterministic offline model |
 | `DATABASE_URL` | from the Neon integration | `POSTGRES_URL` is read as a fallback |
 | `DEMO_SEED` | `1` | Enables the synthetic demo routes (`/api/demo/*`, the persona launcher, the cron reset) |
 | `DEMO_AUTOSEED` | `1` | Seeds the 14 synthetic demo cases once when the store is empty |
@@ -80,7 +80,12 @@ Set in Settings → Environment Variables. Never commit real values; `.env` and 
 | `MEDX_TZ` | optional | Clinic timezone for "today" counts (default `Asia/Bangkok`) |
 | `MEDX_STORE` | leave unset | `postgres`, `redis` or `file` to force a store; an explicit store with a missing URL fails closed with 503 |
 | `MEDX_STORE_NS` | leave unset | Defaults to `VERCEL_ENV` |
-| `AMD_BASE_URL`, `AMD_API_KEY`, `AMD_MODEL` | only with `MODEL_PROVIDER=amd` | From the AMD Token Factory console. `AMD_MODEL_FALLBACK`, `AMD_JSON_SCHEMA`, `AMD_HARDWARE_LABEL`, `LLM_TIMEOUT_MS` are optional |
+| `AMD_BASE_URL` | `https://developer.amd.com.cn/radeon/api/v1` | From the AMD Token Factory console; OpenAI-compatible, ends in `/v1` |
+| `AMD_API_KEY` | the team's Token Factory key (secret) | Server-side only, never in the repo or in `/api/health`. The whole team shares one key's concurrency and spend limits: on the evaluation run 47 of 111 calls were rejected with HTTP 429 `token_concurrency_rate_limit_exceeded`, and the pipeline retries a 429 with a capped Retry-After |
+| `AMD_MODEL` | `Gemma-4-31B-IT` | Red-flag screen and next question |
+| `AMD_EXTRACT_MODEL` | `DeepSeek-V4-Flash` | Optional; a second Token Factory model for the long structured extraction only (unset, the extraction uses `AMD_MODEL`). On the shared endpoint Gemma took 72 s and 300 s for one ~880-output-token strict-schema extraction, beyond the 60 s route budget; DeepSeek-V4-Flash returned schema-valid extraction in 17 to 48 s |
+| `AMD_JSON_SCHEMA` | `true` | `false` disables `response_format` json_schema if an endpoint rejects it |
+| `AMD_MODEL_FALLBACK`, `AMD_HARDWARE_LABEL`, `LLM_TIMEOUT_MS` | optional | Fallback model on provider error; hardware label (default `AMD (via Token Factory)`); per-call timeout override (defaults 40000 ms extraction, 11000 ms next question; the screen uses 12000 ms). A 52 s turn deadline keeps every turn inside the routes' 60 s limit |
 | `MEDX_COMMIT` | pass at deploy time | CLI deploys have no git metadata; see section 5 |
 
 ## 5. Deploy from the CLI
@@ -121,7 +126,7 @@ Read-only first:
 curl -s https://medx.areazeroai.com/api/health
 ```
 
-Expected keys: `status: "ok"`, `provider: "mock"`, `model: "deterministic-mock"`, `providerConfigured: true`, `store: "postgres"`, `storeOk: true`, `storeVersion`, `sessions` (a count), `commit` (your short sha), `region: "sin1"`. No credential ever appears in this body (a test checks it).
+Expected keys: `status: "ok"`, `provider: "amd-tokenfactory"`, `model: "Gemma-4-31B-IT"`, `extractModel: "DeepSeek-V4-Flash"`, `hardware: "AMD (via Token Factory)"`, `providerConfigured: true`, `store: "postgres"`, `storeOk: true`, `storeVersion`, `sessions` (a count), `commit` (your short sha), `region: "sin1"`. No credential ever appears in this body (a test checks it).
 
 ```bash
 BASE=https://medx.areazeroai.com node qa/31-landing.mjs           # landing order, English, persona links, honest model label, video, robots, health
@@ -135,7 +140,7 @@ BASE=https://medx.areazeroai.com node qa/06-store-coherence.mjs
 BASE=https://medx.areazeroai.com node qa/30-deploy-coherence.mjs      # parallel requests across instances see one store
 BASE=https://medx.areazeroai.com EXPECT_STRICT_ROLES=1 node qa/33-security.mjs
 PLAYWRIGHT_MODULE=<path>/playwright/index.mjs BASE=https://medx.areazeroai.com node qa/34-browser.mjs   # optional
-curl -X POST -H "x-demo-token: $DEMO_TOKEN" https://medx.areazeroai.com/api/demo/reset                 # expect 200
+curl -X POST -H "x-demo-token: $DEMO_TOKEN" https://medx.areazeroai.com/api/demo/reset                 # expect 202 on AMD (reseeds in the background); 200 with mock
 ```
 
 `scripts/e2e-journey.mjs` sends about 65 to 70 POSTs, more than the default 30 per minute per instance, so run it against a local `next start`, or raise `MEDX_RATE_LIMIT_PER_MIN` for a test window. Manual check: open two browsers on different networks, start a visit on the phone, and confirm it appears in the nurse queue; then confirm a pharmacist action appears on `/ops`.

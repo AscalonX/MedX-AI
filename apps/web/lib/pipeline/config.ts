@@ -23,5 +23,7 @@ export function applyRequiredFields(fields: ExtractedField[]): ExtractedField[] 
 }
 export function providerInfo() {
   const mock = process.env.MODEL_PROVIDER === 'mock';
-  return { name: mock ? 'mock' : 'amd-tokenfactory', model: mock ? 'deterministic-mock' : process.env.AMD_MODEL || 'unconfigured', hardware: mock ? '\u2014' : process.env.AMD_HARDWARE_LABEL || 'AMD (via Token Factory)' };
+  // extractModel: set when AMD_EXTRACT_MODEL routes the structured extraction to a second Token Factory model.
+  const extractModel = !mock && process.env.AMD_EXTRACT_MODEL ? process.env.AMD_EXTRACT_MODEL : undefined;
+  return { name: mock ? 'mock' : 'amd-tokenfactory', model: mock ? 'deterministic-mock' : process.env.AMD_MODEL || 'unconfigured', ...(extractModel ? { extractModel } : {}), hardware: mock ? '\u2014' : process.env.AMD_HARDWARE_LABEL || 'AMD (via Token Factory)' };
 }

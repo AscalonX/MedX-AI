@@ -17,7 +17,7 @@
 <p align="center">
   <img alt="Tests: 2,451 passing (vitest, 53 files)" src="https://img.shields.io/badge/tests-2%2C451%20passing-0A8077?style=flat-square">
   <img alt="Clinical rule checks: 528 passing" src="https://img.shields.io/badge/clinical%20rule%20checks-528%20passing-0A8077?style=flat-square">
-  <img alt="Model on the public demo: mock (Gemma on AMD is the designed target)" src="https://img.shields.io/badge/demo%20model-mock%20%C2%B7%20Gemma%20on%20AMD%20designed-45566A?style=flat-square">
+  <img alt="Model on the public demo: Gemma-4-31B-IT and DeepSeek-V4-Flash on the AMD Token Factory" src="https://img.shields.io/badge/demo%20model-Gemma%20%2B%20DeepSeek%20on%20AMD%20Token%20Factory-45566A?style=flat-square">
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-0F1E2E?style=flat-square&logo=nextdotjs&logoColor=white">
   <img alt="Expo SDK 58" src="https://img.shields.io/badge/Expo-SDK%2058-0F1E2E?style=flat-square&logo=expo&logoColor=white">
   <img alt="TypeScript strict" src="https://img.shields.io/badge/TypeScript-strict-1A5FC4?style=flat-square&logo=typescript&logoColor=white">
@@ -50,19 +50,19 @@
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://medx.areazeroai.com/media/medx-promo.mp4"><img src="apps/web/public/media/medx-promo-poster.jpg" alt="MedX launch film poster: Fin pointing at a QR code for medx.areazeroai.com"></a>
-      <p><b>The 60-second film.</b> The story: a Thai patient line, the language-gap statistic, the care journey through every role, and the safety beats. 1080p60 with an original score.<br>
-      <a href="https://medx.areazeroai.com/media/medx-promo.mp4">Watch on the live site</a> · <a href="apps/web/public/media/medx-promo.mp4">file in this repo</a> (24.4 MB)</p>
+      <a href="https://medx.areazeroai.com/media/medx-promo-vo.mp4"><img src="apps/web/public/media/medx-promo-poster.jpg" alt="MedX launch film poster: Fin pointing at a QR code for medx.areazeroai.com"></a>
+      <p><b>The 60-second film (English voice-over over an original score).</b> The story: a Thai patient line, the language-gap statistic, the care journey through every role, and the safety beats. 1080p60 with an original score.<br>
+      <a href="https://medx.areazeroai.com/media/medx-promo-vo.mp4">Watch on the live site</a> · <a href="apps/web/public/media/medx-promo-vo.mp4">file in this repo</a> (19.6 MB)</p>
     </td>
     <td width="50%" valign="top">
-      <a href="https://medx.areazeroai.com/media/medx-demo.mp4"><img src="apps/web/public/media/medx-demo-poster.jpg" alt="MedX product walkthrough poster: Every word, understood, with 3D Fin"></a>
-      <p><b>The 60-second product walkthrough.</b> One synthetic visit, recorded click by click in the real UI: patient, nurse, doctor, pharmacist 1, pharmacist 2, pickup, ops and the case trace. English captions.<br>
-      <a href="https://medx.areazeroai.com/media/medx-demo.mp4">Watch on the live site</a> · <a href="apps/web/public/media/medx-demo.mp4">file in this repo</a> (3.5 MB) · <a href="apps/web/public/media/medx-demo.en.vtt">captions</a></p>
+      <a href="https://medx.areazeroai.com/media/medx-demo-narrated.mp4"><img src="apps/web/public/media/medx-demo-narrated-poster.jpg" alt="MedX product walkthrough poster: Every word, understood, with 3D Fin"></a>
+      <p><b>The narrated product walkthrough (2 min 15 s, English voice-over).</b> One synthetic visit, recorded click by click in the real UI: patient, nurse, doctor, pharmacist 1, pharmacist 2, pickup, ops and the case trace. English captions.<br>
+      <a href="https://medx.areazeroai.com/media/medx-demo-narrated.mp4">Watch on the live site</a> · <a href="apps/web/public/media/medx-demo-narrated.mp4">file in this repo</a> (8.3 MB) · <a href="apps/web/public/media/medx-demo-narrated.en.vtt">captions</a></p>
     </td>
   </tr>
 </table>
 
-The walkthrough shows the honest model label as it is today: "mock model, not AMD". The film source lives in [`pitch/promo/`](pitch/promo/README.md) (re-render steps in its README), and the walkthrough re-records from the running app with `scripts/record-demo.mjs`.
+The narrated walkthrough was recorded on the deterministic mock model for reproducibility, so its model label reads "mock model, not AMD"; the live site runs on the AMD Token Factory (check `/api/health`). The film source lives in [`pitch/promo/`](pitch/promo/README.md) (re-render steps in its README), and the walkthrough re-records from the running app with `scripts/record-demo.mjs`.
 
 ## Try it in 2 minutes
 
@@ -133,7 +133,7 @@ One synthetic visit, eight steps, one record. Each screen below is a real captur
 **Fin prepares. People decide.** These rules hold in every build, and tests fail if one breaks. They map to the five Track 2 safety questions in [pitch/SAFETY.md](pitch/SAFETY.md), with code paths.
 
 1. **Red flags are code, not a model.** 18 deterministic, guideline-sourced rules ([`redflags.json`](packages/shared/src/redflags.json)) run on the raw text before any model call. A hit stops the intake with zero model calls, shows the patient a calm "go to the desk" screen and interrupts the clinician screen. No model output can clear it.
-2. **Add-only model screen.** A model safety screen can raise a flag with a verified quote ("model-suggested, confirm"); it can never clear one. On an 18-case synthetic blind holdout, keyword rules alone caught 7 of 10 emergencies with 3 of 8 false alarms, which is why the screen exists.
+2. **Add-only model screen.** A model safety screen can raise a flag with a verified quote ("model-suggested, confirm"); it can never clear one. On an 18-case synthetic blind holdout, keyword rules alone caught 7 of 10 emergencies with 3 of 8 false alarms, which is why the screen exists. With the Gemma screen on the AMD Token Factory: 8 of 10 (it alone caught the suicide-risk case), false alarms unchanged; the 9 of 10 target is not met.
 3. **No quote, no fact.** Every extracted field must carry a quote from the patient's own text, checked by code. Without one the field is `unsupported`, shown as "Needs check", never as fact.
 4. **Abstain, do not guess.** A provider error, a schema error or low confidence gives "needs human review", never a guess.
 5. **People decide, on the record.** Triage is a suggestion the nurse confirms. The AI never proposes drugs or doses. The doctor enters orders; high alerts need a written reason; pharmacist 1 verifies or returns; pharmacist 2 dispenses after a two-person check. Nothing is final until a clinician approves, and every action goes to an append-only audit log with who did it.
@@ -152,13 +152,13 @@ flowchart LR
   R --> F["Red-flag rules<br/>(code, 18 rules)"]
   F -->|hit| E["Escalate to clinician<br/>zero model calls"]
   F -->|none| G
-  subgraph G["Model gateway (llm.ts): mock today, Gemma via AMD Token Factory designed"]
-    X["Extraction + translation"]
-    S["Add-only safety screen"]
+  subgraph G["Model gateway (llm.ts): AMD Token Factory"]
+    X["Extraction + translation<br/>DeepSeek-V4-Flash"]
+    S["Add-only safety screen<br/>Gemma-4-31B-IT"]
   end
   X --> V["Verifier<br/>quote must exist in patient text"]
   S --> V
-  V -->|"missing field"| Q["Next question<br/>in the patient's language"] --> P
+  V -->|"missing field"| Q["Next question<br/>in the patient's language<br/>Gemma-4-31B-IT"] --> P
   V --> N["Nurse<br/>approve, vitals, NEWS2 suggestion"]
   E --> N
   N --> D["Doctor<br/>considerations, signed note, orders"]
@@ -188,7 +188,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · spec of record: [docs/S
 | Patient app | Expo SDK 58, React Native 0.88, Expo Router, Reanimated 4, expo-speech and expo-speech-recognition (cloud speech of the phone or browser) |
 | Shared contracts | `packages/shared`: types, API shapes, design tokens, demo personas, journey stages, and the clinical rule files (`redflags.json`, `medrules.json`, `consultrules.json`, `vitalrules.json`, `investigations.json`) |
 | Store | Neon serverless Postgres over HTTP (`@neondatabase/serverless`) on the public demo; optional Upstash Redis REST; JSON file locally |
-| Model | **Today: a deterministic mock** (`MODEL_PROVIDER=mock`; `/api/health` reports `provider: "mock"`). **Designed target: Gemma via the hackathon's AMD Token Factory**, through one OpenAI-compatible client (`apps/web/lib/pipeline/llm.ts`) with JSON-schema output, a per-call timeout, one repair retry and an optional fallback model. Gemma accuracy and latency on AMD are not measured yet. |
+| Model | **Live demo: the hackathon's AMD Token Factory** (OpenAI-compatible, `MODEL_PROVIDER=amd`; `/api/health` reports `provider: "amd-tokenfactory"`, `model: "Gemma-4-31B-IT"`, `extractModel: "DeepSeek-V4-Flash"`, `hardware: "AMD (via Token Factory)"`). **Gemma-4-31B-IT** runs the add-only red-flag screen and the next question; **DeepSeek-V4-Flash** (`AMD_EXTRACT_MODEL`) runs the long structured extraction. Why two models: on the shared endpoint during the event, Gemma-4-31B-IT took 72 s and 300 s for one ~880-output-token extraction under strict JSON schema, beyond the 60 s request budget of a serverless route, while short Gemma calls answer in a few seconds; DeepSeek-V4-Flash on the same Token Factory returned schema-valid extraction in 17 to 48 s. One OpenAI-compatible client (`apps/web/lib/pipeline/llm.ts`) with JSON-schema output, per-call timeouts inside a 52 s turn deadline, retries on HTTP 429 with a capped Retry-After, one repair retry and an optional fallback model. Every model call records its model id in the audit trail and the Case trace. Local runs default to a deterministic mock (`MODEL_PROVIDER=mock`). Measured results: [Tests and evaluation](#tests-and-evaluation). |
 | Hosting | Vercel (project `medx`, region `sin1`, Node 22, daily cron), deployed from the Vercel CLI; Docker image and a Render blueprint as single-instance alternatives |
 | Testing | Vitest, Node QA scripts, Playwright browser checks, clinical rule checkers |
 
@@ -225,7 +225,7 @@ docker build -f apps/web/Dockerfile -t medx . \
   && docker run --rm -p 3000:3000 -e MODEL_PROVIDER=mock -e DEMO_SEED=1 -e DEMO_AUTOSEED=1 -e DEMO_TOKEN=pick-a-secret medx
 ```
 
-**With Gemma on AMD Token Factory** (when a key is available): copy `.env.example` to `apps/web/.env.local` (or `.env` for Docker), fill `AMD_BASE_URL`, `AMD_API_KEY` and `AMD_MODEL`, set `MODEL_PROVIDER=amd`, restart, and check that `curl localhost:3000/api/health` reports `"provider":"amd-tokenfactory"` and `"providerConfigured":true`.
+**With the AMD Token Factory** (as on the live demo; needs a key): copy `.env.example` to `apps/web/.env.local` (or `.env` for Docker), fill `AMD_BASE_URL`, `AMD_API_KEY` and `AMD_MODEL` (`Gemma-4-31B-IT`), optionally `AMD_EXTRACT_MODEL` (`DeepSeek-V4-Flash`, used for the extraction only), set `MODEL_PROVIDER=amd`, restart, and check that `curl localhost:3000/api/health` reports `"provider":"amd-tokenfactory"` and `"providerConfigured":true`.
 
 ## Deploy on Vercel
 
@@ -249,7 +249,12 @@ The public demo is the Vercel project **`medx`** at **https://medx.areazeroai.co
 
 | Variable | Value on the public demo |
 |---|---|
-| `MODEL_PROVIDER` | `mock` (set it explicitly; anything else selects the AMD provider) |
+| `MODEL_PROVIDER` | `amd` (set it explicitly; anything other than `mock` selects the AMD provider) |
+| `AMD_BASE_URL` | `https://developer.amd.com.cn/radeon/api/v1` (OpenAI-compatible) |
+| `AMD_API_KEY` | the team's Token Factory key (secret, server-side only) |
+| `AMD_MODEL` | `Gemma-4-31B-IT` (red-flag screen, next question) |
+| `AMD_EXTRACT_MODEL` | `DeepSeek-V4-Flash` (structured extraction only) |
+| `AMD_JSON_SCHEMA` | `true` |
 | `DATABASE_URL` | from the Neon integration |
 | `DEMO_SEED`, `DEMO_AUTOSEED` | `1`, `1` |
 | `DEMO_TOKEN` | a random secret (`openssl rand -hex 24`) for `POST /api/demo/reset` |
@@ -257,7 +262,6 @@ The public demo is the Vercel project **`medx`** at **https://medx.areazeroai.co
 | `MEDX_STRICT_ROLES` | `1` (clinical writes must come from a known staff id with the right role) |
 | `NEXT_PUBLIC_SITE_URL` | `https://medx.areazeroai.com` (optional; it is the default) |
 | `MEDX_RATE_LIMIT_PER_MIN` | optional, default 30 POSTs per minute per IP; consider 120 for a live judged session behind one venue network |
-| `AMD_BASE_URL`, `AMD_API_KEY`, `AMD_MODEL` | only when switching to `MODEL_PROVIDER=amd` |
 
 **4. Deploy from the repo root** (the root `.vercel/project.json` links project `medx`; the root `.vercelignore` keeps `packages/shared`, `data/cases` and `apps/web/public/**`):
 
@@ -270,13 +274,14 @@ vercel deploy --prod --build-env MEDX_COMMIT=$(git rev-parse --short HEAD)
 
 ```bash
 curl -s https://medx.areazeroai.com/api/health
-# expect: "status":"ok", "provider":"mock", "store":"postgres", "storeOk":true, "region":"sin1", "commit":"<your sha>"
+# expect: "status":"ok", "provider":"amd-tokenfactory", "model":"Gemma-4-31B-IT", "extractModel":"DeepSeek-V4-Flash",
+#         "hardware":"AMD (via Token Factory)", "providerConfigured":true, "store":"postgres", "storeOk":true, "region":"sin1", "commit":"<your sha>"
 BASE=https://medx.areazeroai.com node qa/31-landing.mjs
 BASE=https://medx.areazeroai.com node qa/32-english-default.mjs
 BASE=https://medx.areazeroai.com node qa/06-store-coherence.mjs
 BASE=https://medx.areazeroai.com node qa/30-deploy-coherence.mjs
 BASE=https://medx.areazeroai.com EXPECT_STRICT_ROLES=1 node qa/33-security.mjs
-curl -X POST -H "x-demo-token: $DEMO_TOKEN" https://medx.areazeroai.com/api/demo/reset   # expect 200
+curl -X POST -H "x-demo-token: $DEMO_TOKEN" https://medx.areazeroai.com/api/demo/reset   # expect 202 on AMD (reseeds in the background); 200 with mock
 ```
 
 **Single-instance fallback: Render.** [`render.yaml`](render.yaml) is a Render Blueprint for one Docker web service with the JSON file store on ephemeral disk (`/api/health` reports `tmp-ephemeral`). One instance keeps the demo consistent without a database. Add `DATABASE_URL` there to share the Neon store instead.
@@ -287,10 +292,11 @@ Every variable is documented in [`.env.example`](.env.example). Copy it to `apps
 
 | Variable | Purpose |
 |---|---|
-| `MODEL_PROVIDER` | `mock` (deterministic, offline) or `amd` (Gemma via AMD Token Factory) |
-| `AMD_BASE_URL`, `AMD_API_KEY`, `AMD_MODEL` | OpenAI-compatible base URL ending in `/v1`, server-side bearer key, Gemma model id |
-| `AMD_MODEL_FALLBACK`, `AMD_JSON_SCHEMA`, `AMD_HARDWARE_LABEL` | Optional fallback model; `false` disables `response_format` json_schema; hardware label shown when the AMD provider is active |
-| `LLM_TIMEOUT_MS` | Per-call timeout (defaults 25000 ms extraction, 8000 ms next question) |
+| `MODEL_PROVIDER` | `mock` (deterministic, offline; the local default) or `amd` (AMD Token Factory; the live demo) |
+| `AMD_BASE_URL`, `AMD_API_KEY`, `AMD_MODEL` | OpenAI-compatible base URL ending in `/v1`, server-side bearer key, main model id (`Gemma-4-31B-IT` on the live demo: red-flag screen and next question) |
+| `AMD_EXTRACT_MODEL` | Optional second Token Factory model for the long structured extraction only (`DeepSeek-V4-Flash` on the live demo); unset, the extraction uses `AMD_MODEL`. Every call records its model id in the audit trail and the Case trace |
+| `AMD_MODEL_FALLBACK`, `AMD_JSON_SCHEMA`, `AMD_HARDWARE_LABEL` | Optional fallback model; `false` disables `response_format` json_schema (`true` on the live demo); hardware label shown when the AMD provider is active |
+| `LLM_TIMEOUT_MS` | Per-call timeout override (defaults 40000 ms extraction, 11000 ms next question; the red-flag screen uses 12000 ms). A 52 s turn deadline caps the sum inside the routes' 60 s limit |
 | `DEMO_SEED`, `DEMO_AUTOSEED` | `1` enables the synthetic demo routes and seeds the demo cases on first start |
 | `DEMO_TOKEN` | Secret for `POST /api/demo/reset` and `/api/dev/seed` (header `x-demo-token`); without it those routes answer 404 |
 | `CRON_SECRET` | Secret for the daily `GET /api/cron/reset`; without it the route answers 401 |
@@ -338,7 +344,24 @@ PLAYWRIGHT_MODULE=<path to playwright/index.mjs> BASE=http://localhost:3000 node
 | `qa/30` to `qa/33` | Deploy coherence, landing smoke, English by default, public-URL security |
 | `qa/34`, `qa/35` | Playwright: English first render, every persona card, phone pickup; nurse approves and doctor signs, two-stage pharmacy in the real UI, polling pauses while hidden |
 
-**Evaluation.** 52 synthetic cases (40 intake in three languages + 12 medication) and an 18-case blind red-flag holdout written without seeing the rules; metrics pre-declared in [docs/ai/METRICS.md](docs/ai/METRICS.md). Run with `cd apps/web && MODEL_PROVIDER=mock npx vite-node ../../eval/run.ts -- --split all`. [`eval/REPORT.md`](eval/REPORT.md) reports failures and unmet thresholds; a mock run proves the harness only and is not evidence about Gemma. Holdout, keyword rules only: [eval/results/holdout-rules-only.md](eval/results/holdout-rules-only.md).
+**Evaluation.** 52 synthetic cases (40 intake in three languages + 12 medication) and an 18-case blind red-flag holdout written without seeing the rules; thresholds pre-declared in [docs/ai/METRICS.md](docs/ai/METRICS.md). Run with `cd apps/web && npx vite-node ../../eval/run.ts -- --split test` with the AMD variables set (with `MODEL_PROVIDER=mock` a run proves the harness only and is not evidence about any model). [`eval/REPORT.md`](eval/REPORT.md) reports failures and unmet thresholds. Holdout, keyword rules only: [eval/results/holdout-rules-only.md](eval/results/holdout-rules-only.md).
+
+**Measured on the AMD Token Factory** (run `2026-10-18T05-38-22-421Z`, split test: 30 intake cases, 11 of them escalated by red-flag rules and excluded from field metrics, plus the 18-case blind holdout; Gemma-4-31B-IT screen and next question, DeepSeek-V4-Flash extraction; sequential calls on one shared team key). Synthetic data, small n, wide confidence intervals:
+
+| Metric | Result | Threshold | Status |
+|---|---|---|---|
+| M1 asserted precision | 88.1% (37/42; CI 75-95%) | ≥ 90% | **NOT MET** |
+| M1 capture recall | 26.2% (37/141; CI 20-34%) | ≥ 70% | **NOT MET** (depressed by provider failures, below) |
+| M1 hallucination rate | 3.4% (3/87; CI 1-10%) | ≤ 5% | met |
+| M3 unsupported claims, with verifier | 11.9% (5/42; CI 5-25%), against 12.5% without | ≤ 5% | **NOT MET** |
+| M4 red-flag case recall (pipeline, in-sample) | 100% (8/8; CI 68-100%) | 100% | met |
+| M4 red-flag false alarms (in-sample) | 13.6% (3/22; CI 5-33%) | ≤ 10% | **NOT MET** |
+| M11 blind holdout recall, keyword rules v1.1 alone | 70% (7/10; CI 40-89%) | (comparison) | |
+| M11 blind holdout recall, rules + Gemma add-only screen | 80% (8/10; CI 49-94%) | ≥ 9/10 | **NOT MET** |
+| M11 blind holdout false alarms | 37.5% (3/8), unchanged by the screen | | |
+| M8 turn latency p50 / p95 | 38.4 s / 42.2 s (n=21) | ≤ 6 s / ≤ 12 s | **NOT MET** |
+
+The Gemma screen alone caught HO-04 (suicide risk), which the keyword rules missed. Call latency, successful calls only: Gemma screen p50 2.5 s / p95 10.6 s (n=18), DeepSeek extraction p50 25.9 s / p95 35.5 s (n=11), Gemma next question p50 4.1 s / p95 6.4 s (n=7). Reliability on the shared key: 34 of 111 calls succeeded; 47 were rejected with HTTP 429 `token_concurrency_rate_limit_exceeded` (the whole team shares one key's concurrency and spend limits) and 30 hit timeouts. By design a failed call abstains ("needs human review"); it never guesses. An earlier attempt (run `2026-10-18T05-30-14-335Z`) had 63 of 70 calls rate-limited and is not evidence.
 
 ## Project structure
 
@@ -359,8 +382,8 @@ PLAYWRIGHT_MODULE=<path to playwright/index.mjs> BASE=http://localhost:3000 node
 ## Limitations
 
 - Research prototype that supports clinicians. It does not diagnose, treat, prescribe or decide urgency. Synthetic data only; not clinically validated, not a medical device.
-- The demo runs a mock model. Gemma accuracy and latency on AMD Token Factory are not measured yet.
-- Red-flag rules miss paraphrases: keyword rules alone caught 7 of 10 emergencies on an 18-case synthetic holdout. Known gaps are listed for clinical review.
+- On the AMD Token Factory the measured results miss several pre-declared targets: a patient turn takes p50 38.4 s / p95 42.2 s (target 6 s / 12 s); field precision is 88.1% (target 90%) and unsupported claims 11.9% (target 5%); capture recall is 26.2% (target 70%), depressed because on one shared team key only 34 of 111 calls succeeded (47 rate-limited, 30 timed out), and each failure abstains to human review. The narrated walkthrough video was recorded on the mock model.
+- Red-flag rules miss paraphrases: on an 18-case synthetic blind holdout, keyword rules alone caught 7 of 10 emergencies and rules plus the add-only Gemma screen 8 of 10 (target 9 of 10, not met), with 3 of 8 false alarms either way. Known gaps are listed for clinical review.
 - Considerations come from a fixed 12-presentation list, not a complete differential.
 - The NEWS2 suggestion is for adults, not pregnancy, and the nurse confirms it.
 - Prescribing checks use a small rule set (59 drugs, 18 interactions, adult dose ceilings for 31) and miss what it lacks. The alternatives table has 5 entries.

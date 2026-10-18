@@ -23,6 +23,18 @@ describe('case trace', () => {
     expect(status(t, 'red_flag_rules')).toEqual(['ok']); expect(status(t, 'model_screen')).toEqual(['ok']);
     expect(t.edges.every(e => t.nodes.some(n => n.id === e.from) && t.nodes.some(n => n.id === e.to))).toBe(true);
   });
+  it('reads model calls from the summary that carries them, not the screen-completed marker before it', async () => {
+    const id = await run('I have had a sore throat for two days.');
+    const audit = getAudit(id);
+    const at = audit.findIndex(e => e.type === 'turn_added');
+    const marker = { ...audit[at], id: 'marker-1', type: 'summary_generated' as const, payload: { event: 'screen_completed', ruleIds: [] } };
+    const withMarker = [...audit.slice(0, at + 1), marker, ...audit.slice(at + 1)];
+    const detail = (t: ReturnType<typeof trace>, k: string) => t.nodes.find(n => n.kind === k)?.detail.en;
+    const plain = trace(id), marked = deriveTrace(getSession(id)!, withMarker, getConsultRecord(id));
+    expect(detail(marked, 'model_screen')).toBe(detail(plain, 'model_screen'));
+    expect(detail(marked, 'extract')).toBe(detail(plain, 'extract'));
+    expect(detail(marked, 'extract')).toMatch(/call\(s\)/);
+  });
   it('red-flag case stops early with model nodes skipped', async () => {
     const t = trace(await run('I have chest pain'));
     expect(status(t, 'red_flag_rules')).toEqual(['escalated']);

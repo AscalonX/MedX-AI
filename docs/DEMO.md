@@ -1,6 +1,6 @@
 # Demo runbook (v3 journey)
 
-Synthetic data only. Say "supports", "suggests for review" and "flags for the clinician"; never "diagnoses". While `/api/health` reports `provider: "mock"`, say "Gemma on AMD is the designed target; the measurement is pending", and never present the demo as using AMD hardware. Video script: [pitch/VIDEO-SCRIPT.md](../pitch/VIDEO-SCRIPT.md). Spec of record: [SPEC.md](SPEC.md).
+Synthetic data only. Say "supports", "suggests for review" and "flags for the clinician"; never "diagnoses". The live demo runs on the AMD Token Factory (`/api/health`: `provider: "amd-tokenfactory"`, model Gemma-4-31B-IT, extractModel DeepSeek-V4-Flash). Quote only numbers from eval/REPORT.md, including the missed targets (turn latency p50 38.4 s). A local run with `MODEL_PROVIDER=mock` shows the label "mock model, not AMD"; say so if you record locally.
 
 ## 1. The live demo in 2 minutes
 
@@ -65,7 +65,7 @@ Codes follow creation order, so they hold after a reset on an empty store; a vis
 
 ## 5. The golden path (about 3 minutes live, 60 seconds in the walkthrough)
 
-The 60-second walkthrough (`apps/web/public/media/medx-demo.mp4`, recorded by `scripts/record-demo.mjs`) follows exactly these steps on one fresh case:
+The narrated walkthrough (`apps/web/public/media/medx-demo-narrated.mp4`, 2 min 15 s, recorded by `scripts/record-demo.mjs`) follows exactly these steps on one fresh case:
 
 1. Patient: picks the synthetic golden example, checks every word, sends; gets the visit code.
 2. Nurse: the new visit in the queue; signs in through the "Who's signing in?" sheet as Nurse Anna Rossi; the evidence highlight on Allergies; approves the supported fields.
@@ -77,7 +77,7 @@ The 60-second walkthrough (`apps/web/public/media/medx-demo.mp4`, recorded by `s
 8. Pharmacist 1: verifies.
 9. Pharmacist 2: the two-person block, then signs in as Nattaya Wong, ticks the six-item check, dispenses, calls the patient to counter 2.
 10. Patient: the phone shows the medicine is ready at counter 2.
-11. Ops: queue and pharmacy flow, and the honest label "mock model, not AMD".
+11. Ops: queue and pharmacy flow, and the honest model label read from /api/health (on the live demo: Gemma-4-31B-IT + DeepSeek-V4-Flash on AMD Token Factory; on a local mock run: "mock model, not AMD").
 12. Case trace: every rule check, model call and human decision in order.
 13. Closing card: "Research prototype. Synthetic data. Clinicians decide."
 

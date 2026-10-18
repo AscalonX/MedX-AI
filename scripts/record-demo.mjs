@@ -16,8 +16,8 @@
  *            ffmpeg finds every step's exact frames from it, cuts the dead time between steps (page loads, server
  *            work), fits each step to its time budget (speeding a step up with setpts only when it ran long), paints
  *            the marker out, joins the steps with short cross-fades and encodes H.264.
- *            Output: apps/web/public/media/medx-demo.mp4 (+faststart, yuv420p), medx-demo-poster.jpg (a real frame of
- *            the video) and medx-demo.en.vtt (captions, one cue per step, real timings).
+ *            Output: apps/web/public/media/<name>.mp4 (+faststart, yuv420p), <name>-poster.jpg (a real frame of
+ *            the video) and <name>.en.vtt (captions with real timings); <name> is medx-demo unless --name or --narration.
  *   --stills replays the same journey without overlays: staff pages at 1100x860 @2x, the patient app at 390x844 @3x.
  *            Writes the landing crops apps/web/public/landing/<name>.webp at native capture pixels, the full phone
  *            screens patient-home, patient-intake and patient-pickup-phone (1170x2532, for device mockups), and the
@@ -41,10 +41,30 @@
  *            load) is recorded again from a reset store instead of being sped up (default 3)
  *   --debug  also saves a PNG at the end of every step into --work
  *   --journey-only  re-renders docs/readme/journey.png from journey.html and the current s-*.png/jpg (no journey)
+ *   --out    folder for medx-demo.mp4, its poster and VTT (default apps/web/public/media); stills keep their paths
+ *   --name   base name of the video files (default medx-demo; with --narration medx-demo-narrated): <name>.mp4,
+ *            <name>-poster.jpg, <name>.en.vtt. /media is cached for a year (next.config.ts), so a new cut needs a new name.
+ *
+ * NARRATION (optional, video only)
+ *   --narration <manifest.json>  a voice-over manifest: {"root": <folder>, "walkthrough": [{"step": <STEPS id>,
+ *            "file": <wav, relative to root>, "text": <the line as written>, "cues": [{"on": <word>, "measuredSec": <s>}]}]}.
+ *            A <wav>.asr.json next to a line ({"words": [{"w", "s", "e"}]}) times its caption sentences.
+ *            Each narrated step's budget becomes max(budget, line length + NARR_TAIL), rounded up to whole frames (the
+ *            first step also waits NARR_LEAD_FIRST for the title card, the last holds NARR_END_HOLD after its line).
+ *            On-screen actions wait for their cue word (Recorder.cue), so the click lands as the word is spoken.
+ *            Each line is placed at its step's start in the finished cut (+ NARR_LEAD), mixed over an optional bed,
+ *            mastered to --lufs (default -16 LUFS integrated, true peak below -1 dBTP) and muxed as AAC 192 kb/s.
+ *            The VTT then carries the narration text, one cue per sentence, at the real spoken times, each cue placed
+ *            (WebVTT line setting) above that step's burned-in caption bar so both stay readable.
+ *            The narrated cut adds one step, `thai` (after `evidence`): a seeded Thai visit (MED-01) in the same nurse
+ *            view, its fields beside the patient's own Thai words (read only). --no-thai leaves it out.
+ *   --bed <wav>      optional music bed under the narration (looped if short, faded in and out)
+ *   --bed-lufs <n>    the bed's integrated loudness in the finished mix (default -30)
  *
  * TIMING
  *   Each step has a budget in STEPS below (seconds). The finished video length is
- *   sum(budgets) - (steps - 1) * FADE and is checked against 55..65 s; the run fails outside that window.
+ *   sum(budgets) - (steps - 1) * FADE and is checked against 55..65 s (with --narration: the same sum, +/- 1.5 s);
+ *   the run fails outside that window.
  *
  * SAFETY
  *   Synthetic data only. Every clinical action is a click in the real UI by a named demo persona; the only things
@@ -52,6 +72,7 @@
  */
 import fs from 'node:fs';
 import os from 'node:os';
+import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
@@ -83,7 +104,9 @@ const DO_STILLS = !!args.stills;
 const DO_VIDEO = !!args.video || !DO_STILLS;
 const RESET = !args['no-reset'];
 
-const OUT_MEDIA = path.join(ROOT, 'apps/web/public/media');
+const OUT_MEDIA = args.out && args.out !== true ? path.resolve(String(args.out)) : path.join(ROOT, 'apps/web/public/media');
+// Base name of the video, poster and captions. The narrated cut never takes the silent cut's name (cached for a year).
+const NAME = args.name && args.name !== true ? String(args.name).replace(/[^\w.-]/g, '') : (args.narration && args.narration !== true ? 'medx-demo-narrated' : 'medx-demo');
 const OUT_LANDING = path.join(ROOT, 'apps/web/public/landing');
 const OUT_README = path.join(ROOT, 'docs/readme');
 
@@ -97,6 +120,18 @@ const MAX_MB = 15;
 const MAX_SPEED = 2.2; // never speed a step up more than this
 const MAX_OVERRUN = 0.6; // seconds a step may run past its budget (wall clock) before the take is recorded again
 const TAKES = Math.max(1, Number(args.takes) || 3); // --takes N: attempts for a clean video take
+
+// ---------- Narration constants (--narration) ----------
+const NARR_TAIL = 0.6; // a narrated step's budget is at least its line + this
+const NARR_LEAD = 0.12; // a line starts this long after its step's cut begins (inside the cross-fade)
+const NARR_LEAD_FIRST = 0.4; // the opening line waits for the title card's entrance
+const NARR_END_HOLD = 1.0; // the closing card holds this long after its line
+const NARR_CUE_LEAD = 0.2; // an action cued to a word starts this long before the word
+const NARR_MAX_MB = 25;
+const TARGET_LUFS = Number.isFinite(Number(args.lufs)) ? Number(args.lufs) : -16;
+const LIMIT_DBTP = -2.0; // limiter ceiling before AAC; the encoded file is checked against -1 dBTP
+const BED = args.bed && args.bed !== true ? path.resolve(String(args.bed)) : null;
+const BED_LUFS = Number.isFinite(Number(args['bed-lufs'])) ? Number(args['bed-lufs']) : -30;
 
 // ---------- Synthetic golden journey (single source: data/cases/DEMO-GOLD.json) ----------
 const GOLD = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/cases/DEMO-GOLD.json'), 'utf8')).demo;
@@ -132,6 +167,8 @@ const STEPS = {
   queue: { t: 2.2, who: 'Nurse', text: 'The new visit arrives in the review queue' },
   signin: { t: 2.8, who: 'Nurse', text: 'Signs in as a synthetic demo nurse. Every change is recorded under that name' },
   evidence: { t: 4.0, who: 'Nurse', text: 'Every field cites the patient’s own words, checked by code' },
+  // Narrated cut only (removed below otherwise): a seeded Thai visit in the same nurse view.
+  thai: { t: 3.0, who: 'Nurse', text: 'A Thai visit: every field cites the patient’s own Thai words' },
   vitals: { t: 4.4, who: 'Nurse', text: 'Records vitals. NEWS2 suggests a triage level; the nurse confirms it' },
   consider: { t: 3.2, who: 'Doctor', text: 'Keeps the rule-based considerations they agree with. Not a diagnosis' },
   signed: { t: 2.6, who: 'Doctor', text: 'Signs the visit note. Nothing is final until a clinician signs' },
@@ -148,6 +185,8 @@ const STEPS = {
   trace: { t: 3.4, who: 'Case trace', text: 'Every rule check, model call and human decision, in order' },
   closing: { t: 4.2 },
 };
+// The silent 60 s cut keeps its 18 captioned steps; the Thai step belongs to the narrated cut.
+if (!args.narration || args.narration === true || args['no-thai']) delete STEPS.thai;
 const STEP_IDS = Object.keys(STEPS);
 const CAPTIONED = STEP_IDS.filter((k) => STEPS[k].who);
 
@@ -170,6 +209,54 @@ async function api(pathname, init) {
   const r = await fetch(BASE + pathname, init);
   if (!r.ok) throw new Error(`${init?.method || 'GET'} ${pathname} -> ${r.status} ${await r.text().catch(() => '')}`);
   return r.json();
+}
+
+// ---------- Narration manifest ----------
+/** Reads a --narration manifest: one line per step, its WAV length measured from the file itself. */
+function loadNarration(file) {
+  const m = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const list = Array.isArray(m) ? m : m.walkthrough || m.steps;
+  if (!Array.isArray(list) || !list.length) throw new Error(`${file}: no "walkthrough" list of narration lines`);
+  const root = m.root && fs.existsSync(m.root) ? m.root : path.dirname(file);
+  const lines = {};
+  for (const e of list) {
+    if (e.step === 'thai' && args['no-thai']) continue;
+    if (!STEPS[e.step]) throw new Error(`narration: unknown step "${e.step}"`);
+    if (lines[e.step]) throw new Error(`narration: step "${e.step}" has two lines`);
+    const wav = path.resolve(root, String(e.file || ''));
+    if (!e.file || !fs.existsSync(wav)) throw new Error(`narration: line for "${e.step}" has no WAV (${wav})`);
+    const sec = mediaDuration(wav);
+    if (!(sec > 0)) throw new Error(`narration: cannot read the length of ${wav}`);
+    const text = String(e.text || '').trim();
+    if (!text) throw new Error(`narration: line for "${e.step}" has no text`);
+    const asr = wav.replace(/\.wav$/i, '.asr.json');
+    const words = fs.existsSync(asr) ? (JSON.parse(fs.readFileSync(asr, 'utf8')).words || []).filter((w) => w && Number.isFinite(w.s)) : [];
+    const cues = {};
+    for (const c of e.cues || []) {
+      const at = Number(c.measuredSec ?? c.estSec);
+      if (c.on && Number.isFinite(at)) cues[c.on] = at;
+    }
+    lines[e.step] = { step: e.step, wav, sec, text, cues, words };
+  }
+  return { file, lines };
+}
+const NARR = args.narration && args.narration !== true ? loadNarration(path.resolve(String(args.narration))) : null;
+/** Where a step's line starts inside the step (seconds after its cut begins). */
+const narrLead = (id) => (STEP_IDS[0] === id ? NARR_LEAD_FIRST : NARR_LEAD);
+if (NARR) {
+  // Budgets long enough for each line, on whole frames so the cut keeps exactly the planned length.
+  STEP_IDS.forEach((id, i) => {
+    const l = NARR.lines[id];
+    if (!l) return;
+    const need = l.sec + NARR_TAIL + (narrLead(id) - NARR_LEAD) + (i === STEP_IDS.length - 1 ? NARR_END_HOLD : 0);
+    STEPS[id].t = Math.max(STEPS[id].t, Math.ceil(need * FPS - 1e-6) / FPS);
+  });
+}
+/** Accepted video length: 55..65 s, or with narration the sum of the budgets less the cross-fades, +/- 1.5 s. */
+function lengthWindow() {
+  if (!NARR) return [55, 65];
+  const planned = STEP_IDS.reduce((a, id) => a + STEPS[id].t, 0) - (STEP_IDS.length - 1) * FADE;
+  return [planned - 1.5, planned + 1.5];
 }
 
 function loadPlaywright() {
@@ -239,7 +326,7 @@ function titleHtml() {
     <div style="font-weight:800;font-size:78px;line-height:1.02;letter-spacing:-.035em">Every word,<br><span style="color:${T.tealTint}">understood.</span></div>
     <div style="font-size:21px;line-height:1.5;max-width:560px;color:rgba(255,255,255,.92)">Multilingual pre-visit intake. Fin listens while nurses, doctors and pharmacists decide.</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
-      ${['Synthetic data only', 'English, Thai, Italian', 'One visit, about 60 seconds'].map((c) => `<span style="height:36px;display:inline-flex;align-items:center;padding:0 16px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);font-weight:700;font-size:14px">${c}</span>`).join('')}
+      ${['Synthetic data only', 'English, Thai, Italian', NARR ? 'One visit, start to finish' : 'One visit, about 60 seconds'].map((c) => `<span style="height:36px;display:inline-flex;align-items:center;padding:0 16px;border-radius:999px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);font-weight:700;font-size:14px">${c}</span>`).join('')}
     </div>
   </div>
   <div style="position:absolute;right:96px;top:50%;width:430px;height:430px;margin-top:-215px;border-radius:50%;background:radial-gradient(circle at 50% 45%,rgba(255,255,255,.34),rgba(255,255,255,.12) 62%,transparent 72%)"></div>
@@ -290,8 +377,30 @@ class Recorder {
     this.mode = mode; // 'video' | 'stills'
     this.segs = [];
     this.page = null;
+    this.cur = null; // the step being recorded: { id, start }
+    this.cueLog = []; // narration: when each cued action ran against its word (seconds into the step)
   }
   get video() { return this.mode === 'video'; }
+  /** A video pause. With narration it stops at the step's budget: frames past the budget are cut anyway. */
+  async pause(ms) {
+    if (NARR && this.cur) ms = Math.min(ms, Math.max(0, this.cur.start + STEPS[this.cur.id].t * 1000 - performance.now()));
+    if (ms > 0) await this.page.waitForTimeout(ms);
+  }
+  /**
+   * Narration only (a no-op otherwise): waits until the current step's line reaches the word `on`, less `lead`
+   * seconds, so the action that follows lands as the word is spoken. A step whose line has no such cue goes on at once.
+   */
+  async cue(on, lead = NARR_CUE_LEAD) {
+    if (!this.video || !NARR || !this.cur) return;
+    const { id, start } = this.cur;
+    const at = NARR.lines[id]?.cues[on];
+    if (at === undefined) { if (NARR.lines[id]) log(`note: step ${id} has no narration cue "${on}"`); return; }
+    const target = start + (narrLead(id) + at - lead) * 1000;
+    const wait = target - performance.now();
+    if (wait > 0) await this.page.waitForTimeout(wait);
+    const now = performance.now();
+    this.cueLog.push({ step: id, on, wordSec: Number((narrLead(id) + at).toFixed(2)), actionSec: Number(((now - start) / 1000).toFixed(2)), lateSec: Number(((now - target) / 1000).toFixed(2)) });
+  }
   async painted(page = this.page) {
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))).catch(() => {});
   }
@@ -328,7 +437,12 @@ class Recorder {
     }, this.segs.length % 2 ? '#00FF00' : '#FF00FF');
     await this.painted();
     const start = performance.now();
-    await actions?.();
+    this.cur = { id, start };
+    try {
+      await actions?.();
+    } finally {
+      this.cur = null;
+    }
     const left = start + STEPS[id].t * 1000 + 160 - performance.now();
     if (left > 0) await page.waitForTimeout(left);
     await removeOverlay(page, 'mx-mark');
@@ -518,7 +632,9 @@ async function readmeShot(rec, name, file, prep) {
 async function journey(rec, ctx) {
   const page = rec.page;
   const video = rec.video;
-  const pause = (ms) => (video ? page.waitForTimeout(ms) : Promise.resolve());
+  const pause = (ms) => (video ? rec.pause(ms) : Promise.resolve());
+  // With --narration: wait for a word of the step's line before the next action (no-op otherwise).
+  const cue = (on, lead) => rec.cue(on, lead);
 
   // Land on the site so the page has the brand fonts and CSS tokens; overlays sit above it.
   await go(page, '/', page.getByRole('heading', { level: 1 }).first());
@@ -558,8 +674,10 @@ async function journey(rec, ctx) {
     await pause(600);
     await smoothInto(sample, 'center');
     await pause(250);
+    await cue('penicillin');
     await sample.click();
     await pause(200);
+    await cue('checks');
     await smoothInto(input, 'start');
     await pause(900);
   });
@@ -592,6 +710,7 @@ async function journey(rec, ctx) {
   await rowInList(row, 8);
   await rec.seg('queue', async () => {
     await pause(400);
+    await cue('lands');
     await row.hover();
     await rec.spot(row, 6);
     await pause(800);
@@ -612,6 +731,7 @@ async function journey(rec, ctx) {
   if (sheetBox) STEPS.signin.cap = Math.round(H - sheetBox.y + 12);
   await rec.seg('signin', async () => {
     await pause(400);
+    await cue('signs');
     await rec.spot(pick, 4);
     await pause(500);
     await rec.unspot(); // the page column re-mounts (with its fade) once a name is chosen; no ring over it
@@ -621,6 +741,7 @@ async function journey(rec, ctx) {
     await page.evaluate(() => { const c = document.getElementById('mx-cap'); if (c) { c.style.transition = 'bottom .38s cubic-bezier(.22,1,.36,1)'; c.style.bottom = '14px'; } });
     // The account menu now names the synthetic demo identity.
     await pause(200);
+    await cue('every');
     await accountBtn.click();
     await page.getByRole('menu').waitFor({ timeout: 5000 });
     await pause(1100);
@@ -652,16 +773,42 @@ async function journey(rec, ctx) {
   }
   await rec.seg('evidence', async () => {
     await pause(400);
+    await cue('links');
     await allergyRow.click();
     await pause(1800);
     if (!video) {
       await sleep(500);
       await readmeShot(rec, 's-nurse', 's-nurse.png', async () => { await instantInto(allergyRow, 'center'); await allergyRow.click(); });
     }
+    await cue('approves');
     await approveAll.click();
     await page.locator('[data-receipt="approved"]').waitFor({ timeout: 30000 });
     await pause(700);
   });
+
+  // 3b. Narrated cut only: the seeded Thai visit MED-01 (seed.ts; stable id from pipeline.ts demoSessionId) in the same
+  //     nurse view. Its fields sit beside the patient's own Thai words; read only, nothing on that case changes.
+  if (video && STEPS.thai) {
+    const h = createHash('sha256').update('medx-demo:MED-01').digest('hex');
+    const thId = `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
+    const ccRow = page.locator('[data-field-key="chief_complaint"]');
+    await go(page, `/review/${thId}`, ccRow);
+    // The Thai turn's quote-to-field list ("ไอ" -> Chief complaint: cough, ...).
+    const quoteList = page.locator('#transcript ul').filter({ hasText: /Chief complaint/ }).first();
+    await quoteList.waitFor({ timeout: 30000 });
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await sleep(500);
+    await rec.seg('thai', async () => {
+      await pause(300);
+      await cue('words');
+      await ccRow.click(); // highlights its Thai quote in the patient's words
+      await pause(400);
+      await cue('quote');
+      await rec.spot(quoteList, 6);
+      await pause(1600);
+    });
+    await rec.unspot();
+  }
 
   // 4. Vitals and the NEWS2-based suggestion, confirmed by the nurse
   const hr = page.locator('input[name="heartRate"]');
@@ -671,10 +818,12 @@ async function journey(rec, ctx) {
   const vitalsIn = [['heartRate', V.heartRate], ['systolicBP', V.systolicBP], ['diastolicBP', V.diastolicBP], ['respRate', V.respRate], ['tempC', V.tempC], ['spo2', V.spo2], ['painScore', V.painScore]];
   const suggestion = page.getByRole('heading', { name: /Suggested triage level/ });
   await rec.seg('vitals', async () => {
+    await cue('records');
     for (const [k, v] of vitalsIn) { await page.locator(`input[name="${k}"]`).fill(String(v)); await pause(100); }
     await page.locator('input[name="onOxygen"][value="no"]').check();
     await page.locator('label').filter({ hasText: /^Alert$/ }).click();
     await pause(150);
+    await cue('suggests', 0.7); // the suggestion card renders after the save round trip
     await page.getByRole('button', { name: 'Save vitals' }).click();
     await suggestion.waitFor({ timeout: 30000 });
     const card = suggestion.locator('xpath=ancestor::*[contains(@class,"rounded")][1]');
@@ -683,6 +832,7 @@ async function journey(rec, ctx) {
     await pause(1200);
     await rec.unspot();
     if (video) await clearOfCaption(page, page.getByRole('button', { name: /Confirm level/ }), 'vitals');
+    await cue('confirms');
     await page.getByRole('button', { name: /Confirm level/ }).click();
     await page.getByRole('button', { name: 'Ready for doctor' }).waitFor({ timeout: 30000 });
     await pause(400);
@@ -706,8 +856,10 @@ async function journey(rec, ctx) {
   await sleep(300);
   await rec.seg('consider', async () => {
     await pause(500);
+    await cue('considerations');
     await rec.spot(consCard, 4);
     await pause(450);
+    await cue('keeps');
     await keep.click();
     await consCard.getByRole('button', { name: 'Kept in note' }).first().waitFor({ timeout: 20000 });
     await pause(800);
@@ -743,6 +895,7 @@ async function journey(rec, ctx) {
   await settleAt((await receipt.count()) ? receipt : signedHead, 14, 4);
   await rec.seg('signed', async () => {
     await pause(600);
+    await cue('signs');
     if (await receipt.count()) await rec.spot(receipt, 4);
     await pause(1200);
   });
@@ -768,8 +921,10 @@ async function journey(rec, ctx) {
   const alertTitle = page.getByText('Allergy conflict').first();
   await rec.seg('order', async () => {
     await pause(300);
+    await cue('orders');
     await fillRx(rx);
     if (!video) return;
+    await cue('check', 0.35);
     await page.getByRole('button', { name: 'Check', exact: true }).click();
     await alertTitle.waitFor({ timeout: 30000 });
     await pause(500);
@@ -810,16 +965,19 @@ async function journey(rec, ctx) {
   await sleep(300);
   await rec.seg('ret', async () => {
     await pause(600);
+    await cue('returns');
     await returnBtn.click();
     const note = page.getByLabel(/Note to the prescriber/);
     await note.waitFor({ timeout: 10000 });
     await note.fill(GOLD.pharmacist1.returnNote);
     const suggest = page.locator('form').getByLabel(new RegExp(`^${GOLD.pharmacist1.suggestedGenerics[0]}`)).first();
     await smoothInto(suggest, 'center');
+    await cue('suggesting');
     for (const g of GOLD.pharmacist1.suggestedGenerics) await page.locator('form').getByLabel(new RegExp(`^${g}`)).first().check();
     await pause(350);
     if (!video) return;
     await clearOfCaption(page, page.getByRole('button', { name: 'Return with report' }), 'ret');
+    await cue('review');
     await page.getByRole('button', { name: 'Return with report' }).click();
     await page.getByRole('button', { name: 'Return with report' }).waitFor({ state: 'detached', timeout: 30000 });
     await pause(250);
@@ -850,6 +1008,7 @@ async function journey(rec, ctx) {
     if (await report.count()) await rec.spot(report.locator('xpath=ancestor::section[1]'), 4);
     await pause(500);
     await rec.unspot();
+    await cue('changes');
     await useAlt.click();
     const update = page.getByRole('button', { name: 'Update and re-check' });
     await update.waitFor();
@@ -857,6 +1016,7 @@ async function journey(rec, ctx) {
     // Keep the button above the caption bar (measured after filling: the "Option under review" box renders late and
     // pushes the form down).
     if (video) await clearOfCaption(page, update, 'resubmit');
+    await cue('resubmits');
     await update.click();
     const submit = page.getByRole('button', { name: 'Submit to pharmacy' });
     await submit.waitFor({ timeout: 30000 });
@@ -875,6 +1035,7 @@ async function journey(rec, ctx) {
   const verified = page.getByText('Order verified').first();
   await rec.seg('verify', async () => {
     await pause(500);
+    await cue('verifies');
     await verifyBtn.click();
     await verified.waitFor({ timeout: 30000 });
     // Bring the verified receipt and the stage-2 block above the caption bar.
@@ -893,9 +1054,11 @@ async function journey(rec, ctx) {
   const fieldset = page.locator('fieldset').filter({ hasText: 'Six-item final check' }).first();
   await rec.seg('block', async () => {
     await pause(250);
+    await cue('whoever');
     await rec.spot(block.locator('xpath=ancestor::*[@role="status"][1]'), 4);
     await pause(1100);
     await rec.unspot();
+    await cue('second');
     await switchBtn.click();
     await fieldset.waitFor({ timeout: 20000 });
     await pause(500);
@@ -910,11 +1073,13 @@ async function journey(rec, ctx) {
   const dispensed = page.getByText(new RegExp(`^Dispensed by ${STAFF.p2}`)).first();
   await rec.seg('dispense', async () => {
     await pause(250);
+    await cue('ticks');
     const n = await boxes.count();
     for (let i = 0; i < n; i++) { await boxes.nth(i).check(); await pause(130); }
     await pause(200);
     if (!video) return;
     await clearOfCaption(page, page.getByRole('button', { name: 'Record final check and dispense' }), 'dispense');
+    await cue('dispensing');
     await page.getByRole('button', { name: 'Record final check and dispense' }).click();
     await page.getByRole('button', { name: 'Record final check and dispense' }).waitFor({ state: 'detached', timeout: 30000 });
     // Show the dispense receipt (the page reflows once the check is recorded).
@@ -936,6 +1101,7 @@ async function journey(rec, ctx) {
   const counter = `Counter ${GOLD.pharmacist2.counter}`;
   await rec.seg('call', async () => {
     await pause(300);
+    await cue('call', 0.5);
     await page.getByRole('radio', { name: counter }).or(page.getByRole('button', { name: counter, exact: true })).first().click();
     await pause(250);
     await callBtn.click();
@@ -970,6 +1136,7 @@ async function journey(rec, ctx) {
   await sleep(600);
   await rec.seg('ops', async () => {
     await pause(600);
+    await cue('each');
     await smoothInto(flow, 'start');
     await page.evaluate(() => window.scrollBy({ top: -20, behavior: 'instant' }));
     await pause(800);
@@ -999,6 +1166,14 @@ async function journey(rec, ctx) {
   await sleep(800);
   await rec.seg('trace', async () => {
     await pause(600);
+    if (NARR) {
+      // The line names the red-flag rules: ring that node while it is said, then let go before the scroll.
+      await cue('red-flag', 0.3);
+      const rf = page.locator('button[data-node]').filter({ has: page.getByText('Red-flag rules', { exact: true }) }).first();
+      if (await rf.count()) await rec.spot(rf, 6);
+      await cue('then', 0.5);
+      await rec.unspot();
+    }
     // Scroll the graph horizontally to show the later human and pharmacy steps.
     await page.evaluate(() => {
       const el = [...document.querySelectorAll('*')].find((n) => n.scrollWidth > n.clientWidth + 40 && getComputedStyle(n).overflowX !== 'visible' && n.clientHeight > 100);
@@ -1073,14 +1248,15 @@ function assemble(rec, raw) {
     const from = runs[i].from + 1; // skip the first marked frame (paint settles)
     const frames = runs[i].frames - 1;
     const real = frames / FPS;
-    const speed = real > budget + 0.3 ? Math.min(MAX_SPEED, real / budget) : 1;
+    // With narration a short overrun loses its tail instead of being sped up, so the step keeps time with its line.
+    const speed = real > budget + (NARR ? MAX_OVERRUN : 0.3) ? Math.min(MAX_SPEED, real / budget) : 1;
     if (real / budget > MAX_SPEED + 0.01) log(`warning: step ${s.id} ran ${(real / budget).toFixed(2)}x its budget; capped at ${MAX_SPEED}x`);
     const useFrames = Math.min(frames, Math.round(budget * speed * FPS));
     const out = useFrames / FPS / speed;
     const pad = Math.max(0, budget - out); // a step that came out short holds its last frame
     return { id: s.id, from, useFrames, speed, pad, out: out + pad, real };
   });
-  fs.writeFileSync(path.join(WORK, 'timeline.json'), JSON.stringify({ raw, runs, segs: rec.segs, parts }, null, 1));
+  fs.writeFileSync(path.join(WORK, 'timeline.json'), JSON.stringify({ raw, runs, segs: rec.segs, parts, cueLog: rec.cueLog }, null, 1));
   // Normalise to constant FPS first, so frame numbers match the marker track exactly.
   let filter = `[0:v]fps=${FPS},split=${parts.length}${parts.map((_, i) => `[r${i}]`).join('')};`;
   parts.forEach((p, i) => {
@@ -1103,44 +1279,217 @@ function assemble(rec, raw) {
   filter += `[vx]delogo=x=${MARK_BOX.x - 3}:y=${MARK_BOX.y - 3}:w=${MARK_BOX.size + 6}:h=${MARK_BOX.size + 6}[vout]`;
   const total = acc;
   log(`assembled length ${total.toFixed(2)} s from ${parts.length} steps`);
-  if (total < 55 || total > 65) throw new Error(`Video would be ${total.toFixed(2)} s; adjust STEPS budgets (55..65 s required)`);
+  const [lo, hi] = lengthWindow();
+  if (total < lo || total > hi) throw new Error(`Video would be ${total.toFixed(2)} s; adjust STEPS budgets (${lo.toFixed(2)}..${hi.toFixed(2)} s required)`);
 
   ensureDir(OUT_MEDIA);
-  const mp4 = path.join(OUT_MEDIA, 'medx-demo.mp4');
+  const mp4 = path.join(OUT_MEDIA, `${NAME}.mp4`);
+  const title = NARR ? 'MedX walkthrough, narrated (synthetic demo)' : 'MedX in 60 seconds (synthetic demo)';
+  const silent = NARR ? path.join(WORK, 'video-silent.mp4') : mp4;
   const filterFile = path.join(WORK, 'filter.txt');
   fs.writeFileSync(filterFile, filter);
   ff(['-i', raw, '-filter_complex_script', filterFile, '-map', '[vout]', '-an', '-c:v', 'libx264', '-preset', 'slow', '-crf', String(CRF), '-pix_fmt', 'yuv420p',
-    '-profile:v', 'high', '-tune', 'stillimage', '-r', String(FPS), '-movflags', '+faststart', '-metadata', 'title=MedX in 60 seconds (synthetic demo)', mp4]);
+    '-profile:v', 'high', '-tune', 'stillimage', '-r', String(FPS), '-movflags', '+faststart', '-metadata', `title=${title}`, silent]);
+  const audio = NARR ? narrationTrack(cues, total, silent, mp4, title) : null;
 
   // Poster: a real frame of the video (the title card, after its entrance settles).
-  const poster = path.join(OUT_MEDIA, 'medx-demo-poster.jpg');
+  const poster = path.join(OUT_MEDIA, `${NAME}-poster.jpg`);
   ff(['-ss', '2.2', '-i', mp4, '-frames:v', '1', '-q:v', '3', poster]);
 
-  // Captions (WebVTT), one cue per step with its real timing in the finished video.
-  const vtt = ['WEBVTT', '', 'NOTE MedX in 60 seconds. Synthetic data only. Generated by scripts/record-demo.mjs.', ''];
-  const fmt = (t) => {
-    const ms = Math.max(0, Math.round(t * 1000));
-    const h = Math.floor(ms / 3600000); const m = Math.floor(ms / 60000) % 60; const s = Math.floor(ms / 1000) % 60;
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`;
-  };
+  // Captions (WebVTT), one cue per step with its real timing in the finished video (with narration: the narration
+  // text, one cue per sentence, at the times it is spoken).
+  const vtt = ['WEBVTT', '', `NOTE ${NARR ? 'MedX walkthrough, narrated' : 'MedX in 60 seconds'}. Synthetic data only. Generated by scripts/record-demo.mjs.`, ''];
   const cueText = {
     title: 'MedX. Every word, understood. Multilingual pre-visit intake; Fin listens while nurses, doctors and pharmacists decide.',
     closing: 'Research prototype. Synthetic data. Clinicians decide. MedX supports clinicians; it does not diagnose, prescribe or decide urgency. Not a medical device.',
   };
-  cues.forEach((c, i) => {
+  const stepCue = (c, i) => {
     const begin = i === 0 ? 0 : c.start + FADE / 2;
     const end = i + 1 < cues.length ? cues[i + 1].start + FADE / 2 : total;
     const s = STEPS[c.id];
-    vtt.push(String(i + 1), `${fmt(begin)} --> ${fmt(end)}`, cueText[c.id] || `${s.who}: ${s.text}.`, '');
-  });
-  fs.writeFileSync(path.join(OUT_MEDIA, 'medx-demo.en.vtt'), vtt.join('\n'));
+    return { id: c.id, begin, end, text: cueText[c.id] || `${s.who}: ${s.text}.` };
+  };
+  const vttCues = NARR ? narrationCaptions(cues, total, stepCue) : cues.map(stepCue);
+  vttCues.forEach((c, i) => vtt.push(String(i + 1), `${vttTime(c.begin)} --> ${vttTime(c.end)} ${cueSettings(c.id)}`, c.text, ''));
+  fs.writeFileSync(path.join(OUT_MEDIA, `${NAME}.en.vtt`), vtt.join('\n'));
 
   const dur = mediaDuration(mp4);
   const size = fs.statSync(mp4).size;
   const probe = String(ff(['-i', mp4], { allowFail: true }).stderr);
-  const vline = (probe.match(/Stream #0:0.*Video: .*/) || [''])[0].trim();
+  const vline = (probe.match(/Stream #0:\d.*Video: .*/) || [''])[0].trim();
+  const aline = (probe.match(/Stream #0:\d.*Audio: .*/) || [''])[0].trim();
   const faststart = (() => { const b = fs.readFileSync(mp4); return b.indexOf('moov') < b.indexOf('mdat'); })();
-  return { mp4, poster, duration: dur, bytes: size, stream: vline, faststart, parts, cues, total };
+  return { mp4, poster, duration: dur, bytes: size, stream: vline, audioStream: aline || null, faststart, parts, cues, total, audio, captions: vttCues.length };
+}
+
+/**
+ * WebVTT cue settings that keep a caption cue above step `id`'s burned-in caption bar (Recorder.caption: about 44 px
+ * tall, `cap` px above the bottom edge; 14 px by default). Without them a player draws the cue at the bottom, right on
+ * the bar, whenever its controls are hidden, and neither can be read. `line:<p>%` puts the cue box's TOP edge at p% of
+ * the frame height (line alignment "start": Chromium ignores an ",end" alignment, so none is used). The box is one
+ * caption line, about 44 px at 720p in Chromium/Edge (measured), and splitCaption keeps cues to one line; 10 px of air
+ * stays above the bar. The bar-less title and closing cards use the default bar position.
+ */
+const CUE_BOX = 46;
+function cueSettings(id) {
+  const cap = STEPS[id]?.cap ?? 14;
+  const top = H - cap - 44 - 10 - CUE_BOX;
+  return `line:${(Math.floor((top / H) * 1000) / 10).toFixed(1)}% align:center`;
+}
+
+const vttTime = (t) => {
+  const ms = Math.max(0, Math.round(t * 1000));
+  const h = Math.floor(ms / 3600000); const m = Math.floor(ms / 60000) % 60; const s = Math.floor(ms / 1000) % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms % 1000).padStart(3, '0')}`;
+};
+
+// ---------- Narration track ----------
+/** Where each narrated step's line plays in the finished cut: its step's start (from the cross-fade chain) + lead. */
+function narrationPlacements(cues) {
+  return cues.filter((c) => NARR.lines[c.id]).map((c) => {
+    const l = NARR.lines[c.id];
+    return { id: c.id, wav: l.wav, sec: l.sec, at: c.start + narrLead(c.id) };
+  });
+}
+
+/** Integrated loudness, loudness range and true peak of a file's first audio stream (ffmpeg ebur128, BS.1770). */
+function loudness(file) {
+  const r = ff(['-nostats', '-i', file, '-map', '0:a:0', '-af', 'ebur128=peak=true', '-f', 'null', '-']);
+  const s = String(r.stderr);
+  const sum = s.slice(s.lastIndexOf('Summary:'));
+  const num = (re) => { const m = sum.match(re); return m ? (m[1] === '-inf' ? -Infinity : Number(m[1])) : NaN; };
+  return { lufs: num(/I:\s+(-?[\d.]+|-inf) LUFS/), lra: num(/LRA:\s+(-?[\d.]+) LU/), truePeakDbtp: num(/Peak:\s+(-?[\d.]+|-inf) dBFS/) };
+}
+
+/**
+ * Builds the narration track and muxes it with the silent cut: every line at its step's start, an optional bed
+ * (looped if short, faded in and out) levelled so it sits at --bed-lufs in the finished mix, the sum brought to
+ * TARGET_LUFS with a true-peak limiter (4x oversampled) at LIMIT_DBTP, then AAC 192 kb/s. The encoded file is
+ * measured again and must stay below -1 dBTP.
+ */
+function narrationTrack(cues, total, silent, mp4, title) {
+  const place = narrationPlacements(cues);
+  for (let k = 0; k < place.length; k++) {
+    const p = place[k];
+    const next = k + 1 < place.length ? place[k + 1].at : total;
+    if (p.at + p.sec > next + 0.005) throw new Error(`narration: the ${p.id} line (${p.sec.toFixed(2)} s at ${p.at.toFixed(2)} s) runs into the next line or the end`);
+  }
+  const D = total.toFixed(3);
+  const inputs = [];
+  let fc = '';
+  place.forEach((p, k) => {
+    inputs.push('-i', p.wav);
+    fc += `[${k}:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=mono,adelay=delays=${Math.round(p.at * 48000)}S:all=1[v${k}];`;
+  });
+  fc += `${place.map((_, k) => `[v${k}]`).join('')}amix=inputs=${place.length}:normalize=0:dropout_transition=0:duration=longest,apad=whole_dur=${D},atrim=0:${D},pan=stereo|c0=c0|c1=c0[voice]`;
+  const fcFile = path.join(WORK, 'audio-filter.txt');
+  fs.writeFileSync(fcFile, fc);
+  const voice = path.join(WORK, 'narration-voice.wav');
+  ff([...inputs, '-filter_complex_script', fcFile, '-map', '[voice]', '-c:a', 'pcm_f32le', '-ar', '48000', voice]);
+  const voiceOnly = loudness(voice);
+  const mix = path.join(WORK, 'narration-mix.wav');
+  let bed = null;
+  if (BED) {
+    if (!fs.existsSync(BED)) throw new Error(`--bed ${BED} not found`);
+    const own = loudness(BED).lufs;
+    // The master gain the voice will need is known now, so the bed lands at BED_LUFS in the finished mix.
+    const gain = BED_LUFS - (TARGET_LUFS - voiceOnly.lufs) - own;
+    const fadeOut = Math.min(3, total / 4);
+    const fcBed = `[1:a]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,atrim=0:${D},asetpts=PTS-STARTPTS,volume=${gain.toFixed(2)}dB,`
+      + `afade=t=in:st=0:d=1.5,afade=t=out:st=${(total - fadeOut).toFixed(3)}:d=${fadeOut.toFixed(3)}[bed];[0:a][bed]amix=inputs=2:normalize=0:duration=first[mix]`;
+    ff(['-i', voice, '-stream_loop', '-1', '-i', BED, '-filter_complex', fcBed, '-map', '[mix]', '-c:a', 'pcm_f32le', '-ar', '48000', mix]);
+    bed = { file: BED, ownLufs: own, gainDb: Number(gain.toFixed(2)), targetLufsInMix: BED_LUFS };
+  } else fs.copyFileSync(voice, mix);
+  const pre = loudness(mix);
+  const master = path.join(WORK, 'narration-master.wav');
+  let gain = TARGET_LUFS - pre.lufs;
+  let ceiling = LIMIT_DBTP;
+  let final;
+  for (let pass = 1; pass <= 4; pass++) {
+    const lim = Math.pow(10, ceiling / 20).toFixed(4);
+    ff(['-i', mix, '-af', `volume=${gain.toFixed(2)}dB,aresample=192000,alimiter=limit=${lim}:attack=5:release=80:level=0:latency=1,aresample=48000`, '-c:a', 'pcm_f32le', master]);
+    ff(['-i', silent, '-i', master, '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+      '-movflags', '+faststart', '-metadata', `title=${title}`, mp4]);
+    final = loudness(mp4);
+    log(`audio pass ${pass}: gain ${gain.toFixed(2)} dB, ceiling ${ceiling} dB -> ${final.lufs} LUFS, true peak ${final.truePeakDbtp} dBTP (AAC)`);
+    const okPeak = final.truePeakDbtp < -1.0;
+    const okLufs = Math.abs(final.lufs - TARGET_LUFS) <= 0.3;
+    if (okPeak && okLufs) break;
+    if (!okLufs) gain += TARGET_LUFS - final.lufs;
+    if (!okPeak) ceiling -= 0.5;
+    if (pass === 4) throw new Error(`narration master missed its target: ${final.lufs} LUFS, ${final.truePeakDbtp} dBTP`);
+  }
+  // The bed's level in the finished mix: its own loudness + its gain + the master gain (the limiter only touches voice peaks).
+  if (bed) bed.inMixLufs = Number((bed.ownLufs + bed.gainDb + gain).toFixed(1));
+  fs.writeFileSync(path.join(WORK, 'narration.json'), JSON.stringify({ place, bed, voiceOnly, pre, final }, null, 1));
+  return { lines: place.map((p) => ({ id: p.id, at: Number(p.at.toFixed(3)), sec: Number(p.sec.toFixed(3)), end: Number((p.at + p.sec).toFixed(3)) })), bed, premaster: pre, final, gainDb: Number(gain.toFixed(2)), ceilingDb: ceiling };
+}
+
+/**
+ * Narration captions: each line split into sentences (merged up to about two caption lines), each cue starting
+ * when its first word is spoken (from the line's word timings when there are any, else by character share) and
+ * ending when the next one starts or shortly after the line ends.
+ */
+function narrationCaptions(cues, total, stepCue) {
+  const place = Object.fromEntries(narrationPlacements(cues).map((p) => [p.id, p]));
+  const norm = (w) => String(w).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]/g, '');
+  const out = [];
+  cues.forEach((c, i) => {
+    const l = NARR.lines[c.id];
+    if (!l) { out.push(stepCue(c, i)); return; }
+    const p = place[c.id];
+    const nextAt = i + 1 < cues.length ? (place[cues[i + 1].id]?.at ?? cues[i + 1].start + FADE / 2) : total;
+    const chunks = splitCaption(l.text);
+    const words = l.text.split(/\s+/).filter(Boolean);
+    const asr = l.words;
+    let w = 0;
+    let chars = 0;
+    const starts = chunks.map((text, k) => {
+      const w0 = w;
+      const c0 = chars;
+      w += text.split(/\s+/).filter(Boolean).length;
+      chars += text.length + 1;
+      if (k === 0) return 0;
+      if (!asr.length) return (c0 / l.text.length) * l.sec;
+      // The ASR word at the same share of the line, moved to the nearest word that matches the chunk's first word.
+      const guess = Math.min(asr.length - 1, Math.round((w0 * asr.length) / words.length));
+      const first = norm(words[w0]);
+      let best = guess;
+      for (let d = 0; d <= 3; d++) {
+        if (asr[guess - d] && norm(asr[guess - d].w) === first) { best = guess - d; break; }
+        if (asr[guess + d] && norm(asr[guess + d].w) === first) { best = guess + d; break; }
+      }
+      return Math.max(0, Math.min(l.sec - 0.3, asr[best].s));
+    });
+    chunks.forEach((text, k) => {
+      const begin = p.at + starts[k];
+      const end = k + 1 < chunks.length ? p.at + starts[k + 1] : Math.min(p.at + l.sec + 0.4, nextAt - 0.05, total);
+      out.push({ id: c.id, begin, end, text });
+    });
+  });
+  return out;
+}
+/**
+ * Splits a narration line into caption cues: whole sentences, merged while they fit `max` characters. 64 characters
+ * stay on one caption line at 16:9 in Chromium/Edge (about 16 px per character at 720p), which cueSettings relies on.
+ */
+function splitCaption(text, max = 64) {
+  const sentences = (text.match(/[^.!?]+(?:[.!?]+["”’)]*)?(?:\s+|$)/g) || [text]).map((s) => s.trim()).filter(Boolean);
+  const merged = [];
+  for (const s of sentences) {
+    const last = merged[merged.length - 1];
+    if (last && last.length + 1 + s.length <= max) merged[merged.length - 1] = `${last} ${s}`;
+    else merged.push(s);
+  }
+  // A sentence still too long splits at the comma, semicolon or colon nearest its middle, again while a part is too long.
+  const split = (s) => {
+    if (s.length <= max) return [s];
+    const marks = [...s.matchAll(/[,;:] /g)].map((m) => m.index + 1);
+    if (!marks.length) return [s];
+    const cut = marks.reduce((a, b) => (Math.abs(b - s.length / 2) < Math.abs(a - s.length / 2) ? b : a));
+    return [...split(s.slice(0, cut).trim()), ...split(s.slice(cut).trim())];
+  };
+  return merged.flatMap(split);
 }
 
 // ---------- Stills post-processing ----------
@@ -1278,7 +1627,7 @@ async function run(mode, opts = {}) {
     // report it so main() can record another take instead of assembling this one.
     const overruns = rec.segs.map((s) => ({ id: s.id, over: (s.end - s.start) / 1000 - STEPS[s.id].t - 0.16 })).filter((o) => o.over > MAX_OVERRUN);
     if (overruns.length && opts.allowRetry) return { ...result, overruns };
-    return { ...result, overruns, ...assemble(rec, raw) };
+    return { ...result, overruns, cueLog: rec.cueLog, ...assemble(rec, raw) };
   }
   const stills = writeStills();
   stills.push(await renderJourney(browser));
@@ -1288,6 +1637,11 @@ async function run(mode, opts = {}) {
 
 async function main() {
   const report = {};
+  if (NARR) {
+    if (!DO_VIDEO) throw new Error('--narration needs --video');
+    const [lo, hi] = lengthWindow();
+    log(`narration ${NARR.file}: ${Object.keys(NARR.lines).length} lines; planned length ${((lo + hi) / 2).toFixed(2)} s; bed ${BED || 'none'}`);
+  }
   if (args['journey-only']) {
     const { chromium } = loadPlaywright();
     const browser = await chromium.launch();
@@ -1305,8 +1659,11 @@ async function main() {
     if (v.overruns.length) log(`warning: final take still over budget: ${v.overruns.map((o) => o.id).join(', ')}`);
     const mb = v.bytes / 1e6;
     report.video = { file: path.relative(ROOT, v.mp4), duration: Number(v.duration.toFixed(2)), mb: Number(mb.toFixed(2)), stream: v.stream, faststart: v.faststart, code: v.code, steps: v.parts.map((p) => ({ id: p.id, seconds: Number(p.out.toFixed(2)), speed: Number(p.speed.toFixed(2)) })) };
-    if (!(v.duration >= 55 && v.duration <= 65)) throw new Error(`duration ${v.duration} s outside 55..65 s`);
-    if (mb > MAX_MB) throw new Error(`video is ${mb.toFixed(2)} MB (> ${MAX_MB} MB)`);
+    if (NARR) Object.assign(report.video, { file: v.mp4, audioStream: v.audioStream, audio: v.audio, captions: v.captions, cueLog: v.cueLog, starts: v.cues.map((c) => ({ id: c.id, at: Number(c.start.toFixed(3)) })) });
+    const [lo, hi] = lengthWindow();
+    if (!(v.duration >= lo && v.duration <= hi)) throw new Error(`duration ${v.duration} s outside ${lo.toFixed(2)}..${hi.toFixed(2)} s`);
+    const maxMb = NARR ? NARR_MAX_MB : MAX_MB;
+    if (mb > maxMb) throw new Error(`video is ${mb.toFixed(2)} MB (> ${maxMb} MB)`);
   }
   if (DO_STILLS) {
     const s = await run('stills');

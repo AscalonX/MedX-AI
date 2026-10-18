@@ -66,7 +66,9 @@ export async function chatJSON(req: ChatRequest): Promise<ChatResult> {
     try { const data = mockJSON(req); const call = makeCall(true, performance.now() - started); req.onCall?.(call); return { data, raw: data, call }; }
     catch { const call = makeCall(false, performance.now() - started, 'Mock generation failed'); req.onCall?.(call); return { data: null, call, failure: 'provider_error' }; }
   }
-  const timeout = req.timeoutMs ?? (Number(process.env.LLM_TIMEOUT_MS) > 0 ? Number(process.env.LLM_TIMEOUT_MS) : req.step === 'next_question' ? 8000 : 25000);
+  // Per-step defaults measured on Gemma-4-31B-IT via Token Factory (screen ~2 s, extraction ~20 s, next question ~7 s);
+  // the turn deadline (TURN_TIMEOUT_MS, 52 s) caps the sum inside the routes' 60 s maxDuration. A timeout abstains, never guesses.
+  const timeout = req.timeoutMs ?? (Number(process.env.LLM_TIMEOUT_MS) > 0 ? Number(process.env.LLM_TIMEOUT_MS) : req.step === 'next_question' ? 11000 : req.step === 'red_flags' ? 15000 : 40000);
   const controller = new AbortController();
   const abort = () => controller.abort();
   req.signal?.addEventListener('abort', abort, { once: true });
@@ -95,7 +97,7 @@ export async function chatJSON(req: ChatRequest): Promise<ChatResult> {
         const response = await fetch(`${process.env.AMD_BASE_URL.replace(/\/$/, '')}/chat/completions`, {
           method: 'POST', signal: controller.signal,
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.AMD_API_KEY}` },
-          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: consult ? 1200 : req.step === 'red_flags' ? 400 : req.step === 'next_question' ? 250 : 3000, ...(capability.format !== 'none' ? { response_format: format } : {}) }),
+          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: consult ? 1200 : req.step === 'red_flags' ? 400 : req.step === 'next_question' ? 250 : 1500, ...(capability.format !== 'none' ? { response_format: format } : {}) }),
         });
         if (!response.ok) {
           // Inspect gateway diagnostics only for compatibility; never persist response bodies.

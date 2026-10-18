@@ -15,18 +15,23 @@ export const LANDING_PATHS: Record<Lang, string> = { en: "/", th: "/th", it: "/i
 /** localStorage key every web surface reads for the UI language (clinician, pharmacy, ops). */
 export const LANG_STORAGE_KEY = "medx.lang";
 
-/** Fixed media paths (wave 20 FIXED PATHS). The screen-recorded product walkthrough. */
-export const VIDEO_PATH = "/media/medx-demo.mp4";
-export const VIDEO_POSTER_PATH = "/media/medx-demo-poster.jpg";
-/** WebVTT captions, used when one of these files exists next to the video. */
-export const VIDEO_TRACK_PATHS = ["/media/medx-demo.en.vtt", "/media/medx-demo.vtt"] as const;
 /**
- * The cinematic promo (owner request, wave 20): the primary "MedX in 60 seconds" video when it exists. Without it the
- * walkthrough above takes its place, and without either the section shows the poster-only state.
+ * Media paths. /media is cached for a year (next.config.ts), so every new cut ships under a new name; the earlier silent
+ * cuts (/media/medx-demo.mp4, /media/medx-promo.mp4) stay in place for the links that describe them.
+ * The screen-recorded product walkthrough, narrated in English (owner request, Sun 18 Oct; about 2 min 15 s).
  */
-export const PROMO_PATH = "/media/medx-promo.mp4";
+export const VIDEO_PATH = "/media/medx-demo-narrated.mp4";
+export const VIDEO_POSTER_PATH = "/media/medx-demo-narrated-poster.jpg";
+/** WebVTT captions of the narration, used when one of these files exists next to the video. */
+export const VIDEO_TRACK_PATHS = ["/media/medx-demo-narrated.en.vtt"] as const;
+/**
+ * The cinematic promo with the English voice-over (60 s): the primary "MedX in 60 seconds" video when it exists.
+ * Without it the walkthrough above takes its place, and without either the section shows the poster-only state.
+ * The poster is the same picture as the silent promo's.
+ */
+export const PROMO_PATH = "/media/medx-promo-vo.mp4";
 export const PROMO_POSTER_PATH = "/media/medx-promo-poster.jpg";
-export const PROMO_TRACK_PATHS = ["/media/medx-promo.en.vtt", "/media/medx-promo.vtt"] as const;
+export const PROMO_TRACK_PATHS = ["/media/medx-promo-vo.en.vtt"] as const;
 
 /** Fill "{name}" placeholders. Unknown names stay as written so a missing value is visible in review. */
 export function fill(template: string, vars: Record<string, string | number>): string {

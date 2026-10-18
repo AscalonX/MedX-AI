@@ -26,7 +26,8 @@ export function modelLabel(h: Health | null, t: HealthChipLabels): string {
   if (h.providerConfigured === false) return t.modelNotConfigured;
   if (!h.model) return t.modelUnknown;
   const hardware = h.hardware && h.hardware !== "—" ? h.hardware : h.provider;
-  return fill(t.modelLive, { model: h.model, hardware });
+  const extract = (h as { extractModel?: unknown }).extractModel;
+  return fill(t.modelLive, { model: typeof extract === "string" && extract ? `${h.model} + ${extract} (extraction)` : h.model, hardware });
 }
 
 /** Reads /api/health once (no polling) and shows the honest model label (DIRECTION.md 12.1). */
