@@ -9,7 +9,7 @@ import type { ModelClient } from './llm';
 import { nextQuestion } from './nextQuestion';
 import { refreshMedAlerts } from './medrules';
 import { checkRedFlags } from './redflags';
-import { redFlagScreen } from './redFlagScreen';
+import { redFlagScreen, redFlagScreen2, type ScreenedHit } from './redFlagScreen';
 import { redact, redactActor } from './redact';
 import { appendAudit, getAudit, getSession, getSessions, hasClientTurnId, saveSession, withSessionLock } from './store';
 import { words } from './verify';
@@ -128,13 +128,17 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
   }
   const answeredFields = (previous?.fields || []).filter(isPresent).flatMap(f => f.evidence.filter(e => quickAnswer(f.key, e.quote) && session.turns.some(t => t.id === e.turnId && t.role === 'patient' && t.text.trim() === e.quote)).map(e => ({ turnId: e.turnId, field: f.key })));
   const ctx: EngineContext = { askedField: previous?.nextQuestion?.field, answeredFields, client: opts.client, trace: opts.trace, deadline, modelCalls: summary.modelCalls, log: (event, detail) => { const safe = { ...detail }; delete safe.modelCalls; audit('summary_generated', { event, ...safe }); } };
-  const [extracted, modelFlags] = await Promise.all([extract(session, ctx), redFlagScreen(session, ctx)]);
+  // Bracket access: .env.example (not editable in this lane) must gain `# AMD_MODEL_SCREEN2=`; then switch to dot access so the w20 env-doc test covers it.
+  const screen2 = process.env['AMD_MODEL_SCREEN2']?.trim();
+  const [extracted, modelFlags, flags2] = await Promise.all([extract(session, ctx), redFlagScreen(session, ctx), screen2 ? redFlagScreen2(session, ctx, screen2) : []]);
   summary.fields = applyRequiredFields(preserveReviewed(previous?.fields || [], extracted.fields, audit));
   mergePharmacy(session, extracted.pharmacy || { medications: [], allergies: [], noKnownAllergiesEvidence: [] }, previous);
   // Redact model-proposed values too: an untrusted provider cannot reintroduce PII into storage.
   summary.fields = summary.fields.map(f => ({ ...f, value: f.value ? { th: redact(f.value.th).text, it: redact(f.value.it).text, en: redact(f.value.en).text } : null, valueOriginal: f.valueOriginal === null ? null : redact(f.valueOriginal).text }));
   addFlags(checkRedFlags(session.turns, summary.fields));
   addFlags(modelFlags);
+  // Add-only: a second-screen hit is appended, or merged into an existing same-rule hit as extra attribution. Nothing is removed.
+  for (const hit of flags2) { const same: ScreenedHit | undefined = summary.redFlags.find(f => f.ruleId === hit.ruleId); if (!same) summary.redFlags.push(hit); else if (same.source === 'model') same.models = [...new Set([...(same.models || []), ...(hit.models || [])])]; }
   if (summary.redFlags.length) return escalate();
   let reason = extracted.reason as IntakeSummary['abstainReason'];
   const supportedRequired = summary.fields.filter(f => f.required && f.status === 'supported');

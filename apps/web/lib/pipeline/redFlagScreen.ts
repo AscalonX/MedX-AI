@@ -13,8 +13,16 @@ const CATEGORY_RULE: Record<ScreenCategory, string> = {
   PREG: 'RF-PREG-01', HEAD: 'RF-HEAD-01', SEIZ: 'RF-SEIZ-01', MENING: 'RF-MENING-01',
   CONSC: 'RF-CONSC-01', SYNC: 'RF-SYNC-01', ABD: 'RF-ABD-01', 'FEVER-INF': 'RF-FEVER-INF-01',
 };
-export async function redFlagScreen(session: IntakeSession, ctx: EngineContext): Promise<RedFlagHit[]> {
-  const request: ChatRequest = { step: 'red_flags', system: SCREEN_SYSTEM, user: screenPrompt(session), schemaName: 'red_flag_screen', timeoutMs: 12000 };
+/** Second, independent, add-only screen (env AMD_MODEL_SCREEN2): same prompt, validation and quote verification, short timeout, no repair retry. */
+export const SCREEN2_TIMEOUT_MS = 6000;
+/** Model hit with optional attribution; `models` is set only when the second screen is on (shared RedFlagHit type unchanged; contract change requested in report). */
+export type ScreenedHit = RedFlagHit & { models?: string[] };
+export async function redFlagScreen2(session: IntakeSession, ctx: EngineContext, model: string): Promise<ScreenedHit[]> {
+  try { return await redFlagScreen(session, ctx, { model, timeoutMs: SCREEN2_TIMEOUT_MS }); } catch { return []; }
+}
+export async function redFlagScreen(session: IntakeSession, ctx: EngineContext, second?: { model: string; timeoutMs: number }): Promise<RedFlagHit[]> {
+  if (second) { const log = ctx.log; ctx = { ...ctx, log: log && ((event, detail) => log(event, { ...detail, screen: 'second', model: second.model })) }; }
+  const request: ChatRequest = { step: 'red_flags', system: SCREEN_SYSTEM, user: screenPrompt(session), schemaName: 'red_flag_screen', timeoutMs: second?.timeoutMs ?? 12000, ...(second ? { model: second.model } : {}) };
   let result = await invoke(request, ctx);
   // Shared Token Factory key: one capped retry on a 429 (token concurrency), only with time to spare in the turn.
   if (!result.call.ok && result.retryAfterMs !== undefined && result.retryAfterMs <= 2000 && ctx.deadline - Date.now() > 8000) {
@@ -26,7 +34,7 @@ export async function redFlagScreen(session: IntakeSession, ctx: EngineContext):
   let validation = validateScreen(result.data);
   if (!validation) {
     result.call.ok = false; result.call.error = 'Screen schema validation failed';
-    if (ctx.deadline - Date.now() < 4000) return unavailable();
+    if (second || ctx.deadline - Date.now() < 4000) return unavailable();
     result = await invoke({ ...request, repair: { raw: result.raw ?? result.data, errors: ['Expected only flags array, at most 3 items'] } }, ctx);
     if (!result.call.ok && result.failure !== 'schema_error') return unavailable();
     validation = validateScreen(result.data);
@@ -43,7 +51,7 @@ export async function redFlagScreen(session: IntakeSession, ctx: EngineContext):
     if (!verified) { log('screen_unverified', { category: flag.category, quoteLength: flag.quote.length }); continue; }
     if (verified.correctedTurn) ctx.log?.('screen_corrected_turn', { category: flag.category, from: flag.turn, to: verified.evidence.turnId });
     const rule = rules.rules.find(r => r.id === CATEGORY_RULE[flag.category])!;
-    if (!hits.some(h => h.ruleId === `MODEL-${flag.category}`)) hits.push({ ruleId: `MODEL-${flag.category}`, source: 'model', severity: rule.severity as RedFlagHit['severity'], label: rule.label, action: rule.action, patientMessage: rule.patientMessage, evidence: [verified.evidence] });
+    if (!hits.some(h => h.ruleId === `MODEL-${flag.category}`)) hits.push({ ruleId: `MODEL-${flag.category}`, source: 'model', severity: rule.severity as RedFlagHit['severity'], label: rule.label, action: rule.action, patientMessage: rule.patientMessage, evidence: [verified.evidence], ...(second ? { models: [second.model] } : {}) });
   }
   // A valid screen with discarded suggestions is available; record reasons without raw quotes.
   if (discarded.length) result.call.error = [...new Set(discarded)].join(', ');

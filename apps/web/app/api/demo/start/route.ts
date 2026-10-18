@@ -4,7 +4,7 @@ import { body, handle, keys } from '../../_http';
 export { OPTIONS } from '../../_http';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 180;
 /** One visitor's own synthetic golden case at the requested stage. 404 unless DEMO_SEED=1; 429 at the cap or the per-client limit. */
 export function POST(request: Request) {
   return handle(async () => {

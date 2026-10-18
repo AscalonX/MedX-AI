@@ -40,17 +40,14 @@ export function deriveTrace(session: IntakeSession, audit: AuditEvent[], consult
   turnStarts.forEach((start, n) => {
     const group = events.slice(start, turnStarts[n + 1] ?? events.length);
     const turn = group[0]; const pii = group.find(e => e.type === 'pii_redacted'); const flag = group.find(e => e.type === 'red_flag');
-    // A turn can log two summary events (the screen-completed marker first, then the summary): read the model calls
-    // from the one that carries them, or the trace wrongly reports "Rules only" / "No extraction call".
-    const summaries = group.filter(e => e.type === 'summary_generated');
-    const summaryEv = summaries.find(e => Array.isArray(e.payload.modelCalls)) || summaries[0]; const abst = group.find(e => e.type === 'abstained');
+    const summaryEv = group.find(e => e.type === 'summary_generated' && Array.isArray(e.payload.modelCalls)) || group.find(e => e.type === 'summary_generated'); const abst = group.find(e => e.type === 'abstained');
     const input = add('input', { at: turn.at, actor: 'human', detail: `Turn ${n + 1} (${String(turn.payload.inputMode || 'text')})`, ids: [turn], parents: [tail] });
     const spans = Array.isArray(pii?.payload.replaced) ? (pii!.payload.replaced as { type: string; count: number }[]) : [];
     const redact = add('redact', { at: (pii || turn).at, actor: 'rule', detail: spans.length ? spans.map(r => `${r.type} x${r.count}`).join(', ') + ' replaced' : 'No personal data found', ids: pii ? [pii] : [], parents: [input] });
     const ruleIds = strs(flag?.payload.ruleIds);
     const rules = add('red_flag_rules', { at: (flag || summaryEv || turn).at, actor: 'rule', status: flag ? 'escalated' : 'ok', detail: flag ? `Fired: ${ruleIds.join(', ')}` : 'No rule fired', ids: flag ? [flag] : [], evidence: flag ? redFlagEvidence(ruleIds) : [], parents: [redact] });
-    const calls = Array.isArray(summaryEv?.payload.modelCalls) ? (summaryEv!.payload.modelCalls as { step: string; ok: boolean; latencyMs: number }[]) : [];
-    const callInfo = (step: string) => { const c = calls.filter(x => x.step === step); return { n: c.length, failed: c.filter(x => !x.ok).length, ms: c.reduce((t, x) => t + num(x.latencyMs), 0) }; };
+    const calls = Array.isArray(summaryEv?.payload.modelCalls) ? (summaryEv!.payload.modelCalls as { step: string; ok: boolean; latencyMs: number; model?: string }[]) : [];
+    const callInfo = (step: string) => { const c = calls.filter(x => x.step === step); return { n: c.length, failed: c.filter(x => !x.ok).length, ms: c.reduce((t, x) => t + num(x.latencyMs), 0), models: [...new Set(c.map(x => String(x.model || '')).filter(Boolean))] }; };
     if (flag) {
       // Escalation stops the pipeline: model nodes are recorded as not run.
       const skipped = (['model_screen', 'extract', 'verify'] as const).map(k => add(k, { at: flag.at, actor: k === 'verify' ? 'rule' : 'model', status: 'skipped', detail: 'Skipped: escalated by red-flag rule', parents: [rules], edge: 'escalated' }));
@@ -58,7 +55,7 @@ export function deriveTrace(session: IntakeSession, audit: AuditEvent[], consult
       tail = lastOutput; escalatedBy = flag.id; return;
     }
     const screen = callInfo('red_flags'), ext = callInfo('extract');
-    const ms = add('model_screen', { at: (summaryEv || turn).at, actor: 'model', status: screen.failed ? 'failed' : 'ok', detail: screen.n ? `${screen.n} call(s), ${screen.failed} failed` : 'Rules only', latencyMs: screen.ms, parents: [rules] });
+    const ms = add('model_screen', { at: (summaryEv || turn).at, actor: 'model', status: screen.failed ? 'failed' : 'ok', detail: screen.n ? `${screen.n} call(s), ${screen.failed} failed${screen.models.length > 1 ? `; second screen: ${screen.models.slice(1).join(', ')}` : ''}` : 'Rules only', latencyMs: screen.ms, parents: [rules] });
     const ex = add('extract', { at: (summaryEv || turn).at, actor: 'model', status: ext.failed ? 'failed' : 'ok', detail: ext.n ? `${ext.n} call(s), ${ext.failed} failed` : 'No extraction call', latencyMs: ext.ms, parents: [rules] });
     const supported = num(summaryEv?.payload.supported), required = num(summaryEv?.payload.required);
     const verify = add('verify', { at: (summaryEv || turn).at, actor: 'rule', detail: `${supported} of ${required} required fields supported by patient quotes`, ids: summaryEv ? [summaryEv] : [], parents: [ms, ex] });
@@ -89,6 +86,18 @@ export function deriveTrace(session: IntakeSession, audit: AuditEvent[], consult
   let medNode: string | undefined;
   if ((s?.medications?.length || 0) + (s?.allergies?.length || 0) > 0 || alerts.length) {
     medNode = add('med_rules', { at: s!.generatedAt, actor: 'rule', detail: `${s?.medications?.length || 0} medicine(s), ${s?.allergies?.length || 0} allergy entr${(s?.allergies?.length || 0) === 1 ? 'y' : 'ies'}; alerts: ${[...new Set(alerts.map(a => a.ruleId))].join(', ') || 'none'}`, evidence: [...(s?.medications || []), ...(s?.allergies || [])].flatMap(e => e.evidence), parents: [root], edge: 'medications' });
+  }
+  // Medicine-pack photo: a model step that only SUGGESTS; the pharmacist's confirm/discard hangs off it. Counts only, no names.
+  const photoEv = of('med_photo_suggested'); const photoDecisions = of('med_photo_decision');
+  if (photoEv.length) {
+    const ok = photoEv.filter(e => e.payload.outcome === 'suggested'); const call = photoEv.at(-1)!.payload.modelCall as { latencyMs?: number } | undefined;
+    const n = ok.reduce((t, e) => t + (Array.isArray(e.payload.items) ? e.payload.items.length : 0), 0);
+    const photo = add('extract', { at: photoEv.at(-1)!.at, actor: 'model', status: ok.length === photoEv.length ? 'ok' : 'failed', ids: photoEv, latencyMs: num(call?.latencyMs), parents: [medNode || root], edge: 'photo',
+      label: { en: 'Medicine photo read (model, suggestion only)', it: 'Lettura foto farmaco (modello, solo suggerimento)', th: 'โมเดลอ่านรูปถ่ายยา (เสนอเท่านั้น)' },
+      detail: `${photoEv.length} photo(s), ${n} suggested medicine(s), ${photoEv.length - ok.length} needing human review` });
+    if (photoDecisions.length) add('pharmacist_action', { at: photoDecisions.at(-1)!.at, actor: 'human', ids: photoDecisions, parents: [photo], edge: 'confirm / discard',
+      label: { en: 'Pharmacist decided on photo suggestions', it: 'Il farmacista ha deciso sui suggerimenti della foto', th: 'เภสัชกรตัดสินใจกับรายการยาจากรูปถ่าย' },
+      detail: `${photoDecisions.filter(e => e.payload.action === 'confirm').length} confirmed, ${photoDecisions.filter(e => e.payload.action === 'discard').length} discarded` });
   }
   const orderEv = of('order_drafted', 'order_submitted', 'order_cancelled'); let orderNode: string | undefined;
   const meds = session.orders?.medications || []; const invs = session.orders?.investigations || [];

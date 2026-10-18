@@ -1,10 +1,12 @@
 import type { ModelCall, PipelineStep } from '@medx/shared';
 import { mockJSON } from './mock';
-import { CONSULT_SCHEMA, EXTRACTION_SCHEMA, QUESTION_SCHEMA, SCREEN_SCHEMA } from './schema';
+import { CONSULT_SCHEMA, EXTRACTION_SCHEMA, MED_PHOTO_SCHEMA, QUESTION_SCHEMA, SCREEN_SCHEMA } from './schema';
 
 export interface ChatRequest {
   step: PipelineStep; system: string; user: string; schemaName: string;
   model?: string; timeoutMs?: number; signal?: AbortSignal;
+  /** Optional data-URL images (vision models), sent as image_url parts. Never stored or logged. */
+  images?: string[];
   repair?: { raw: unknown; errors: string[] };
   onCall?: (call: ModelCall) => void;
 }
@@ -78,8 +80,9 @@ export async function chatJSON(req: ChatRequest): Promise<ChatResult> {
     if (!process.env.AMD_BASE_URL || !process.env.AMD_API_KEY || model === 'unconfigured') {
       const call = makeCall(false, performance.now() - started, 'Provider is not configured'); req.onCall?.(call); return { data: null, call, failure: 'provider_error' };
     }
-    const useSchema = await supportsSchema(model, controller.signal);
-    const key = `${process.env.AMD_BASE_URL}/${model}/${req.step}/${process.env.AMD_JSON_SCHEMA ?? 'auto'}`;
+    // Vision requests stay on json_object: strict json_schema with an image hung until the timeout on MiniCPM-V.
+    const useSchema = !req.images?.length && await supportsSchema(model, controller.signal);
+    const key = `${process.env.AMD_BASE_URL}/${model}/${req.step}/${process.env.AMD_JSON_SCHEMA ?? "auto"}${req.images?.length ? "/img" : ""}`;
     const capability = compatibilityCapabilities.get(key) || { format: useSchema ? 'json_schema' as const : 'json_object' as const, noSystem: false };
     compatibilityCapabilities.set(key, capability);
     const consult = req.schemaName === 'consult_suggestions';
@@ -87,17 +90,18 @@ export async function chatJSON(req: ChatRequest): Promise<ChatResult> {
       const attempt = performance.now();
       try {
         if (!process.env.AMD_BASE_URL || !process.env.AMD_API_KEY || model === 'unconfigured') throw new Error('Provider is not configured');
-        const messages: { role: string; content: string }[] = capability.noSystem ? [{ role: 'user', content: `### INSTRUCTIONS\n${req.system}\n\n${req.user}` }] : [{ role: 'system', content: req.system }, { role: 'user', content: req.user }];
+        const withImages = (text: string): string | { type: string; text?: string; image_url?: { url: string } }[] => req.images?.length ? [{ type: 'text', text }, ...req.images.map(url => ({ type: 'image_url', image_url: { url } }))] : text;
+        const messages: { role: string; content: string | { type: string; text?: string; image_url?: { url: string } }[] }[] = capability.noSystem ? [{ role: 'user', content: withImages(`### INSTRUCTIONS\n${req.system}\n\n${req.user}`) }] : [{ role: 'system', content: req.system }, { role: 'user', content: withImages(req.user) }];
         if (req.repair) {
           messages.push({ role: 'assistant', content: (typeof req.repair.raw === 'string' ? req.repair.raw : JSON.stringify(req.repair.raw)).slice(0, 4000) });
           messages.push({ role: 'user', content: `Your previous output was not valid. Problems: ${req.repair.errors.slice(0, 10).join('\n')}. Return only the corrected JSON object with the same content and the exact required shape. Do not add fields or values that were not in the transcript.` });
         }
-        const format = capability.format === 'json_schema' ? { type: 'json_schema', json_schema: { name: req.schemaName, schema: consult ? CONSULT_SCHEMA : req.step === 'red_flags' ? SCREEN_SCHEMA : req.step === 'next_question' ? QUESTION_SCHEMA : EXTRACTION_SCHEMA, strict: true } } : { type: 'json_object' };
+        const format = capability.format === 'json_schema' ? { type: 'json_schema', json_schema: { name: req.schemaName, schema: consult ? CONSULT_SCHEMA : req.schemaName === 'med_photo' ? MED_PHOTO_SCHEMA : req.step === 'red_flags' ? SCREEN_SCHEMA : req.step === 'next_question' ? QUESTION_SCHEMA : EXTRACTION_SCHEMA, strict: true } } : { type: 'json_object' };
         await pace(controller.signal);
         const response = await fetch(`${process.env.AMD_BASE_URL.replace(/\/$/, '')}/chat/completions`, {
           method: 'POST', signal: controller.signal,
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${process.env.AMD_API_KEY}` },
-          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: consult ? 1200 : req.step === 'red_flags' ? 400 : req.step === 'next_question' ? 250 : 1500, ...(capability.format !== 'none' ? { response_format: format } : {}) }),
+          body: JSON.stringify({ model, messages, temperature: 0, top_p: 1, stream: false, max_tokens: consult ? 1200 : req.schemaName === 'med_photo' ? 600 : req.step === 'red_flags' ? 400 : req.step === 'next_question' ? 250 : 1500, ...(capability.format !== 'none' ? { response_format: format } : {}) }),
         });
         if (!response.ok) {
           // Inspect gateway diagnostics only for compatibility; never persist response bodies.

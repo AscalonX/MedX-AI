@@ -93,6 +93,11 @@ describe('pipeline', () => {
     const client = vi.fn<ModelClient>(async () => ({ data: null, call: call(false), failure: 'provider_error', retryAfterMs: 3000 }));
     const s = await runTurn(createSession('en', { persist: false }), complete, { client }); expect(s.summary?.abstainReason).toBe('provider_error'); expect(client.mock.calls.filter(([r]) => r.step === 'extract')).toHaveLength(1);
   });
+  it('short 429 bursts back off and retry extraction', async () => {
+    let busy = 3;
+    const client = vi.fn<ModelClient>(async r => r.step === 'extract' && busy-- > 0 ? { data: null, call: call(false), failure: 'provider_error', retryAfterMs: 500 } : { data: mockJSON(r), call: call(true) });
+    const s = await runTurn(createSession('en', { persist: false }), complete, { client }); expect(s.summary?.abstainReason).not.toBe('provider_error'); expect(client.mock.calls.filter(([r]) => r.step === 'extract')).toHaveLength(4);
+  }, 20000);
   it('quotes absent from transcript trigger low confidence and zero assertions', async () => {
     const client = clientFor(r => { const data = mockJSON(r) as ReturnType<typeof JSON.parse>; if (r.step === 'extract') for (const f of Object.values(data.fields) as { evidence: { turn: string; quote: string }[] }[]) if (f) f.evidence = [{ turn: 'T1', quote: 'invented evidence never written by the patient' }]; return data; });
     const s = await runTurn(createSession('en', { persist: false }), complete, { client });

@@ -44,6 +44,8 @@ const SAMPLE = {
   pickup_called: { e: ev("pickup_called", { orderIds: ["o1"], recall: false, counter: "3" }, "clinician", "Pharmacist Nattaya Wong"), must: ["3"] },
   pickup_collected: { e: ev("pickup_collected", { calledBy: "Pharmacist Nattaya Wong", calledAt: at, orderIds: ["o1"] }, "clinician", "Pharmacist Nattaya Wong"), must: ["Pharmacist Nattaya Wong"] },
   takeover: { e: ev("takeover", { reason: FREE[0] }, "clinician", "Nurse Anna Rossi"), must: [] },
+  med_photo_suggested: { e: ev("med_photo_suggested", { outcome: "suggested", items: [{ id: "mp-1", name: "Paracetamol", matched: true }] }, "clinician", "Pharmacist Laura Conti"), must: [] },
+  med_photo_decision: { e: ev("med_photo_decision", { suggestionId: "mp-1", action: "confirm", name: "Paracetamol" }, "clinician", "Pharmacist Laura Conti"), must: [] },
 } satisfies Record<AuditType, { e: AuditEvent; must: string[] }>;
 
 const RAW = /^(Event|Evento|เหตุการณ์)\s*:/;

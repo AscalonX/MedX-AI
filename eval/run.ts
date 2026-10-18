@@ -21,6 +21,30 @@ const { redact } = await import('../apps/web/lib/pipeline/redact');
 const { verifyDetailed, words } = await import('../apps/web/lib/pipeline/verify');
 const { validateExtraction } = await import('../apps/web/lib/pipeline/schema');
 const { providerInfo } = await import('../apps/web/lib/pipeline/config');
+const { chatJSON } = await import('../apps/web/lib/pipeline/llm');
+
+// Live-provider client (eval only). The AMD developer API allows ~20 requests/min and effectively one in-flight request per key
+// (429 "token_concurrency_rate_limit_exceeded"; first dev run: 18/28 cases abstained on 429). The pipeline fires extract and the
+// red-flag screen in parallel, so here every live call is serialised through one lane, the screen goes first (it is short), and 429s
+// are retried after Retry-After. 429 attempts are counted separately (rateLimitRetries) and are not scored as provider errors.
+// Consequence: per-call latencies are clean single-request latencies; per-turn wall time is the sum of calls (production runs them in parallel).
+const live = { retries429: 0, calls: 0 };
+let lane: Promise<unknown> = Promise.resolve();
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+const liveClient: ModelClient = async req => {
+  if (req.step === 'extract') await sleep(150); // let the same turn's red_flags request take the lane first
+  const run = async (): Promise<ChatResult> => {
+    for (let attempt = 0; ; attempt++) {
+      if (req.signal?.aborted) return chatJSON(req);
+      let swallowed = false;
+      const res = await chatJSON({ ...req, onCall: c => { if (c.error === 'HTTP 429') swallowed = true; else req.onCall?.(c); } });
+      if (swallowed && attempt < 8) { live.retries429++; await sleep(Math.max(res.retryAfterMs ?? 0, 1000) + 300); continue; }
+      if (swallowed) req.onCall?.(res.call);
+      live.calls++; return res;
+    }
+  };
+  const mine = lane.then(run, run); lane = mine.catch(() => undefined); return mine;
+};
 
 const read = (p: string) => JSON.parse(readFileSync(path.join(ROOT, p), 'utf8'));
 const RULES = { 'v1.0': read('eval/redflags.v1.0.frozen.json') as RedFlagRuleFile, 'v1.1': read('packages/shared/src/redflags.json') as RedFlagRuleFile };
@@ -302,14 +326,20 @@ if (rescore) {
   if (provider.name !== 'mock' && (!process.env.AMD_BASE_URL || !process.env.AMD_API_KEY || !process.env.AMD_MODEL)) { console.error('AMD mode needs AMD_BASE_URL, AMD_API_KEY, AMD_MODEL (or set MODEL_PROVIDER=mock).'); process.exit(2); }
   const split = arg('--split') || 'test'; const limit = Number(arg('--limit')) || Infinity;
   const A = load('data/cases', 'case'), H = load('data/holdout', 'holdout');
-  const cases = A.cases.filter(c => split === 'all' || c.split === split).slice(0, limit);
+  const ids = arg('--ids')?.split(',');   // re-run only these case ids (e.g. the ones that failed for provider reasons)
+  const base = arg('--base');             // merge: take every other case from this earlier run dir (needs --ids)
+  const cases = A.cases.filter(c => ids ? ids.includes(c.id) : split === 'all' || c.split === split).slice(0, limit);
+  if (ids) H.cases = H.cases.filter(c => ids.includes(c.id));
+  if (argv.includes('--no-holdout')) H.cases = [];
   const git = (c: string) => { try { return execSync(c, { cwd: ROOT }).toString().trim(); } catch { return 'unknown'; } };
   const startedAt = new Date().toISOString();
-  cfg = { startedAt, split, provider, baseHost: process.env.AMD_BASE_URL ? new URL(process.env.AMD_BASE_URL).host : null, gitSha: git('git rev-parse --short HEAD'), dirty: git('git status --porcelain') !== '', metricsSha: sha('docs/ai/METRICS.md'), promptSha: sha('apps/web/lib/pipeline/prompts.ts'), rulesSha: sha('packages/shared/src/redflags.json'), rulesV10Sha: sha('eval/redflags.v1.0.frozen.json'), caseFiles: cases.map(c => c.id), holdoutFiles: H.cases.map(c => c.id), invalidFiles: [...A.bad, ...H.bad], concurrency: 1 };
+  cfg = { startedAt, split, provider, baseHost: process.env.AMD_BASE_URL ? new URL(process.env.AMD_BASE_URL).host : null, gitSha: git('git rev-parse --short HEAD'), dirty: git('git status --porcelain') !== '', metricsSha: sha('docs/ai/METRICS.md'), promptSha: sha('apps/web/lib/pipeline/prompts.ts'), rulesSha: sha('packages/shared/src/redflags.json'), rulesV10Sha: sha('eval/redflags.v1.0.frozen.json'), caseFiles: cases.map(c => c.id), holdoutFiles: H.cases.map(c => c.id), invalidFiles: [...A.bad, ...H.bad], concurrency: 1, llmTimeoutMs: process.env.LLM_TIMEOUT_MS || 'default (extract 25000, screen 12000, question 8000; turn cap 40000)', screen2: process.env.AMD_MODEL_SCREEN2 || null, fallbackModel: process.env.AMD_MODEL_FALLBACK || null };
   console.log(`provider=${provider.name} model=${provider.model} split=${split} cases=${cases.length} holdout=${H.cases.length}${cfg.invalidFiles.length ? ` invalid=${cfg.invalidFiles.join('; ')}` : ''}`);
   results = [];
-  for (const c of [...cases, ...H.cases]) { const r = await runCase(c); results.push(r); console.log(`${c.id.padEnd(6)} ${r.finalStatus}${r.error ? ' ERROR ' + r.error : ''}`); }
-  faults = await runFaults(A.cases);
+  for (const c of [...cases, ...H.cases]) { const r = await runCase(c, process.env.MODEL_PROVIDER === 'mock' ? undefined : liveClient); results.push(r); console.log(`${c.id.padEnd(6)} ${r.finalStatus}${r.error ? ' ERROR ' + r.error : ''}`); }
+  if (base) { const b = JSON.parse(readFileSync(path.join(path.resolve(base), 'results.json'), 'utf8')); const fresh = new Set(results.map(r => r.id)); results = [...b.results.filter((r: any) => !fresh.has(r.id)), ...results]; faults = b.faults; cfg.mergedFrom = path.basename(path.resolve(base)); cfg.rerunIds = [...fresh]; }
+  else faults = await runFaults(A.cases);
+  cfg.rateLimitRetries = live.retries429; cfg.endedAt = new Date().toISOString();
   runDir = path.join(ROOT, 'eval/runs', startedAt.replace(/[:.]/g, '-'));
   mkdirSync(runDir, { recursive: true });
   writeFileSync(path.join(runDir, 'config.json'), JSON.stringify(cfg, null, 2));

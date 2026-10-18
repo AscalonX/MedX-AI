@@ -9,6 +9,7 @@ import {
 } from "./_lib";
 import { ABSTAIN, STAGE_LABEL } from "./_lib";
 import { PickupCard, PrescriptionsCard } from "./_orders";
+import { PhotoCard } from "./_photo";
 import { startVisiblePolling } from "../_shared/visiblePolling";
 import { usePharmacy } from "./_shell";
 
@@ -262,6 +263,8 @@ export function Workspace({ id }: { id: string }) {
                   </ul>
                 )}
               </Card>
+
+              {!fixture && <PhotoCard session={session} lang={lang} locked={locked} />}
 
               <Card padded={false} aria-labelledby="h-alg">
                 <div className="px-5 pt-5"><CardHeader title={<span id="h-alg"><LangMorph text={T.allergies} lang={lang} /></span>} className="mb-2" /></div>

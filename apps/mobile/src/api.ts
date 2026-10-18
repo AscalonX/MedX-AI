@@ -84,3 +84,10 @@ export async function getSession(id: string): Promise<{ session: PatientView }> 
     clearTimeout(t);
   }
 }
+
+/** Read-aloud audio (mp3) for text the server itself produced. Rejects on any failure so the caller can use the device voice. */
+export async function fetchSpeech(req: { kind: "first_question" | "next_question" | "red_flag"; lang: Lang; sessionId?: string }, signal?: AbortSignal): Promise<ArrayBuffer> {
+  const r = await fetch(`${BASE}/api/tts`, { method: "POST", headers: { "content-type": "application/json", "x-medx-client": "patient" }, body: JSON.stringify(req), signal });
+  if (!r.ok || !(r.headers.get("content-type") ?? "").includes("audio")) throw new Error(`TTS HTTP ${r.status}`);
+  return r.arrayBuffer();
+}

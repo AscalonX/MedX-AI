@@ -9,12 +9,19 @@ import { negatedBefore } from './redflags';
 
 /** Deliberately narrow deterministic demo extractor, not an evaluation oracle. */
 export function mockJSON(req: ChatRequest): unknown {
+  // Deterministic synthetic pack read (the image is ignored): one dictionary name, one name the dictionary does not know.
+  if (req.schemaName === 'med_photo') return { items: [{ name: 'Paracetamol', strength: '500 mg', form: 'tablet' }, { name: 'Zorbexin', strength: '20 mg', form: 'capsule' }] };
   if (req.schemaName === 'consult_suggestions') {
     const turns = JSON.parse(req.user.split('Patient transcript as JSON data:\n')[1]) as { turn: string; text: string }[];
     const last = turns.at(-1);
     const end = last && [...new Intl.Segmenter('en', { granularity: 'word' }).segment(last.text)].filter(w => w.isWordLike && w.index + w.segment.length <= 400).at(-1);
     const quote = last && end ? last.text.slice(0, end.index + end.segment.length).trim() : '';
     return { suggestions: last && quote ? [{ kind: 'ask_next', text: { en: 'Ask how the symptoms affect daily activities?', it: 'Chiedere come i sintomi influiscono sulle attività quotidiane?', th: 'ถามว่าอาการส่งผลต่อกิจวัตรประจำวันอย่างไร' }, why: { en: 'Clarify the patient report for clinician review.', it: 'Chiarire quanto riferito per la revisione clinica.', th: 'ขอรายละเอียดที่ผู้ป่วยแจ้งเพื่อให้บุคลากรทบทวน' }, turn: last.turn, quote, confidence: 0.9 }] : [] };
+  }
+  if (req.step === 'red_flags' && req.model) {
+    // Deterministic stand-in for the second screen (set by env AMD_MODEL_SCREEN2): one paraphrase the keyword rules and the first mock miss.
+    const turn = [...req.user.matchAll(/<patient_turn id="(T\d+)">([\s\S]*?)<\/patient_turn>/g)].find(m => /elephant sitting on my chest/i.test(m[2]));
+    return { flags: turn ? [{ category: 'CHEST', turn: turn[1], quote: /elephant sitting on my chest/i.exec(turn[2])![0], certainty: 'high' }] : [] };
   }
   if (req.step === 'red_flags') return { flags: [] };
   if (req.step === 'next_question') {
