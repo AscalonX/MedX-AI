@@ -32,7 +32,7 @@ const live = { retries429: 0, calls: 0 };
 let lane: Promise<unknown> = Promise.resolve();
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 const liveClient: ModelClient = async req => {
-  if (req.step === 'extract') await sleep(150); // let the same turn's red_flags request take the lane first
+  if (req.step === 'extract' && process.env.EVAL_SERIAL === '1') await sleep(150); // let the same turn's red_flags request take the lane first
   const run = async (): Promise<ChatResult> => {
     for (let attempt = 0; ; attempt++) {
       if (req.signal?.aborted) return chatJSON(req);
@@ -43,7 +43,8 @@ const liveClient: ModelClient = async req => {
       live.calls++; return res;
     }
   };
-  const mine = lane.then(run, run); lane = mine.catch(() => undefined); return mine;
+  if (process.env.EVAL_SERIAL === '1') { const mine = lane.then(run, run); lane = mine.catch(() => undefined); return mine; }
+  return run(); // default: calls of one turn run in parallel as in production; the 429 retry keeps them within the rate limit
 };
 
 const read = (p: string) => JSON.parse(readFileSync(path.join(ROOT, p), 'utf8'));
