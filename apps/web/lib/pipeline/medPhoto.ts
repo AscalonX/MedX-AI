@@ -102,8 +102,9 @@ export async function decideMedPhoto(sessionId: string, value: { reviewerId: unk
     else {
       const d = sug.generic ? lookupDrug(sug.generic) : null;
       const entry: MedicationEntry = {
-        id: `med-${sug.id}`, nameOriginal: sug.name, generic: d?.generic ?? null, drugClass: d?.drugClass ?? null,
-        dose: sug.strength, frequency: null, timing: null, evidence: [], confidence: 0,
+        // Pack strength is not the patient's dose (half a tablet, twice daily...): keep it in the name, dose stays unknown.
+        id: `med-${sug.id}`, nameOriginal: [sug.name, sug.strength, sug.form].filter(Boolean).join(' '), generic: d?.generic ?? null, drugClass: d?.drugClass ?? null,
+        dose: null, frequency: null, timing: null, evidence: [], confidence: 0,
         status: d ? 'verified' : 'unmatched', review: { reviewerId, at },
       };
       summary.medications = [...(summary.medications ?? []), entry];

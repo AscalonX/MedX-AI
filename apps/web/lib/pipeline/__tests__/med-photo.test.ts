@@ -109,7 +109,8 @@ describe('decideMedPhoto', () => {
     const id = await patient();
     const { suggestions } = await suggestFromPhoto(id, { reviewerId: ph, image: image() });
     await decideMedPhoto(id, { reviewerId: ph, suggestionId: suggestions[0].id, action: 'confirm' });
-    expect(meds(id).map(m => [m.generic, m.status, m.dose])).toEqual([['paracetamol', 'verified', '500 mg']]);
+    // Pack strength is kept in the name; the patient's actual dose stays unknown until asked.
+    expect(meds(id).map(m => [m.generic, m.status, m.dose, m.nameOriginal.includes('500 mg')])).toEqual([['paracetamol', 'verified', null, true]]);
     await decideMedPhoto(id, { reviewerId: ph, suggestionId: suggestions[1].id, action: 'confirm' });
     const s = getSession(id)!;
     expect(s.summary!.medications!.at(-1)).toMatchObject({ nameOriginal: 'Zorbexin', generic: null, status: 'unmatched' });
