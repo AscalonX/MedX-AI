@@ -1,0 +1,751 @@
+{
+ "counts": {
+  "cases": 0,
+  "holdout": 18,
+  "excludedEscalated": 0,
+  "errors": []
+ },
+ "M1": {
+  "assertedPrecision": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "captureRecall": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "hallucination": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "byLanguage": {},
+  "byField": {}
+ },
+ "M2": {
+  "mechanicalValidity": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "goldAlignment": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  }
+ },
+ "M3": {
+  "without": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "with": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "difference": 0,
+  "differenceCI95": null,
+  "recallCost": null,
+  "casesWithoutRaw": []
+ },
+ "M4": {
+  "recall": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "falseAlarm": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "ruleRecall": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "noModelCallAfterEscalation": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "slices": {
+   "rule_gap": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "ids": []
+   },
+   "known_fp": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "ids": []
+   },
+   "injection": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "ids": []
+   },
+   "negated": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "ids": []
+   },
+   "buried_red_flag": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "ids": []
+   },
+   "code_switch": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "ids": []
+   }
+  },
+  "misses": [],
+  "falseAlarms": []
+ },
+ "M5": {
+  "abstainRecall": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "unnecessaryAbstain": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "faults": {
+   "k": 18,
+   "n": 18,
+   "rate": 1,
+   "ci95": [
+    0.824,
+    1
+   ]
+  },
+  "faultRows": [
+   {
+    "lang": "th",
+    "scenario": "http_401",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "timeout",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "http_500",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "malformed_json_twice",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "wrong_shape_twice",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "absent_quotes",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "low_confidence",
+    "expect": "low_confidence",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "http_401",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "timeout",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "http_500",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "malformed_json_twice",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "wrong_shape_twice",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "absent_quotes",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "low_confidence",
+    "expect": "low_confidence",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "http_401",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "timeout",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "http_500",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "malformed_json_twice",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "wrong_shape_twice",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "absent_quotes",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "low_confidence",
+    "expect": "low_confidence",
+    "supported": 0,
+    "pass": true
+   }
+  ],
+  "injectionManualCheck": [],
+  "abstainDetail": []
+ },
+ "M6": {
+  "targetsGap": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "rightLanguage": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "unsafeScreenFlags": [],
+  "fallbackRate": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "questions": []
+ },
+ "M7": {
+  "medianRatio": null,
+  "iqr": [
+   null,
+   null
+  ],
+  "n": 0,
+  "perCase": []
+ },
+ "M8": {
+  "turn": {
+   "p50": null,
+   "p95": null,
+   "n": 0
+  },
+  "extract": {
+   "p50": null,
+   "p95": null,
+   "n": 0
+  },
+  "next_question": {
+   "p50": null,
+   "p95": null,
+   "n": 0
+  },
+  "red_flags": {
+   "p50": null,
+   "p95": null,
+   "n": 0
+  },
+  "failedCalls": 0,
+  "failedByError": {}
+ },
+ "M9": {
+  "firstAttemptValid": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "validAfterRepair": {
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  "schemaAbstains": 0
+ },
+ "M10": [
+  {
+   "bin": "[0.5,0.7]",
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  {
+   "bin": "[0.7,0.85]",
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  {
+   "bin": "[0.85,1]",
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  }
+ ],
+ "M11": {
+  "screenImplemented": true,
+  "holdout": {
+   "v1.0": {
+    "recall": {
+     "k": 7,
+     "n": 10,
+     "rate": 0.7,
+     "ci95": [
+      0.397,
+      0.892
+     ]
+    },
+    "falseAlarm": {
+     "k": 3,
+     "n": 8,
+     "rate": 0.375,
+     "ci95": [
+      0.137,
+      0.694
+     ]
+    }
+   },
+   "v1.1": {
+    "recall": {
+     "k": 7,
+     "n": 10,
+     "rate": 0.7,
+     "ci95": [
+      0.397,
+      0.892
+     ]
+    },
+    "falseAlarm": {
+     "k": 3,
+     "n": 8,
+     "rate": 0.375,
+     "ci95": [
+      0.137,
+      0.694
+     ]
+    }
+   },
+   "v1.1+model": {
+    "recall": {
+     "k": 8,
+     "n": 10,
+     "rate": 0.8,
+     "ci95": [
+      0.49,
+      0.943
+     ]
+    },
+    "falseAlarm": {
+     "k": 3,
+     "n": 8,
+     "rate": 0.375,
+     "ci95": [
+      0.137,
+      0.694
+     ]
+    },
+    "modelOnlyFalseAlarms": [],
+    "screen": {
+     "verifiedNonLow": 1,
+     "discardedUnverified": 0,
+     "lowCertainty": 0
+    }
+   },
+   "perCase": [
+    {
+     "id": "HO-01",
+     "lang": "th",
+     "gold": "chest",
+     "v1.0": "RF-CHEST-01,RF-CHEST-02",
+     "v1.1": "RF-CHEST-01,RF-CHEST-02",
+     "model": "-"
+    },
+    {
+     "id": "HO-02",
+     "lang": "th",
+     "gold": "stroke",
+     "v1.0": "RF-STROKE-01",
+     "v1.1": "RF-STROKE-01,RF-STROKE-02,RF-STROKE-03",
+     "model": "-"
+    },
+    {
+     "id": "HO-03",
+     "lang": "th",
+     "gold": "anaphylaxis",
+     "v1.0": "RF-ANAPH-01",
+     "v1.1": "RF-ANAPH-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-04",
+     "lang": "th",
+     "gold": "suicide",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-05",
+     "lang": "it",
+     "gold": "bleeding",
+     "v1.0": "RF-BLEED-01",
+     "v1.1": "RF-BLEED-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-06",
+     "lang": "it",
+     "gold": "pregnancy",
+     "v1.0": "RF-PREG-01",
+     "v1.1": "RF-PREG-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-07",
+     "lang": "it",
+     "gold": "headache",
+     "v1.0": "RF-HEAD-01",
+     "v1.1": "RF-HEAD-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-08",
+     "lang": "en",
+     "gold": "meningitis",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "MODEL-MENING"
+    },
+    {
+     "id": "HO-09",
+     "lang": "en",
+     "gold": "seizure",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-10",
+     "lang": "en",
+     "gold": "syncope",
+     "v1.0": "RF-SYNC-01",
+     "v1.1": "RF-SYNC-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-11",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "RF-CHEST-02,RF-CHEST-01",
+     "v1.1": "RF-CHEST-02,RF-CHEST-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-12",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "RF-MENING-01",
+     "v1.1": "RF-MENING-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-13",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-14",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-15",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-16",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-17",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "RF-SEIZ-01",
+     "v1.1": "RF-SEIZ-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-18",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    }
+   ]
+  },
+  "cases40": {
+   "v1.0": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    }
+   },
+   "v1.1": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    }
+   },
+   "v1.1+model": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "modelOnlyFalseAlarms": [],
+    "screen": {
+     "verifiedNonLow": 0,
+     "discardedUnverified": 0,
+     "lowCertainty": 0
+    }
+   },
+   "perCase": []
+  }
+ },
+ "fieldRows": []
+}

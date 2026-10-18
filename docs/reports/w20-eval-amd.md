@@ -1,0 +1,17 @@
+STATUS: partial (real AMD numbers produced and published; field thresholds not met; 7 intake cases still provider-error after one re-run; relaxed-timeout variant needed for quality numbers; test split not run as a single clean pass)
+
+SUMMARY: Ran the eval on Gemma-4-31B-IT (AMD developer API, fallback Qwen3.8-27B). As-shipped timeouts make most intake turns abstain (extraction p50 about 39 s vs 25 s extract / 40 s turn caps), so quality was measured on a throw-away copy of the pipeline with relaxed timeouts (not committed). Report in eval/REPORT.md; placeholders replaced in README, SUBMISSION, SAFETY, HANDOFF, deck v2 (rebuilt, PDF and 34 previews re-exported) and landing "not measured yet" lines.
+
+FILES CHANGED: eval/run.ts (rate-limited live client, EVAL_PIPELINE, --ids/--base/--no-holdout, config fields), eval/README.md, eval/REPORT.md, eval/results/amd-w20/*, README.md, HANDOFF.md, pitch/SUBMISSION.md, pitch/SAFETY.md, pitch/deck/build-v2.py, deck-v2.html, MedX-deck-v2.pdf, png-v2/*, apps/web/app/_landing/copy.ts (3 strings), this report. Not touched: pipeline, app/api, pharmacy, mobile.
+
+TESTS RUN + RESULTS: `npm --prefix apps/web test`: 56 files, 2503 tests passed (after landing edits, first run before the deck re-edit; landing re-run below in NEXT ACTION if needed). Fault injection (M5) 18/18. Eval runs listed in eval/REPORT.md.
+
+EVIDENCE (final merge, 40 cases + 18 holdout): M1 asserted precision 78.5% (95/121) vs 90% NOT MET; capture recall 50.5% (95/188) vs 70% NOT MET; hallucination 5.6% vs 5% NOT MET; M3 unsupported with verifier 21.5% vs 5% NOT MET (verifier effect +0.7 pp, CI includes 0); M2 evidence validity 124/124, gold alignment 98.2% met; M4 case recall 11/11, false alarms 3/29 (10.3%, threshold 10% NOT MET by one case); M5 abstain recall 2/6 NOT MET, unnecessary abstain 5/34 (all provider errors) NOT MET, fault injection 18/18 met; M6 targets-a-gap 6/21 NOT MET; M8 extract p50 39.0 s / p95 46.7 s, screen p50 2.4 s / p95 10.1 s, next question p50 3.6 s; turn target NOT MET. Holdout (as shipped, no provider errors): rules 7/10, rules + Gemma screen 9/10, false alarms 3/8 (rules only, model added none); second run with DeepSeek screen2 8/10 but DeepSeek calls 16/16 timed out at 6 s and a Gemma screen timed out, so no DeepSeek effect measured.
+
+ASSUMPTIONS: LLM_TIMEOUT_MS=38000 for as-shipped runs; relaxed variant = turn cap 150 s, extract/question 110 s, screen 30 s, otherwise identical code. Merge rule: dev + test relaxed runs, re-run results replace failed cases, holdout from the as-shipped run. 429 retries are not scored as errors.
+
+RISKS: gateway is shared and variable (outage window, 429 concurrency limit, 20 req/min, USD 1/day); numbers will move between runs. Holdout was run many times today, not single-shot. Thai is under-represented in field metrics (5 of 7 unresolved provider-error cases). Part of the field-accuracy gap may be the harness match rule. The public demo is still mock; landing copy edits state results only on synthetic data.
+
+OPEN QUESTIONS / CONTRACT CHANGE REQUESTS: make TURN_TIMEOUT_MS and extract timeout env-configurable (or raise to about 90 s) and consider a smaller extraction output; DeepSeek screen2 6 s timeout is below its observed latency under load; decide whether to re-run test split once the gateway is quiet.
+
+NEXT ACTION: orchestrator to merge; re-run `eval/README.md` commands after timeout change; refresh deck.html (v3) and older pitch docs that still say "pending AMD run" (DECK-OUTLINE, VIDEO-SCRIPT, SOURCES-v2).
