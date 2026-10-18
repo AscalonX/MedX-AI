@@ -48,6 +48,14 @@ export async function extract(session: IntakeSession, ctx: EngineContext) {
       await new Promise(resolve => setTimeout(resolve, delay));
       result = await invoke({ ...request, model: process.env.AMD_MODEL_FALLBACK || process.env.AMD_MODEL }, ctx);
     }
+    // The shared AMD key is concurrency-limited: on 429 only, back off and retry (alternating models) while the turn deadline allows.
+    // A long Retry-After (> 2 s) still abstains at once.
+    for (let i = 0; i < 3 && result.retryAfterMs !== undefined && result.retryAfterMs <= 2000 && !result.call.ok && result.data === null; i++) {
+      const wait = Math.min(Math.max(result.retryAfterMs, 1000 * 2 ** i), 4000);
+      if (Date.now() + wait + 5000 >= ctx.deadline) break;
+      await new Promise(resolve => setTimeout(resolve, wait));
+      result = await invoke({ ...request, model: i % 2 ? process.env.AMD_MODEL_FALLBACK || process.env.AMD_MODEL : process.env.AMD_MODEL }, ctx);
+    }
   }
   if (!result.call.ok && result.failure !== 'schema_error' && result.data === null) return { fields: emptyFields(), reason: 'provider_error' as const, proposed: 0, failed: 0, language: undefined };
   let validation = validateExtraction(result.data);

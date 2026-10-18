@@ -231,13 +231,14 @@ describe('(g) long demo routes', () => {
     // The task still runs in this process; wait for it so it cannot touch the next test's store.
     await vi.waitFor(() => expect(demoSeedProgress()).toMatchObject({ status: 'done', completed: 14 }), { timeout: 20000, interval: 20 });
   });
-  it('the long engine routes export maxDuration = 60', async () => {
+  it('the long engine routes export maxDuration = 60; demo/start replays a whole intake on the real model (180)', async () => {
     const routes = await Promise.all([
       import('../../../app/api/sessions/[id]/turns/route'), import('../../../app/api/sessions/[id]/consult/route'),
       import('../../../app/api/sessions/[id]/consult/turns/route'), import('../../../app/api/sessions/[id]/consult/note/route'),
-      import('../../../app/api/sessions/[id]/orders/medications/route'), import('../../../app/api/demo/start/route'),
+      import('../../../app/api/sessions/[id]/orders/medications/route'),
     ]);
     for (const r of routes) expect(r.maxDuration).toBe(60);
+    expect((await import('../../../app/api/demo/start/route')).maxDuration).toBe(180);
   });
 });
 
