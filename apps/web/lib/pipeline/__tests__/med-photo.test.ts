@@ -113,7 +113,7 @@ describe('decideMedPhoto', () => {
     expect(meds(id).map(m => [m.generic, m.status, m.dose, m.nameOriginal.includes('500 mg')])).toEqual([['paracetamol', 'verified', null, true]]);
     await decideMedPhoto(id, { reviewerId: ph, suggestionId: suggestions[1].id, action: 'confirm' });
     const s = getSession(id)!;
-    expect(s.summary!.medications!.at(-1)).toMatchObject({ nameOriginal: 'Zorbexin', generic: null, status: 'unmatched' });
+    expect(s.summary!.medications!.at(-1)).toMatchObject({ generic: null, status: 'unmatched', dose: null }); expect(s.summary!.medications!.at(-1)!.nameOriginal.startsWith('Zorbexin')).toBe(true);
     expect(s.summary!.medAlerts!.some(a => a.ruleId === 'MR-UNKNOWN-01')).toBe(true);
     expect(s.medPhoto!.map(x => x.status)).toEqual(['confirmed', 'confirmed']);
     expect(s.pharmacyStatus).toBe('in_review');
