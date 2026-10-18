@@ -2,6 +2,11 @@
 
 STATUS: done — assessment only; no application changes.
 
+> Historical review of the earlier local build. Subsequent changes replaced the
+> UI fonts and removed the old font files. The font-file finding below is no
+> longer an open cleanup item; see `2026-10-18-scbx-cleanup-codex.md`. Other
+> implementation and AMD statements below also describe that earlier snapshot.
+
 ## Summary
 
 MedX strongly fits Health and Wellbeing Track 2. The official brief expressly

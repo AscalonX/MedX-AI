@@ -196,7 +196,7 @@ Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · spec of record: [docs/S
 
 "Calm clinical banking": a mist background with soft radial tints, white rounded cards with soft shadows, big two-tone headlines, one dark gradient feature card, pill chips and a translucent sticky nav. Brand gradient teal `#0A8077` to ocean `#1A5FC4`. Red is reserved for urgency (red flags, high alerts). The safety states verified, unverified, missing, edited and approved stay visually distinct. Spec: [docs/design/DIRECTION.md](docs/design/DIRECTION.md); tokens: [`packages/shared/src/tokens.ts`](packages/shared/src/tokens.ts).
 
-- **Type.** Plus Jakarta Sans (Latin and Italian) and Noto Sans Thai, self-hosted through `next/font/google` on the web and bundled as OFL font files in the patient app. The earlier SCBXBeta2 font is no longer used by the web or the patient app. The logo wordmark is outlined vector paths, so it never depends on a font. Data uses tabular figures; Thai tracking is always 0.
+- **Type.** Plus Jakarta Sans (Latin and Italian) and Noto Sans Thai, self-hosted through `next/font/google` on the web and bundled as OFL font files in the patient app. The logo wordmark is outlined vector paths, so it never depends on a font. Data uses tabular figures; Thai tracking is always 0.
 - **Motion.** Calm and short: only transform and opacity animate, 150 to 450 ms on one easing curve, and `prefers-reduced-motion` turns motion off completely (`?motion=off` does the same for capture tools). Urgent content never moves: red-flag interrupts and high alerts appear instantly, and a container holding urgent content drops its own entrance. The landing page adds scroll reveals, a floating 3D Fin with pointer parallax and count-up figures; the app keeps to page enters, press feedback and receipts.
 - **Brand art.** Original 3D Fin art (owner-approved) for the hero, landing and empty states at 96 px and up; the vector Fin and the Echo X mark for small sizes and favicons.
 
@@ -398,6 +398,6 @@ The Gemma screen alone caught HO-04 (suicide risk), which the keyword rules miss
 
 ## License
 
-MIT, see [LICENSE](LICENSE). Plus Jakarta Sans and Noto Sans Thai are under the SIL Open Font License (licence texts ship next to the font files). Leftover SCBXBeta2 `.otf` files that are still in the repository are unused and are not part of the MIT grant. The 3D Fin art is original, owner-approved brand art for this project.
+MIT, see [LICENSE](LICENSE). Plus Jakarta Sans and Noto Sans Thai are under the SIL Open Font License (licence texts ship next to the font files). The 3D Fin art is original, owner-approved brand art for this project.
 
 <p align="center"><sub>MedX · research prototype · decision support for clinicians · synthetic data only · not a medical device</sub></p>

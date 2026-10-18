@@ -6,8 +6,7 @@ import { SITE_URL } from "./_landing/site";
 import "./globals.css";
 
 // Web typefaces v3.1 (owner decisions, 17 and 18 Oct 2026; DIRECTION.md section 3): Plus Jakarta Sans for Latin and
-// Italian, Noto Sans Thai for Thai, self-hosted by next/font/google (fonts.ts). They are the only UI fonts on the web:
-// SCBXBeta2 is not loaded and not in the CSS stack. The logo stays an outlined vector.
+// Italian, Noto Sans Thai for Thai, self-hosted by next/font/google (fonts.ts). The logo stays an outlined vector.
 // Motion (DIRECTION.md section 5): MotionRuntime runs the scroll reveals and the page fade on client navigations.
 // data-scroll-behavior="smooth" lets Next.js turn smooth scrolling off during route changes (marketing pages scroll
 // smoothly to in-page anchors; globals.css).

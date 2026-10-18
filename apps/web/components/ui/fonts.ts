@@ -5,7 +5,7 @@ import { Noto_Sans_Thai, Plus_Jakarta_Sans } from "next/font/google";
  * Plus Jakarta Sans sets Latin and Italian (all accented vowels, has `tnum` and `lnum`); Noto Sans Thai sets Thai (all
  * 87 assigned code points, mark/mkmk stacking). Both are variable fonts: one file per subset covers every weight the
  * UI uses (400 body, 500 quiet emphasis, 600 controls, 700 headings and values, 800 display), all real instances.
- * Self-hosted by next/font at build time (no request to Google at runtime). SCBXBeta2 is not used on the web.
+ * Self-hosted by next/font at build time (no request to Google at runtime).
  *
  * Wired in apps/web/app/layout.tsx:
  *   import { fontVariables } from "@/components/ui/fonts";

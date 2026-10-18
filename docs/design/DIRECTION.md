@@ -6,13 +6,13 @@ If this file and a screen disagree, this file wins. If this file and `CLAUDE.md`
 
 > **v3 (owner decisions, Sat 17 Oct 2026, late evening).** Nothing in sections 1 and 6 (safety states, red-flag interrupt, highlighter) changed. What changed:
 > 1. **Polish, same brand.** "Calm clinical banking" stays: teal `#0A8077` to ocean `#1A5FC4`, Fin the dolphin, the Echo X logo. The look follows the owner's reference site (U-Talk) more closely: mist background with soft radial tints, big two-tone headlines, white rounded cards with soft shadows, one dark gradient feature card, pill chips, a translucent sticky nav.
-> 2. **Typography (web).** Plus Jakarta Sans (Latin, Italian) with Noto Sans Thai (Thai), via `next/font/google`, replace SCBXBeta2 on the web. The logo keeps its outlined vector wordmark. Mobile keeps SCBXBeta2 until the mobile builder adopts the web fonts (section 3).
+> 2. **Typography.** Plus Jakarta Sans (Latin, Italian) with Noto Sans Thai (Thai), via `next/font/google` on the web and bundled font files in the patient app (section 3). The logo keeps its outlined vector wordmark.
 > 3. **3D brand art.** Owner-approved 3D Fin poses, a large detailed hero Fin, a 3D mark and a 3D app icon. 3D at 96px and up; vector below and for favicons (section 11).
 > 4. **English first.** All content defaults to English. Thai and Italian stay one toggle away. Language controls list EN first on marketing pages.
 > 5. **Marketing landing at `/`.** New section 12 sets the rules for it. The logo section moved from 12 to 13.
 
 > **v3.1 (owner request, Sun 18 Oct 2026, about 02:45: "make the font and front end beautiful, add beautiful animations").**
-> 1. **Type.** Plus Jakarta Sans and Noto Sans Thai are now the *only* UI fonts on the web. SCBXBeta2 left the CSS stack (its licence metadata reads "All rights reserved"). Body text runs at 1.6, display headings tighten to -0.02 to -0.035em, data uses tabular figures (section 3).
+> 1. **Type.** Plus Jakarta Sans and Noto Sans Thai are the UI fonts. Body text runs at 1.6, display headings tighten to -0.02 to -0.035em, data uses tabular figures (section 3).
 > 2. **Motion system.** Tokens, utilities and primitives for entrances, scroll reveals, list stagger, page enter, hover lift, press, colour crossfade, skeleton shimmer, success tick, count up, toasts and the marketing hero (section 5).
 > 3. **Urgent stays still.** Red-flag interrupts, emergency alerts and high alerts appear instantly and never move. The red-flag card no longer grows in (sections 5 and 6c).
 > 4. **Video.** The primary landing video is the cinematic promo when it exists; the screen-recorded walkthrough opens from a secondary action in a dialog (section 12.7).
@@ -94,9 +94,9 @@ Rules:
 
 Loading:
 - **Web:** `apps/web/components/ui/fonts.ts` calls `next/font/google` and exports `fontVariables` (`--font-jakarta`, `--font-noto-thai`). `layout.tsx` puts it on `<html>`. The files are self-hosted at build time (no request to Google at runtime). Jakarta has a metric-matched local fallback, so text does not reflow when it arrives. Noto Sans Thai is not preloaded (most first views are English); it loads on the first Thai glyph.
-- **v3.1: these are the only UI fonts on the web.** The CSS stack is `var(--font-jakarta), var(--font-noto-thai), "Leelawadee UI", Thonburi, "Noto Sans Thai UI", Tahoma, system-ui, sans-serif`. The platform Thai faces only cover the moment before Noto Sans Thai loads. SCBXBeta2 is no longer in the stack: its licence metadata reads "All rights reserved". The unused `apps/web/app/fonts/SCBXBeta2-*.otf` files can be deleted; that call belongs to the orchestrator, because the folder is outside the design lead's scope.
-- **Mobile:** unchanged for now. SCBXBeta2 through expo-font (`"SCBXBeta2-Light"`, `"SCBXBeta2-Regular"`, `"SCBXBeta2-Bold"`); `mobileFont(role, lang, weight)` returns these names. The mobile builder may move to the Expo Google Fonts packages for both families later; tokens keep both (`webFont`, `scbxFont`).
-- `serif` and `display` remain aliases of the sans so earlier calls compile.
+- **Web fallback stack:** `var(--font-jakarta), var(--font-noto-thai), "Leelawadee UI", Thonburi, "Noto Sans Thai UI", Tahoma, system-ui, sans-serif`. The platform Thai faces cover the moment before Noto Sans Thai loads.
+- **Mobile:** `apps/mobile/src/fonts.ts` registers bundled Plus Jakarta Sans 400/600/700/800 and Noto Sans Thai 400/600/700 through expo-font. `fontFor(lang, weight)` selects the registered face and, on web, a mixed-script fallback stack. Light maps to 400 for patient legibility; Thai headlines stop at 700. The OFL licence texts ship in `apps/mobile/assets/fonts/`.
+- Web `serif` and `display` remain aliases of the sans so earlier calls compile.
 - The logo wordmark stays outlined vector paths (section 13), so it never depends on a font.
 
 Weights (Tailwind):
@@ -699,7 +699,7 @@ Screenshots of the review go to `docs/reports/screens/landing-*.png`.
 **Concept.** A medical plus turned 45° into an X. Three arms are solid. The fourth (top right) becomes two sound/echo arcs radiating from the centre. The mark says medicine and listening at once, and the echo arcs nod to Fin's echolocation. I chose it over "Wave X" (a sine stroke, muddy at small sizes) and "Fluke X" (a curved X, too generic); see `docs/design/logo/concepts.png`. There is no red cross, no heart-pulse line and no stethoscope.
 
 **Files.** All in `docs/design/logo/`; all vector, with no font dependency.
-- **Generator:** `build.py` regenerates every SVG and `apps/web/components/ui/logoSvg.ts`. It converts the "Med" letters from SCBXBeta2 Bold to outlines with custom kerning; the X is the mark itself.
+- **Generator:** `build.py` regenerates every SVG and `apps/web/components/ui/logoSvg.ts`. It reads the approved "Med" outlines and dimensions from `wordmark-path.json`; the X is the mark itself. It requires no font file or fontTools installation.
 - **PNG exports:** `export.sh`.
 
 | Asset | Files |

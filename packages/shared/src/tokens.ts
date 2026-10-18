@@ -51,36 +51,21 @@ export const gradient = {
 } as const;
 
 // ---------- Type ----------
-// v3 (owner decision, 17 Oct 2026 late evening): the WEB uses Plus Jakarta Sans (Latin, Italian accents) with
+// v3 (owner decision, 17 Oct 2026 late evening): the web uses Plus Jakarta Sans (Latin, Italian accents) with
 // Noto Sans Thai for Thai, both from next/font/google (apps/web/components/ui/fonts.ts, vars --font-jakarta and
 // --font-noto-thai). Both are variable fonts (Jakarta 200-800, Noto Sans Thai 100-900) and Jakarta has `tnum`.
-// The stack falls back to SCBXBeta2 (--font-scbx) so pages render correctly before and after layout.tsx switches.
-// MOBILE keeps SCBXBeta2 (three cuts: Light 300, Regular 400, Bold 700) until the mobile builder adopts the web fonts:
-// expo-font registers the names below from apps/mobile/assets/fonts.
+// The patient app bundles the same families; apps/mobile/src/fonts.ts owns its registered faces and weight mapping.
 export const webFont = {
   latin: { family: "Plus Jakarta Sans", variable: "--font-jakarta", weights: [200, 800] },
   thai: { family: "Noto Sans Thai", variable: "--font-noto-thai", weights: [100, 900] },
 } as const;
-export const scbxFont = { light: "SCBXBeta2-Light", regular: "SCBXBeta2-Regular", bold: "SCBXBeta2-Bold" } as const;
-const scbxWeights = { regular: scbxFont.regular, medium: scbxFont.regular, semibold: scbxFont.bold, bold: scbxFont.bold, light: scbxFont.light };
-const scbxDisplay = { regular: scbxFont.bold, medium: scbxFont.bold, semibold: scbxFont.bold, bold: scbxFont.bold, light: scbxFont.light };
-const stack = 'var(--font-jakarta, var(--font-scbx, system-ui)), var(--font-noto-thai, "Noto Sans Thai"), system-ui, -apple-system, "Segoe UI", sans-serif';
+const stack = 'var(--font-jakarta, "Plus Jakarta Sans"), var(--font-noto-thai, "Noto Sans Thai"), "Leelawadee UI", Thonburi, "Noto Sans Thai UI", Tahoma, system-ui, -apple-system, "Segoe UI", sans-serif';
 
 export const fontFamily = {
   web: { display: stack, serif: stack /* v1 alias */, sans: stack },
-  /** expo-font names, identical for every language. `display` defaults to Bold. */
-  mobile: {
-    display: { th: scbxDisplay, it: scbxDisplay, en: scbxDisplay },
-    serif: { th: scbxDisplay, it: scbxDisplay, en: scbxDisplay }, // v1 alias
-    sans: { th: scbxWeights, it: scbxWeights, en: scbxWeights },
-  },
 } as const;
 
-export type FontRole = "display" | "serif" | "sans";
 export type FontWeightName = "light" | "regular" | "medium" | "semibold" | "bold";
-export function mobileFont(role: FontRole, lang: Lang, weight: FontWeightName = "regular"): string {
-  return fontFamily.mobile[role][lang][weight];
-}
 
 /** Type scale, px. lineHeight is a multiplier for Latin; Thai uses lineHeightThai. tracking in em. */
 export const type = {

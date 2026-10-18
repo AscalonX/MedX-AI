@@ -119,7 +119,7 @@ There is no real authentication, by design. Staff identities are the synthetic `
 ## 9. Design system summary
 
 - Look: "calm clinical banking" (mist background, white rounded cards, one dark gradient feature card, pill chips, translucent sticky nav); gradient teal `#0A8077` to ocean `#1A5FC4`; red reserved for urgency; the safety states verified, unverified, missing, edited and approved visually distinct. No emoji UI, no sparkle icons, no chat bubbles for clinical content.
-- Type: Plus Jakarta Sans (Latin, Italian) and Noto Sans Thai, self-hosted via `next/font/google` on the web and bundled (OFL) in the patient app. SCBXBeta2 is removed from both. The logo wordmark is outlined vector paths.
+- Type: Plus Jakarta Sans (Latin, Italian) and Noto Sans Thai, self-hosted via `next/font/google` on the web and bundled (OFL) in the patient app. The logo wordmark is outlined vector paths.
 - Motion: transform and opacity only, 150 to 450 ms on the `glide` curve, off under `prefers-reduced-motion` (and `?motion=off`); urgent content never moves and a container holding it drops its own motion. Marketing pages add reveals, Fin's float and parallax and count-ups; the app keeps page enters, press feedback and receipts.
 - Fin: 3D art at 96 px and up for hero, landing and empty states; vector Fin and the Echo X mark for small sizes. Never near red flags, alerts, errors or clinical content.
 

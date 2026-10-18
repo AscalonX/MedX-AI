@@ -7,7 +7,7 @@ Deadline: Sun 18 Oct 2026, 17:00 ICT (internal 15:00). Live demo: https://medx.a
 | Area | State | Evidence |
 |---|---|---|
 | Landing and demo hub | done: marketing landing at `/` (en), `/th`, `/it` in the reference structure; "Try a role" with 6 personas; `/demo` hub and per-persona launcher; QR to `/patient`; honest model label from `/api/health`; Open Graph, robots, sitemap | docs/reports/w20-landing.md, w20-polish-design.md |
-| Brand, type, motion | done: "calm clinical banking" v3.1, 3D Fin art, Plus Jakarta Sans and Noto Sans Thai (SCBXBeta2 removed from web and patient app), motion system with "urgent stays still" | docs/reports/w20-design-lead.md, w20-polish-design.md, w20-patient-polish.md |
+| Brand, type, motion | done: "calm clinical banking" v3.1, 3D Fin art, Plus Jakarta Sans and Noto Sans Thai, motion system with "urgent stays still" | docs/reports/w20-design-lead.md, w20-polish-design.md, w20-patient-polish.md |
 | Patient app (Expo + `/patient` web export) | done: English first, voice with confirm-before-send, live timeline, pickup card, "Start a new visit", calm motion | docs/reports/w20-patient-mobile.md, w20-patient-polish.md |
 | Clinician web | done: queue with journey stage chips, account menu (sign out, switch role), "Who's signing in?" sheet, consult outbox (unsaved lines never shown as record) | docs/reports/w20-clinician-web.md, w20-sign-out.md, w20-fixes.md |
 | Two-stage pharmacy and pickup | done: pharmacist 1 verify or return with report and options for prescriber review; pharmacist 2 six-item check with two-person rule; pickup call and collection; re-check pulls a dispensed, uncollected order back on a new high alert | docs/reports/w19-*.md, w20-pharmacy-ops.md, w20-fixes.md |

@@ -37,8 +37,7 @@
 
   /*
    * type (v3.1): Plus Jakarta Sans for Latin and Italian, Noto Sans Thai for Thai, both self-hosted by next/font/google
-   * (components/ui/fonts.ts, on <html> in layout.tsx). These are the only UI fonts on the web: SCBXBeta2 is no longer in
-   * the stack (its licence metadata reads "All rights reserved"). Thai falls back to the platform Thai faces while Noto
+   * (components/ui/fonts.ts, on <html> in layout.tsx). Thai falls back to the platform Thai faces while Noto
    * Sans Thai loads (Leelawadee UI on Windows, Thonburi on Apple, Noto Sans Thai UI on Android).
    * `font-serif` and `font-display` are aliases.
    */
