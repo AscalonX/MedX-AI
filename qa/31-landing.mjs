@@ -8,7 +8,8 @@ import { BASE, LOCAL, req, check, done } from './lib.mjs';
 const SECTION_IDS = ['nav', 'hero', 'built-with', 'video', 'how-it-works', 'features', 'safety', 'why', 'demo-accounts', 'phone-and-web', 'under-the-hood', 'limitations', 'cta', 'footer'];
 const PERSONAS = ['patient', 'nurse-rossi', 'doctor-bianchi', 'pharm-conti', 'pharm-wong', 'ops-head'];
 const NAV = [['#how-it-works', 'How it works'], ['#features', 'Features'], ['#safety', 'Safety'], ['#demo-accounts', 'Try a role'], ['/demo', 'Try the demo']];
-const VIDEO = '/media/medx-demo.mp4', POSTER = '/media/medx-demo-poster.jpg';
+// The landing's primary player is the voiced promo (apps/web/app/_landing/site.ts PROMO_PATH); the narrated walkthrough is the secondary action.
+const VIDEO = '/media/medx-promo-vo.mp4', POSTER = '/media/medx-promo-poster.jpg';
 const stripScripts = h => h.replace(/<script[\s\S]*?<\/script>/gi, '');
 const textOf = h => stripScripts(h).replace(/<[^>]+>/g, ' ').replace(/&#x27;|&apos;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ');
 const skip = (id, name, why) => console.log(`SKIP [${id}] ${name} (${why})`);
