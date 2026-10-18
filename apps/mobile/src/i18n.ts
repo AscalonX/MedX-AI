@@ -9,7 +9,7 @@ type S = {
   doneTitle: string; doneCode: string; doneNext1: string; doneNext2: string; doneNext3: string; newIntake: string;
   humanTitle: string; humanBody: string;
   deskTitle: (code: string) => string; deskBody: string; retry: string; deskNoCode: string;
-  tabHome: string; tabVisit: string; tabHelp: string; tabNew: string; langLocked: string; offlineRed: string; offlineNote: string; chipYes: string; chipNo: string; chipUnknown: string; reviewedTitle: string; reviewedNext: string; reviewingNote: string; stepAt: (t: string) => string; micStart: string; micStop: string; listening: string; confirmTitle: string; confirmSub: string; send: string; tryAgain: string; speakToggle: string; micDenied: string; micUnavailable: string; noSpeech: string; tabLang: string; hello: string; greetSub: string; heroTitle: string; heroSub: string; start: string;
+  tabHome: string; tabVisit: string; tabHelp: string; tabNew: string; langLocked: string; offlineRed: string; offlineNote: string; chipYes: string; chipNo: string; chipUnknown: string; reviewedTitle: string; reviewedNext: string; reviewingNote: string; stepAt: (t: string) => string; micStart: string; micStop: string; listening: string; confirmTitle: string; confirmSub: string; send: string; tryAgain: string; speakToggle: string; listen: string; listenStop: string; micDenied: string; micUnavailable: string; noSpeech: string; tabLang: string; hello: string; greetSub: string; heroTitle: string; heroSub: string; start: string;
   howTitle: string; how: [string, string][]; privacyTitle: string; pill: (n: number) => string; resume: string;
   chipNone: string; chipToday: string; chipYesterday: string; chipWeek: string; chipSeverityA11y: (n: number) => string;
   helpTitle: string; helpBody: string; helpEmergency: string; stepSent: string; stepReview: string; stepReviewed: string; nextTitle: string; sentTitle: string;
@@ -31,7 +31,7 @@ type S = {
 
 export const STR: Record<Lang, S> = {
   en: {
-    micStart: "Tap to speak", micStop: "Stop listening", listening: "Listening", confirmTitle: "Is this what you said?", confirmSub: "Check the words and fix any mistake before sending.", send: "Send", tryAgain: "Try again", speakToggle: "Read questions aloud",
+    micStart: "Tap to speak", micStop: "Stop listening", listening: "Listening", confirmTitle: "Is this what you said?", confirmSub: "Check the words and fix any mistake before sending.", send: "Send", tryAgain: "Try again", speakToggle: "Read questions aloud", listen: "Listen", listenStop: "Stop",
     micDenied: "The microphone is off. You can type your answer instead.", micUnavailable: "Voice is not available here. You can type your answer instead.", noSpeech: "We did not hear anything. Try again, or type your answer.",
     chipYes: "Yes", chipNo: "No", chipUnknown: "Not sure", reviewedTitle: "A nurse has reviewed your answers.", reviewedNext: "A nurse will call you.", reviewingNote: "Your answers are waiting for a nurse.", stepAt: (t) => `at ${t}`,
     offlineRed: "Offline: showing your last instruction.", offlineNote: "Offline: showing your last saved screen.",
@@ -86,7 +86,7 @@ export const STR: Record<Lang, S> = {
     newVisitConfirm: "Clear and start again", newVisitKeep: "Keep my visit", newVisitDone: "This phone is ready for a new visit.",
   },
   it: {
-    micStart: "Tocchi per parlare", micStop: "Smetti di ascoltare", listening: "In ascolto", confirmTitle: "È questo che ha detto?", confirmSub: "Controlli le parole e corregga eventuali errori prima di inviare.", send: "Invia", tryAgain: "Riprova", speakToggle: "Leggi le domande ad alta voce",
+    micStart: "Tocchi per parlare", micStop: "Smetti di ascoltare", listening: "In ascolto", confirmTitle: "È questo che ha detto?", confirmSub: "Controlli le parole e corregga eventuali errori prima di inviare.", send: "Invia", tryAgain: "Riprova", speakToggle: "Leggi le domande ad alta voce", listen: "Ascolta", listenStop: "Ferma",
     micDenied: "Il microfono è spento. Può scrivere la risposta.", micUnavailable: "La voce non è disponibile qui. Può scrivere la risposta.", noSpeech: "Non abbiamo sentito nulla. Riprovi o scriva la risposta.",
     chipYes: "Sì", chipNo: "No", chipUnknown: "Non so", reviewedTitle: "Un infermiere ha letto le sue risposte.", reviewedNext: "Un infermiere la chiamerà.", reviewingNote: "Le sue risposte sono in attesa di un infermiere.", stepAt: (t) => `alle ${t}`,
     offlineRed: "Senza connessione: la sua ultima indicazione.", offlineNote: "Senza connessione: l'ultima schermata salvata.",
@@ -141,7 +141,7 @@ export const STR: Record<Lang, S> = {
     newVisitConfirm: "Cancella e ricomincia", newVisitKeep: "Mantieni la mia visita", newVisitDone: "Questo telefono è pronto per una nuova visita.",
   },
   th: {
-    micStart: "แตะเพื่อพูด", micStop: "หยุดฟัง", listening: "กำลังฟัง", confirmTitle: "คุณพูดแบบนี้ใช่ไหม", confirmSub: "ตรวจดูคำและแก้ไขที่ผิดก่อนส่ง", send: "ส่ง", tryAgain: "ลองอีกครั้ง", speakToggle: "อ่านคำถามออกเสียง",
+    micStart: "แตะเพื่อพูด", micStop: "หยุดฟัง", listening: "กำลังฟัง", confirmTitle: "คุณพูดแบบนี้ใช่ไหม", confirmSub: "ตรวจดูคำและแก้ไขที่ผิดก่อนส่ง", send: "ส่ง", tryAgain: "ลองอีกครั้ง", speakToggle: "อ่านคำถามออกเสียง", listen: "ฟังคำถาม", listenStop: "หยุด",
     micDenied: "ไมโครโฟนปิดอยู่ คุณพิมพ์คำตอบแทนได้", micUnavailable: "ใช้เสียงไม่ได้ในที่นี้ คุณพิมพ์คำตอบแทนได้", noSpeech: "ไม่ได้ยินเสียง ลองอีกครั้ง หรือพิมพ์คำตอบ",
     chipYes: "ใช่", chipNo: "ไม่ใช่", chipUnknown: "ไม่แน่ใจ", reviewedTitle: "พยาบาลตรวจดูคำตอบของคุณแล้ว", reviewedNext: "พยาบาลจะเรียกคุณ", reviewingNote: "คำตอบของคุณรอพยาบาลอยู่", stepAt: (t) => `เวลา ${t}`,
     offlineRed: "ออฟไลน์: แสดงคำแนะนำล่าสุดของคุณ", offlineNote: "ออฟไลน์: แสดงหน้าจอที่บันทึกไว้ล่าสุด",
