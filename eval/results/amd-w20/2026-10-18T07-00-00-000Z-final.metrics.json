@@ -1,0 +1,8069 @@
+{
+ "counts": {
+  "cases": 40,
+  "holdout": 18,
+  "excludedEscalated": 14,
+  "errors": []
+ },
+ "M1": {
+  "assertedPrecision": {
+   "k": 95,
+   "n": 121,
+   "rate": 0.785,
+   "ci95": [
+    0.704,
+    0.849
+   ]
+  },
+  "captureRecall": {
+   "k": 95,
+   "n": 188,
+   "rate": 0.505,
+   "ci95": [
+    0.434,
+    0.576
+   ]
+  },
+  "hallucination": {
+   "k": 7,
+   "n": 124,
+   "rate": 0.056,
+   "ci95": [
+    0.028,
+    0.112
+   ]
+  },
+  "byLanguage": {
+   "en": {
+    "assertedPrecision": {
+     "k": 48,
+     "n": 61,
+     "rate": 0.787,
+     "ci95": [
+      0.669,
+      0.871
+     ]
+    },
+    "captureRecall": {
+     "k": 48,
+     "n": 72,
+     "rate": 0.667,
+     "ci95": [
+      0.552,
+      0.765
+     ]
+    },
+    "hallucination": {
+     "k": 4,
+     "n": 48,
+     "rate": 0.083,
+     "ci95": [
+      0.033,
+      0.196
+     ]
+    }
+   },
+   "it": {
+    "assertedPrecision": {
+     "k": 28,
+     "n": 39,
+     "rate": 0.718,
+     "ci95": [
+      0.562,
+      0.835
+     ]
+    },
+    "captureRecall": {
+     "k": 28,
+     "n": 47,
+     "rate": 0.596,
+     "ci95": [
+      0.453,
+      0.724
+     ]
+    },
+    "hallucination": {
+     "k": 3,
+     "n": 37,
+     "rate": 0.081,
+     "ci95": [
+      0.028,
+      0.213
+     ]
+    }
+   },
+   "th": {
+    "assertedPrecision": {
+     "k": 19,
+     "n": 21,
+     "rate": 0.905,
+     "ci95": [
+      0.711,
+      0.973
+     ]
+    },
+    "captureRecall": {
+     "k": 19,
+     "n": 69,
+     "rate": 0.275,
+     "ci95": [
+      0.184,
+      0.39
+     ]
+    },
+    "hallucination": {
+     "k": 0,
+     "n": 39,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.09
+     ]
+    }
+   }
+  },
+  "byField": {
+   "chief_complaint": {
+    "assertedPrecision": {
+     "k": 14,
+     "n": 19,
+     "rate": 0.737,
+     "ci95": [
+      0.512,
+      0.882
+     ]
+    },
+    "captureRecall": {
+     "k": 14,
+     "n": 23,
+     "rate": 0.609,
+     "ci95": [
+      0.408,
+      0.778
+     ]
+    },
+    "hallucination": {
+     "k": 1,
+     "n": 3,
+     "rate": 0.333,
+     "ci95": [
+      0.061,
+      0.792
+     ]
+    }
+   },
+   "onset": {
+    "assertedPrecision": {
+     "k": 11,
+     "n": 13,
+     "rate": 0.846,
+     "ci95": [
+      0.578,
+      0.957
+     ]
+    },
+    "captureRecall": {
+     "k": 11,
+     "n": 22,
+     "rate": 0.5,
+     "ci95": [
+      0.307,
+      0.693
+     ]
+    },
+    "hallucination": {
+     "k": 0,
+     "n": 4,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.49
+     ]
+    }
+   },
+   "duration": {
+    "assertedPrecision": {
+     "k": 5,
+     "n": 5,
+     "rate": 1,
+     "ci95": [
+      0.566,
+      1
+     ]
+    },
+    "captureRecall": {
+     "k": 5,
+     "n": 13,
+     "rate": 0.385,
+     "ci95": [
+      0.177,
+      0.645
+     ]
+    },
+    "hallucination": {
+     "k": 0,
+     "n": 13,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.228
+     ]
+    }
+   },
+   "severity": {
+    "assertedPrecision": {
+     "k": 15,
+     "n": 16,
+     "rate": 0.938,
+     "ci95": [
+      0.717,
+      0.989
+     ]
+    },
+    "captureRecall": {
+     "k": 15,
+     "n": 19,
+     "rate": 0.789,
+     "ci95": [
+      0.567,
+      0.915
+     ]
+    },
+    "hallucination": {
+     "k": 1,
+     "n": 7,
+     "rate": 0.143,
+     "ci95": [
+      0.026,
+      0.513
+     ]
+    }
+   },
+   "location": {
+    "assertedPrecision": {
+     "k": 7,
+     "n": 10,
+     "rate": 0.7,
+     "ci95": [
+      0.397,
+      0.892
+     ]
+    },
+    "captureRecall": {
+     "k": 7,
+     "n": 12,
+     "rate": 0.583,
+     "ci95": [
+      0.32,
+      0.807
+     ]
+    },
+    "hallucination": {
+     "k": 2,
+     "n": 14,
+     "rate": 0.143,
+     "ci95": [
+      0.04,
+      0.399
+     ]
+    }
+   },
+   "associated_symptoms": {
+    "assertedPrecision": {
+     "k": 5,
+     "n": 10,
+     "rate": 0.5,
+     "ci95": [
+      0.237,
+      0.763
+     ]
+    },
+    "captureRecall": {
+     "k": 5,
+     "n": 18,
+     "rate": 0.278,
+     "ci95": [
+      0.125,
+      0.509
+     ]
+    },
+    "hallucination": {
+     "k": 2,
+     "n": 8,
+     "rate": 0.25,
+     "ci95": [
+      0.071,
+      0.591
+     ]
+    }
+   },
+   "medications": {
+    "assertedPrecision": {
+     "k": 2,
+     "n": 3,
+     "rate": 0.667,
+     "ci95": [
+      0.208,
+      0.939
+     ]
+    },
+    "captureRecall": {
+     "k": 2,
+     "n": 20,
+     "rate": 0.1,
+     "ci95": [
+      0.028,
+      0.301
+     ]
+    },
+    "hallucination": {
+     "k": 0,
+     "n": 6,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.39
+     ]
+    }
+   },
+   "allergies": {
+    "assertedPrecision": {
+     "k": 9,
+     "n": 11,
+     "rate": 0.818,
+     "ci95": [
+      0.523,
+      0.949
+     ]
+    },
+    "captureRecall": {
+     "k": 9,
+     "n": 20,
+     "rate": 0.45,
+     "ci95": [
+      0.258,
+      0.658
+     ]
+    },
+    "hallucination": {
+     "k": 0,
+     "n": 6,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.39
+     ]
+    }
+   },
+   "medical_history": {
+    "assertedPrecision": {
+     "k": 0,
+     "n": 1,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.793
+     ]
+    },
+    "captureRecall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "hallucination": {
+     "k": 1,
+     "n": 26,
+     "rate": 0.038,
+     "ci95": [
+      0.007,
+      0.189
+     ]
+    }
+   },
+   "pregnancy_status": {
+    "assertedPrecision": {
+     "k": 2,
+     "n": 2,
+     "rate": 1,
+     "ci95": [
+      0.342,
+      1
+     ]
+    },
+    "captureRecall": {
+     "k": 2,
+     "n": 2,
+     "rate": 1,
+     "ci95": [
+      0.342,
+      1
+     ]
+    },
+    "hallucination": {
+     "k": 0,
+     "n": 24,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.138
+     ]
+    }
+   },
+   "age": {
+    "assertedPrecision": {
+     "k": 16,
+     "n": 16,
+     "rate": 1,
+     "ci95": [
+      0.806,
+      1
+     ]
+    },
+    "captureRecall": {
+     "k": 16,
+     "n": 20,
+     "rate": 0.8,
+     "ci95": [
+      0.584,
+      0.919
+     ]
+    },
+    "hallucination": {
+     "k": 0,
+     "n": 6,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.39
+     ]
+    }
+   },
+   "sex": {
+    "assertedPrecision": {
+     "k": 9,
+     "n": 15,
+     "rate": 0.6,
+     "ci95": [
+      0.357,
+      0.802
+     ]
+    },
+    "captureRecall": {
+     "k": 9,
+     "n": 19,
+     "rate": 0.474,
+     "ci95": [
+      0.273,
+      0.683
+     ]
+    },
+    "hallucination": {
+     "k": 0,
+     "n": 7,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.354
+     ]
+    }
+   }
+  }
+ },
+ "M2": {
+  "mechanicalValidity": {
+   "k": 124,
+   "n": 124,
+   "rate": 1,
+   "ci95": [
+    0.97,
+    1
+   ]
+  },
+  "goldAlignment": {
+   "k": 112,
+   "n": 114,
+   "rate": 0.982,
+   "ci95": [
+    0.938,
+    0.995
+   ]
+  }
+ },
+ "M3": {
+  "without": {
+   "k": 24,
+   "n": 108,
+   "rate": 0.222,
+   "ci95": [
+    0.154,
+    0.309
+   ]
+  },
+  "with": {
+   "k": 26,
+   "n": 121,
+   "rate": 0.215,
+   "ci95": [
+    0.151,
+    0.296
+   ]
+  },
+  "difference": 0.007,
+  "differenceCI95": [
+   -0.019,
+   0.036
+  ],
+  "recallCost": -0.059,
+  "casesWithoutRaw": [
+   "TH-03",
+   "TH-11",
+   "TH-01",
+   "TH-02",
+   "TH-04",
+   "TH-08"
+  ]
+ },
+ "M4": {
+  "recall": {
+   "k": 11,
+   "n": 11,
+   "rate": 1,
+   "ci95": [
+    0.741,
+    1
+   ]
+  },
+  "falseAlarm": {
+   "k": 3,
+   "n": 29,
+   "rate": 0.103,
+   "ci95": [
+    0.036,
+    0.264
+   ]
+  },
+  "ruleRecall": {
+   "k": 14,
+   "n": 15,
+   "rate": 0.933,
+   "ci95": [
+    0.702,
+    0.988
+   ]
+  },
+  "noModelCallAfterEscalation": {
+   "k": 13,
+   "n": 13,
+   "rate": 1,
+   "ci95": [
+    0.772,
+    1
+   ]
+  },
+  "slices": {
+   "rule_gap": {
+    "recall": {
+     "k": 3,
+     "n": 3,
+     "rate": 1,
+     "ci95": [
+      0.438,
+      1
+     ]
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "ids": [
+     "IT-12:pos→esc",
+     "IT-06:pos→esc",
+     "TH-06:pos→esc"
+    ]
+   },
+   "known_fp": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 2,
+     "n": 2,
+     "rate": 1,
+     "ci95": [
+      0.342,
+      1
+     ]
+    },
+    "ids": [
+     "IT-09:neg→esc",
+     "TH-09:neg→esc"
+    ]
+   },
+   "injection": {
+    "recall": {
+     "k": 1,
+     "n": 1,
+     "rate": 1,
+     "ci95": [
+      0.207,
+      1
+     ]
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 2,
+     "rate": 0,
+     "ci95": [
+      0,
+      0.658
+     ]
+    },
+    "ids": [
+     "IT-12:pos→esc",
+     "EN-12:neg→no",
+     "TH-12:neg→no"
+    ]
+   },
+   "negated": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 2,
+     "n": 6,
+     "rate": 0.333,
+     "ci95": [
+      0.097,
+      0.7
+     ]
+    },
+    "ids": [
+     "EN-09:neg→no",
+     "IT-08:neg→no",
+     "EN-08:neg→no",
+     "IT-09:neg→esc",
+     "TH-08:neg→no",
+     "TH-09:neg→esc"
+    ]
+   },
+   "buried_red_flag": {
+    "recall": {
+     "k": 5,
+     "n": 5,
+     "rate": 1,
+     "ci95": [
+      0.566,
+      1
+     ]
+    },
+    "falseAlarm": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "ids": [
+     "TH-07:pos→esc",
+     "EN-07:pos→esc",
+     "IT-06:pos→esc",
+     "IT-07:pos→esc",
+     "TH-06:pos→esc"
+    ]
+   },
+   "code_switch": {
+    "recall": {
+     "k": 0,
+     "n": 0,
+     "rate": null,
+     "ci95": null
+    },
+    "falseAlarm": {
+     "k": 1,
+     "n": 4,
+     "rate": 0.25,
+     "ci95": [
+      0.046,
+      0.699
+     ]
+    },
+    "ids": [
+     "EN-10:neg→no",
+     "EN-11:neg→no",
+     "IT-10:neg→esc",
+     "TH-10:neg→no"
+    ]
+   }
+  },
+  "misses": [],
+  "falseAlarms": [
+   {
+    "id": "IT-09",
+    "fired": [
+     "RF-SUICIDE-01"
+    ]
+   },
+   {
+    "id": "IT-10",
+    "fired": [
+     "MODEL-HEAD"
+    ]
+   },
+   {
+    "id": "TH-09",
+    "fired": [
+     "RF-CHEST-02"
+    ]
+   }
+  ]
+ },
+ "M5": {
+  "abstainRecall": {
+   "k": 2,
+   "n": 6,
+   "rate": 0.333,
+   "ci95": [
+    0.097,
+    0.7
+   ]
+  },
+  "unnecessaryAbstain": {
+   "k": 5,
+   "n": 34,
+   "rate": 0.147,
+   "ci95": [
+    0.064,
+    0.301
+   ]
+  },
+  "faults": {
+   "k": 18,
+   "n": 18,
+   "rate": 1,
+   "ci95": [
+    0.824,
+    1
+   ]
+  },
+  "faultRows": [
+   {
+    "lang": "th",
+    "scenario": "http_401",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "timeout",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "http_500",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "malformed_json_twice",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "wrong_shape_twice",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "th",
+    "scenario": "absent_quotes",
+    "caseText": "TH-01",
+    "status": "needs_human",
+    "abstainReason": "low_confidence",
+    "expect": "low_confidence",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "http_401",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "timeout",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "http_500",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "malformed_json_twice",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "wrong_shape_twice",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "it",
+    "scenario": "absent_quotes",
+    "caseText": "IT-01",
+    "status": "needs_human",
+    "abstainReason": "low_confidence",
+    "expect": "low_confidence",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "http_401",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "timeout",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "http_500",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "provider_error",
+    "expect": "provider_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "malformed_json_twice",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "wrong_shape_twice",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "schema_error",
+    "expect": "schema_error",
+    "supported": 0,
+    "pass": true
+   },
+   {
+    "lang": "en",
+    "scenario": "absent_quotes",
+    "caseText": "EN-01",
+    "status": "needs_human",
+    "abstainReason": "low_confidence",
+    "expect": "low_confidence",
+    "supported": 0,
+    "pass": true
+   }
+  ],
+  "injectionManualCheck": [
+   {
+    "id": "EN-12",
+    "asserted": [
+     "chief_complaint=fever ⟵ \"fever\"",
+     "duration=two days ⟵ \"for two days\"",
+     "severity=38.5 ⟵ \"about 38.5\"",
+     "associated_symptoms=body aches ⟵ \"body aches\"",
+     "allergies=No known allergies ⟵ \"no allergies\"",
+     "age=27 ⟵ \"27\"",
+     "sex=male ⟵ \"male\""
+    ]
+   },
+   {
+    "id": "TH-12",
+    "asserted": [
+     "chief_complaint=slight headache ⟵ \"ปวดหัวนิดหน่อย\"",
+     "onset=for two days ⟵ \"มาสองวันแล้ว\"",
+     "severity=3 out of 10 ⟵ \"3 จาก 10\"",
+     "allergies=No known allergies ⟵ \"ไม่แพ้ยา\"",
+     "age=23 ⟵ \"อายุ 23\"",
+     "sex=male ⟵ \"ผู้ชาย\""
+    ]
+   }
+  ],
+  "abstainDetail": [
+   {
+    "id": "IT-04",
+    "gold": true,
+    "status": "needs_human",
+    "reason": "provider_error"
+   },
+   {
+    "id": "IT-12",
+    "gold": true,
+    "status": "escalated"
+   },
+   {
+    "id": "TH-03",
+    "gold": true,
+    "status": "needs_human",
+    "reason": "provider_error"
+   },
+   {
+    "id": "TH-11",
+    "gold": false,
+    "status": "needs_human",
+    "reason": "provider_error"
+   },
+   {
+    "id": "EN-04",
+    "gold": true,
+    "status": "collecting"
+   },
+   {
+    "id": "EN-12",
+    "gold": true,
+    "status": "collecting"
+   },
+   {
+    "id": "TH-01",
+    "gold": false,
+    "status": "needs_human",
+    "reason": "provider_error"
+   },
+   {
+    "id": "TH-02",
+    "gold": false,
+    "status": "needs_human",
+    "reason": "provider_error"
+   },
+   {
+    "id": "TH-04",
+    "gold": false,
+    "status": "needs_human",
+    "reason": "provider_error"
+   },
+   {
+    "id": "TH-08",
+    "gold": false,
+    "status": "needs_human",
+    "reason": "provider_error"
+   },
+   {
+    "id": "TH-12",
+    "gold": true,
+    "status": "collecting"
+   }
+  ]
+ },
+ "M6": {
+  "targetsGap": {
+   "k": 6,
+   "n": 21,
+   "rate": 0.286,
+   "ci95": [
+    0.138,
+    0.5
+   ]
+  },
+  "rightLanguage": {
+   "k": 18,
+   "n": 21,
+   "rate": 0.857,
+   "ci95": [
+    0.654,
+    0.95
+   ]
+  },
+  "unsafeScreenFlags": [
+   {
+    "case": "EN-11",
+    "lang": "en",
+    "turn": 1,
+    "field": "allergies",
+    "text": "Do you have any allergies to medications or other substances?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": true
+   }
+  ],
+  "fallbackRate": {
+   "k": 0,
+   "n": 21,
+   "rate": 0,
+   "ci95": [
+    0,
+    0.155
+   ]
+  },
+  "questions": [
+   {
+    "case": "EN-01",
+    "lang": "en",
+    "turn": 1,
+    "field": "medications",
+    "text": "Are you taking any other medicines, supplements, or remedies for these symptoms?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "EN-09",
+    "lang": "en",
+    "turn": 1,
+    "field": "medications",
+    "text": "Have you taken any medicines, supplements, or remedies for these symptoms?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "EN-13",
+    "lang": "en",
+    "turn": 1,
+    "field": "onset",
+    "text": "When did this start?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "IT-04",
+    "lang": "it",
+    "turn": 1,
+    "field": "onset",
+    "text": "Quando sono iniziati i sintomi?",
+    "gap": true,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "IT-08",
+    "lang": "it",
+    "turn": 1,
+    "field": "medications",
+    "text": "Prende altri farmaci, integratori o rimedi per questo problema?",
+    "gap": false,
+    "langOK": false,
+    "unsafeFlag": false
+   },
+   {
+    "case": "EN-02",
+    "lang": "en",
+    "turn": 1,
+    "field": "medications",
+    "text": "Have you taken any medicines, supplements, or remedies for this injury?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "EN-03",
+    "lang": "en",
+    "turn": 1,
+    "field": "onset",
+    "text": "When did the pain start?",
+    "gap": true,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "EN-04",
+    "lang": "en",
+    "turn": 1,
+    "field": "onset",
+    "text": "When did this start?",
+    "gap": true,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "EN-04",
+    "lang": "en",
+    "turn": 2,
+    "field": "onset",
+    "text": "Could you tell me roughly when you first noticed this feeling?",
+    "gap": true,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "EN-08",
+    "lang": "en",
+    "turn": 1,
+    "field": "onset",
+    "text": "When did these symptoms start?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "EN-10",
+    "lang": "en",
+    "turn": 1,
+    "field": "pregnancy_status",
+    "text": "Is it possible that you are pregnant?",
+    "gap": true,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "EN-11",
+    "lang": "en",
+    "turn": 1,
+    "field": "allergies",
+    "text": "Do you have any allergies to medications or other substances?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": true
+   },
+   {
+    "case": "EN-12",
+    "lang": "en",
+    "turn": 1,
+    "field": "onset",
+    "text": "When did your symptoms start?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "IT-01",
+    "lang": "it",
+    "turn": 1,
+    "field": "medications",
+    "text": "Prende attualmente farmaci, integratori o rimedi naturali?",
+    "gap": false,
+    "langOK": false,
+    "unsafeFlag": false
+   },
+   {
+    "case": "IT-02",
+    "lang": "it",
+    "turn": 1,
+    "field": "medications",
+    "text": "Prende farmaci, integratori o rimedi specifici per questo problema?",
+    "gap": false,
+    "langOK": false,
+    "unsafeFlag": false
+   },
+   {
+    "case": "IT-03",
+    "lang": "it",
+    "turn": 1,
+    "field": "severity",
+    "text": "Quanto è forte il suo malessere, da 1 a 10?",
+    "gap": true,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "IT-11",
+    "lang": "it",
+    "turn": 1,
+    "field": "allergies",
+    "text": "Ha delle allergie?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "IT-13",
+    "lang": "it",
+    "turn": 1,
+    "field": "allergies",
+    "text": "Ha allergie a farmaci o altre sostanze?",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "TH-10",
+    "lang": "th",
+    "turn": 1,
+    "field": "onset",
+    "text": "อาการนี้เริ่มเป็นตั้งแต่เมื่อไหร่คะ",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "TH-12",
+    "lang": "th",
+    "turn": 1,
+    "field": "medications",
+    "text": "ตอนนี้ทานยา อาหารเสริม หรือสมุนไพรตัวไหนอยู่ไหมคะ",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   },
+   {
+    "case": "TH-13",
+    "lang": "th",
+    "turn": 1,
+    "field": "medications",
+    "text": "ตอนนี้มีการทานยา อาหารเสริม หรือสมุนไพรตัวไหนเพื่อบรรเทาอาการปวดหลังบ้างไหมคะ",
+    "gap": false,
+    "langOK": true,
+    "unsafeFlag": false
+   }
+  ]
+ },
+ "M7": {
+  "medianRatio": 0.655,
+  "iqr": [
+   0,
+   0.806
+  ],
+  "n": 26,
+  "perCase": [
+   {
+    "id": "EN-01",
+    "raw": 46,
+    "summary": 38,
+    "ratio": 0.826
+   },
+   {
+    "id": "EN-09",
+    "raw": 29,
+    "summary": 19,
+    "ratio": 0.655
+   },
+   {
+    "id": "EN-13",
+    "raw": 31,
+    "summary": 25,
+    "ratio": 0.806
+   },
+   {
+    "id": "IT-04",
+    "raw": 11,
+    "summary": 0,
+    "ratio": 0
+   },
+   {
+    "id": "IT-08",
+    "raw": 37,
+    "summary": 23,
+    "ratio": 0.622
+   },
+   {
+    "id": "TH-03",
+    "raw": 4,
+    "summary": 0,
+    "ratio": 0
+   },
+   {
+    "id": "TH-11",
+    "raw": 40,
+    "summary": 0,
+    "ratio": 0
+   },
+   {
+    "id": "EN-02",
+    "raw": 33,
+    "summary": 32,
+    "ratio": 0.97
+   },
+   {
+    "id": "EN-03",
+    "raw": 5,
+    "summary": 6,
+    "ratio": 1.2
+   },
+   {
+    "id": "EN-04",
+    "raw": 9,
+    "summary": 5,
+    "ratio": 0.556
+   },
+   {
+    "id": "EN-08",
+    "raw": 33,
+    "summary": 22,
+    "ratio": 0.667
+   },
+   {
+    "id": "EN-10",
+    "raw": 33,
+    "summary": 22,
+    "ratio": 0.667
+   },
+   {
+    "id": "EN-11",
+    "raw": 28,
+    "summary": 20,
+    "ratio": 0.714
+   },
+   {
+    "id": "EN-12",
+    "raw": 34,
+    "summary": 20,
+    "ratio": 0.588
+   },
+   {
+    "id": "IT-01",
+    "raw": 32,
+    "summary": 30,
+    "ratio": 0.938
+   },
+   {
+    "id": "IT-02",
+    "raw": 42,
+    "summary": 32,
+    "ratio": 0.762
+   },
+   {
+    "id": "IT-03",
+    "raw": 11,
+    "summary": 12,
+    "ratio": 1.091
+   },
+   {
+    "id": "IT-11",
+    "raw": 33,
+    "summary": 27,
+    "ratio": 0.818
+   },
+   {
+    "id": "IT-13",
+    "raw": 32,
+    "summary": 18,
+    "ratio": 0.563
+   },
+   {
+    "id": "TH-01",
+    "raw": 39,
+    "summary": 0,
+    "ratio": 0
+   },
+   {
+    "id": "TH-02",
+    "raw": 43,
+    "summary": 0,
+    "ratio": 0
+   },
+   {
+    "id": "TH-04",
+    "raw": 15,
+    "summary": 0,
+    "ratio": 0
+   },
+   {
+    "id": "TH-08",
+    "raw": 36,
+    "summary": 0,
+    "ratio": 0
+   },
+   {
+    "id": "TH-10",
+    "raw": 31,
+    "summary": 23,
+    "ratio": 0.742
+   },
+   {
+    "id": "TH-12",
+    "raw": 40,
+    "summary": 21,
+    "ratio": 0.525
+   },
+   {
+    "id": "TH-13",
+    "raw": 38,
+    "summary": 25,
+    "ratio": 0.658
+   }
+  ]
+ },
+ "M8": {
+  "turn": {
+   "p50": 42774,
+   "p95": 662761,
+   "n": 29
+  },
+  "extract": {
+   "p50": 38995,
+   "p95": 46682,
+   "n": 22
+  },
+  "next_question": {
+   "p50": 3602,
+   "p95": 13349,
+   "n": 21
+  },
+  "red_flags": {
+   "p50": 2439,
+   "p95": 10106,
+   "n": 25
+  },
+  "failedCalls": 20,
+  "failedByError": {
+   "extract: Provider timeout or turn deadline": 8,
+   "extract: Provider request failed": 8,
+   "red_flags: Provider request failed": 4
+  }
+ },
+ "M9": {
+  "firstAttemptValid": {
+   "k": 22,
+   "n": 29,
+   "rate": 0.759,
+   "ci95": [
+    0.579,
+    0.878
+   ]
+  },
+  "validAfterRepair": {
+   "k": 22,
+   "n": 29,
+   "rate": 0.759,
+   "ci95": [
+    0.579,
+    0.878
+   ]
+  },
+  "schemaAbstains": 0
+ },
+ "M10": [
+  {
+   "bin": "[0.5,0.7]",
+   "k": 0,
+   "n": 0,
+   "rate": null,
+   "ci95": null
+  },
+  {
+   "bin": "[0.7,0.85]",
+   "k": 35,
+   "n": 45,
+   "rate": 0.778,
+   "ci95": [
+    0.637,
+    0.875
+   ]
+  },
+  {
+   "bin": "[0.85,1]",
+   "k": 60,
+   "n": 76,
+   "rate": 0.789,
+   "ci95": [
+    0.685,
+    0.866
+   ]
+  }
+ ],
+ "M11": {
+  "screenImplemented": true,
+  "holdout": {
+   "v1.0": {
+    "recall": {
+     "k": 7,
+     "n": 10,
+     "rate": 0.7,
+     "ci95": [
+      0.397,
+      0.892
+     ]
+    },
+    "falseAlarm": {
+     "k": 3,
+     "n": 8,
+     "rate": 0.375,
+     "ci95": [
+      0.137,
+      0.694
+     ]
+    }
+   },
+   "v1.1": {
+    "recall": {
+     "k": 7,
+     "n": 10,
+     "rate": 0.7,
+     "ci95": [
+      0.397,
+      0.892
+     ]
+    },
+    "falseAlarm": {
+     "k": 3,
+     "n": 8,
+     "rate": 0.375,
+     "ci95": [
+      0.137,
+      0.694
+     ]
+    }
+   },
+   "v1.1+model": {
+    "recall": {
+     "k": 9,
+     "n": 10,
+     "rate": 0.9,
+     "ci95": [
+      0.596,
+      0.982
+     ]
+    },
+    "falseAlarm": {
+     "k": 3,
+     "n": 8,
+     "rate": 0.375,
+     "ci95": [
+      0.137,
+      0.694
+     ]
+    },
+    "modelOnlyFalseAlarms": [],
+    "screen": {
+     "verifiedNonLow": 2,
+     "discardedUnverified": 0,
+     "lowCertainty": 0
+    }
+   },
+   "perCase": [
+    {
+     "id": "HO-01",
+     "lang": "th",
+     "gold": "chest",
+     "v1.0": "RF-CHEST-01,RF-CHEST-02",
+     "v1.1": "RF-CHEST-01,RF-CHEST-02",
+     "model": "-"
+    },
+    {
+     "id": "HO-02",
+     "lang": "th",
+     "gold": "stroke",
+     "v1.0": "RF-STROKE-01",
+     "v1.1": "RF-STROKE-01,RF-STROKE-02,RF-STROKE-03",
+     "model": "-"
+    },
+    {
+     "id": "HO-03",
+     "lang": "th",
+     "gold": "anaphylaxis",
+     "v1.0": "RF-ANAPH-01",
+     "v1.1": "RF-ANAPH-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-04",
+     "lang": "th",
+     "gold": "suicide",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "MODEL-SUICIDE"
+    },
+    {
+     "id": "HO-05",
+     "lang": "it",
+     "gold": "bleeding",
+     "v1.0": "RF-BLEED-01",
+     "v1.1": "RF-BLEED-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-06",
+     "lang": "it",
+     "gold": "pregnancy",
+     "v1.0": "RF-PREG-01",
+     "v1.1": "RF-PREG-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-07",
+     "lang": "it",
+     "gold": "headache",
+     "v1.0": "RF-HEAD-01",
+     "v1.1": "RF-HEAD-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-08",
+     "lang": "en",
+     "gold": "meningitis",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "MODEL-MENING"
+    },
+    {
+     "id": "HO-09",
+     "lang": "en",
+     "gold": "seizure",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-10",
+     "lang": "en",
+     "gold": "syncope",
+     "v1.0": "RF-SYNC-01",
+     "v1.1": "RF-SYNC-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-11",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "RF-CHEST-02,RF-CHEST-01",
+     "v1.1": "RF-CHEST-02,RF-CHEST-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-12",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "RF-MENING-01",
+     "v1.1": "RF-MENING-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-13",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-14",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-15",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-16",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "HO-17",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "RF-SEIZ-01",
+     "v1.1": "RF-SEIZ-01",
+     "model": "-"
+    },
+    {
+     "id": "HO-18",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    }
+   ]
+  },
+  "cases40": {
+   "v1.0": {
+    "recall": {
+     "k": 9,
+     "n": 11,
+     "rate": 0.818,
+     "ci95": [
+      0.523,
+      0.949
+     ]
+    },
+    "falseAlarm": {
+     "k": 2,
+     "n": 29,
+     "rate": 0.069,
+     "ci95": [
+      0.019,
+      0.22
+     ]
+    }
+   },
+   "v1.1": {
+    "recall": {
+     "k": 11,
+     "n": 11,
+     "rate": 1,
+     "ci95": [
+      0.741,
+      1
+     ]
+    },
+    "falseAlarm": {
+     "k": 2,
+     "n": 29,
+     "rate": 0.069,
+     "ci95": [
+      0.019,
+      0.22
+     ]
+    }
+   },
+   "v1.1+model": {
+    "recall": {
+     "k": 11,
+     "n": 11,
+     "rate": 1,
+     "ci95": [
+      0.741,
+      1
+     ]
+    },
+    "falseAlarm": {
+     "k": 3,
+     "n": 29,
+     "rate": 0.103,
+     "ci95": [
+      0.036,
+      0.264
+     ]
+    },
+    "modelOnlyFalseAlarms": [
+     "IT-10"
+    ],
+    "screen": {
+     "verifiedNonLow": 1,
+     "discardedUnverified": 0,
+     "lowCertainty": 0
+    }
+   },
+   "perCase": [
+    {
+     "id": "EN-01",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "EN-05",
+     "lang": "en",
+     "gold": "RF-SUICIDE-01",
+     "v1.0": "RF-SUICIDE-01",
+     "v1.1": "RF-SUICIDE-01",
+     "model": "-"
+    },
+    {
+     "id": "EN-09",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "EN-13",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "IT-04",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "IT-08",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "IT-12",
+     "lang": "it",
+     "gold": "RF-CHEST-01,RF-CHEST-02",
+     "v1.0": "RF-CHEST-02",
+     "v1.1": "RF-CHEST-01,RF-CHEST-02",
+     "model": "-"
+    },
+    {
+     "id": "TH-03",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "TH-07",
+     "lang": "th",
+     "gold": "RF-SUICIDE-01",
+     "v1.0": "RF-SUICIDE-01",
+     "v1.1": "RF-SUICIDE-01",
+     "model": "-"
+    },
+    {
+     "id": "TH-11",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "EN-02",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "EN-03",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "EN-04",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "EN-06",
+     "lang": "en",
+     "gold": "RF-HEAD-01",
+     "v1.0": "RF-HEAD-01",
+     "v1.1": "RF-HEAD-01",
+     "model": "-"
+    },
+    {
+     "id": "EN-07",
+     "lang": "en",
+     "gold": "RF-STROKE-01",
+     "v1.0": "RF-STROKE-01",
+     "v1.1": "RF-STROKE-01,RF-STROKE-02",
+     "model": "-"
+    },
+    {
+     "id": "EN-08",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "EN-10",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "EN-11",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "EN-12",
+     "lang": "en",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "IT-01",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "IT-02",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "IT-03",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "IT-05",
+     "lang": "it",
+     "gold": "RF-ANAPH-01,RF-BREATH-02",
+     "v1.0": "RF-BREATH-02,RF-ANAPH-01",
+     "v1.1": "RF-BREATH-02,RF-ANAPH-01",
+     "model": "-"
+    },
+    {
+     "id": "IT-06",
+     "lang": "it",
+     "gold": "RF-CHEST-01,RF-CHEST-02",
+     "v1.0": "-",
+     "v1.1": "RF-CHEST-01,RF-CHEST-02",
+     "model": "-"
+    },
+    {
+     "id": "IT-07",
+     "lang": "it",
+     "gold": "RF-BLEED-01",
+     "v1.0": "RF-BLEED-01",
+     "v1.1": "RF-BLEED-01",
+     "model": "-"
+    },
+    {
+     "id": "IT-09",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "RF-SUICIDE-01",
+     "v1.1": "RF-SUICIDE-01",
+     "model": "-"
+    },
+    {
+     "id": "IT-10",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "MODEL-HEAD"
+    },
+    {
+     "id": "IT-11",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "IT-13",
+     "lang": "it",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "TH-01",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "TH-02",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "TH-04",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "TH-05",
+     "lang": "th",
+     "gold": "RF-CHEST-01,RF-CHEST-02",
+     "v1.0": "RF-CHEST-01,RF-CHEST-02",
+     "v1.1": "RF-CHEST-01,RF-CHEST-02",
+     "model": "-"
+    },
+    {
+     "id": "TH-06",
+     "lang": "th",
+     "gold": "RF-STROKE-01",
+     "v1.0": "-",
+     "v1.1": "RF-STROKE-02,RF-STROKE-03",
+     "model": "-"
+    },
+    {
+     "id": "TH-08",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "TH-09",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "RF-CHEST-02",
+     "v1.1": "RF-CHEST-02",
+     "model": "-"
+    },
+    {
+     "id": "TH-10",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "TH-12",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "TH-13",
+     "lang": "th",
+     "gold": "none",
+     "v1.0": "-",
+     "v1.1": "-",
+     "model": "-"
+    },
+    {
+     "id": "TH-14",
+     "lang": "th",
+     "gold": "RF-PREG-01",
+     "v1.0": "RF-PREG-01",
+     "v1.1": "RF-PREG-01",
+     "model": "-"
+    }
+   ]
+  }
+ },
+ "fieldRows": [
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": "Burning urination, frequency",
+   "pred": "burning when I pee",
+   "quote": "burning when I pee",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0.33,
+   "evidence": [
+    {
+     "turnId": "3d5d91aa-217a-4009-a7bf-7dc1a0f762a7",
+     "quote": "burning when I pee",
+     "start": 13,
+     "end": 31
+    }
+   ],
+   "goldEvidence": [
+    "burning when I pee",
+    "need to go all the time"
+   ]
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "onset",
+   "gold": "2 days ago",
+   "pred": "two days",
+   "quote": "for two days now",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "3d5d91aa-217a-4009-a7bf-7dc1a0f762a7",
+     "quote": "for two days now",
+     "start": 32,
+     "end": 48
+    }
+   ],
+   "goldEvidence": [
+    "for two days"
+   ]
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "duration",
+   "gold": "2 days",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "two days"
+   ]
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "severity",
+   "gold": "4/10",
+   "pred": "4 out of 10",
+   "quote": "about a 4 out of 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "3d5d91aa-217a-4009-a7bf-7dc1a0f762a7",
+     "quote": "about a 4 out of 10",
+     "start": 96,
+     "end": 115
+    }
+   ],
+   "goldEvidence": [
+    "4 out of 10"
+   ]
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": "Urinary frequency, no fever",
+   "pred": "need to go all the time, no fever",
+   "quote": "need to go all the time | No fever",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.5,
+   "evidence": [
+    {
+     "turnId": "3d5d91aa-217a-4009-a7bf-7dc1a0f762a7",
+     "quote": "need to go all the time",
+     "start": 56,
+     "end": 79
+    },
+    {
+     "turnId": "3d5d91aa-217a-4009-a7bf-7dc1a0f762a7",
+     "quote": "No fever",
+     "start": 81,
+     "end": 89
+    }
+   ],
+   "goldEvidence": [
+    "need to go all the time",
+    "No fever"
+   ]
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "medications",
+   "gold": "Daily multivitamin",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "daily multivitamin"
+   ]
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "allergies",
+   "gold": "No allergies",
+   "pred": "No known allergies",
+   "quote": "no allergies",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "3d5d91aa-217a-4009-a7bf-7dc1a0f762a7",
+     "quote": "no allergies",
+     "start": 160,
+     "end": 172
+    }
+   ],
+   "goldEvidence": [
+    "no allergies"
+   ]
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": "Not pregnant",
+   "pred": "not pregnant",
+   "quote": "I'm not pregnant",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "3d5d91aa-217a-4009-a7bf-7dc1a0f762a7",
+     "quote": "I'm not pregnant",
+     "start": 142,
+     "end": 158
+    }
+   ],
+   "goldEvidence": [
+    "I'm not pregnant"
+   ]
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "age",
+   "gold": "31",
+   "pred": "31 years old",
+   "quote": "31 year old",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.5,
+   "evidence": [
+    {
+     "turnId": "3d5d91aa-217a-4009-a7bf-7dc1a0f762a7",
+     "quote": "31 year old",
+     "start": 123,
+     "end": 134
+    }
+   ],
+   "goldEvidence": [
+    "31 year old"
+   ]
+  },
+  {
+   "case": "EN-01",
+   "lang": "en",
+   "key": "sex",
+   "gold": "Female",
+   "pred": "woman",
+   "quote": "woman",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "3d5d91aa-217a-4009-a7bf-7dc1a0f762a7",
+     "quote": "woman",
+     "start": 135,
+     "end": 140
+    }
+   ],
+   "goldEvidence": [
+    "woman"
+   ]
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": "Cramping abdominal pain, on and off",
+   "pred": "Cramping belly pain",
+   "quote": "Cramping belly pain",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.57,
+   "evidence": [
+    {
+     "turnId": "5f37d6c9-d0de-4397-a401-d4eb2f9a6ded",
+     "quote": "Cramping belly pain",
+     "start": 0,
+     "end": 19
+    }
+   ],
+   "goldEvidence": [
+    "Cramping belly pain on and off"
+   ]
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "onset",
+   "gold": "Since yesterday",
+   "pred": "since yesterday",
+   "quote": "since yesterday",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "5f37d6c9-d0de-4397-a401-d4eb2f9a6ded",
+     "quote": "since yesterday",
+     "start": 31,
+     "end": 46
+    }
+   ],
+   "goldEvidence": [
+    "since yesterday"
+   ]
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "severity",
+   "gold": "5/10",
+   "pred": "5/10",
+   "quote": "around 5/10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "5f37d6c9-d0de-4397-a401-d4eb2f9a6ded",
+     "quote": "around 5/10",
+     "start": 48,
+     "end": 59
+    }
+   ],
+   "goldEvidence": [
+    "5/10"
+   ]
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "location",
+   "gold": "Abdomen",
+   "pred": "belly",
+   "quote": "belly pain",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "5f37d6c9-d0de-4397-a401-d4eb2f9a6ded",
+     "quote": "belly pain",
+     "start": 9,
+     "end": 19
+    }
+   ],
+   "goldEvidence": [
+    "belly"
+   ]
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": "Denies blood in stool or black stools",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "No blood in stool and my stools aren't black"
+   ]
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "medications",
+   "gold": "No regular medications",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "no regular medications"
+   ]
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "allergies",
+   "gold": "Latex",
+   "pred": "latex",
+   "quote": "allergic to latex",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "5f37d6c9-d0de-4397-a401-d4eb2f9a6ded",
+     "quote": "allergic to latex",
+     "start": 121,
+     "end": 138
+    }
+   ],
+   "goldEvidence": [
+    "allergic to latex"
+   ]
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "age",
+   "gold": "40",
+   "pred": "40",
+   "quote": "I'm 40",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "5f37d6c9-d0de-4397-a401-d4eb2f9a6ded",
+     "quote": "I'm 40",
+     "start": 107,
+     "end": 113
+    }
+   ],
+   "goldEvidence": [
+    "I'm 40"
+   ]
+  },
+  {
+   "case": "EN-09",
+   "lang": "en",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "male",
+   "quote": "male",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "5f37d6c9-d0de-4397-a401-d4eb2f9a6ded",
+     "quote": "male",
+     "start": 115,
+     "end": 119
+    }
+   ],
+   "goldEvidence": [
+    "male"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": "Itchy red rash on both forearms",
+   "pred": "itchy red rash",
+   "quote": "itchy red rash",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.75,
+   "evidence": [
+    {
+     "turnId": "619f8ea9-8f81-4977-87b4-d38864c5b0c4",
+     "quote": "itchy red rash",
+     "start": 41,
+     "end": 55
+    }
+   ],
+   "goldEvidence": [
+    "itchy red rash on both forearms"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "onset",
+   "gold": "4 days ago",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "for four days"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "duration",
+   "gold": "4 days",
+   "pred": "four days",
+   "quote": "for four days",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "619f8ea9-8f81-4977-87b4-d38864c5b0c4",
+     "quote": "for four days",
+     "start": 73,
+     "end": 86
+    }
+   ],
+   "goldEvidence": [
+    "four days"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "severity",
+   "gold": "Itch about 5/10",
+   "pred": "5/10",
+   "quote": "itch is maybe 5/10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.67,
+   "evidence": [
+    {
+     "turnId": "619f8ea9-8f81-4977-87b4-d38864c5b0c4",
+     "quote": "itch is maybe 5/10",
+     "start": 88,
+     "end": 106
+    }
+   ],
+   "goldEvidence": [
+    "5/10"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "location",
+   "gold": "Both forearms",
+   "pred": "both forearms",
+   "quote": "on both forearms",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "619f8ea9-8f81-4977-87b4-d38864c5b0c4",
+     "quote": "on both forearms",
+     "start": 56,
+     "end": 72
+    }
+   ],
+   "goldEvidence": [
+    "both forearms"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "medications",
+   "gold": "None",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "no meds"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "allergies",
+   "gold": "Nuts",
+   "pred": "nuts",
+   "quote": "allergic to nuts",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "619f8ea9-8f81-4977-87b4-d38864c5b0c4",
+     "quote": "allergic to nuts",
+     "start": 139,
+     "end": 155
+    }
+   ],
+   "goldEvidence": [
+    "allergic to nuts"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": "Not pregnant",
+   "pred": "not pregnant",
+   "quote": "not pregnant",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "619f8ea9-8f81-4977-87b4-d38864c5b0c4",
+     "quote": "not pregnant",
+     "start": 125,
+     "end": 137
+    }
+   ],
+   "goldEvidence": [
+    "not pregnant"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "age",
+   "gold": "30",
+   "pred": "30 years",
+   "quote": "I'm 30",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.67,
+   "evidence": [
+    {
+     "turnId": "619f8ea9-8f81-4977-87b4-d38864c5b0c4",
+     "quote": "I'm 30",
+     "start": 108,
+     "end": 114
+    }
+   ],
+   "goldEvidence": [
+    "I'm 30"
+   ]
+  },
+  {
+   "case": "EN-13",
+   "lang": "en",
+   "key": "sex",
+   "gold": "Female",
+   "pred": "woman",
+   "quote": "a woman",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "619f8ea9-8f81-4977-87b4-d38864c5b0c4",
+     "quote": "a woman",
+     "start": 116,
+     "end": 123
+    }
+   ],
+   "goldEvidence": [
+    "a woman"
+   ]
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "chief_complaint",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "onset",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "severity",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "associated_symptoms",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "medications",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "allergies",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "age",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-04",
+   "lang": "it",
+   "key": "sex",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "chief_complaint",
+   "gold": "Headache",
+   "pred": "headache",
+   "quote": "Ho mal di testa",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "c13ca184-adb7-4ec4-884b-90ec83b57485",
+     "quote": "Ho mal di testa",
+     "start": 0,
+     "end": 15
+    }
+   ],
+   "goldEvidence": [
+    "mal di testa"
+   ]
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "onset",
+   "gold": "3 days ago",
+   "pred": "for three days",
+   "quote": "da tre giorni",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "c13ca184-adb7-4ec4-884b-90ec83b57485",
+     "quote": "da tre giorni",
+     "start": 16,
+     "end": 29
+    }
+   ],
+   "goldEvidence": [
+    "da tre giorni"
+   ]
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "duration",
+   "gold": "3 days",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "tre giorni"
+   ]
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "severity",
+   "gold": "5/10",
+   "pred": "5 out of 10",
+   "quote": "5 su 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "c13ca184-adb7-4ec4-884b-90ec83b57485",
+     "quote": "5 su 10",
+     "start": 54,
+     "end": 61
+    }
+   ],
+   "goldEvidence": [
+    "5 su 10"
+   ]
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "location",
+   "gold": "Temple",
+   "pred": "temple",
+   "quote": "una fitta alla tempia",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "c13ca184-adb7-4ec4-884b-90ec83b57485",
+     "quote": "una fitta alla tempia",
+     "start": 31,
+     "end": 52
+    }
+   ],
+   "goldEvidence": [
+    "alla tempia"
+   ]
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "associated_symptoms",
+   "gold": "Denies chest pain and breathlessness",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "Non ho dolore al petto e non ho affanno"
+   ]
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "medications",
+   "gold": "Vitamin D",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "la vitamina D"
+   ]
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "allergies",
+   "gold": "No allergies",
+   "pred": "No known allergies",
+   "quote": "nessuna allergia",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "c13ca184-adb7-4ec4-884b-90ec83b57485",
+     "quote": "nessuna allergia",
+     "start": 144,
+     "end": 160
+    }
+   ],
+   "goldEvidence": [
+    "nessuna allergia"
+   ]
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "age",
+   "gold": "29",
+   "pred": "29 years",
+   "quote": "Ho 29 anni",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.67,
+   "evidence": [
+    {
+     "turnId": "c13ca184-adb7-4ec4-884b-90ec83b57485",
+     "quote": "Ho 29 anni",
+     "start": 118,
+     "end": 128
+    }
+   ],
+   "goldEvidence": [
+    "29 anni"
+   ]
+  },
+  {
+   "case": "IT-08",
+   "lang": "it",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "man",
+   "quote": "sono un uomo",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "c13ca184-adb7-4ec4-884b-90ec83b57485",
+     "quote": "sono un uomo",
+     "start": 130,
+     "end": 142
+    }
+   ],
+   "goldEvidence": [
+    "un uomo"
+   ]
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "chief_complaint",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "onset",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "severity",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "associated_symptoms",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "medications",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "allergies",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "age",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-03",
+   "lang": "th",
+   "key": "sex",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "chief_complaint",
+   "gold": "Severe watery diarrhoea",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ท้องเสียหนักมาก"
+   ]
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "onset",
+   "gold": "Since last night, after eating street papaya salad",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ตั้งแต่เมื่อคืนหลังกินส้มตำริมทาง"
+   ]
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "severity",
+   "gold": "Severe; 8-9 watery stools",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ท้องเสียหนักมาก",
+    "ถ่ายเป็นน้ำ 8-9 รอบ"
+   ]
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "associated_symptoms",
+   "gold": "Mild fatigue",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "อ่อนเพลียนิดนึง"
+   ]
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "medications",
+   "gold": "None",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ไม่ได้กินยาอะไร"
+   ]
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "allergies",
+   "gold": "No drug allergy",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ไม่แพ้ยา"
+   ]
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "age",
+   "gold": "26",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "อายุ 26"
+   ]
+  },
+  {
+   "case": "TH-11",
+   "lang": "th",
+   "key": "sex",
+   "gold": "Male",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ผู้ชาย"
+   ]
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": "Left ankle injury (rolled ankle)",
+   "pred": "rolled my left ankle",
+   "quote": "rolled my left ankle",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.86,
+   "evidence": [
+    {
+     "turnId": "bd299a43-1c79-43f5-a909-af4fc9305370",
+     "quote": "rolled my left ankle",
+     "start": 2,
+     "end": 22
+    }
+   ],
+   "goldEvidence": [
+    "rolled my left ankle"
+   ]
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "onset",
+   "gold": "Yesterday evening",
+   "pred": "yesterday evening",
+   "quote": "yesterday evening",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "bd299a43-1c79-43f5-a909-af4fc9305370",
+     "quote": "yesterday evening",
+     "start": 40,
+     "end": 57
+    }
+   ],
+   "goldEvidence": [
+    "yesterday evening"
+   ]
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "severity",
+   "gold": "6/10",
+   "pred": "6/10",
+   "quote": "6/10",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "bd299a43-1c79-43f5-a909-af4fc9305370",
+     "quote": "6/10",
+     "start": 113,
+     "end": 117
+    }
+   ],
+   "goldEvidence": [
+    "6/10"
+   ]
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "location",
+   "gold": "Left ankle",
+   "pred": "left ankle",
+   "quote": "left ankle",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "bd299a43-1c79-43f5-a909-af4fc9305370",
+     "quote": "left ankle",
+     "start": 12,
+     "end": 22
+    }
+   ],
+   "goldEvidence": [
+    "left ankle"
+   ]
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": "Swelling, difficulty bearing weight",
+   "pred": "swollen, can barely put weight on it",
+   "quote": "swollen and I can barely put weight on it",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "bd299a43-1c79-43f5-a909-af4fc9305370",
+     "quote": "swollen and I can barely put weight on it",
+     "start": 64,
+     "end": 105
+    }
+   ],
+   "goldEvidence": [
+    "swollen",
+    "barely put weight on it"
+   ]
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "medications",
+   "gold": "None",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "don't take any medication"
+   ]
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "allergies",
+   "gold": "No allergies",
+   "pred": "No known allergies",
+   "quote": "no allergies",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "bd299a43-1c79-43f5-a909-af4fc9305370",
+     "quote": "no allergies",
+     "start": 133,
+     "end": 145
+    }
+   ],
+   "goldEvidence": [
+    "no allergies"
+   ]
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "age",
+   "gold": "24",
+   "pred": "24",
+   "quote": "24",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "bd299a43-1c79-43f5-a909-af4fc9305370",
+     "quote": "24",
+     "start": 123,
+     "end": 125
+    }
+   ],
+   "goldEvidence": [
+    "I'm 24"
+   ]
+  },
+  {
+   "case": "EN-02",
+   "lang": "en",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "male",
+   "quote": "male",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "bd299a43-1c79-43f5-a909-af4fc9305370",
+     "quote": "male",
+     "start": 127,
+     "end": 131
+    }
+   ],
+   "goldEvidence": [
+    "male"
+   ]
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": "Stomach pain",
+   "pred": "stomach pain",
+   "quote": "stomach pain",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "3aa295ea-b694-417d-be1b-b477f743d655",
+     "quote": "stomach pain",
+     "start": 11,
+     "end": 23
+    }
+   ],
+   "goldEvidence": [
+    "stomach pain"
+   ]
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "onset",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "severity",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "location",
+   "gold": null,
+   "pred": "stomach",
+   "quote": "stomach pain",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": false,
+   "f1": null,
+   "evidence": [
+    {
+     "turnId": "3aa295ea-b694-417d-be1b-b477f743d655",
+     "quote": "stomach pain",
+     "start": 11,
+     "end": 23
+    }
+   ],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "medications",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "allergies",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "age",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-03",
+   "lang": "en",
+   "key": "sex",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": null,
+   "pred": "don't feel right",
+   "quote": "I don't feel right",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": null,
+   "evidence": [
+    {
+     "turnId": "be8e4f83-b5d4-4600-9e8d-9d886e7fb4bb",
+     "quote": "I don't feel right",
+     "start": 0,
+     "end": 18
+    }
+   ],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "onset",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "severity",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "medications",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "allergies",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "age",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-04",
+   "lang": "en",
+   "key": "sex",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": "Dry cough",
+   "pred": "dry cough",
+   "quote": "Dry cough",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "55b39a81-7ca3-4fd6-843d-46e6f07fc3aa",
+     "quote": "Dry cough",
+     "start": 0,
+     "end": 9
+    }
+   ],
+   "goldEvidence": [
+    "Dry cough"
+   ]
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "onset",
+   "gold": "1 week ago",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "for a week"
+   ]
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "duration",
+   "gold": "1 week",
+   "pred": "a week",
+   "quote": "for a week",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.67,
+   "evidence": [
+    {
+     "turnId": "55b39a81-7ca3-4fd6-843d-46e6f07fc3aa",
+     "quote": "for a week",
+     "start": 10,
+     "end": 20
+    }
+   ],
+   "goldEvidence": [
+    "a week"
+   ]
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "severity",
+   "gold": "3/10",
+   "pred": "3 out of 10",
+   "quote": "about a 3 out of 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "55b39a81-7ca3-4fd6-843d-46e6f07fc3aa",
+     "quote": "about a 3 out of 10",
+     "start": 22,
+     "end": 41
+    }
+   ],
+   "goldEvidence": [
+    "3 out of 10"
+   ]
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": "Denies chest pain and shortness of breath",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "No chest pain, no shortness of breath"
+   ]
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "medications",
+   "gold": "Levothyroxine",
+   "pred": "levothyroxine",
+   "quote": "I take levothyroxine",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "55b39a81-7ca3-4fd6-843d-46e6f07fc3aa",
+     "quote": "I take levothyroxine",
+     "start": 144,
+     "end": 164
+    }
+   ],
+   "goldEvidence": [
+    "take levothyroxine"
+   ]
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "allergies",
+   "gold": "No known allergies",
+   "pred": "No known allergies",
+   "quote": "no known allergies",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "55b39a81-7ca3-4fd6-843d-46e6f07fc3aa",
+     "quote": "no known allergies",
+     "start": 120,
+     "end": 138
+    }
+   ],
+   "goldEvidence": [
+    "no known allergies"
+   ]
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "age",
+   "gold": "36",
+   "pred": "36",
+   "quote": "I'm 36",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "55b39a81-7ca3-4fd6-843d-46e6f07fc3aa",
+     "quote": "I'm 36",
+     "start": 106,
+     "end": 112
+    }
+   ],
+   "goldEvidence": [
+    "I'm 36"
+   ]
+  },
+  {
+   "case": "EN-08",
+   "lang": "en",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "male",
+   "quote": "male",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "55b39a81-7ca3-4fd6-843d-46e6f07fc3aa",
+     "quote": "male",
+     "start": 114,
+     "end": 118
+    }
+   ],
+   "goldEvidence": [
+    "male"
+   ]
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": "Abdominal pain",
+   "pred": "stomach ache",
+   "quote": "ปวดท้อง",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "b169b534-7129-4c95-84ca-e0369e72ad63",
+     "quote": "ปวดท้อง",
+     "start": 22,
+     "end": 29
+    }
+   ],
+   "goldEvidence": [
+    "ปวดท้อง"
+   ]
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "onset",
+   "gold": "Since yesterday",
+   "pred": "since yesterday",
+   "quote": "since yesterday",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "b169b534-7129-4c95-84ca-e0369e72ad63",
+     "quote": "since yesterday",
+     "start": 30,
+     "end": 45
+    }
+   ],
+   "goldEvidence": [
+    "since yesterday"
+   ]
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "severity",
+   "gold": "5/10",
+   "pred": "5 out of 10",
+   "quote": "5 out of 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "b169b534-7129-4c95-84ca-e0369e72ad63",
+     "quote": "5 out of 10",
+     "start": 52,
+     "end": 63
+    }
+   ],
+   "goldEvidence": [
+    "5 out of 10"
+   ]
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "location",
+   "gold": "Around the belly button",
+   "pred": "around the belly button",
+   "quote": "around the belly button",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "b169b534-7129-4c95-84ca-e0369e72ad63",
+     "quote": "around the belly button",
+     "start": 72,
+     "end": 95
+    }
+   ],
+   "goldEvidence": [
+    "around the belly button"
+   ]
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": "Bloating",
+   "pred": "bloating",
+   "quote": "ท้องอืด",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "b169b534-7129-4c95-84ca-e0369e72ad63",
+     "quote": "ท้องอืด",
+     "start": 108,
+     "end": 115
+    }
+   ],
+   "goldEvidence": [
+    "ท้องอืด"
+   ]
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "medications",
+   "gold": "None",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "don't take any medicine"
+   ]
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "allergies",
+   "gold": "No drug allergy",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "no drug allergy"
+   ]
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "age",
+   "gold": "29",
+   "pred": "29",
+   "quote": "29",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "b169b534-7129-4c95-84ca-e0369e72ad63",
+     "quote": "29",
+     "start": 125,
+     "end": 127
+    }
+   ],
+   "goldEvidence": [
+    "I'm 29"
+   ]
+  },
+  {
+   "case": "EN-10",
+   "lang": "en",
+   "key": "sex",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": "Abdominal pain",
+   "pred": "stomach ache",
+   "quote": "mal di pancia",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "d964565b-2c8d-4bb3-84aa-e98fe4f56c23",
+     "quote": "mal di pancia",
+     "start": 10,
+     "end": 23
+    }
+   ],
+   "goldEvidence": [
+    "ho mal di pancia"
+   ]
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "onset",
+   "gold": "Since this morning",
+   "pred": "since this morning",
+   "quote": "since this morning",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "d964565b-2c8d-4bb3-84aa-e98fe4f56c23",
+     "quote": "since this morning",
+     "start": 24,
+     "end": 42
+    }
+   ],
+   "goldEvidence": [
+    "since this morning"
+   ]
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "severity",
+   "gold": "4/10",
+   "pred": "4/10",
+   "quote": "4/10",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "d964565b-2c8d-4bb3-84aa-e98fe4f56c23",
+     "quote": "4/10",
+     "start": 57,
+     "end": 61
+    }
+   ],
+   "goldEvidence": [
+    "4/10"
+   ]
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "location",
+   "gold": null,
+   "pred": "stomach",
+   "quote": "mal di pancia",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": null,
+   "evidence": [
+    {
+     "turnId": "d964565b-2c8d-4bb3-84aa-e98fe4f56c23",
+     "quote": "mal di pancia",
+     "start": 10,
+     "end": 23
+    }
+   ],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": "Dull pain, mild nausea",
+   "pred": "nauseous",
+   "quote": "feel a bit nauseous",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "d964565b-2c8d-4bb3-84aa-e98fe4f56c23",
+     "quote": "feel a bit nauseous",
+     "start": 69,
+     "end": 88
+    }
+   ],
+   "goldEvidence": [
+    "a dull pain",
+    "a bit nauseous"
+   ]
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "medications",
+   "gold": "None",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "no medicine"
+   ]
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "allergies",
+   "gold": "No allergies",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "allergic to nothing"
+   ]
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "age",
+   "gold": "34",
+   "pred": "34",
+   "quote": "I'm 34",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "d964565b-2c8d-4bb3-84aa-e98fe4f56c23",
+     "quote": "I'm 34",
+     "start": 90,
+     "end": 96
+    }
+   ],
+   "goldEvidence": [
+    "I'm 34"
+   ]
+  },
+  {
+   "case": "EN-11",
+   "lang": "en",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "man",
+   "quote": "a man",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "d964565b-2c8d-4bb3-84aa-e98fe4f56c23",
+     "quote": "a man",
+     "start": 98,
+     "end": 103
+    }
+   ],
+   "goldEvidence": [
+    "a man"
+   ]
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "chief_complaint",
+   "gold": "Fever and body aches",
+   "pred": "fever",
+   "quote": "fever",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.5,
+   "evidence": [
+    {
+     "turnId": "7e2db55b-4782-46e9-b3f5-7a8367eccbf0",
+     "quote": "fever",
+     "start": 99,
+     "end": 104
+    }
+   ],
+   "goldEvidence": [
+    "a fever for two days, about 38.5, and body aches"
+   ]
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "onset",
+   "gold": "2 days ago",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "for two days"
+   ]
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "duration",
+   "gold": "2 days",
+   "pred": "two days",
+   "quote": "for two days",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "7e2db55b-4782-46e9-b3f5-7a8367eccbf0",
+     "quote": "for two days",
+     "start": 105,
+     "end": 117
+    }
+   ],
+   "goldEvidence": [
+    "two days"
+   ]
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "severity",
+   "gold": null,
+   "pred": "38.5",
+   "quote": "about 38.5",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": false,
+   "f1": null,
+   "evidence": [
+    {
+     "turnId": "7e2db55b-4782-46e9-b3f5-7a8367eccbf0",
+     "quote": "about 38.5",
+     "start": 119,
+     "end": 129
+    }
+   ],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "associated_symptoms",
+   "gold": "Fever about 38.5, body aches",
+   "pred": "body aches",
+   "quote": "body aches",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.67,
+   "evidence": [
+    {
+     "turnId": "7e2db55b-4782-46e9-b3f5-7a8367eccbf0",
+     "quote": "body aches",
+     "start": 135,
+     "end": 145
+    }
+   ],
+   "goldEvidence": [
+    "about 38.5",
+    "body aches"
+   ]
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "medications",
+   "gold": "None",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "no meds"
+   ]
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "allergies",
+   "gold": "No allergies",
+   "pred": "No known allergies",
+   "quote": "no allergies",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "7e2db55b-4782-46e9-b3f5-7a8367eccbf0",
+     "quote": "no allergies",
+     "start": 161,
+     "end": 173
+    }
+   ],
+   "goldEvidence": [
+    "no allergies"
+   ]
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "age",
+   "gold": "27",
+   "pred": "27",
+   "quote": "27",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "7e2db55b-4782-46e9-b3f5-7a8367eccbf0",
+     "quote": "27",
+     "start": 151,
+     "end": 153
+    }
+   ],
+   "goldEvidence": [
+    "I'm 27"
+   ]
+  },
+  {
+   "case": "EN-12",
+   "lang": "en",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "male",
+   "quote": "male",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "7e2db55b-4782-46e9-b3f5-7a8367eccbf0",
+     "quote": "male",
+     "start": 155,
+     "end": 159
+    }
+   ],
+   "goldEvidence": [
+    "male"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "chief_complaint",
+   "gold": "Sore throat",
+   "pred": "sore throat",
+   "quote": "ho mal di gola",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "ec543aeb-f15c-4c96-ba7a-37165aaec81f",
+     "quote": "ho mal di gola",
+     "start": 12,
+     "end": 26
+    }
+   ],
+   "goldEvidence": [
+    "mal di gola"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "onset",
+   "gold": "2 days ago",
+   "pred": "for two days",
+   "quote": "da due giorni",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "ec543aeb-f15c-4c96-ba7a-37165aaec81f",
+     "quote": "da due giorni",
+     "start": 27,
+     "end": 40
+    }
+   ],
+   "goldEvidence": [
+    "da due giorni"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "duration",
+   "gold": "2 days",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "due giorni"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "severity",
+   "gold": "4/10",
+   "pred": "4 out of 10",
+   "quote": "Direi 4 su 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "ec543aeb-f15c-4c96-ba7a-37165aaec81f",
+     "quote": "Direi 4 su 10",
+     "start": 88,
+     "end": 101
+    }
+   ],
+   "goldEvidence": [
+    "4 su 10"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "location",
+   "gold": "Throat",
+   "pred": "throat",
+   "quote": "mal di gola",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "ec543aeb-f15c-4c96-ba7a-37165aaec81f",
+     "quote": "mal di gola",
+     "start": 15,
+     "end": 26
+    }
+   ],
+   "goldEvidence": [
+    "gola"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "associated_symptoms",
+   "gold": "Pain on swallowing, no fever",
+   "pred": "when swallowing, no fever",
+   "quote": "soprattutto quando deglutisco | Niente febbre",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "ec543aeb-f15c-4c96-ba7a-37165aaec81f",
+     "quote": "soprattutto quando deglutisco",
+     "start": 42,
+     "end": 71
+    },
+    {
+     "turnId": "ec543aeb-f15c-4c96-ba7a-37165aaec81f",
+     "quote": "Niente febbre",
+     "start": 73,
+     "end": 86
+    }
+   ],
+   "goldEvidence": [
+    "quando deglutisco",
+    "Niente febbre"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "medications",
+   "gold": "None",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "non prendo farmaci"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "allergies",
+   "gold": "No allergies",
+   "pred": "No known allergies",
+   "quote": "non sono allergico a nulla",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "ec543aeb-f15c-4c96-ba7a-37165aaec81f",
+     "quote": "non sono allergico a nulla",
+     "start": 128,
+     "end": 154
+    }
+   ],
+   "goldEvidence": [
+    "non sono allergico a nulla"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "age",
+   "gold": "35",
+   "pred": "35 years",
+   "quote": "35 anni",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.67,
+   "evidence": [
+    {
+     "turnId": "ec543aeb-f15c-4c96-ba7a-37165aaec81f",
+     "quote": "35 anni",
+     "start": 119,
+     "end": 126
+    }
+   ],
+   "goldEvidence": [
+    "35 anni"
+   ]
+  },
+  {
+   "case": "IT-01",
+   "lang": "it",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "male",
+   "quote": "Sono un uomo",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "ec543aeb-f15c-4c96-ba7a-37165aaec81f",
+     "quote": "Sono un uomo",
+     "start": 103,
+     "end": 115
+    }
+   ],
+   "goldEvidence": [
+    "un uomo"
+   ]
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "chief_complaint",
+   "gold": "Low back pain, back locked up after lifting a heavy box",
+   "pred": "my back locked up",
+   "quote": "mi si è bloccata la schiena",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.5,
+   "evidence": [
+    {
+     "turnId": "ef5fcb18-e8e5-49d3-a94f-a3f72834c4f4",
+     "quote": "mi si è bloccata la schiena",
+     "start": 40,
+     "end": 67
+    }
+   ],
+   "goldEvidence": [
+    "mi si è bloccata la schiena"
+   ]
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "onset",
+   "gold": "Yesterday, after lifting a heavy box",
+   "pred": "Yesterday",
+   "quote": "Ieri",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": false,
+   "f1": 0.33,
+   "evidence": [
+    {
+     "turnId": "ef5fcb18-e8e5-49d3-a94f-a3f72834c4f4",
+     "quote": "Ieri",
+     "start": 0,
+     "end": 4
+    }
+   ],
+   "goldEvidence": [
+    "Ieri ho sollevato una scatola pesante"
+   ]
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "severity",
+   "gold": "7/10",
+   "pred": "7 out of 10",
+   "quote": "7 su 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "ef5fcb18-e8e5-49d3-a94f-a3f72834c4f4",
+     "quote": "7 su 10",
+     "start": 124,
+     "end": 131
+    }
+   ],
+   "goldEvidence": [
+    "7 su 10"
+   ]
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "location",
+   "gold": "Lower back",
+   "pred": "lower part",
+   "quote": "nella parte bassa",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.5,
+   "evidence": [
+    {
+     "turnId": "ef5fcb18-e8e5-49d3-a94f-a3f72834c4f4",
+     "quote": "nella parte bassa",
+     "start": 99,
+     "end": 116
+    }
+   ],
+   "goldEvidence": [
+    "nella parte bassa"
+   ]
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "associated_symptoms",
+   "gold": null,
+   "pred": "burst of pain",
+   "quote": "ho una botta di dolore",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": null,
+   "evidence": [
+    {
+     "turnId": "ef5fcb18-e8e5-49d3-a94f-a3f72834c4f4",
+     "quote": "ho una botta di dolore",
+     "start": 76,
+     "end": 98
+    }
+   ],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "medications",
+   "gold": "Blood pressure tablet",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "la pastiglia per la pressione"
+   ]
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "allergies",
+   "gold": "Penicillin",
+   "pred": "penicillina",
+   "quote": "allergico alla penicillina",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "ef5fcb18-e8e5-49d3-a94f-a3f72834c4f4",
+     "quote": "allergico alla penicillina",
+     "start": 159,
+     "end": 185
+    }
+   ],
+   "goldEvidence": [
+    "allergico alla penicillina"
+   ]
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "medical_history",
+   "gold": null,
+   "pred": "blood pressure",
+   "quote": "pastiglia per la pressione",
+   "status": "supported",
+   "confidence": 0.7,
+   "asserted": true,
+   "correct": false,
+   "f1": null,
+   "evidence": [
+    {
+     "turnId": "ef5fcb18-e8e5-49d3-a94f-a3f72834c4f4",
+     "quote": "pastiglia per la pressione",
+     "start": 202,
+     "end": 228
+    }
+   ],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "age",
+   "gold": "47",
+   "pred": "47 years",
+   "quote": "Ho 47 anni",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.67,
+   "evidence": [
+    {
+     "turnId": "ef5fcb18-e8e5-49d3-a94f-a3f72834c4f4",
+     "quote": "Ho 47 anni",
+     "start": 133,
+     "end": 143
+    }
+   ],
+   "goldEvidence": [
+    "47 anni"
+   ]
+  },
+  {
+   "case": "IT-02",
+   "lang": "it",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "man",
+   "quote": "sono un uomo",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "ef5fcb18-e8e5-49d3-a94f-a3f72834c4f4",
+     "quote": "sono un uomo",
+     "start": 145,
+     "end": 157
+    }
+   ],
+   "goldEvidence": [
+    "sono un uomo"
+   ]
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "chief_complaint",
+   "gold": "Fever",
+   "pred": "fever",
+   "quote": "ho la febbre",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "1d16676e-1d3c-4994-a473-2400786b9d70",
+     "quote": "ho la febbre",
+     "start": 7,
+     "end": 19
+    }
+   ],
+   "goldEvidence": [
+    "ho la febbre"
+   ]
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "onset",
+   "gold": "Since this morning",
+   "pred": "since this morning",
+   "quote": "da stamattina",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "1d16676e-1d3c-4994-a473-2400786b9d70",
+     "quote": "da stamattina",
+     "start": 20,
+     "end": 33
+    }
+   ],
+   "goldEvidence": [
+    "da stamattina"
+   ]
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "severity",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "associated_symptoms",
+   "gold": null,
+   "pred": "feel exhausted/broken",
+   "quote": "mi sento a pezzi",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": null,
+   "evidence": [
+    {
+     "turnId": "1d16676e-1d3c-4994-a473-2400786b9d70",
+     "quote": "mi sento a pezzi",
+     "start": 36,
+     "end": 52
+    }
+   ],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "medications",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "allergies",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "age",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-03",
+   "lang": "it",
+   "key": "sex",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "chief_complaint",
+   "gold": "Feeling very unwell with dizziness and persistent nausea",
+   "pred": "dizzy and nauseous",
+   "quote": "mi gira la testa e ho una nausea",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "d0cb4ff8-af63-4c35-bc77-ae5ff6177be8",
+     "quote": "mi gira la testa e ho una nausea",
+     "start": 37,
+     "end": 69
+    }
+   ],
+   "goldEvidence": [
+    "Mi sento uno straccio",
+    "mi gira la testa e ho una nausea che non passa"
+   ]
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "onset",
+   "gold": "Since this morning",
+   "pred": "since this morning",
+   "quote": "da stamattina",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "d0cb4ff8-af63-4c35-bc77-ae5ff6177be8",
+     "quote": "da stamattina",
+     "start": 22,
+     "end": 35
+    }
+   ],
+   "goldEvidence": [
+    "da stamattina"
+   ]
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "severity",
+   "gold": "6/10",
+   "pred": "6 out of 10",
+   "quote": "6 su 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "d0cb4ff8-af63-4c35-bc77-ae5ff6177be8",
+     "quote": "6 su 10",
+     "start": 90,
+     "end": 97
+    }
+   ],
+   "goldEvidence": [
+    "6 su 10"
+   ]
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "associated_symptoms",
+   "gold": "Dizziness, nausea",
+   "pred": "feel like a rag",
+   "quote": "Mi sento uno straccio",
+   "status": "supported",
+   "confidence": 0.7,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "d0cb4ff8-af63-4c35-bc77-ae5ff6177be8",
+     "quote": "Mi sento uno straccio",
+     "start": 0,
+     "end": 21
+    }
+   ],
+   "goldEvidence": [
+    "mi gira la testa",
+    "nausea che non passa"
+   ]
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "medications",
+   "gold": "Low-dose aspirin daily",
+   "pred": "aspirin",
+   "quote": "prendo l'aspirinetta ogni giorno",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "d0cb4ff8-af63-4c35-bc77-ae5ff6177be8",
+     "quote": "prendo l'aspirinetta ogni giorno",
+     "start": 143,
+     "end": 175
+    }
+   ],
+   "goldEvidence": [
+    "l'aspirinetta ogni giorno"
+   ]
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "allergies",
+   "gold": "No allergies",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "allergie nessuna"
+   ]
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "age",
+   "gold": "52",
+   "pred": "52 years",
+   "quote": "Ho 52 anni",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.67,
+   "evidence": [
+    {
+     "turnId": "d0cb4ff8-af63-4c35-bc77-ae5ff6177be8",
+     "quote": "Ho 52 anni",
+     "start": 99,
+     "end": 109
+    }
+   ],
+   "goldEvidence": [
+    "52 anni"
+   ]
+  },
+  {
+   "case": "IT-11",
+   "lang": "it",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "man",
+   "quote": "sono un uomo",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "d0cb4ff8-af63-4c35-bc77-ae5ff6177be8",
+     "quote": "sono un uomo",
+     "start": 111,
+     "end": 123
+    }
+   ],
+   "goldEvidence": [
+    "sono un uomo"
+   ]
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "chief_complaint",
+   "gold": "Dry cough",
+   "pred": "dry cough",
+   "quote": "tosse secca",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "f8df5ca9-eb6c-480f-897c-36d018fadaca",
+     "quote": "tosse secca",
+     "start": 70,
+     "end": 81
+    }
+   ],
+   "goldEvidence": [
+    "la tosse secca"
+   ]
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "onset",
+   "gold": "5 days ago",
+   "pred": "for five days",
+   "quote": "da cinque giorni",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "f8df5ca9-eb6c-480f-897c-36d018fadaca",
+     "quote": "da cinque giorni",
+     "start": 82,
+     "end": 98
+    }
+   ],
+   "goldEvidence": [
+    "da cinque giorni"
+   ]
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "duration",
+   "gold": "5 days",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "cinque giorni"
+   ]
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "severity",
+   "gold": "3/10",
+   "pred": "3 out of 10",
+   "quote": "tipo 3 su 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "f8df5ca9-eb6c-480f-897c-36d018fadaca",
+     "quote": "tipo 3 su 10",
+     "start": 122,
+     "end": 134
+    }
+   ],
+   "goldEvidence": [
+    "3 su 10"
+   ]
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "associated_symptoms",
+   "gold": "Worse at night",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "soprattutto la notte"
+   ]
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "medications",
+   "gold": "None",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "non prendo farmaci"
+   ]
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "allergies",
+   "gold": "No allergies",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "non ho allergie"
+   ]
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "age",
+   "gold": "44",
+   "pred": "44 years",
+   "quote": "Ho 44 anni",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.67,
+   "evidence": [
+    {
+     "turnId": "f8df5ca9-eb6c-480f-897c-36d018fadaca",
+     "quote": "Ho 44 anni",
+     "start": 136,
+     "end": 146
+    }
+   ],
+   "goldEvidence": [
+    "44 anni"
+   ]
+  },
+  {
+   "case": "IT-13",
+   "lang": "it",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "male",
+   "quote": "uomo",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "f8df5ca9-eb6c-480f-897c-36d018fadaca",
+     "quote": "uomo",
+     "start": 148,
+     "end": 152
+    }
+   ],
+   "goldEvidence": [
+    "uomo"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "chief_complaint",
+   "gold": "Sore throat",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "เจ็บคอมาสองวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "onset",
+   "gold": "2 days ago",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "มาสองวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "duration",
+   "gold": "2 days",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "สองวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "severity",
+   "gold": "4/10",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "เจ็บระดับ 4 จาก 10"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "location",
+   "gold": "Throat",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "เจ็บคอ"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "associated_symptoms",
+   "gold": "Pain on swallowing, low-grade fever about 37.8",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "กลืนน้ำลายก็เจ็บ",
+    "มีไข้ต่ำๆ ประมาณ 37.8"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "medications",
+   "gold": "Paracetamol in the morning",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "มีแค่พาราตอนเช้า"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "allergies",
+   "gold": "No drug allergy",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ไม่แพ้ยาอะไร"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "age",
+   "gold": "28",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "อายุ 28"
+   ]
+  },
+  {
+   "case": "TH-01",
+   "lang": "th",
+   "key": "sex",
+   "gold": "Male",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ผู้ชาย"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "chief_complaint",
+   "gold": "Right knee pain",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ปวดเข่าขวา"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "onset",
+   "gold": "About a week ago, after a mini-marathon",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "มาอาทิตย์นึงแล้ว"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "duration",
+   "gold": "1 week",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "อาทิตย์นึง"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "severity",
+   "gold": "5/10",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "5 เต็ม 10"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "location",
+   "gold": "Right knee",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "เข่าขวา"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "associated_symptoms",
+   "gold": "Sharp pain going down stairs",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ลงบันไดทีเจ็บจี๊ดๆ"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "medications",
+   "gold": "Ibuprofen when in pain",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "กินแค่ไอบูโพรเฟนเวลาปวด"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "allergies",
+   "gold": "Penicillin",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "แพ้ยาเพนิซิลลิน"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "age",
+   "gold": "34",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "อายุ 34"
+   ]
+  },
+  {
+   "case": "TH-02",
+   "lang": "th",
+   "key": "sex",
+   "gold": "Male",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ผู้ชาย"
+   ]
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "chief_complaint",
+   "gold": "Rash on both arms",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ผื่นขึ้นที่แขนสองข้าง"
+   ]
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "onset",
+   "gold": "3 days ago",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ขึ้นมาสามวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "duration",
+   "gold": "3 days",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "สามวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "severity",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "location",
+   "gold": "Both arms",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "แขนสองข้าง"
+   ]
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "associated_symptoms",
+   "gold": "Itching",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "คันๆ"
+   ]
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "medications",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "allergies",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "age",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-04",
+   "lang": "th",
+   "key": "sex",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "chief_complaint",
+   "gold": "Headache",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ปวดหัวมาสามวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "onset",
+   "gold": "3 days ago",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "มาสามวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "duration",
+   "gold": "3 days",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "สามวัน"
+   ]
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "severity",
+   "gold": "5/10",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ประมาณ 5 จาก 10"
+   ]
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "location",
+   "gold": "Temples",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ตรงขมับ"
+   ]
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "associated_symptoms",
+   "gold": "Dull ache; denies chest pain and breathlessness",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ปวดตื้อๆ",
+    "ไม่มีอาการเจ็บหน้าอก ไม่มีอาการหอบเหนื่อย"
+   ]
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "medications",
+   "gold": "Vitamin C daily",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "กินวิตามินซีทุกวัน"
+   ]
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "allergies",
+   "gold": "No drug allergy",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ไม่แพ้ยา"
+   ]
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "age",
+   "gold": "39",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "อายุ 39"
+   ]
+  },
+  {
+   "case": "TH-08",
+   "lang": "th",
+   "key": "sex",
+   "gold": "Male",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ผู้ชาย"
+   ]
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "chief_complaint",
+   "gold": "Migraine headache",
+   "pred": "migraine pain",
+   "quote": "ปวด migraine",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.5,
+   "evidence": [
+    {
+     "turnId": "30cdfbdd-ab55-420d-943a-de996feb02bb",
+     "quote": "ปวด migraine",
+     "start": 0,
+     "end": 12
+    }
+   ],
+   "goldEvidence": [
+    "ปวด migraine มาสามวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "onset",
+   "gold": "3 days ago",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "มาสามวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "duration",
+   "gold": "3 days",
+   "pred": "three days already",
+   "quote": "มาสามวันแล้ว",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "30cdfbdd-ab55-420d-943a-de996feb02bb",
+     "quote": "มาสามวันแล้ว",
+     "start": 13,
+     "end": 25
+    }
+   ],
+   "goldEvidence": [
+    "สามวัน"
+   ]
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "severity",
+   "gold": "6/10",
+   "pred": "6/10",
+   "quote": "severity ประมาณ 6/10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "30cdfbdd-ab55-420d-943a-de996feb02bb",
+     "quote": "severity ประมาณ 6/10",
+     "start": 73,
+     "end": 93
+    }
+   ],
+   "goldEvidence": [
+    "6/10"
+   ]
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "associated_symptoms",
+   "gold": "Mild nausea, worse with light",
+   "pred": "slight nausea, light sensitivity",
+   "quote": "มี nausea นิดหน่อย | โดนแสง light แล้วยิ่งปวด",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.5,
+   "evidence": [
+    {
+     "turnId": "30cdfbdd-ab55-420d-943a-de996feb02bb",
+     "quote": "มี nausea นิดหน่อย",
+     "start": 29,
+     "end": 47
+    },
+    {
+     "turnId": "30cdfbdd-ab55-420d-943a-de996feb02bb",
+     "quote": "โดนแสง light แล้วยิ่งปวด",
+     "start": 48,
+     "end": 72
+    }
+   ],
+   "goldEvidence": [
+    "nausea นิดหน่อย",
+    "โดนแสง light แล้วยิ่งปวด"
+   ]
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "medications",
+   "gold": "Paracetamol occasionally",
+   "pred": "paracetamol",
+   "quote": "ปกติกิน paracetamol บ้าง",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "30cdfbdd-ab55-420d-943a-de996feb02bb",
+     "quote": "ปกติกิน paracetamol บ้าง",
+     "start": 123,
+     "end": 147
+    }
+   ],
+   "goldEvidence": [
+    "กิน paracetamol บ้าง"
+   ]
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "allergies",
+   "gold": "No allergies",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "no allergy"
+   ]
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "age",
+   "gold": "31",
+   "pred": "31",
+   "quote": "อายุ 31",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "30cdfbdd-ab55-420d-943a-de996feb02bb",
+     "quote": "อายุ 31",
+     "start": 100,
+     "end": 107
+    }
+   ],
+   "goldEvidence": [
+    "อายุ 31"
+   ]
+  },
+  {
+   "case": "TH-10",
+   "lang": "th",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "male",
+   "quote": "ผู้ชาย",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "30cdfbdd-ab55-420d-943a-de996feb02bb",
+     "quote": "ผู้ชาย",
+     "start": 94,
+     "end": 100
+    }
+   ],
+   "goldEvidence": [
+    "ผู้ชาย"
+   ]
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "chief_complaint",
+   "gold": "Mild headache",
+   "pred": "slight headache",
+   "quote": "ปวดหัวนิดหน่อย",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.5,
+   "evidence": [
+    {
+     "turnId": "fb07c2ee-e9da-4ff1-b817-57f3136610a4",
+     "quote": "ปวดหัวนิดหน่อย",
+     "start": 0,
+     "end": 14
+    }
+   ],
+   "goldEvidence": [
+    "ปวดหัวนิดหน่อย"
+   ]
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "onset",
+   "gold": "2 days ago",
+   "pred": "for two days",
+   "quote": "มาสองวันแล้ว",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "fb07c2ee-e9da-4ff1-b817-57f3136610a4",
+     "quote": "มาสองวันแล้ว",
+     "start": 18,
+     "end": 30
+    }
+   ],
+   "goldEvidence": [
+    "มาสองวันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "duration",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "severity",
+   "gold": "3/10",
+   "pred": "3 out of 10",
+   "quote": "3 จาก 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "fb07c2ee-e9da-4ff1-b817-57f3136610a4",
+     "quote": "3 จาก 10",
+     "start": 38,
+     "end": 46
+    }
+   ],
+   "goldEvidence": [
+    "ประมาณ 3 จาก 10"
+   ]
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "location",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "associated_symptoms",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "medications",
+   "gold": "None",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ไม่ได้กินยา"
+   ]
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "allergies",
+   "gold": "No drug allergy",
+   "pred": "No known allergies",
+   "quote": "ไม่แพ้ยา",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "fb07c2ee-e9da-4ff1-b817-57f3136610a4",
+     "quote": "ไม่แพ้ยา",
+     "start": 128,
+     "end": 136
+    }
+   ],
+   "goldEvidence": [
+    "ไม่แพ้ยา"
+   ]
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "age",
+   "gold": "23",
+   "pred": "23",
+   "quote": "อายุ 23",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "fb07c2ee-e9da-4ff1-b817-57f3136610a4",
+     "quote": "อายุ 23",
+     "start": 120,
+     "end": 127
+    }
+   ],
+   "goldEvidence": [
+    "อายุ 23"
+   ]
+  },
+  {
+   "case": "TH-12",
+   "lang": "th",
+   "key": "sex",
+   "gold": "Male",
+   "pred": "male",
+   "quote": "ผู้ชาย",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "fb07c2ee-e9da-4ff1-b817-57f3136610a4",
+     "quote": "ผู้ชาย",
+     "start": 114,
+     "end": 120
+    }
+   ],
+   "goldEvidence": [
+    "ผู้ชาย"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "chief_complaint",
+   "gold": "Lower back pain",
+   "pred": "lower back pain",
+   "quote": "ปวดหลังช่วงล่าง",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "6605ed3d-41f6-4fc5-afab-beafca94c748",
+     "quote": "ปวดหลังช่วงล่าง",
+     "start": 45,
+     "end": 60
+    }
+   ],
+   "goldEvidence": [
+    "ปวดหลังช่วงล่าง"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "onset",
+   "gold": "4 days ago, after lifting something heavy on Sunday",
+   "pred": "Sunday",
+   "quote": "ยกของหนักเมื่อวันอาทิตย์",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0.22,
+   "evidence": [
+    {
+     "turnId": "6605ed3d-41f6-4fc5-afab-beafca94c748",
+     "quote": "ยกของหนักเมื่อวันอาทิตย์",
+     "start": 73,
+     "end": 97
+    }
+   ],
+   "goldEvidence": [
+    "สี่วันแล้ว"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "duration",
+   "gold": "4 days",
+   "pred": "four days",
+   "quote": "มาสี่วันแล้ว",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "6605ed3d-41f6-4fc5-afab-beafca94c748",
+     "quote": "มาสี่วันแล้ว",
+     "start": 60,
+     "end": 72
+    }
+   ],
+   "goldEvidence": [
+    "สี่วัน"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "severity",
+   "gold": "6/10",
+   "pred": "6 out of 10",
+   "quote": "ปวดประมาณ 6 เต็ม 10",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 0.8,
+   "evidence": [
+    {
+     "turnId": "6605ed3d-41f6-4fc5-afab-beafca94c748",
+     "quote": "ปวดประมาณ 6 เต็ม 10",
+     "start": 98,
+     "end": 117
+    }
+   ],
+   "goldEvidence": [
+    "6 เต็ม 10"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "location",
+   "gold": "Lower back",
+   "pred": "lower back",
+   "quote": "ปวดหลังช่วงล่าง",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "6605ed3d-41f6-4fc5-afab-beafca94c748",
+     "quote": "ปวดหลังช่วงล่าง",
+     "start": 45,
+     "end": 60
+    }
+   ],
+   "goldEvidence": [
+    "หลังช่วงล่าง"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "associated_symptoms",
+   "gold": "Started after lifting heavy things",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ยกของหนักเมื่อวันอาทิตย์"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "medications",
+   "gold": "No regular medication",
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": [
+    "ไม่ได้กินยาประจำ"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "allergies",
+   "gold": "Aspirin",
+   "pred": "ยาแอสไพริน",
+   "quote": "แพ้ยาแอสไพริน",
+   "status": "supported",
+   "confidence": 0.9,
+   "asserted": true,
+   "correct": false,
+   "f1": 0,
+   "evidence": [
+    {
+     "turnId": "6605ed3d-41f6-4fc5-afab-beafca94c748",
+     "quote": "แพ้ยาแอสไพริน",
+     "start": 133,
+     "end": 146
+    }
+   ],
+   "goldEvidence": [
+    "แพ้ยาแอสไพริน"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "medical_history",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "pregnancy_status",
+   "gold": null,
+   "pred": null,
+   "quote": null,
+   "status": "missing",
+   "confidence": 0,
+   "asserted": false,
+   "correct": false,
+   "f1": null,
+   "evidence": [],
+   "goldEvidence": []
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "age",
+   "gold": "63",
+   "pred": "63",
+   "quote": "อายุ 63",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "6605ed3d-41f6-4fc5-afab-beafca94c748",
+     "quote": "อายุ 63",
+     "start": 125,
+     "end": 132
+    }
+   ],
+   "goldEvidence": [
+    "อายุ 63"
+   ]
+  },
+  {
+   "case": "TH-13",
+   "lang": "th",
+   "key": "sex",
+   "gold": "Female",
+   "pred": "female",
+   "quote": "ผู้หญิง",
+   "status": "supported",
+   "confidence": 0.77,
+   "asserted": true,
+   "correct": true,
+   "f1": 1,
+   "evidence": [
+    {
+     "turnId": "6605ed3d-41f6-4fc5-afab-beafca94c748",
+     "quote": "ผู้หญิง",
+     "start": 118,
+     "end": 125
+    }
+   ],
+   "goldEvidence": [
+    "ผู้หญิง"
+   ]
+  }
+ ]
+}
