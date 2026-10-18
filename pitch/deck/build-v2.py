@@ -241,7 +241,7 @@ slide(1, "Introducing MedX", "Say it in your language. The clinician reads it in
  + '</div><div class="col" style="flex:.8">'
  + card('<div class="tag">One sentence</div><div class="lab" style="font-size:17px;font-weight:700">A multilingual intake that gives clinicians a case where every field points back to the patient\'s own words.</div>', "g")
  + card('<div class="tag">What stays human</div><div class="sm">Diagnosis, urgency decision, orders, signing and verification. The AI never decides these.</div>', "w")
- + card('<div class="tag">Where it runs</div><div class="sm">Web app for staff, Expo app for patients. Mock model today; designed for Gemma via AMD Token Factory.</div>')
+ + card('<div class="tag">Where it runs</div><div class="sm">Web app for staff, Expo app for patients. Public demo on a mock model; evaluated on Gemma-4-31B-IT via the AMD developer API.</div>')
  + '</div></div>',
  "I do the legwork. You keep the final say.", "Six steps either way. With MedX each one leaves a trail.",
  "Process steps are a design description, not a measured comparison. Not clinically validated. Research prototype, synthetic data only. See docs/DEMO.md.")
@@ -373,7 +373,7 @@ slide(1, "Architecture", "One API gateway, one model client, and a mock fallback
  + '<div style="display:flex;gap:10px;align-items:stretch">'
  + card('<div class="tag">Model client (llm.ts)</div><div class="lab"><b>OpenAI-compatible</b> chat/completions, JSON schema output, timeout, one repair retry, latency recorded per call.</div>', "o", "flex:1.3")
  + '<div class="arr" style="align-self:center">&rsaquo;</div>'
- + card('<div class="tag">Designed target</div><div class="lab"><b>Gemma via AMD Token Factory</b></div><div class="sm">Endpoint, model id and keys are env vars. Not yet run.</div>', "g", "flex:1")
+ + card('<div class="tag">Evaluated on</div><div class="lab"><b>Gemma-4-31B-IT via the AMD developer API</b></div><div class="sm">Endpoint, model id and keys are env vars. Evaluated 18 Oct 2026 (synthetic, small n).</div>', "g", "flex:1")
  + card('<div class="tag">Fallback</div><div class="lab"><b>Mock provider</b></div><div class="sm">Deterministic. UI and /api/health say mock, never AMD.</div>', "w", "flex:1")
  + '</div>'
  + card('<div class="tag">Contracts</div><div class="sm">packages/shared: types, API shapes, tokens, redflags.json, medrules.json. Imported by web and mobile; changed only by the orchestrator.</div>')
@@ -381,7 +381,7 @@ slide(1, "Architecture", "One API gateway, one model client, and a mock fallback
  + stat("Status of the AMD run", '<span class="pend">pending</span>', "Gemma-on-AMD accuracy and latency are not measured. Every current number comes from the mock provider or from code rules.", "docs/ARCHITECTURE.md; eval/REPORT.md header", "w", "", "")
  + card('<div class="tag">Honest labels</div><div class="sm">If AMD_BASE_URL is unset, the provider is mock and the UI says so. Keys only from env vars; .env is never committed.</div>', "t")
  + '</div></div>',
- "Same pipeline, any OpenAI-compatible model. The label never lies.", "Designed for Gemma on AMD; the result is [pending AMD run].",
+ "Same pipeline, any OpenAI-compatible model. The label never lies.", "Runs on AMD-hosted models through the AMD developer API (Gemma-4-31B-IT); measured on synthetic data, thresholds mostly not met.",
  "docs/ARCHITECTURE.md (components, data flow, AMD integration). We do not claim that MedX runs on AMD Instinct or ROCm; no AMD latency or accuracy number exists yet.")
 
 slide(1, "How we built it", "A human lead orchestrated AI agents in role lanes, and every lane was cross-reviewed.",
@@ -472,7 +472,7 @@ slide(2, "Roadmap with gates", "No step towards clinical use without its gate: v
    ["Native-speaker review of Thai and Italian wording", "Language reviewers", '<span class="chip w">open</span>'],
    ["Clinical safety review of rules, alerts and claims", "Clinical lead", '<span class="chip w">open: prototype review done, not clinical validation</span>'],
    ["Privacy: PDPA assessment, data-processing terms, hosting choice", "Legal / DPO", '<span class="chip w">open</span>'],
-   ["Model results: holdout recall target 9/10, unsupported-as-fact 0", "AI lead", '<span class="chip w">pending AMD run</span>'],
+   ["Model results: holdout recall target 9/10, unsupported claims 5% or less", "AI lead", '<span class="chip w">measured 18 Oct: holdout 9/10, field thresholds not met</span>'],
    ["Regulatory position confirmed (software as medical device or not)", "Regulatory adviser", '<span class="chip w">open</span>']]),
  "Gates are boring on purpose.", "A gate that is not passed stops the roadmap.",
  "Targets from docs/ai/METRICS.md (M11 holdout recall >= 9/10). Gate list and owners are our plan (assumption for discussion). docs/reports/w9 and w14 clinical-safety-review are internal prototype reviews, not clinical validation.")
@@ -497,11 +497,11 @@ slide(3, "Impact: measured today", "What we can verify today comes from the repo
  "Small, checkable numbers. No big claims.", "Everything on this slide can be re-run from the repo.",
  "Test count: vitest run, apps/web, 18 Oct 2026 (also README). Rules: redflags.json (18 rules). medrules.json v3 (59 drugs, 18 interactions); 31 dose ceilings per README limitations. Cases: data/cases (52 JSON), data/holdout (18 JSON). Holdout run recorded 17 Oct 2026, rules v1.1.")
 
-slide(3, "Impact: pending and targets", "The AMD run and the pilot are still ahead. We state them as targets, not results.",
+slide(3, "Impact: measured and targets", "The AMD-hosted Gemma run is in and misses most targets. The pilot is still ahead.",
  '<div class="row"><div class="col f1">'
- + card('<div class="tag">Gemma via AMD Token Factory</div>'
-   + table(["Metric", "Result"], [["Field precision and capture recall", '<span class="pend">pending AMD run</span>'], ["Turn latency p50 / p95", '<span class="pend">pending AMD run</span>'], ["Holdout recall with model screen", '<span class="pend">pending AMD run</span>'], ["Unsupported claims shown as fact", '<span class="pend">pending AMD run</span>']])
-   + '<div class="ss">Filled from eval/REPORT.md after the run. We publish a result even if a threshold is not met.</div>', "w")
+ + card('<div class="tag">Gemma-4-31B-IT, AMD developer API</div>'
+   + table(["Metric", "Result"], [["Field precision and capture recall", "78.5% (threshold 90%) and 50.5% (threshold 70%): not met"], ["Extraction / screen latency p50", "about 39 s / 2.4 s (turn target 6 s): not met"], ["Holdout recall, rules only vs rules + Gemma screen", "7/10 vs 9/10 (not strictly single-shot)"], ["Unsupported claims shown as asserted", "21.5% (threshold 5%): not met"]])
+   + '<div class="ss">From eval/REPORT.md (18 Oct 2026). We publish a result even if a threshold is not met.</div>', "w")
  + '</div><div class="col f1">'
  + card('<div class="tag">Pre-declared targets <span class="tgt">target</span></div>'
    + table(["Metric", "Target"], [["Holdout red-flag recall (rules + model)", '<span class="tgt">&ge; 9/10</span>'], ["Field capture recall", '<span class="tgt">&ge; 0.70</span>'], ["Unsupported claims with verifier", '<span class="tgt">&le; 5%</span>'], ["Abstain recall on should-abstain cases", '<span class="tgt">&ge; 0.90</span>'], ["Unnecessary abstain rate", '<span class="tgt">&le; 0.10</span>'], ["Turn latency p50 / p95", '<span class="tgt">&le; 6 s / 12 s</span>']])
@@ -510,13 +510,13 @@ slide(3, "Impact: pending and targets", "The AMD run and the pilot are still ahe
  + card('<div class="tag">Pilot measures <span class="tgt">to be measured</span></div><ul style="margin:0 0 0 16px;font-size:13.5px;line-height:1.5"><li>Time from first word to structured summary</li><li>Repeat questions per visit</li><li>Discrepancies found at the pharmacist check</li><li>Red flags caught vs missed, reviewed by clinicians</li><li>Clinician trust and corrections per case</li></ul><div class="ss">No target number is set for time saved. We will not state one before a measurement exists.</div>', "t")
  + '</div></div>',
  "Targets are promises to measure, not results.", "Missing a target will be published as plainly as meeting one.",
- "Thresholds: docs/ai/METRICS.md (M1, M3, M8, M11 and the abstain metrics). Mock-provider values in eval/REPORT.md are not evidence. Latency and accuracy on AMD: [pending AMD run]. We do not claim that MedX runs on AMD Instinct or ROCm.")
+ "Thresholds: docs/ai/METRICS.md (M1, M3, M8, M11 and the abstain metrics). Live results: Gemma-4-31B-IT on AMD-hosted models, synthetic data, small n (eval/REPORT.md, 18 Oct 2026). We do not claim that MedX runs on AMD Instinct or ROCm.")
 
 # ------------------------------------------------------------------ SUSTAINABILITY (sec 4)
 slide(4, "Risks and mitigations", "The biggest risks are clinical safety, privacy and over-trust. Each has an owner and a mitigation.",
  table(["Risk", "Owner", "Mitigation today", "Still open"], [
    ["Clinical safety: missed red flag (rules miss paraphrases: 7/10 on holdout)", "Clinical lead", "Rules before any model; model can only add; clinician reviews; unit tests; holdout published", "Broader clinician-authored rules; real-world validation"],
-   ["Wrong or invented fields", "AI lead", "Evidence quote required, else unsupported; abstain on low confidence", "Measure on Gemma (pending AMD run)"],
+   ["Wrong or invented fields", "AI lead", "Evidence quote required, else unsupported; abstain on low confidence", "Measured: field thresholds not met; raise timeouts, improve prompts, re-run"],
    ["Privacy and PDPA", "Legal / DPO", "Redaction before storage or model call; synthetic data only; keys in env", "Redaction is imperfect; PDPA assessment; hosting region"],
    ["Model provider dependency", "Engineering", "OpenAI-compatible client, env-driven endpoint, fallback model, labelled mock", "Provider SLA, rate limits unknown"],
    ["Language quality (Thai, Italian wording)", "Language reviewers", "Spot checks in UAT; follow-up questions in three languages", "Native-speaker clinical review needed"],
@@ -584,7 +584,7 @@ def render():
 <img src="img2/lockup-white.svg" style="position:absolute;left:96px;top:90px;height:70px">
 <div style="position:absolute;left:96px;top:250px;font-size:52px;font-weight:700;line-height:1.1;max-width:900px">MedX: Multilingual AI Copilot for Clinic Visits</div>
 <div style="position:absolute;left:96px;top:420px;font-size:22px;line-height:1.5;max-width:760px;font-weight:300"><span style="font-size:15px;letter-spacing:.1em;text-transform:uppercase;opacity:.85">Every word, understood. &middot; A copilot supports clinicians and never decides.</span><br><br>One patient journey, from the patient's own words to the pharmacy. Every field points back to what the patient said. People decide.</div>
-<div style="position:absolute;left:96px;bottom:90px;font-size:16px;line-height:1.6">Repo: github.com/KingPhuripol/MedX-AI &middot; Live demo: pending<br>Research prototype &middot; synthetic data only &middot; not a medical device &middot; Gemma via AMD Token Factory: designed, results [pending AMD run]</div>
+<div style="position:absolute;left:96px;bottom:90px;font-size:16px;line-height:1.6">Repo: github.com/KingPhuripol/MedX-AI &middot; Live demo: pending<br>Research prototype &middot; synthetic data only &middot; not a medical device &middot; runs on AMD-hosted models through the AMD developer API (Gemma-4-31B-IT), results in eval/REPORT.md</div>
 <img src="img/fin-wave.svg" style="position:absolute;right:120px;top:170px;height:420px">
 </section>''')
     return n, "\n".join(out)

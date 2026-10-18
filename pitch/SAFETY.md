@@ -14,7 +14,7 @@ Research prototype. Synthetic data only. It supports clinicians; it does not dia
 - Not clinically validated; not a medical device; synthetic cases only, small n.
 - The verifier proves a quote exists, not that its meaning is right.
 - The model screen will miss some cases and raise some false alarms; both are reported.
-- The demo runs a mock model. Gemma on AMD Token Factory is the designed target; latency and accuracy are [pending AMD run].
+- The demo runs a mock model. Gemma-4-31B-IT on AMD-hosted models (AMD developer API) was evaluated on synthetic data only: field accuracy and latency thresholds were not met (eval/REPORT.md); the red-flag screen raised holdout recall from 7/10 to 9/10.
 - Voice input uses the phone's or browser's cloud speech service, so audio leaves the app to that vendor. Clinic-side consult listening does too.
 - The demo has no real login: reviewer identity is self-declared, so the two-person dispense check is procedural, not authenticated. The dispense checklist records what pharmacist 2 attests; there is no barcode or stock check.
 - Redaction is pattern-based and imperfect.

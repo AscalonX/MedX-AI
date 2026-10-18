@@ -338,7 +338,7 @@ PLAYWRIGHT_MODULE=<path to playwright/index.mjs> BASE=http://localhost:3000 node
 | `qa/30` to `qa/33` | Deploy coherence, landing smoke, English by default, public-URL security |
 | `qa/34`, `qa/35` | Playwright: English first render, every persona card, phone pickup; nurse approves and doctor signs, two-stage pharmacy in the real UI, polling pauses while hidden |
 
-**Evaluation.** 52 synthetic cases (40 intake in three languages + 12 medication) and an 18-case blind red-flag holdout written without seeing the rules; metrics pre-declared in [docs/ai/METRICS.md](docs/ai/METRICS.md). Run with `cd apps/web && MODEL_PROVIDER=mock npx vite-node ../../eval/run.ts -- --split all`. [`eval/REPORT.md`](eval/REPORT.md) reports failures and unmet thresholds; a mock run proves the harness only and is not evidence about Gemma. Holdout, keyword rules only: [eval/results/holdout-rules-only.md](eval/results/holdout-rules-only.md).
+**Evaluation.** 52 synthetic cases (40 intake in three languages + 12 medication) and an 18-case blind red-flag holdout written without seeing the rules; metrics pre-declared in [docs/ai/METRICS.md](docs/ai/METRICS.md). Run with `cd apps/web && MODEL_PROVIDER=mock npx vite-node ../../eval/run.ts -- --split all`. [`eval/REPORT.md`](eval/REPORT.md) reports failures and unmet thresholds; a mock run proves the harness only and is not evidence about Gemma. Live results on AMD-hosted Gemma-4-31B-IT (18 Oct 2026, synthetic, small n) are in the same report; the holdout was run more than once, so it is not strictly single-shot. Holdout, keyword rules only: [eval/results/holdout-rules-only.md](eval/results/holdout-rules-only.md).
 
 ## Project structure
 
@@ -359,7 +359,7 @@ PLAYWRIGHT_MODULE=<path to playwright/index.mjs> BASE=http://localhost:3000 node
 ## Limitations
 
 - Research prototype that supports clinicians. It does not diagnose, treat, prescribe or decide urgency. Synthetic data only; not clinically validated, not a medical device.
-- The demo runs a mock model. Gemma accuracy and latency on AMD Token Factory are not measured yet.
+- The public demo runs a mock model. Measured once on synthetic data (see [eval/REPORT.md](eval/REPORT.md)): Gemma-4-31B-IT on AMD-hosted models through the AMD developer API missed the pre-declared field thresholds (asserted precision 78.5%, capture recall 50.5%), extraction takes about 39 s per turn (p50), and with the shipped 40 s turn cap most turns abstain; the red-flag screen (p50 2.4 s) raised blind-holdout recall from 7/10 to 9/10. Small n, not clinical validation.
 - Red-flag rules miss paraphrases: keyword rules alone caught 7 of 10 emergencies on an 18-case synthetic holdout. Known gaps are listed for clinical review.
 - Considerations come from a fixed 12-presentation list, not a complete differential.
 - The NEWS2 suggestion is for adults, not pregnancy, and the nurse confirms it.
