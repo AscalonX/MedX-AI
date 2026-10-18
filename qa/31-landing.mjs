@@ -9,7 +9,7 @@ const SECTION_IDS = ['nav', 'hero', 'built-with', 'video', 'how-it-works', 'feat
 const PERSONAS = ['patient', 'nurse-rossi', 'doctor-bianchi', 'pharm-conti', 'pharm-wong', 'ops-head'];
 const NAV = [['#how-it-works', 'How it works'], ['#features', 'Features'], ['#safety', 'Safety'], ['#demo-accounts', 'Try a role'], ['/demo', 'Try the demo']];
 // The landing's primary player is the voiced promo (apps/web/app/_landing/site.ts PROMO_PATH); the narrated walkthrough is the secondary action.
-const VIDEO = '/media/medx-promo-vo.mp4', POSTER = '/media/medx-promo-poster.jpg';
+const VIDEO = '/media/medx-promo-voice.mp4', POSTER = '/media/medx-promo-poster.jpg';
 const stripScripts = h => h.replace(/<script[\s\S]*?<\/script>/gi, '');
 const textOf = h => stripScripts(h).replace(/<[^>]+>/g, ' ').replace(/&#x27;|&apos;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ');
 const skip = (id, name, why) => console.log(`SKIP [${id}] ${name} (${why})`);
@@ -68,7 +68,7 @@ const range = await fetch(BASE + VIDEO, { headers: { Range: 'bytes=0-1023' } });
 if (range.status === 404 && process.env.ALLOW_NO_VIDEO === '1') skip('LP21', `${VIDEO} answers a Range request with 206`, 'video not delivered yet; ALLOW_NO_VIDEO=1');
 else check('LP21', `${VIDEO} answers "Range: bytes=0-1023" with 206 video/mp4 and 1024 bytes`, range.status === 206 && /video\/mp4/.test(range.headers.get('content-type') || '') && body.byteLength === 1024 && /^bytes 0-1023\/\d+$/.test(range.headers.get('content-range') || ''), [range.status, range.headers.get('content-type'), range.headers.get('content-range'), body.byteLength]);
 if (range.status === 206 || range.status === 200) {
-  check('LP22', 'the video section plays the file: <video ... controls muted playsinline preload="metadata" poster>, no autoplay', new RegExp(`<video[^>]*>[\\s\\S]*?${VIDEO.replace(/\./g, '\\.')}|<video[^>]*src="${VIDEO.replace(/\./g, '\\.')}`).test(visible) && /<video[^>]*\scontrols/.test(visible) && /<video[^>]*\smuted/.test(visible) && /<video[^>]*playsInline|<video[^>]*playsinline/i.test(visible) && /<video[^>]*preload="metadata"/.test(visible) && /<video[^>]*poster=/.test(visible) && !/<video[^>]*autoplay/i.test(visible), visible.match(/<video[^>]*>/)?.[0]);
+  check('LP22', 'the video section plays the voiced file: <video ... controls playsinline preload="metadata" poster>, not muted, no autoplay', new RegExp(`<video[^>]*>[\\s\\S]*?${VIDEO.replace(/\./g, '\\.')}|<video[^>]*src="${VIDEO.replace(/\./g, '\\.')}`).test(visible) && /<video[^>]*\scontrols/.test(visible) && !/<video[^>]*\smuted/.test(visible) && /<video[^>]*playsInline|<video[^>]*playsinline/i.test(visible) && /<video[^>]*preload="metadata"/.test(visible) && /<video[^>]*poster=/.test(visible) && !/<video[^>]*autoplay/i.test(visible), visible.match(/<video[^>]*>/)?.[0]);
   const poster = await fetch(BASE + POSTER); await poster.arrayBuffer();
   check('LP23', `${POSTER} -> 200 image/jpeg`, poster.status === 200 && /image\/jpeg/.test(poster.headers.get('content-type') || ''), [poster.status, poster.headers.get('content-type')]);
 } else skip('LP22', 'video player markup', 'no video file');

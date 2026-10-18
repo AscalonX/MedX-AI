@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Live demo | https://medx.areazeroai.com (pick a role: https://medx.areazeroai.com/demo) |
-| Video: 60-second film (voice-over) | https://medx.areazeroai.com/media/medx-promo-vo.mp4 (repo: `apps/web/public/media/medx-promo-vo.mp4`) |
+| Video: 60-second film (voice-over) | https://medx.areazeroai.com/media/medx-promo-voice.mp4 (repo: `apps/web/public/media/medx-promo-voice.mp4`) |
 | Video: Narrated product walkthrough (2 min 15 s) | https://medx.areazeroai.com/media/medx-demo-narrated.mp4 (repo: `apps/web/public/media/medx-demo-narrated.mp4`, English captions `medx-demo-narrated.en.vtt`) |
 | Repo | https://github.com/KingPhuripol/MedX-AI |
 | Deck | `pitch/deck/MedX-deck-v2.pdf` (34 slides; its test count, "live demo URL pending" and its empty AMD result cells predate the launch wave and the AMD run and need a refresh from `eval/REPORT.md`. The PDF and `png-v2/` previews were rendered with SCBXBeta2, which this branch removed for licence reasons: `deck-v2.html` and `build-v2.py` now use Plus Jakarta Sans + Noto Sans Thai, so re-render before submitting). Earlier deck: `pitch/deck/MedX-deck.pdf` |

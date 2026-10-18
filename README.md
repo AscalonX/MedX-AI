@@ -50,9 +50,9 @@
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://medx.areazeroai.com/media/medx-promo-vo.mp4"><img src="apps/web/public/media/medx-promo-poster.jpg" alt="MedX launch film poster: Fin pointing at a QR code for medx.areazeroai.com"></a>
+      <a href="https://medx.areazeroai.com/media/medx-promo-voice.mp4"><img src="apps/web/public/media/medx-promo-poster.jpg" alt="MedX launch film poster: Fin pointing at a QR code for medx.areazeroai.com"></a>
       <p><b>The 60-second film (English voice-over over an original score).</b> The story: a Thai patient line, the language-gap statistic, the care journey through every role, and the safety beats. 1080p60 with an original score.<br>
-      <a href="https://medx.areazeroai.com/media/medx-promo-vo.mp4">Watch on the live site</a> · <a href="apps/web/public/media/medx-promo-vo.mp4">file in this repo</a> (19.6 MB)</p>
+      <a href="https://medx.areazeroai.com/media/medx-promo-voice.mp4">Watch on the live site</a> · <a href="apps/web/public/media/medx-promo-voice.mp4">file in this repo</a> (19.6 MB)</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://medx.areazeroai.com/media/medx-demo-narrated.mp4"><img src="apps/web/public/media/medx-demo-narrated-poster.jpg" alt="MedX product walkthrough poster: Every word, understood, with 3D Fin"></a>

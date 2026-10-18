@@ -223,8 +223,8 @@ describe(`product video (promo ${PROMO_PATH}, walkthrough ${VIDEO_PATH})`, () =>
     // /media is cached for a year (next.config.ts): a new cut under an old name would keep serving the old file.
     expect(VIDEO_PATH).toBe("/media/medx-demo-narrated.mp4");
     expect(VIDEO_TRACK_PATHS[0]).toBe("/media/medx-demo-narrated.en.vtt");
-    expect(PROMO_PATH).toBe("/media/medx-promo-vo.mp4");
-    expect(PROMO_TRACK_PATHS[0]).toBe("/media/medx-promo-vo.en.vtt");
+    expect(PROMO_PATH).toBe("/media/medx-promo-voice.mp4"); // remixed: voice above the score (new name, old cut cached)
+    expect(PROMO_TRACK_PATHS[0]).toBe("/media/medx-promo-voice.en.vtt");
   });
 
   it("shows a graceful poster-only state while the file is missing", () => {
@@ -291,7 +291,7 @@ describe(`product video (promo ${PROMO_PATH}, walkthrough ${VIDEO_PATH})`, () =>
       expect(v).toContain('preload="metadata"');
       expect(v).not.toMatch(/autoplay/i);
     }
-    expect(videos[0]).toMatch(/\smuted/); // the promo starts muted until "Play with sound"
+    expect(videos[0]).not.toMatch(/\smuted/); // the voiced promo plays with sound when the viewer presses play (never autoplays)
     expect(out).toContain('src="/media/medx-demo.mp4"');
     expect(out).toContain('poster="/media/medx-demo-poster.jpg"');
     // Without a walkthrough there is no dialog and no second player.
@@ -305,12 +305,12 @@ describe(`product video (promo ${PROMO_PATH}, walkthrough ${VIDEO_PATH})`, () =>
     for (const lang of LANGS) for (const k of ["walkthrough", "walkthroughTitle", "close"] as const) expect(LANDING_COPY[lang].video[k].length, `${lang} ${k}`).toBeGreaterThan(2);
   });
 
-  it("the player is muted, inline, metadata-only, never autoplays, and labels its button by the audio track", async () => {
+  it("the player is inline, metadata-only, never autoplays, is muted only without an audio track, and labels its button by the audio track", async () => {
     const { LandingVideo } = await import("./LandingVideo");
     const labels = { name: "MedX in 60 seconds", playSound: "Play with sound", play: "Play", caption: "c", captions: "English captions", fallback: "Download" };
     const withSound = renderToStaticMarkup(h(LandingVideo, { src: "/media/medx-demo.mp4", poster: "/media/medx-demo-poster.jpg", track: "/media/medx-demo.en.vtt", audio: true, labels }));
     expect(withSound).toMatch(/<video[^>]*\scontrols/);
-    expect(withSound).toMatch(/<video[^>]*\smuted/);
+    expect(withSound).not.toMatch(/<video[^>]*\smuted/);
     expect(withSound).toMatch(/<video[^>]*playsInline|<video[^>]*playsinline/i);
     expect(withSound).toContain('preload="metadata"');
     expect(withSound).toContain('poster="/media/medx-demo-poster.jpg"');
@@ -318,6 +318,7 @@ describe(`product video (promo ${PROMO_PATH}, walkthrough ${VIDEO_PATH})`, () =>
     expect(withSound).toContain('<track kind="captions"');
     expect(withSound).toContain("Play with sound");
     const silent = renderToStaticMarkup(h(LandingVideo, { src: "/media/medx-demo.mp4", poster: null, track: null, audio: false, labels }));
+    expect(silent).toMatch(/<video[^>]*\smuted/);
     expect(silent).toContain(">Play<");
     expect(silent).not.toContain("Play with sound");
   });

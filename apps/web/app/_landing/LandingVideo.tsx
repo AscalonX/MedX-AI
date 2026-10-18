@@ -26,7 +26,8 @@ export interface LandingVideoSource {
 
 /**
  * The product video (DIRECTION.md 12.7): native controls, poster first, preload metadata, plays inline, never autoplays,
- * and starts muted so sound only ever follows a click. "Play with sound" unmutes and plays; it reads "Play" when the
+ * and is muted only when the file has no audio track; a voiced film plays with sound once the viewer presses play
+ * (it never autoplays, so sound still only follows a click). "Play with sound" plays it; it reads "Play" when the
  * file has no audio track (checked at build time). Nothing overlays the video: the buttons sit under the frame.
  * A soft teal-to-ocean halo sits behind the frame (`mx-glow`).
  *
@@ -91,7 +92,7 @@ export function LandingVideo({
             ref={ref}
             className="block aspect-video h-auto w-full bg-ink"
             controls
-            muted
+            muted={!audio}
             playsInline
             preload="metadata"
             poster={poster ?? undefined}

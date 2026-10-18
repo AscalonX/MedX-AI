@@ -29,9 +29,9 @@ export const VIDEO_TRACK_PATHS = ["/media/medx-demo-narrated.en.vtt"] as const;
  * Without it the walkthrough above takes its place, and without either the section shows the poster-only state.
  * The poster is the same picture as the silent promo's.
  */
-export const PROMO_PATH = "/media/medx-promo-vo.mp4";
+export const PROMO_PATH = "/media/medx-promo-voice.mp4";
 export const PROMO_POSTER_PATH = "/media/medx-promo-poster.jpg";
-export const PROMO_TRACK_PATHS = ["/media/medx-promo-vo.en.vtt"] as const;
+export const PROMO_TRACK_PATHS = ["/media/medx-promo-voice.en.vtt"] as const;
 
 /** Fill "{name}" placeholders. Unknown names stay as written so a missing value is visible in review. */
 export function fill(template: string, vars: Record<string, string | number>): string {
