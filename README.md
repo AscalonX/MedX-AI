@@ -2,7 +2,7 @@
   <a href="https://medx.areazeroai.com"><img src="docs/readme/banner.png" alt="MedX. Every word, understood. Multilingual pre-visit intake. Fin listens while nurses, doctors and pharmacists decide." width="100%"></a>
 </p>
 
-<h3 align="center">Every word, understood.</h3>
+<h3 align="center">Multilingual AI copilot for clinic visits. Every word, understood.</h3>
 
 <p align="center">
   Multilingual pre-visit intake and care journey, from the patient's own words to the pharmacy counter.<br>
@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <img alt="Tests: 2,436 passing (vitest, 51 files)" src="https://img.shields.io/badge/tests-2%2C436%20passing-0A8077?style=flat-square">
+  <img alt="Tests: 2,451 passing (vitest, 53 files)" src="https://img.shields.io/badge/tests-2%2C451%20passing-0A8077?style=flat-square">
   <img alt="Clinical rule checks: 528 passing" src="https://img.shields.io/badge/clinical%20rule%20checks-528%20passing-0A8077?style=flat-square">
   <img alt="Model on the public demo: mock (Gemma on AMD is the designed target)" src="https://img.shields.io/badge/demo%20model-mock%20%C2%B7%20Gemma%20on%20AMD%20designed-45566A?style=flat-square">
   <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-0F1E2E?style=flat-square&logo=nextdotjs&logoColor=white">
@@ -308,10 +308,10 @@ Every variable is documented in [`.env.example`](.env.example). Copy it to `apps
 
 ## Tests and evaluation
 
-Run from `apps/web` unless noted. Last full run: Sun 18 Oct 2026, 07:14 ICT.
+Run from `apps/web` unless noted. Last full run: Sun 18 Oct 2026, 08:08 ICT.
 
 ```bash
-./node_modules/.bin/vitest run          # 2,436 tests in 51 files, all passing (npm test does the same)
+./node_modules/.bin/vitest run          # 2,451 tests in 53 files, all passing (npm test does the same)
 ./node_modules/.bin/tsc --noEmit -p .   # type check
 npm run lint                            # eslint
 

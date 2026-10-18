@@ -65,7 +65,7 @@ export function Shell({ children }: { children: ReactNode }) {
         }
       })
       .catch((e: Error) => { if (mine === reqId.current) setError(e.message); })
-      .finally(() => { inflight.current = false; });
+      .finally(() => { if (mine === reqId.current) inflight.current = false; });
   }, []);
   useEffect(() => {
     const unacked = sorted?.filter((s) => fresh.has(s.id) && (s.summary?.redFlags ?? []).some((h) => !h.review)).length ?? 0;
@@ -76,8 +76,10 @@ export function Shell({ children }: { children: ReactNode }) {
   useEffect(() => onCaseChanged(() => refreshQueue()), [refreshQueue]);
   useEffect(() => {
     const t = timers.current;
+    // Unmount (or a Strict Mode remount) drops in-flight results and frees the single-flight slot, so a remounted
+    // effect can load at once: the request's own finally() no longer clears it once the counter has moved on.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the counter itself is bumped on purpose: results of in-flight requests are dropped
-    return () => { reqId.current++; t.forEach((h) => window.clearTimeout(h)); };
+    return () => { reqId.current++; inflight.current = false; t.forEach((h) => window.clearTimeout(h)); };
   }, []);
   const urgent = sorted?.filter((s) => s.status === "escalated" && unreviewed(s.summary?.redFlags ?? []).length > 0).length;
 

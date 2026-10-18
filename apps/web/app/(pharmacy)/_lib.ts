@@ -68,6 +68,8 @@ export const alertsOf = (s: IntakeSession): MedAlert[] => s.summary?.medAlerts ?
 export const medsOf = (s: IntakeSession): MedicationEntry[] => s.summary?.medications ?? [];
 export const allergiesOf = (s: IntakeSession): AllergyEntry[] => s.summary?.allergies ?? [];
 export const openHigh = (s: IntakeSession) => alertsOf(s).filter((a) => a.severity === "high" && !a.review);
+/** Acknowledgement records review, but the alert still needs follow-up. */
+export const alertNeedsFollowUp = (a: MedAlert) => !a.review || a.review.action === "acknowledge";
 
 /** Queue order: unhandled high alerts pinned first, then pending, in review, reconciled; longest wait first. */
 export function sortQueue(list: IntakeSession[]): IntakeSession[] {
@@ -92,7 +94,7 @@ export function blockers(s: IntakeSession): Localized[] {
   const nf = openFlags(s).length;
   if (nf) out.push(L(`สัญญาณอันตราย ${nf} รายการยังไม่ได้รับการทบทวนโดยแพทย์/พยาบาล`, `${nf} segnali d'allarme non ancora rivisti da un clinico`, `${nf} red ${nf === 1 ? "flag has" : "flags have"} not been reviewed by a clinician`));
   const high = openHigh(s).length;
-  if (high) out.push(L(`การแจ้งเตือนระดับสูง ${high} รายการยังไม่ได้จัดการ`, `${high} avvisi alti non ancora gestiti`, `${high} high ${high === 1 ? "alert" : "alerts"} not handled`));
+  if (high) out.push(L(`การแจ้งเตือนระดับสูง ${high} รายการยังไม่ได้ทบทวน`, `${high} avvisi alti non ancora rivisti`, `${high} high ${high === 1 ? "alert" : "alerts"} not reviewed`));
   if (isAbstained(s)) return out; // extracted medicines and allergies are untrusted when abstained
   const names = (list: { nameOriginal: string }[]) => list.map((m) => `"${m.nameOriginal}"`).join(", ");
   const un = medsOf(s).filter((m) => m.status === "unmatched");
@@ -150,7 +152,7 @@ export function buildQuestions(s: IntakeSession): PatientQuestion[] {
       `What reaction did you have to ${a.allergenOriginal}?`));
   }
   for (const al of alertsOf(s)) {
-    if (al.review) continue;
+    if (!alertNeedsFollowUp(al)) continue;
     const names = al.medIds.map((id) => byId.get(id)?.nameOriginal).filter(Boolean) as string[];
     if (!names.length) continue;
     const joined = names.join(" + ");
@@ -487,7 +489,8 @@ export const U = {
   flagOpen: L("ยังไม่ได้ทบทวน", "Non ancora rivisto", "Not reviewed yet"),
   flagDone: L("ทบทวนแล้วโดย", "Rivisto da", "Reviewed by"),
   blocked: L("ยังลงนามไม่ได้", "Firma bloccata", "Sign-off blocked"),
-  ready: L("จัดการการแจ้งเตือนสูงครบแล้วและไม่มียาที่ไม่รู้จัก", "Avvisi alti gestiti e nessun farmaco non riconosciuto", "Every high alert is handled and no medicine is unmatched"),
+  ready: L("ทบทวนรายการที่จำเป็นครบแล้ว ไม่มียาที่ยังระบุไม่ได้", "Revisioni richieste complete. Nessun farmaco non riconosciuto", "Required reviews complete. No medicines remain unmatched"),
+  reviewScope: L("การลงนามบันทึกการทบทวนรายการยา ไม่ได้ยกเลิกการแจ้งเตือนที่รับทราบแล้วหรืออนุมัติใบสั่งยา", "La firma registra la revisione della riconciliazione. Non risolve gli avvisi presi in carico e non approva le prescrizioni.", "Sign-off records reconciliation review. It does not resolve acknowledged alerts or approve prescriptions."),
   signOff: L("ลงนามยืนยันรายการยา", "Firma la riconciliazione", "Sign off reconciliation"),
   ruleSet: L("ตรวจกับชุดกฎ MedX v1.0 (ยา 59 รายการ ปฏิกิริยา 18 คู่) ไม่ใช่การตรวจปฏิกิริยายาแบบครบถ้วน", "Controllato con il set di regole MedX v1.0 (59 farmaci, 18 interazioni). Non è un controllo completo delle interazioni.", "Checked against MedX rule set v1.0 (59 drugs, 18 interactions). Not a complete interaction check."),
   noAlerts: L("ไม่มีการแจ้งเตือนจากชุดกฎนี้ ไม่ได้หมายความว่าปลอดภัย", "Nessun avviso dal set di regole. Non significa che sia sicuro.", "No alerts from this rule set. That does not mean it is safe."),
@@ -520,7 +523,7 @@ export const C = {
   newArrival: L("ใหม่", "Nuovo", "New"),
   queue: L("คิว", "Coda", "Queue"),
   pendingStat: L("รอเทียบรายการยา", "In attesa di riconciliazione", "Pending reconciliation"),
-  urgentStat: L("การแจ้งเตือนสูงและสัญญาณอันตรายที่ยังเปิดอยู่", "Avvisi alti e segnali d'allarme aperti", "High alerts and red flags open"),
+  urgentStat: L("การแจ้งเตือนสูงและสัญญาณอันตรายที่รอทบทวน", "Avvisi alti e segnali d'allarme da rivedere", "High alerts and red flags awaiting review"),
   doneStat: L("เทียบรายการแล้ววันนี้", "Riconciliati oggi", "Reconciled today"),
   noIntakes: L("ยังไม่มีรายการที่ต้องเทียบยา", "Nessun accesso da riconciliare", "No intakes need reconciliation"),
   noIntakesBody: L("รายการที่มียาจะปรากฏที่นี่เมื่อผู้ป่วยตอบเสร็จ", "Gli accessi con farmaci compaiono qui quando il paziente ha finito.", "New intakes with medicines appear here as patients finish."),
@@ -530,7 +533,7 @@ export const C = {
   redFlagsDone: (n: number) => L(`สัญญาณอันตราย ${n} ทบทวนแล้ว`, n === 1 ? "1 segnale rivisto" : `${n} segnali rivisti`, n === 1 ? "1 red flag, reviewed" : `${n} red flags, reviewed`),
   highN: (n: number) => L(`สูง ${n}`, `${n} alti`, `${n} high`),
   toCheckN: (n: number) => L(`ต้องตรวจ ${n}`, `${n} da verificare`, `${n} to check`),
-  allHandled: L("จัดการครบแล้ว", "Tutto gestito", "All handled"),
+  allHandled: L("ปิดการแจ้งเตือนแล้ว", "Avvisi chiusi", "Alerts closed"),
   noRuleAlerts: L("ไม่มีการแจ้งเตือนจากกฎ", "Nessun avviso dalle regole", "No rule alerts"),
   notRefreshed: L("รีเฟรชคิวสดไม่ได้", "Coda non aggiornata", "Live queue not refreshed"),
   back: L("กลับไปที่คิว", "Torna alla coda", "Back to queue"),

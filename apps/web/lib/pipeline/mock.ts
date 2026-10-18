@@ -5,6 +5,7 @@ import { FIELD_KEYS } from './config';
 import { QUESTIONS } from './templates';
 import { mockPharmacy } from './pharmacyExtraction';
 import { applyQuickAnswer } from './quickAnswers';
+import { negatedBefore } from './redflags';
 
 /** Deliberately narrow deterministic demo extractor, not an evaluation oracle. */
 export function mockJSON(req: ChatRequest): unknown {
@@ -54,9 +55,25 @@ export function mockJSON(req: ChatRequest): unknown {
   };
   for (const [, alias, text] of turns) {
     // Do not extract sentences containing instruction patterns.
-    const safe = text.split(/(?<=[.!?\n])/).filter(s => !/ignore|output|say I|mark this|istruzion|คำสั่ง/i.test(s)).join(' ');
+    // Mask rejected sentences without shifting the original evidence offsets.
+    const safe = text.split(/(?<=[.!?\n])/).map(s => /ignore|output|say I|mark this|istruzion|คำสั่ง/i.test(s) ? ' '.repeat(s.length) : s).join('');
     const put = (key: FieldKey, quote: string, value: Localized) => { result.fields[key] = { value_original: quote, value, evidence: [{ turn: alias, quote }], certainty: 'high' }; };
-    for (const [key, pairs] of Object.entries(patterns)) for (const [re, value] of pairs) { const m = re.exec(safe); if (m) { put(key as FieldKey, m[0], value); break; } }
+    for (const [key, pairs] of Object.entries(patterns)) for (const [re, value] of pairs) {
+      // A denied symptom is not a presenting complaint. Look past a denied
+      // occurrence so a later affirmative mention can still be captured.
+      const matches = [...safe.matchAll(new RegExp(re.source, `${re.flags}g`))];
+      const m = key === 'chief_complaint'
+        ? matches.find(hit => !negatedBefore(safe.slice(0, hit.index), ['ไม่มี', 'ไม่ได้', 'ไม่']))
+        : matches[0];
+      if (m) {
+        // Repeated symptom words need context: a bare quote would resolve to
+        // the first (possibly denied) occurrence in the evidence verifier.
+        const quote = key === 'chief_complaint' && text.indexOf(m[0]) !== m.index
+          ? text.slice(Math.max(0, m.index - 40), m.index + m[0].length).trim()
+          : m[0];
+        put(key as FieldKey, quote, value); break;
+      }
+    }
     const severity = /\b(\d{1,2})\s*(?:\/|out of|su)\s*10\b/.exec(safe);
     if (severity) { const n = `${severity[1]}/10`; put('severity', severity[0], { en: n, it: n, th: `ระดับ ${n}` }); }
     const age = /(?:\b(?:I am|I'm|ho)\s+(\d{1,3})\s*(?:years old|anni)|อายุ\s*(\d{1,3})\s*ปี|\b(?:I am|I'm)\s+(?:a\s+)?(\d{1,3})(?:\s+year old|(?=,\s*(?:male|female)))|\b(?:uomo|donna) di (\d{1,3}) anni)/i.exec(safe);

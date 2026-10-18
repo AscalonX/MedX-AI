@@ -5,7 +5,7 @@ import type { Lang } from "@medx/shared";
 import { Badge, Card, EmptyState, GradientHero, Icon, LangMorph, SegmentedControl, buttonClasses, type IconName } from "@/components/ui";
 import { PrescriptionQueue, stageCounts } from "./_orders";
 import { matchesCode } from "../_shared/codeSearch";
-import { L, C, LANG_NAME, PHARM_STATUS_LABEL, STAGES, STAGE_LABEL, U, alertsOf, isAbstained, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, stageRows, waited, type Stage } from "./_lib";
+import { L, C, LANG_NAME, PHARM_STATUS_LABEL, STAGES, STAGE_LABEL, U, alertNeedsFollowUp, alertsOf, isAbstained, medsOf, openFlags, openHigh, pharmStatus, redFlagsOf, stageRows, waited, type Stage } from "./_lib";
 import { usePharmacy, type Entry } from "./_shell";
 
 type Tab = "recon" | "rx";
@@ -26,7 +26,7 @@ const Q = {
   openNext: L("เปิดรายการถัดไป", "Apri il prossimo", "Open next"),
   stages: L("ขั้นตอนห้องยา", "Fasi della farmacia", "Pharmacy stages"),
   pending: (n: number) => L(`รอเทียบ ${n}`, `${n} in attesa`, `${n} pending`),
-  urgent: (n: number) => L(`การแจ้งเตือนสูงและสัญญาณอันตรายเปิดอยู่ ${n}`, `${n} avvisi alti e segnali aperti`, `${n} high alerts and red flags open`),
+  urgent: (n: number) => L(`การแจ้งเตือนสูงและสัญญาณอันตรายที่รอทบทวน ${n}`, `${n} avvisi alti e segnali d'allarme da rivedere`, `${n} high alerts and red flags awaiting review`),
   done: (n: number) => L(`เทียบแล้ว ${n}`, `${n} riconciliati`, `${n} reconciled`),
   prescriptions: L("ใบสั่งยา", "Prescrizioni", "Prescriptions"),
 };
@@ -165,10 +165,12 @@ function ReconList({ entries, all, query, onClearQuery, lang, now }: { entries: 
         <ul className="flex flex-col gap-3">
           {entries.map(({ session: s, fixture }) => {
             const abst = isAbstained(s);
-            const high = openHigh(s).length; // recorded rule alerts stay counted even when the summary abstained
+            // Recorded rule alerts stay counted even when the summary abstained. An acknowledged alert is reviewed
+            // but still needs follow-up (resolved or false alarm), so it keeps its chip until then.
+            const open = alertsOf(s).filter(alertNeedsFollowUp);
+            const high = open.filter((a) => a.severity === "high").length;
             const flags = openFlags(s).length;
             const flagsAll = redFlagsOf(s).length;
-            const open = alertsOf(s).filter((a) => !a.review);
             const mod = open.length - high;
             const cc = s.summary?.fields.find((f) => f.key === "chief_complaint");
             const st = pharmStatus(s);

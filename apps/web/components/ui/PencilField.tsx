@@ -53,9 +53,9 @@ export function FieldValue({
   const v = field.value?.[lang] ?? null;
   if (field.status === "missing" || v === null) {
     return (
-      <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-muted px-3 text-small text-graphite">
-        <Icon name="circle-minus" size={14} />
-        {copy.missing[lang]}
+      <span className="inline-flex min-h-7 max-w-full items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-small text-graphite">
+        <Icon name="circle-minus" size={14} className="shrink-0" />
+        <span className="min-w-0 break-words">{copy.missing[lang]}</span>
       </span>
     );
   }
@@ -65,9 +65,8 @@ export function FieldValue({
       <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
         {previousValue && <s className="mx-struck text-body">{previousValue}</s>}
         <span className="text-body font-semibold text-ink">{v}</span>
-        <Badge tone="teal" icon={<Icon name="pencil" size={12} />}>
-          {copy.edited[lang]}
-          {reviewer ? `, ${reviewer}` : ""}
+        <Badge className="h-auto! min-h-6 max-w-full whitespace-normal! py-0.5" tone="teal" icon={<Icon name="pencil" size={12} className="shrink-0" />}>
+          <span className="min-w-0 break-words">{copy.edited[lang]}{reviewer ? `, ${reviewer}` : ""}</span>
         </Badge>
       </span>
     );
@@ -76,9 +75,8 @@ export function FieldValue({
     return (
       <span className="inline-flex flex-wrap items-center gap-2">
         <span className="text-body font-semibold text-ink">{v}</span>
-        <Badge tone="teal" icon={<Icon name="circle-check" size={13} />}>
-          {copy.approved[lang]}
-          {reviewer ? `, ${reviewer}` : ""}
+        <Badge className="h-auto! min-h-6 max-w-full whitespace-normal! py-0.5" tone="teal" icon={<Icon name="circle-check" size={13} className="shrink-0" />}>
+          <span className="min-w-0 break-words">{copy.approved[lang]}{reviewer ? `, ${reviewer}` : ""}</span>
         </Badge>
       </span>
     );
@@ -88,8 +86,8 @@ export function FieldValue({
       <InkConfidence confidence={field.confidence} lang={lang}>
         <span className="text-body font-semibold">{v}</span>
       </InkConfidence>
-      <Badge tone="ocean" icon={<Icon name="quote" size={11} />}>
-        {copy.verified[lang]}
+      <Badge className="h-auto! min-h-6 max-w-full whitespace-normal! py-0.5" tone="ocean" icon={<Icon name="quote" size={11} className="shrink-0" />}>
+        <span className="min-w-0 break-words">{copy.verified[lang]}</span>
       </Badge>
     </span>
   );

@@ -23,6 +23,8 @@ export default function Home() {
   const locked = !!session && (pickupPending(session) || (session.status !== "approved" && session.status !== "taken_over"));
 
   async function start() {
+    // A double tap or a tap before the stored visit has loaded must not create a second session.
+    if (busy || !ready) return;
     // A visit already on this phone opens instead of being replaced: clearing it goes through "Start a new visit"
     // (confirm sheet), so a tap here never loses a visit, or the counter call for medicine still on its way.
     if (session) { router.replace(screenFor(session)); return; }
@@ -72,7 +74,7 @@ export default function Home() {
             <T lang={lang} token="body" tone="onPrimary" style={{ marginTop: space[2], marginBottom: space[5], opacity: 0.92, maxWidth: "62%" }}>{session ? s.heroVisitSub(session.code.replace(/-/g, "‑")) : s.heroSub}</T>
           </Enter>
           <View style={{ alignSelf: "flex-start" }}>
-            {busy ? <ActivityIndicator color={color.onPrimary} style={{ minHeight: 48 }} /> : <Pill lang={lang} variant="white" label={session ? s.openVisit : s.start} onPress={start} disabled={!ready} />}
+            {busy ? <ActivityIndicator color={color.onPrimary} style={{ minHeight: 48 }} /> : <Pill lang={lang} variant="white" label={session ? (locked ? s.resume : s.openVisit) : s.start} onPress={start} disabled={!ready} />}
           </View>
         </GradientHero>
       </Enter>

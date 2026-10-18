@@ -626,14 +626,14 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
 
   if (editing) {
     return (
-      <li className="grid grid-cols-[150px_minmax(0,1fr)] items-start gap-4 rounded-2xl bg-paper px-3 py-3">
+      <li className="grid grid-cols-1 items-start gap-2 rounded-2xl bg-paper px-3 py-3 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4">
         {label}
-        <form onSubmit={(e) => { e.preventDefault(); if (draft.trim()) onSave(draft.trim()); }} className="flex flex-wrap items-center gap-2">
+        <form onSubmit={(e) => { e.preventDefault(); if (draft.trim()) onSave(draft.trim()); }} className="flex min-w-0 flex-wrap items-center gap-2">
           <input
             autoFocus aria-label={`Edit ${FIELD_LABEL[f.key].en}`} value={draft} maxLength={300}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Escape") onCancel(); }}
-            className="h-10 min-w-56 flex-1 rounded-control border border-rule-strong/60 bg-sheet px-3 text-body hover:border-ocean"
+            className="h-10 min-w-0 basis-full rounded-control border border-rule-strong/60 bg-sheet px-3 text-body hover:border-ocean"
           />
           <Button type="submit" variant="primary" className={sm} disabled={busy || !draft.trim()}>{tr("save", lang)}</Button>
           <Button className={sm} onClick={onCancel}>{tr("cancel", lang)}</Button>
@@ -655,10 +655,10 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
         aria-controls="transcript"
         onClick={(e) => { e.currentTarget.focus(); onSelect(); }} // Safari does not focus buttons on click
         onFocus={onSelect}
-        className="grid w-full grid-cols-[150px_minmax(0,1fr)] items-start gap-4 rounded-2xl px-3 py-3 text-left transition-colors duration-quick ease-pen hover:bg-paper focus-visible:-outline-offset-2"
+        className="grid w-full grid-cols-1 items-start gap-2 rounded-2xl px-3 py-3 text-left transition-colors duration-quick ease-pen hover:bg-paper focus-visible:-outline-offset-2 sm:grid-cols-[150px_minmax(0,1fr)] sm:gap-4"
       >
         {label}
-        <span className="flex flex-col gap-1">
+        <span className="flex min-w-0 flex-col gap-1 break-words">
           <FieldValue field={f} lang={lang} previousValue={previous} reviewer={reviewerOf} />
           {(f.status === "supported" || f.status === "approved") && f.valueOriginal && f.valueOriginal !== current && (
             <span className="text-micro text-ink-soft">
@@ -669,7 +669,7 @@ function FieldRow({ f, lang, patientLang, selected, editing, busy, canAct, block
         </span>
       </button>
       {selected && canAct && (
-        <div className="flex flex-wrap items-center gap-2 pb-3 pl-[178px] pr-3">
+        <div className="flex flex-wrap items-center gap-2 px-3 pb-3 sm:pl-[178px]">
           {f.status === "supported" && <Button className={sm} variant="primary" icon={<Icon name="check" size={14} />} disabled={busy || blocked} onClick={onApprove}>{tr("approve", lang)}</Button>}
           {unsupported && <Button className={sm} variant="primary" disabled={busy || blocked} onClick={() => onSave(current)}>{tr("confirmAsWritten", lang)}</Button>}
           <Button className={sm} icon={<Icon name="pencil" size={14} />} disabled={busy} onClick={startEdit}>{tr(f.status === "missing" ? "fillIn" : "edit", lang)}</Button>
