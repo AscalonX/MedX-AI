@@ -16,6 +16,11 @@ export function mockJSON(req: ChatRequest): unknown {
     const quote = last && end ? last.text.slice(0, end.index + end.segment.length).trim() : '';
     return { suggestions: last && quote ? [{ kind: 'ask_next', text: { en: 'Ask how the symptoms affect daily activities?', it: 'Chiedere come i sintomi influiscono sulle attività quotidiane?', th: 'ถามว่าอาการส่งผลต่อกิจวัตรประจำวันอย่างไร' }, why: { en: 'Clarify the patient report for clinician review.', it: 'Chiarire quanto riferito per la revisione clinica.', th: 'ขอรายละเอียดที่ผู้ป่วยแจ้งเพื่อให้บุคลากรทบทวน' }, turn: last.turn, quote, confidence: 0.9 }] : [] };
   }
+  if (req.step === 'red_flags' && req.model) {
+    // Deterministic stand-in for the second screen (set by env AMD_MODEL_SCREEN2): one paraphrase the keyword rules and the first mock miss.
+    const turn = [...req.user.matchAll(/<patient_turn id="(T\d+)">([\s\S]*?)<\/patient_turn>/g)].find(m => /elephant sitting on my chest/i.test(m[2]));
+    return { flags: turn ? [{ category: 'CHEST', turn: turn[1], quote: /elephant sitting on my chest/i.exec(turn[2])![0], certainty: 'high' }] : [] };
+  }
   if (req.step === 'red_flags') return { flags: [] };
   if (req.step === 'next_question') {
     const key = /Missing information: (\w+):/.exec(req.user)?.[1] as FieldKey;
