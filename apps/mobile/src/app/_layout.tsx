@@ -3,9 +3,11 @@ import { useFonts } from "expo-font";
 import { router, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
-import { View } from "react-native";
+import { useEffect, useState } from "react";
+import { Platform, View } from "react-native";
+import { NewVisitSheet } from "@/components/newvisit";
 import { TabBar } from "@/components/tabbar";
+import { FONT_FILES } from "@/fonts";
 import { screenFor, StoreProvider, useStore } from "@/store";
 
 SplashScreen.preventAutoHideAsync();
@@ -18,13 +20,19 @@ function Restore() {
 }
 
 export default function Root() {
-  // Exact names SCBXBeta2-{Light,Regular,Bold}: also what tokens' mobileFont() returns.
-  const [loaded, error] = useFonts({
-    "SCBXBeta2-Light": require("../../assets/fonts/SCBXBeta2-Light.otf"),
-    "SCBXBeta2-Regular": require("../../assets/fonts/SCBXBeta2-Regular.otf"),
-    "SCBXBeta2-Bold": require("../../assets/fonts/SCBXBeta2-Bold.otf"),
-  });
-  const ready = loaded || !!error; // a font failure must never block the patient
+  // Plus Jakarta Sans + Noto Sans Thai (fonts.ts), loaded before the first frame so no text ever re-flows into the brand face.
+  const [loaded, error] = useFonts(FONT_FILES);
+  // Web: expo-font appends one @font-face per font to a single <style>, and Chrome can leave a face it already fetched
+  // "unloaded" after the re-parse (seen: Noto Sans Thai 600). Loading each family by name again resolves from cache in ~0 ms.
+  const [faces, setFaces] = useState(Platform.OS !== "web");
+  useEffect(() => {
+    if (!loaded || faces) return;
+    const fonts = typeof document !== "undefined" ? document.fonts : undefined;
+    const all = fonts?.load ? Promise.all(Object.keys(FONT_FILES).map((f) => fonts.load(`1em "${f}"`))) : Promise.resolve();
+    const cap = new Promise((r) => setTimeout(r, 2500)); // never hold the patient back for a font
+    Promise.race([all, cap]).catch(() => {}).finally(() => setFaces(true));
+  }, [loaded, faces]);
+  const ready = (loaded && faces) || !!error; // a font failure must never block the patient: the stacks fall back to the system face
   useEffect(() => { if (ready) SplashScreen.hideAsync(); }, [ready]);
   if (!ready) return null;
   return (
@@ -34,6 +42,7 @@ export default function Root() {
         <Stack screenOptions={{ headerShown: false, animation: "none", contentStyle: { backgroundColor: color.paper }, gestureEnabled: false }} />
         <Restore />
         <TabBar />
+        <NewVisitSheet />
       </View>
     </StoreProvider>
   );

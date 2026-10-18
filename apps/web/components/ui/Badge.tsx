@@ -13,12 +13,16 @@ const tones: Record<Tone, string> = {
   ocean: "bg-ocean-tint text-ocean", // from patient's words
 };
 
-/** Small status chip. Sentence case, pill, optional leading icon. Never a bare coloured dot. */
+/**
+ * Small status chip. Sentence case, pill, optional leading icon. Never a bare coloured dot.
+ * A status change crossfades its colours over 240 ms; a change into a red tone is instant (red stays still).
+ */
 export function Badge({ tone = "outline", icon, children, className }: { tone?: Tone; icon?: ReactNode; children: ReactNode; className?: string }) {
   return (
     <span
       className={cx(
         "inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-micro font-semibold whitespace-nowrap",
+        "transition-[background-color,color,border-color,box-shadow] duration-base ease-glide",
         tones[tone],
         className,
       )}

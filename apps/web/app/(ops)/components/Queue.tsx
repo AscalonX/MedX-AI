@@ -6,8 +6,34 @@ import type { IntakeSession, Lang, RedFlagHit } from "@medx/shared";
 import { Card, EmptyState, FieldValue, Icon, LangMorph } from "@/components/ui";
 import { abstainMessage } from "@/lib/pipeline/messages";
 import { copy, locale, patientLanguageCopy, statusCopy } from "../i18n";
-import { isEmptySession, isEmergency, isModelFlag, orderedQueue, verifiedComplaint, waitingSeconds } from "../ops-data";
+import { isEmptySession, isEmergency, isModelFlag, orderedQueue, triageView, verifiedComplaint, waitingSeconds } from "../ops-data";
 import styles from "../ops.module.css";
+
+/**
+ * Triage column: the nurse-confirmed level as a word ("Level 2, confirmed by ..."), teal because a clinician decided
+ * it. An unconfirmed suggestion is labelled as one and never looks like a decision. Never colour alone, never red.
+ */
+export function TriageCell({ session, lang }: { session: IntakeSession; lang: Lang }) {
+  const t = triageView(session);
+  return (
+    <div className={styles.triage}>
+      <span className={styles.cellLabel}><LangMorph text={copy.triage} lang={lang} /></span>
+      {t.kind === "confirmed" ? (
+        <>
+          <span className={styles.triagePill}><Icon name="user-check" size={14} />{copy.triageLevel[lang].replace("{n}", String(t.level))}<span className="sr-only">, {copy.triageConfirmed[lang]}</span></span>
+          <span className={styles.note}>{copy.triageConfirmed[lang]}{t.by ? ` ${copy.triageBy[lang].replace("{name}", t.by)}` : ""}</span>
+        </>
+      ) : t.kind === "suggested" ? (
+        <>
+          <span className={styles.mutedPill}><Icon name="circle-minus" size={14} />{copy.triageNotConfirmed[lang]}</span>
+          <span className={styles.note}>{copy.triageSuggested[lang].replace("{n}", String(t.level))}</span>
+        </>
+      ) : (
+        <span className={styles.mutedPill}><Icon name="circle-minus" size={14} />{copy.triageNone[lang]}</span>
+      )}
+    </div>
+  );
+}
 
 export function Blank({ label }: { label: string }) {
   return <span className={styles.blank}><span aria-hidden="true" /><span className="sr-only">{label}</span></span>;
@@ -95,12 +121,13 @@ export function Queue({ sessions, now, lang }: { sessions: IntakeSession[]; now:
                   {s.summary?.abstained && <p className={styles.note}><LangMorph text={abstainMessage(s.summary.abstainReason)} lang={lang} /></p>}
                   <div className={styles.queueFlags}>{s.summary?.redFlags.length ? s.summary.redFlags.map((flag, i) => <div key={`${flag.ruleId}-${i}`}><FlagSource flag={flag} lang={lang} /></div>) : <LangMorph text={copy.noFlags} lang={lang} className={styles.noFlags} />}</div>
                 </div>
+                <TriageCell session={s} lang={lang} />
                 <div className={styles.queueAction}><span className={styles.waiting}><Icon name="clock" size={14} /><span><span className="sr-only">{copy.waiting[lang]}: </span>{waiting === null ? <Blank label={copy.completed[lang]} /> : duration(waiting, lang)}</span></span><OpenIntake session={s} lang={lang} /></div>
               </li>
             );
           })}
         </ul>
-      <p className={styles.note}><LangMorph text={copy.waitingNote} lang={lang} /></p>
+      <p className={styles.note}><LangMorph text={copy.waitingNote} lang={lang} /> <LangMorph text={copy.triageNote} lang={lang} /></p>
     </Card>
   );
 }

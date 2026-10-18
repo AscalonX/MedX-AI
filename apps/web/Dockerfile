@@ -9,6 +9,9 @@ RUN npm ci --ignore-scripts
 FROM node:22-alpine AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# Optional: docker build --build-arg MEDX_COMMIT=$(git rev-parse --short HEAD) so /api/health reports the commit.
+ARG MEDX_COMMIT=
+ENV MEDX_COMMIT=$MEDX_COMMIT
 COPY --from=dependencies /app/apps/web/node_modules ./apps/web/node_modules
 COPY packages/shared ./packages/shared
 COPY data/cases ./data/cases
@@ -16,9 +19,10 @@ COPY apps/web/app ./apps/web/app
 COPY apps/web/components ./apps/web/components
 COPY apps/web/lib ./apps/web/lib
 COPY apps/web/public ./apps/web/public
-COPY apps/web/package.json apps/web/package-lock.json apps/web/tsconfig.json apps/web/next.config.ts apps/web/postcss.config.mjs apps/web/eslint.config.mjs ./apps/web/
+COPY apps/web/package.json apps/web/package-lock.json apps/web/tsconfig.json apps/web/tsconfig.build.json apps/web/next.config.ts apps/web/postcss.config.mjs apps/web/eslint.config.mjs ./apps/web/
 WORKDIR /app/apps/web
-# Lint runs in CI/dev; skip here so a lint nit never blocks the image (type check still runs).
+# next build runs ESLint and the type check (tsconfig.build.json: app code, tests excluded); either failing stops the image.
+# VERCEL is unset here, so next.config.ts emits output: 'standalone' for the runner stage below.
 RUN npx next build --turbopack
 
 FROM node:22-alpine AS runner

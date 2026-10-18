@@ -1,5 +1,5 @@
 import redFlagRules from '@medx/shared/src/redflags.json';
-import { STAFF } from '@medx/shared/src/staff';
+import { STAFF, staffMemberOf } from '@medx/shared/src/staff';
 
 // Keep name boundaries aligned with the clinical vocabulary, including stems
 // such as ปาก/แขน used by multi-part red-flag rules.
@@ -83,4 +83,14 @@ export function redactKeepStaff(input: string): string {
   names.forEach((n, i) => { text = text.split(n).join(`\uE000${String.fromCharCode(0xE100 + i)}\uE001`); });
   text = redact(text).text;
   return text.replace(/\uE000(.)\uE001/gu, (_, c: string) => names[c.charCodeAt(0) - 0xE100] ?? '');
+}
+
+/**
+ * Actor ids (reviewerId, orderedBy, recordedBy) are staff identifiers, not patient text. A STAFF member named by
+ * display name or id (any case) is stored exactly as given; any other string is redacted while keeping exact STAFF
+ * names, so a free-text actor never stores a phone number, email or ID raw (invariant 5).
+ */
+export function redactActor(input: string): string {
+  const value = input.normalize('NFC').trim();
+  return staffMemberOf(value) ? value : redactKeepStaff(value).trim();
 }

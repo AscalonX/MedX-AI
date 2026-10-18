@@ -6,7 +6,9 @@ const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-
 
 /**
  * Pill segmented control: muted track, white raised thumb. Use for language and role switches.
- * A real radiogroup: one tab stop (roving tabIndex), arrow keys / Home / End move and select.
+ * A real radiogroup: one tab stop (roving tabIndex). activation "auto" (default, in-place toggles): arrow keys / Home /
+ * End move and select. activation "manual" (a choice that navigates or reloads, WCAG 3.2.2): those keys only move
+ * focus; Enter, Space or a click selects.
  */
 export function SegmentedControl<T extends string>({
   options,
@@ -15,6 +17,7 @@ export function SegmentedControl<T extends string>({
   ariaLabel,
   size = "md",
   layout = "inline",
+  activation = "auto",
   className,
 }: {
   options: { value: T; label: ReactNode; lang?: string }[];
@@ -24,22 +27,18 @@ export function SegmentedControl<T extends string>({
   size?: "sm" | "md";
   /** "grid2" lays options out in two columns (narrow sidebars). */
   layout?: "inline" | "grid2";
+  /** "manual" when choosing changes the page or route: arrows move focus, Enter/Space/click select. */
+  activation?: "auto" | "manual";
   className?: string;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
   const current = Math.max(0, options.findIndex((o) => o.value === value));
 
-  function onKeyDown(e: KeyboardEvent<HTMLButtonElement>) {
-    const last = options.length - 1;
-    const next =
-      e.key === "ArrowRight" || e.key === "ArrowDown" ? (current === last ? 0 : current + 1)
-      : e.key === "ArrowLeft" || e.key === "ArrowUp" ? (current === 0 ? last : current - 1)
-      : e.key === "Home" ? 0
-      : e.key === "End" ? last
-      : -1;
+  function onKeyDown(e: KeyboardEvent<HTMLButtonElement>, from: number) {
+    const next = segmentKeyTarget(e.key, activation === "manual" ? from : current, options.length);
     if (next < 0) return;
     e.preventDefault();
-    onChange(options[next]!.value);
+    if (activation === "auto") onChange(options[next]!.value);
     refs.current[next]?.focus();
   }
 
@@ -59,9 +58,9 @@ export function SegmentedControl<T extends string>({
             tabIndex={on ? 0 : -1}
             lang={o.lang}
             onClick={() => onChange(o.value)}
-            onKeyDown={onKeyDown}
+            onKeyDown={(e) => onKeyDown(e, i)}
             className={cx(
-              "rounded-full font-semibold whitespace-nowrap transition-[background-color,color,box-shadow] duration-base ease-pen",
+              "mx-press rounded-full font-semibold whitespace-nowrap transition-[background-color,color,box-shadow,scale,outline-offset] duration-base ease-glide",
               focusRing,
               size === "sm" ? "h-7 px-3 text-micro" : "h-8 px-4 text-small",
               on ? "bg-sheet text-ink shadow-[0_2px_8px_-2px_rgba(15,45,80,0.2)]" : "text-ink-soft hover:text-ink",
@@ -75,6 +74,17 @@ export function SegmentedControl<T extends string>({
   );
 }
 
+/** Index an arrow / Home / End key moves to from `from` (wrapping), or -1 for any other key. Pure, unit tested. */
+export function segmentKeyTarget(key: string, from: number, count: number): number {
+  const last = count - 1;
+  if (count <= 0) return -1;
+  if (key === "ArrowRight" || key === "ArrowDown") return from >= last ? 0 : from + 1;
+  if (key === "ArrowLeft" || key === "ArrowUp") return from <= 0 ? last : from - 1;
+  if (key === "Home") return 0;
+  if (key === "End") return last;
+  return -1;
+}
+
 /** Toggleable filter pill. */
 export function Pill({ active = false, icon, children, onClick, count }: { active?: boolean; icon?: ReactNode; children: ReactNode; onClick?: () => void; count?: number }) {
   return (
@@ -83,7 +93,7 @@ export function Pill({ active = false, icon, children, onClick, count }: { activ
       aria-pressed={active}
       onClick={onClick}
       className={cx(
-        "inline-flex h-9 items-center gap-2 rounded-full px-4 text-small font-semibold transition-[background-color,color] duration-quick ease-pen",
+        "mx-press inline-flex h-9 items-center gap-2 rounded-full px-4 text-small font-semibold transition-[background-color,color,box-shadow,scale,outline-offset] duration-base ease-glide",
         focusRing,
         active ? "bg-ink text-sheet" : "bg-sheet text-ink-soft ring-1 ring-inset ring-rule hover:text-ink",
       )}

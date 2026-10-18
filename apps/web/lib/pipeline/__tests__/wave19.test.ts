@@ -185,7 +185,8 @@ describe('W19 pickup: call the patient, then collected', () => {
     expect((await refused(id, () => postPickup(req({ reviewerId: ph2, action: 'call' }), ctx(id)))).status).toBe(409);
     await dispensed(id);
     const pending = await drafted(id, { drugText: 'cetirizine', dose: '10 mg', frequency: 'daily' });
-    for (const step of ['draft', 'submitted', 'verified'] as const) {
+    // w20 decision (b): a draft stays with the prescriber and no longer blocks the call (pickup-cycle.test.ts).
+    for (const step of ['submitted', 'verified'] as const) {
       if (step === 'submitted') await medicationAction(id, pending.id, 'submit', { orderedBy: doctor, overrides: highOverrides(order(id, pending.id)) });
       if (step === 'verified') await medicationAction(id, pending.id, 'pharmacy', { reviewerId: ph1, action: 'verify' });
       expect(order(id, pending.id).status).toBe(step);
@@ -391,7 +392,7 @@ describe('W19 demo seed shows every pharmacy stage', () => {
     vi.stubEnv('DEMO_SEED', '1');
     const altTable: NonNullable<MedRuleFile['alternatives']> = [{ id: 'ALT-TEST-SEED', kinds: ['allergy_conflict'], drugClasses: ['penicillin'], consider: ['azithromycin', 'cefalexin'], note, source: 'test fixture' }];
     const first = await withAlternatives(altTable, () => seedDemo());
-    expect(first.created).toBe(11); expect(first.mismatches).toEqual([]);
+    expect(first.created).toBe(14); expect(first.mismatches).toEqual([]);
     const toVerify = caseSession('MED-01').orders!.medications;
     expect(toVerify).toHaveLength(1); expect(toVerify[0]).toMatchObject({ status: 'submitted', generic: 'amoxicillin' });
     const allergy = toVerify[0].checks.find(c => c.kind === 'allergy_conflict' && c.severity === 'high')!;
@@ -404,9 +405,10 @@ describe('W19 demo seed shows every pharmacy stage', () => {
     expect(ready.orders!.medications[0]).toMatchObject({ status: 'dispensed', pharmacist: { by: ph1 }, dispense: { by: ph2, checklist: ALL } });
     expect(ready.pickup).toMatchObject({ status: 'ready', counter: '2', calledBy: ph2 });
     expect(patientView(ready).pickup).toEqual({ status: 'ready', counter: '2' });
-    expect(metrics().pharmacy).toEqual({ toVerify: 1, toDispense: 1, readyForPickup: 1, collectedToday: 0 });
-    // Existing seeded statuses are unchanged; the approved case still ends with its review.
-    expect(first.byStatus).toEqual({ escalated: 2, awaiting_review: 2, needs_human: 2, collecting: 4, approved: 1, taken_over: 0 });
+    // w20: the golden case seeded at pharmacist-1-ready adds a second order to verify.
+    expect(metrics().pharmacy).toEqual({ toVerify: 2, toDispense: 1, readyForPickup: 1, collectedToday: 0 });
+    // w20: EN-01 and IT-01 now reach the pharmacy through an approved intake; the golden case adds 3 sessions.
+    expect(first.byStatus).toEqual({ escalated: 2, awaiting_review: 1, needs_human: 2, collecting: 4, approved: 5, taken_over: 0 });
     const again = await seedDemo();
     expect(again.created).toBe(0);
     expect(caseSession('EN-01').orders!.medications).toHaveLength(1); expect(caseSession('MED-01').orders!.medications).toHaveLength(1);

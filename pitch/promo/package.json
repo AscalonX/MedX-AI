@@ -1,0 +1,20 @@
+{
+  "name": "medx-promo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MedX 60 s launch film: an HTML + GSAP composition rendered frame by frame with Playwright and ffmpeg.",
+  "scripts": {
+    "setup": "node setup-vendor.mjs",
+    "render": "node rerender.mjs",
+    "sheet": "node rerender.mjs --frames-only",
+    "preview": "node rerender.mjs --preview",
+    "serve": "node rerender.mjs --serve"
+  },
+  "dependencies": {
+    "@fontsource/noto-sans-thai": "5.1.0",
+    "@fontsource/plus-jakarta-sans": "5.1.0",
+    "gsap": "3.12.5",
+    "playwright": "1.56.1",
+    "qrcode": "1.5.4"
+  }
+}

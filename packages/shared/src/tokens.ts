@@ -1,5 +1,5 @@
-// MedX design tokens, v2 "Calm clinical banking" (owner decision 17 Oct 2026, 15:00).
-// Spec: docs/design/DIRECTION.md. Owner: Design lead.
+// MedX design tokens, v3 "Calm clinical banking" (owner decisions 17 Oct 2026, 15:00 and late evening).
+// Spec: docs/design/DIRECTION.md (v3). Owner: Design lead.
 // Plain numbers and strings only, so web (CSS vars in apps/web/app/globals.css) and React Native read the same values.
 // v1 export names are kept so existing screens re-skin without edits; v1 role names are mapped onto v2 roles
 // (desk = app background, sheet = white card, ink = text, signal = urgency red, ...).
@@ -17,7 +17,8 @@ export const color = {
   sheet: "#FFFFFF", // card
   muted: "#EDF1F5", // placeholder fill (missing values), empty tracks, skeletons
   // text
-  ink: "#0F1E2E", // primary text (16.9:1 on card)
+  ink: "#0F1E2E", // primary text (16.9:1 on card); also the dark marketing card surface
+  inkRaised: "#173A63", // dark card gradient end (ink toward ocean); white text 11.5:1
   inkSoft: "#45566A", // secondary text, labels (7.5:1 on card)
   graphite: "#56657A", // hints, placeholders, timestamps (5.9:1 on card, 4.6:1 on highlighter)
   // lines
@@ -46,17 +47,24 @@ export type ColorToken = keyof typeof color;
 export const gradient = {
   primary: { from: color.primaryFrom, to: color.primaryTo, angle: 135 }, // one hero card per screen
   signal: { from: "#C81E2C", to: color.signalDeep, angle: 135 }, // red-flag interrupt only
+  ink: { from: color.ink, to: color.inkRaised, angle: 160 }, // marketing only: the one dark bento card and the safety band
 } as const;
 
 // ---------- Type ----------
-// Owner decision: SCBXBeta2 is the single typeface for Latin, Italian and Thai on every surface.
-// It ships three cuts: Light 300, Regular 400, Bold 700. Role weights map onto those (no synthetic weights).
-// Web: next/font/local (apps/web/app/layout.tsx, var --font-scbx). Mobile: expo-font registers the names below
-// from apps/mobile/assets/fonts. The font has no `tnum` feature: digits are proportional.
+// v3 (owner decision, 17 Oct 2026 late evening): the WEB uses Plus Jakarta Sans (Latin, Italian accents) with
+// Noto Sans Thai for Thai, both from next/font/google (apps/web/components/ui/fonts.ts, vars --font-jakarta and
+// --font-noto-thai). Both are variable fonts (Jakarta 200-800, Noto Sans Thai 100-900) and Jakarta has `tnum`.
+// The stack falls back to SCBXBeta2 (--font-scbx) so pages render correctly before and after layout.tsx switches.
+// MOBILE keeps SCBXBeta2 (three cuts: Light 300, Regular 400, Bold 700) until the mobile builder adopts the web fonts:
+// expo-font registers the names below from apps/mobile/assets/fonts.
+export const webFont = {
+  latin: { family: "Plus Jakarta Sans", variable: "--font-jakarta", weights: [200, 800] },
+  thai: { family: "Noto Sans Thai", variable: "--font-noto-thai", weights: [100, 900] },
+} as const;
 export const scbxFont = { light: "SCBXBeta2-Light", regular: "SCBXBeta2-Regular", bold: "SCBXBeta2-Bold" } as const;
 const scbxWeights = { regular: scbxFont.regular, medium: scbxFont.regular, semibold: scbxFont.bold, bold: scbxFont.bold, light: scbxFont.light };
 const scbxDisplay = { regular: scbxFont.bold, medium: scbxFont.bold, semibold: scbxFont.bold, bold: scbxFont.bold, light: scbxFont.light };
-const stack = 'var(--font-scbx), system-ui, "Noto Sans Thai", sans-serif';
+const stack = 'var(--font-jakarta, var(--font-scbx, system-ui)), var(--font-noto-thai, "Noto Sans Thai"), system-ui, -apple-system, "Segoe UI", sans-serif';
 
 export const fontFamily = {
   web: { display: stack, serif: stack /* v1 alias */, sans: stack },
@@ -89,6 +97,18 @@ export const type = {
 } as const;
 export type TypeToken = keyof typeof type;
 
+/**
+ * Marketing type (landing "/" only). Fluid between `min` (390px viewport) and `max` (1440px). Web: CSS clamp() in
+ * globals.css (`text-hero`, `text-h2`, `text-h3`, `text-lead-lg`, `text-eyebrow`). Headlines are 800, sentence case.
+ */
+export const marketingType = {
+  hero: { min: 40, max: 76, lineHeight: 1.02, lineHeightThai: 1.3, tracking: -0.035 },
+  h2: { min: 30, max: 48, lineHeight: 1.08, lineHeightThai: 1.35, tracking: -0.03 },
+  h3: { min: 20, max: 24, lineHeight: 1.25, lineHeightThai: 1.5, tracking: -0.015 },
+  leadLg: { min: 17, max: 20, lineHeight: 1.55, lineHeightThai: 1.7, tracking: 0 },
+  eyebrow: { min: 13, max: 13, lineHeight: 1.2, lineHeightThai: 1.5, tracking: 0.01 },
+} as const;
+
 /** Use for any computed line height so Thai stacked vowels and tone marks never clip. */
 export function lineHeightPx(token: TypeToken, lang: Lang): number {
   const t = type[token];
@@ -96,8 +116,8 @@ export function lineHeightPx(token: TypeToken, lang: Lang): number {
 }
 
 // ---------- Space, grid, shape, elevation ----------
-/** 4px base. */
-export const space = { 0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64 } as const;
+/** 4px base. 20/24/32 are marketing section rhythm (80/96/128). */
+export const space = { 0: 0, 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64, 20: 80, 24: 96, 32: 128 } as const;
 
 export const layout = {
   shell: { sidebar: 248, topbar: 72, gutter: 24, maxWidth: 1440 },
@@ -106,10 +126,11 @@ export const layout = {
   patient: { sideMargin: 20, maxMeasure: 34, tabBar: 72, centreAction: 60 },
   hitTarget: 48,
   rowHeight: 48, // list rows in cards
+  marketing: { maxWidth: 1200, gutter: 16, gutterWide: 32, sectionMin: 72, sectionMax: 136, nav: 64 },
 } as const;
 
-/** Soft shapes. Rule: cards 22, hero 28, inputs 14, buttons/chips/pills full. */
-export const radius = { none: 0, control: 14, card: 22, hero: 28, pill: 999 } as const;
+/** Soft shapes. Rule: cards 22, hero 28, inputs 14, buttons/chips/pills full. Marketing: bento 28, UI crops 16. */
+export const radius = { none: 0, control: 14, card: 22, hero: 28, bento: 28, media: 16, pill: 999 } as const;
 
 /** Diffuse, tinted (navy), offset down. Never black, never a glow. `sheet` names kept from v1. */
 export const shadow = {
@@ -117,6 +138,8 @@ export const shadow = {
   sheetLifted: { x: 0, y: 18, blur: 40, spread: -16, color: "rgba(15, 45, 80, 0.24)" }, // drawer, popover, tab bar
   hero: { x: 0, y: 22, blur: 40, spread: -20, color: "rgba(26, 95, 196, 0.55)" }, // gradient hero
   hairline: { x: 0, y: 1, blur: 2, spread: 0, color: "rgba(15, 45, 80, 0.06)" },
+  float: { x: 0, y: 24, blur: 48, spread: -20, color: "rgba(15, 45, 80, 0.28)" }, // marketing floating UI cards
+  ink: { x: 0, y: 30, blur: 60, spread: -30, color: "rgba(15, 30, 46, 0.6)" }, // dark marketing card
 } as const;
 
 // ---------- Motion ----------

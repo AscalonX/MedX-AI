@@ -115,6 +115,18 @@ export function deriveTrace(session: IntakeSession, audit: AuditEvent[], consult
       if (orderId) byOrder.set(orderId, humanTail);
       continue;
     }
+    if (e.type === 'order_recheck') {
+      const ruleIds = strs(e.payload.ruleIds), n = strs(e.payload.alertIds).length;
+      humanTail = add('order_check', { at: e.at, actor: 'rule', status: 'escalated', ids: [e], parents: [byOrder.get(orderId) || orderNode || parent || root], edge: 're-check',
+        label: { en: 'Re-check needed: new high alert', it: 'Ricontrollo necessario: nuovo avviso alto', th: 'ต้องตรวจซ้ำ: มีการแจ้งเตือนระดับสูงใหม่' },
+        detail: {
+          en: `Verified order returned to pharmacist 1: ${n} new high alert(s) (${ruleIds.join(', ')})`,
+          it: `Ordine verificato rimandato al farmacista 1: ${n} nuovo/i avviso/i alto/i (${ruleIds.join(', ')})`,
+          th: `คำสั่งยาที่ตรวจแล้วถูกส่งกลับให้เภสัชกรคนที่ 1: แจ้งเตือนระดับสูงใหม่ ${n} รายการ (${ruleIds.join(', ')})`,
+        } });
+      if (orderId) byOrder.set(orderId, humanTail);
+      continue;
+    }
     if (e.type === 'order_dispensed') {
       const list = e.payload.checklist && typeof e.payload.checklist === 'object' ? Object.values(e.payload.checklist as Record<string, unknown>) : [];
       const ok = list.filter(v => v === true).length;

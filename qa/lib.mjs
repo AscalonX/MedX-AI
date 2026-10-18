@@ -1,7 +1,14 @@
 // Shared helpers for QA scripts. Usage: BASE=http://localhost:3000 node qa/NN-*.mjs
-export const BASE = process.env.BASE || 'http://localhost:3000';
+export const BASE = (process.env.BASE || 'http://localhost:3000').replace(/\/$/, '');
+export const LOCAL = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(BASE);
+// The POST rate limit (30/min per x-forwarded-for hop by default) would throttle these suites on a local
+// `next start`; locally each request gets its own TEST-NET address (QA_SPREAD_IP=0 turns that off). On Vercel
+// the edge overwrites x-forwarded-for, so the header has no effect there.
+const SPREAD = process.env.QA_SPREAD_IP ? process.env.QA_SPREAD_IP === '1' : LOCAL;
+let ipSeq = Math.floor(Math.random() * 200) * 250;
+export const spreadIp = () => { ipSeq++; return `198.19.${Math.floor(ipSeq / 250) % 250}.${(ipSeq % 250) + 1}`; };
 export async function req(method, path, body, { raw, headers = {} } = {}) {
-  const init = { method, headers: { ...headers } };
+  const init = { method, headers: { ...(SPREAD && !headers['x-forwarded-for'] ? { 'x-forwarded-for': spreadIp() } : {}), ...headers } };
   if (body !== undefined) { init.body = raw ? body : JSON.stringify(body); if (!headers['content-type']) init.headers['content-type'] = 'application/json'; }
   const res = await fetch(BASE + path, init);
   const text = await res.text(); let json; try { json = JSON.parse(text); } catch {}

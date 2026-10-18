@@ -1,6 +1,7 @@
 "use client";
 import { useId, type CSSProperties } from "react";
 import { MASCOT_VIEWBOX, mascotGradients, mascotPoses, type MascotLayer, type MascotPose } from "@medx/shared/src/mascot";
+import { FinArt } from "./FinArt";
 import { cx } from "./cx";
 
 const partClass: Record<string, string> = {
@@ -11,9 +12,14 @@ const partClass: Record<string, string> = {
   body: "",
 };
 
+/** Fin switches from the vector drawing to the owner-approved 3D art at this size (DIRECTION.md 11). */
+export const MASCOT_3D_MIN = 96;
+
 /**
- * Fin, the MedX dolphin (DIRECTION.md section 11). Same path data as mobile (`@medx/shared/src/mascot`).
- * Decorative by default (aria-hidden). Subtle idle bob, blink and wave; static under reduced motion.
+ * Fin, the MedX dolphin (DIRECTION.md section 11).
+ * At 96px and up Fin is the 3D art (`FinArt`, public/brand); below 96px it is the vector drawing, with the same path
+ * data as mobile (`@medx/shared/src/mascot`). `variant` forces one or the other.
+ * Decorative by default (aria-hidden). Subtle idle bob (vector also blinks and waves); static under reduced motion.
  * Never render on red-flag / emergency screens or next to alerts.
  */
 export function Mascot({
@@ -21,6 +27,7 @@ export function Mascot({
   size = 160,
   label,
   animate = true,
+  variant = "auto",
   className,
   style,
 }: {
@@ -29,10 +36,16 @@ export function Mascot({
   /** Give a label only when the mascot carries meaning; otherwise it is hidden from assistive tech. */
   label?: string;
   animate?: boolean;
+  /** "auto" (default): 3D at 96px and up, vector below. */
+  variant?: "auto" | "vector" | "3d";
   className?: string;
   style?: CSSProperties;
 }) {
   const uid = useId().replace(/:/g, "");
+  const use3d = variant === "3d" || (variant === "auto" && size >= MASCOT_3D_MIN);
+  if (use3d) {
+    return <FinArt art={pose} size={size} label={label} className={cx(animate && "mascot-3d-animate", className)} style={style} />;
+  }
   const ref = (v?: string) => (v?.startsWith("url(#") ? v.replace("url(#", `url(#${uid}-`) : v);
 
   // Group consecutive layers with the same animation part.

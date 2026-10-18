@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { AllergyEntry, AllergyReviewAction, AuditEvent, IntakeSession, Lang, MedAlert, MedAlertReviewAction, MedicationEntry, MedReviewAction } from "@medx/shared";
 import { Badge, Button, Card, CardHeader, EvidenceHighlight, Field, GradientHero, Icon, InkConfidence, LangMorph, PencilField, type Mark } from "@/components/ui";
 import {
-  C, kindTitle, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, signOffEvent, blockers, buildQuestions, clock, fetchSession, hasNka, isAbstained,
-  medsOf, openHigh, pharmStatus, redFlagsOf, selEvidence, selKey, waited, type Sel,
+  C, kindTitle, L, LANG_NAME, PHARM_STATUS_LABEL, U, allergiesOf, alertsOf, auditLine, signOffEvent, blockers, buildQuestions, clock, collectedOrderIds, fetchSession, hasNka, isAbstained,
+  medsOf, openHigh, ordersOf, pharmStatus, redFlagsOf, selEvidence, selKey, waited, type Sel,
 } from "./_lib";
 import { ABSTAIN, STAGE_LABEL } from "./_lib";
 import { PickupCard, PrescriptionsCard } from "./_orders";
+import { startVisiblePolling } from "../_shared/visiblePolling";
 import { usePharmacy } from "./_shell";
 
 const T = {
@@ -52,15 +53,14 @@ export function Workspace({ id }: { id: string }) {
 
   useEffect(() => { setSel(null); setEdit(null); setActionError(null); setAuditOpen(false); }, [id]);
 
-  // Real audit trail for live sessions. Fixtures keep theirs in the shell.
+  // Real audit trail for live sessions. Fixtures keep theirs in the shell. Paused while the tab is hidden.
+  const hasEntry = !!entry;
   useEffect(() => {
-    if (!entry || fixture) return;
+    if (!hasEntry || fixture) return;
     let dead = false;
-    const pull = () => fetchSession(id).then((d) => !dead && setLiveAudit(d.audit)).catch(() => {});
-    pull();
-    const t = setInterval(pull, 5000);
-    return () => { dead = true; clearInterval(t); };
-  }, [id, entry, fixture, auditTick]);
+    const stop = startVisiblePolling(() => { fetchSession(id).then((d) => !dead && setLiveAudit(d.audit)).catch(() => {}); }, 5000);
+    return () => { dead = true; stop(); };
+  }, [id, hasEntry, fixture, auditTick]);
 
   const wide = () => typeof window !== "undefined" && window.matchMedia("(min-width: 1600px)").matches;
   // Explicit open (button): move focus into the drawer. Selecting a row opens it without stealing focus.
@@ -122,6 +122,7 @@ export function Workspace({ id }: { id: string }) {
   const nka = !abstained && allergies.length === 0 && hasNka(session);
   const nkaEv = abstained ? [] : session.summary?.noKnownAllergiesEvidence ?? [];
   const audit = fixture ? fixtureAudit[id] ?? [] : liveAudit;
+  const collected = collectedOrderIds(audit); // orders handed over in an earlier pickup cycle
 
   const medBy = new Map<string, string>();
   for (const e of audit) {
@@ -196,8 +197,8 @@ export function Workspace({ id }: { id: string }) {
         </div>
       </GradientHero>
 
-      <PrescriptionsCard session={session} lang={lang} busy={busy} fixture={fixture} run={run} />
-      <PickupCard key={session.id} session={session} lang={lang} busy={busy} run={run} />
+      <PrescriptionsCard session={session} lang={lang} busy={busy} fixture={fixture} run={run} collected={collected} />
+      <PickupCard key={session.id} session={session} lang={lang} busy={busy} run={run} collected={collected} />
 
       {locked && <Receipt session={session} lang={lang} audit={audit} />}
 
@@ -310,7 +311,7 @@ export function Workspace({ id }: { id: string }) {
             </>
           )}
           <Provenance
-            lang={lang} audit={audit} open={auditOpen} onToggle={() => setAuditOpen((o) => !o)}
+            lang={lang} audit={audit} session={session} open={auditOpen} onToggle={() => setAuditOpen((o) => !o)}
             provenance={extract ? C.extractedBy(`${extract.provider} / ${extract.model}`)[lang] : C.noExtraction[lang]} generatedAt={session.summary?.generatedAt}
           />
         </div>
@@ -657,24 +658,25 @@ function SignOff({ lang, busy, locked, block, error, onSignOff, reconciledBy, re
   );
 }
 
-function Provenance({ lang, audit, open, onToggle, provenance, generatedAt }: {
-  lang: Lang; audit: AuditEvent[]; open: boolean; onToggle: () => void; provenance: string; generatedAt?: string;
+function Provenance({ lang, audit, session, open, onToggle, provenance, generatedAt }: {
+  lang: Lang; audit: AuditEvent[]; session: IntakeSession; open: boolean; onToggle: () => void; provenance: string; generatedAt?: string;
 }) {
+  const ctx = { orders: ordersOf(session) }; // lets order events name the drug
   return (
     <Card aria-label="Audit and provenance">
       <p lang={lang} className="text-small text-ink-soft">{U.ruleSet[lang]}</p>
       <p className="mt-1 text-micro text-graphite">{provenance}{generatedAt ? `, ${C.summaryAt[lang]} ${clock(generatedAt)}` : ""}.</p>
-      <button type="button" aria-expanded={open} aria-controls="audit-log" onClick={onToggle} className="mt-2 text-small font-semibold text-ocean underline underline-offset-4">
-        {C.showAudit(open, audit.length)[lang]}
+      <button type="button" aria-expanded={open} aria-controls="audit-log" onClick={onToggle} className="mt-2 inline-flex items-center gap-1.5 text-small font-semibold text-ocean underline underline-offset-4">
+        <Icon name="scroll-text" size={16} />{C.showAudit(open, audit.length)[lang]}
       </button>
       {open && (
-        <ol id="audit-log" className="mt-2 max-h-48 overflow-y-auto border-t border-rule/70">
+        <ol id="audit-log" className="mt-2 max-h-72 overflow-y-auto border-t border-rule/70">
           <li lang={lang} className="border-b border-rule/70 py-1.5 text-micro text-graphite">{U.disclaimer[lang]}</li>
           {audit.length === 0 && <li className="py-1.5 text-small text-ink-soft">{C.noPharmActions[lang]}.</li>}
           {audit.map((e) => (
             <li key={e.id} className="flex gap-3 border-b border-rule/70 py-1.5 text-small last:border-b-0">
-              <span className="w-14 shrink-0 text-ink-soft">{clock(e.at)}</span>
-              <span>{auditLine(e, lang)}{e.actorId ? <span className="text-ink-soft">, {e.actorId}</span> : null}</span>
+              <span className="w-14 shrink-0 text-ink-soft tabular-nums">{clock(e.at)}</span>
+              <span className="min-w-0">{auditLine(e, lang, ctx)}</span>
             </li>
           ))}
         </ol>

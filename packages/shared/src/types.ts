@@ -187,9 +187,22 @@ export type AuditType =
   | "order_pharmacy_action"
   | "order_cancelled"
   | "order_dispensed"
+  /** System: refreshed checks raised a new high alert on a verified order; it went back to pharmacist 1. */
+  | "order_recheck"
   | "pickup_called"
   | "pickup_collected"
   | "takeover";
+
+/** Every AuditType at runtime (ops filters, audit viewers, tests). Must list exactly the union above. */
+export const AUDIT_TYPES = [
+  "session_created", "turn_added", "pii_redacted", "red_flag", "summary_generated", "abstained", "review", "red_flag_review",
+  "pharmacy_review", "consult_turn", "consult_suggestion", "consult_note_signed", "vitals_recorded", "triage_confirmed",
+  "order_drafted", "order_submitted", "order_pharmacy_action", "order_cancelled", "order_dispensed", "order_recheck",
+  "pickup_called", "pickup_collected", "takeover",
+] as const satisfies readonly AuditType[];
+type SameMembers<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
+/** Compile-time check: fails to type-check when AUDIT_TYPES misses a member of AuditType (extra members fail `satisfies` above). */
+export const AUDIT_TYPES_COMPLETE = true satisfies SameMembers<AuditType, (typeof AUDIT_TYPES)[number]>;
 
 export interface AuditEvent {
   id: string;
@@ -495,7 +508,13 @@ export interface DispenseChecklist {
   labelled: boolean;
 }
 
-/** Patient is called to the pharmacy counter once every active medication order is dispensed. */
+/**
+ * Patient is called to the pharmacy counter once no medication order is waiting on the pharmacy (submitted,
+ * returned or verified) and at least one newly dispensed order exists; drafts do not block the call.
+ * Submitting a medication order while "ready" or after "collected" clears it, so a new pickup cycle starts; if that
+ * follow-up never reaches the patient (cancelled, or back to a draft) the earlier collection is restored. A re-check
+ * that pulls back a dispensed order clears "ready" (the patient goes back to "preparing").
+ */
 export interface PickupState {
   status: "ready" | "collected";
   /** Counter / window the patient is called to, e.g. "2". */
@@ -529,6 +548,15 @@ export interface MedicationOrder {
   pharmacist?: { action: "verify" | "return"; by: string; at: string; note?: string; report?: PharmacistReport };
   /** Pharmacist 2 (pick + final double check); must be a different person from `pharmacist.by`. */
   dispense?: { by: string; at: string; checklist: DispenseChecklist; note?: string };
+  /**
+   * Set by the engine when refreshed prescribing checks raised a high alert with no prescriber override on an
+   * order that has not reached the patient (verified, or dispensed but not yet collected): the order went back to
+   * "submitted" for pharmacist 1 ("Re-check needed"); a dispense record is dropped from the order (the audit keeps it).
+   * Cleared when pharmacist 1 acts again or the prescriber resubmits.
+   */
+  recheck?: { reason: "new_high_alert"; alertIds: string[]; at: string };
+  /** Earlier pharmacist-1 records, oldest first, kept when an order is sent back for re-verification. */
+  pharmacistHistory?: (NonNullable<MedicationOrder["pharmacist"]> & { supersededAt: string; reason: "new_high_alert" })[];
 }
 
 export interface InvestigationOrder {

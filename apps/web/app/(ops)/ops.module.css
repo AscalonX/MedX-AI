@@ -30,10 +30,16 @@
 .emptyToggle { display: inline-flex; min-height: 44px; align-items: center; padding: 8px 16px; border-radius: 999px; background: var(--color-ocean-tint); color: var(--color-ocean); font-size: var(--text-small); font-weight: 700; margin-bottom: 12px; cursor: pointer; }
 .desk :is(a, button, summary, [tabindex]):focus-visible { outline: 2px solid var(--color-ocean); outline-offset: 2px; box-shadow: 0 0 0 2px var(--color-sheet); }
 .shell { min-height: 100dvh; }
-.sidebar { display: flex; flex-direction: column; gap: 24px; border-bottom: 1px solid var(--color-rule); background: var(--color-sheet); padding: 16px; }
+/* Translucent sidebar, same as AppShell's `glass`: 72% white with blur, opaque where blur is unsupported. */
+.sidebar { display: flex; flex-direction: column; gap: 24px; border-bottom: 1px solid color-mix(in srgb, var(--color-rule) 70%, transparent); background: color-mix(in srgb, var(--color-sheet) 96%, transparent); padding: 16px; }
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .sidebar { background: color-mix(in srgb, var(--color-sheet) 72%, transparent); -webkit-backdrop-filter: blur(18px) saturate(1.2); backdrop-filter: blur(18px) saturate(1.2); }
+}
 .nav { display: flex; gap: 4px; overflow-x: auto; }
 .nav a { display: flex; align-items: center; gap: 12px; flex-shrink: 0; min-height: 44px; border-radius: 999px; padding: 8px 16px; font-weight: 600; color: var(--color-ink-soft); }
-.nav a[aria-current] { background: var(--color-teal-tint); color: var(--color-teal); }
+.nav a { transition: background-color var(--duration-quick) var(--ease-pen), color var(--duration-quick) var(--ease-pen); }
+.nav a:hover { background: var(--color-sheet); color: var(--color-ink); }
+.nav a[aria-current] { background: var(--color-teal-tint); color: var(--color-teal); box-shadow: var(--shadow-hairline); }
 .sidebarNote { margin-top: auto; color: var(--color-graphite); font-size: var(--text-micro); }
 .shellHeader { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding: 20px 24px 8px; }
 .shellActions { margin-left: auto; display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
@@ -76,7 +82,14 @@
 .openLink:hover { text-decoration: underline; }
 .openLink svg { flex-shrink: 0; }
 .queueList { display: flex; flex-direction: column; list-style: none; }
-.queueRow { display: grid; grid-template-columns: 124px minmax(0, 1fr) 152px; gap: 24px; padding: 20px 0; border-top: 1px solid var(--color-rule); align-items: center; }
+.queueRow { display: grid; grid-template-columns: 124px minmax(0, 1fr) 176px 152px; gap: 24px; padding: 20px 0; border-top: 1px solid var(--color-rule); align-items: center; }
+.triage { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+.triage .note { margin-top: 0; line-height: 1.45; overflow-wrap: anywhere; }
+.cellLabel { color: var(--color-graphite); font-size: var(--text-micro); font-weight: 600; }
+.triagePill, .mutedPill { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; width: fit-content; border-radius: 999px; padding: 5px 10px; font-size: var(--text-micro); font-weight: 700; }
+.triagePill svg, .mutedPill svg { flex-shrink: 0; }
+.triagePill { background: var(--color-teal-tint); color: var(--color-teal); }
+.mutedPill { background: var(--color-muted); color: var(--color-graphite); font-weight: 600; }
 .queueIdentity { display: flex; align-items: flex-start; flex-direction: column; gap: 8px; }
 .queueDetail { min-width: 0; }
 .complaint { margin-top: 8px; overflow-wrap: anywhere; font-size: var(--text-body); }
@@ -85,10 +98,28 @@
 .noFlags { color: var(--color-graphite); font-size: var(--text-micro); }
 .queueAction { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 .waiting { display: inline-flex; align-items: center; gap: 6px; color: var(--color-graphite); font-size: var(--text-small); white-space: nowrap; }
-.pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: 16px; list-style: none; }
-.pipeline > li { display: flex; min-width: 0; }
-.pipeline > li > * { flex: 1; min-width: 0; }
-.stageLabel { display: inline-flex; align-items: center; gap: 8px; }
+/* Pharmacy flow strip: four linked tiles, a chevron between them on wide screens. */
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; list-style: none; }
+.flow > li { position: relative; display: flex; min-width: 0; }
+.flow > li + li::before { content: ""; position: absolute; left: -8px; top: 50%; width: 8px; height: 8px; border-top: 2px solid var(--color-rule-strong); border-right: 2px solid var(--color-rule-strong); transform: translate(-50%, -50%) rotate(45deg); opacity: 0.6; }
+.flowTile { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; padding: 20px; border: 1px solid color-mix(in srgb, var(--color-rule) 70%, transparent); border-radius: var(--radius-card); background: var(--color-sheet); box-shadow: var(--shadow-sheet); color: var(--color-ink); transition: transform var(--duration-base) var(--ease-pen), box-shadow var(--duration-base) var(--ease-pen), border-color var(--duration-base) var(--ease-pen); }
+.flowTile:hover { transform: translateY(-2px); box-shadow: var(--shadow-sheet-lifted); border-color: color-mix(in srgb, var(--color-ocean) 35%, transparent); }
+.flowTop { display: flex; align-items: center; gap: 8px; color: var(--color-ink-soft); font-size: var(--text-small); font-weight: 600; }
+.flowLabel { min-width: 0; flex: 1; }
+.flowIcon { display: grid; place-items: center; flex-shrink: 0; width: 36px; height: 36px; border-radius: 999px; background: var(--color-muted); color: var(--color-graphite); }
+.flowTile[data-tone="ocean"] .flowIcon { background: var(--color-ocean-tint); color: var(--color-ocean); }
+.flowTile[data-tone="teal"] .flowIcon { background: var(--color-teal-tint); color: var(--color-teal); }
+.flowValue { display: flex; align-items: baseline; gap: 6px; }
+.flowNumber { font-size: var(--text-stat); line-height: 1.1; letter-spacing: -0.025em; font-weight: 800; }
+.flowTile[data-tone="ocean"] .flowNumber { color: var(--color-ocean); }
+.flowTile[data-tone="teal"] .flowNumber { color: var(--color-teal); }
+.flowUnit { color: var(--color-ink-soft); font-size: var(--text-body); font-weight: 600; }
+.flowWho { color: var(--color-graphite); font-size: var(--text-micro); }
+.flowOpen { display: inline-flex; align-items: center; gap: 4px; margin-top: auto; color: var(--color-ocean); font-size: var(--text-small); font-weight: 700; }
+.flowTile:hover .flowOpen { text-decoration: underline; }
+.headingIcon { display: inline-block; margin-right: 8px; vertical-align: -3px; color: var(--color-ocean); }
+.guide { max-width: 1440px; margin: 0 auto 24px; }
+.heroCalm { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
 .stageIndex { display: inline-grid; place-items: center; flex-shrink: 0; width: 22px; height: 22px; border-radius: 999px; background: var(--color-muted); color: var(--color-ink-soft); font-size: var(--text-micro); font-weight: 700; }
 .pickup { margin-top: 16px; }
 .pickup h3 { font-size: var(--text-body); font-weight: 700; }
@@ -129,6 +160,10 @@
 .loading { color: var(--color-graphite); }
 .loadingLines { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
 .loadingLines > div { min-height: 96px; }
+@media (max-width: 1100px) {
+  .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flow > li:nth-child(odd)::before { display: none; }
+}
 @media (max-width: 1300px) {
   .escalation { grid-template-columns: 116px minmax(0, 1fr); }
   .escalation > .openLink { grid-column: 2; justify-self: start; }
@@ -153,13 +188,24 @@
   .queueRow { grid-template-columns: minmax(0, 1fr) auto; gap: 16px 12px; }
   .queueIdentity { grid-column: 1; }
   .queueDetail { grid-column: 1 / -1; grid-row: 2; }
+  .triage { grid-column: 1 / -1; grid-row: 3; flex-direction: row; flex-wrap: wrap; align-items: center; }
   .queueAction { grid-column: 2; grid-row: 1; }
+  .flow { gap: 12px; }
+  .flow > li::before { display: none; }
+  .flowTile { padding: 16px; gap: 8px; }
+  .flowIcon { width: 28px; height: 28px; }
+  .flowOpen { align-self: flex-end; }
+  /* The whole tile is the link; on phones the words stay for screen readers and the arrow stays visible. */
+  .flowOpenText { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .queueAction .openLink { max-width: 144px; padding-inline: 10px; }
   .pickupRow { grid-template-columns: minmax(0, 1fr) auto; }
   .pickupMeta { grid-column: 1 / -1; grid-row: 2; }
   .providerValues { grid-template-columns: 1fr; gap: 12px; }
   .loadingLines { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .error { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 359px) {
+  .flow { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   .desk *, .desk *::before, .desk *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

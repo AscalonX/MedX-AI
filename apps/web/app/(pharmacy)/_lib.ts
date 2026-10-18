@@ -1,7 +1,7 @@
 import { STAFF, staffFor } from "@medx/shared";
 import medrules from "@medx/shared/src/medrules.json";
 import type {
-  MedicationOrder, AllergyEntry, AuditEvent, Evidence, RedFlagHit, GetSessionRes, IntakeSession, Lang, Localized, MedAlert, MedAlertKind, MedicationEntry,
+  MedicationOrder, AllergyEntry, AuditEvent, AuditType, Evidence, RedFlagHit, GetSessionRes, IntakeSession, Lang, Localized, MedAlert, MedAlertKind, MedicationEntry,
   PharmacyReviewReq, PharmacyOrderActionReq, DispenseChecklist, DispenseOrderReq, PickupReq,
 } from "@medx/shared";
 
@@ -220,6 +220,7 @@ export function applyReview(s: IntakeSession, req: PharmacyReviewReq, at: string
   };
 }
 
+// ---------- audit lines: every AuditType gets words, the actor and its key fields (never "Event: x") ----------
 const AUD = {
   med: { verify: L("ยืนยันยา", "verificato farmaco", "verified medicine"), edit: L("แก้ไขยา", "modificato farmaco", "edited medicine"), discontinue: L("หยุดยา", "sospeso farmaco", "discontinued medicine") },
   allergy: { verify: L("ยืนยันการแพ้", "verificata allergia", "verified allergy"), edit: L("แก้ไขการแพ้", "modificata allergia", "edited allergy") },
@@ -227,45 +228,213 @@ const AUD = {
   signed: L("ลงนามเทียบรายการยา", "riconciliazione firmata", "signed off reconciliation"),
   review: L("การทบทวนของเภสัชกร", "Revisione farmacista", "Pharmacy review"),
   opened: L("เปิดดู", "aperta", "opened"),
-  events: {
-    red_flag: L("พบสัญญาณอันตราย", "Segnale d'allarme rilevato", "Red flag raised"),
-    summary_generated: L("สร้างสรุปแล้ว", "Riepilogo generato", "Summary generated"),
-    pii_redacted: L("ปกปิดข้อมูลส่วนตัวแล้ว", "Dati personali oscurati", "Personal details redacted"),
-    session_created: L("เริ่มการรับข้อมูล", "Accesso avviato", "Intake started"),
-    turn_added: L("มีข้อความใหม่", "Messaggio aggiunto", "Turn added"),
-    review: L("แพทย์/พยาบาลทบทวนช่องข้อมูล", "Revisione clinica dei campi", "Clinician field review"),
-    abstained: L("ระบบไม่สามารถสรุปได้ ต้องให้บุคลากรตรวจ", "Il sistema si è astenuto: serve revisione umana", "System abstained: needs human review"),
-    red_flag_review: L("แพทย์/พยาบาลทบทวนสัญญาณอันตราย", "Revisione clinica del segnale d'allarme", "Clinician reviewed red flag"),
-    takeover: L("แพทย์/พยาบาลรับช่วงต่อการรับข้อมูล", "Un clinico ha preso in carico l'accesso", "Clinician took over the intake"),
-    order_drafted: L("แพทย์บันทึกร่างใบสั่งยา", "Il prescrittore ha salvato una bozza", "Prescriber saved a draft order"),
-    order_submitted: L("แพทย์ส่งใบสั่งยาไปห้องยา", "Il prescrittore ha inviato l'ordine alla farmacia", "Prescriber sent the order to pharmacy"),
-    order_cancelled: L("ยกเลิกใบสั่งยา", "Ordine annullato", "Order cancelled"),
-    order_dispensed: L("เภสัชกรคนที่สองตรวจขั้นสุดท้ายและจ่ายยาแล้ว", "Il secondo farmacista ha fatto il controllo finale e dispensato", "Second pharmacist did the final check and dispensed"),
-    pickup_collected: L("ผู้ป่วยรับยาแล้ว", "Farmaci ritirati dal paziente", "Patient collected the medicines"),
-  } as Record<string, Localized>,
-  verifiedOrder: L("เภสัชกรคนแรกตรวจสอบใบสั่งยาแล้ว", "Il primo farmacista ha verificato l'ordine", "First pharmacist verified the order"),
-  returnedOrder: L("เภสัชกรคนแรกส่งใบสั่งยากลับแพทย์พร้อมรายงาน", "Il primo farmacista ha restituito l'ordine con un rapporto", "First pharmacist returned the order with a report"),
-  called: (counter?: string, recall?: boolean) => L(
-    `${recall ? "เรียกผู้ป่วยซ้ำ" : "เรียกผู้ป่วยรับยา"}${counter ? ` ที่ช่อง ${counter}` : ""}`,
-    `${recall ? "Paziente richiamato" : "Paziente chiamato al ritiro"}${counter ? `, sportello ${counter}` : ""}`,
-    `${recall ? "Patient called again" : "Patient called to collect"}${counter ? `, counter ${counter}` : ""}`,
-  ),
 };
-export function auditLine(e: AuditEvent, lang: Lang): string {
-  const p = e.payload as { allergyActions?: { action: string }[]; medActions?: { action: string }[]; alertActions?: { action: string }[]; complete?: boolean; action?: string; counter?: string; recall?: boolean };
-  if (e.type === "order_pharmacy_action") return (p.action === "return" ? AUD.returnedOrder : AUD.verifiedOrder)[lang];
-  if (e.type === "pickup_called") return AUD.called(typeof p.counter === "string" ? p.counter : undefined, p.recall === true)[lang];
-  if (e.type === "order_drafted" && p.action === "cancel") return AUD.events.order_cancelled[lang]; // the engine records a cancel as order_drafted + action
-  if (e.type === "pharmacy_review") {
+const LANG_WORD: Record<Lang, Localized> = { th: L("ไทย", "thailandese", "Thai"), it: L("อิตาลี", "italiano", "Italian"), en: L("อังกฤษ", "inglese", "English") };
+const isStr = (v: unknown): v is string => typeof v === "string" && v.trim().length > 0;
+const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+const strs = (v: unknown): string[] => arr(v).filter(isStr);
+/** "1 override" / "2 overrides", with Italian and Thai counts. */
+const count = (n: number, en: [string, string], it: [string, string], th: string) => L(`${th} ${n}`, `${n} ${n === 1 ? it[0] : it[1]}`, `${n} ${n === 1 ? en[0] : en[1]}`);
+const join = (lang: Lang, parts: (string | false | null | undefined)[]) => parts.filter(Boolean).join(lang === "th" ? " " : ", ");
+const MODE_WORD: Record<string, Localized> = { nurse: L("พยาบาล", "infermiere", "nurse"), doctor: L("แพทย์", "medico", "doctor") };
+const SPEAKER_WORD: Record<string, Localized> = { patient: L("ผู้ป่วย", "paziente", "patient"), clinician: L("บุคลากร", "clinico", "clinician"), nurse: L("พยาบาล", "infermiere", "nurse"), doctor: L("แพทย์", "medico", "doctor") };
+const SUGGESTION_WORD: Record<string, Localized> = {
+  asked: L("ถามแล้ว", "segnato come chiesto", "marked asked"),
+  dismissed: L("ไม่ใช้", "scartato", "dismissed"),
+  answered: L("มีคำตอบจากคำพูดผู้ป่วยแล้ว", "risposto dalle parole del paziente", "answered by the patient's words"),
+  open: L("เปิดอยู่", "aperto", "open"),
+};
+const SUMMARY_EVENT: Record<string, Localized> = {
+  screen_completed: L("การคัดกรองความปลอดภัยด้วยโมเดลเสร็จแล้ว", "Controllo di sicurezza del modello completato", "Model safety screen completed"),
+  screen_unavailable: L("การคัดกรองความปลอดภัยด้วยโมเดลใช้ไม่ได้ กฎตายตัวยังทำงาน", "Controllo di sicurezza del modello non disponibile; le regole restano attive", "Model safety screen unavailable; the rules still ran"),
+  consult_note_drafted: L("ร่างบันทึกการตรวจแล้ว", "Bozza della nota di visita preparata", "Consult note drafted"),
+};
+
+/** Who did it, in the UI language: a staff name, the system or the patient. */
+export function auditActor(e: AuditEvent, lang: Lang): string {
+  if (isStr(e.actorId)) return `${L("โดย", "da", "by")[lang]} ${e.actorId.trim()}`;
+  return (e.actor === "system" ? L("โดยระบบ", "dal sistema", "by the system") : e.actor === "patient" ? L("โดยผู้ป่วย", "dal paziente", "by the patient") : L("โดยบุคลากร", "da un clinico", "by a clinician"))[lang];
+}
+
+/** Optional context: the session's orders, so an order event can name the drug (orderId is all the audit stores). */
+export interface AuditCtx { orders?: MedicationOrder[] }
+type P = Record<string, unknown>;
+const drugOf = (p: P, ctx?: AuditCtx): string | null => {
+  const o = isStr(p.orderId) ? ctx?.orders?.find((x) => x.id === p.orderId) : undefined;
+  if (o) return orderTitle(o);
+  return isStr(p.generic) ? p.generic : isStr(p.drugText) ? p.drugText : null;
+};
+const withDrug = (l: Localized, drug: string | null): Localized => (drug ? L(`${l.th}: ${drug}`, `${l.it}: ${drug}`, `${l.en}: ${drug}`) : l);
+
+/** Event words per type. A Record over AuditType: a new type fails to compile until it has words here. */
+const AUDIT_TEXT: Record<AuditType, (p: P, lang: Lang, ctx?: AuditCtx) => string> = {
+  session_created: (p, lang) => {
+    const pl = isStr(p.patientLang) && (p.patientLang === "th" || p.patientLang === "it" || p.patientLang === "en") ? LANG_WORD[p.patientLang][lang] : null;
+    return L(`เริ่มการรับข้อมูล${pl ? ` ภาษาของผู้ป่วย ${pl}` : ""}`, `Accesso avviato${pl ? `, lingua del paziente: ${pl}` : ""}`, `Intake started${pl ? `, patient language ${pl}` : ""}`)[lang];
+  },
+  turn_added: (p, lang) => {
+    const voice = p.inputMode === "voice";
+    return L(`มีข้อความใหม่จากผู้ป่วย${voice ? " (เสียง)" : ""}`, `Messaggio del paziente aggiunto${voice ? " (voce)" : ""}`, `Patient message added${voice ? " (voice)" : ""}`)[lang];
+  },
+  pii_redacted: (p, lang) => {
+    const n = arr(p.replaced).reduce<number>((t, r) => t + (r && typeof r === "object" && isNum((r as P).count) ? ((r as P).count as number) : 0), 0);
+    return L(`ปกปิดข้อมูลส่วนตัวแล้ว${n ? ` ${n} รายการ` : ""}`, `Dati personali oscurati${n ? ` (${n})` : ""}`, `Personal details redacted${n ? ` (${n})` : ""}`)[lang];
+  },
+  red_flag: (p, lang) => {
+    const ids = [...strs(p.ruleIds), ...(isStr(p.ruleId) ? [p.ruleId] : [])].join(", ");
+    return withDrug(L("พบสัญญาณอันตราย", "Segnale d'allarme rilevato", "Red flag raised"), ids || null)[lang];
+  },
+  summary_generated: (p, lang) => {
+    if (p.event === "consult_note_drafted") {
+      const mode = isStr(p.mode) ? MODE_WORD[p.mode]?.[lang] : undefined;
+      const lines = isNum(p.lineCount) ? count(p.lineCount, ["line", "lines"], ["riga", "righe"], "บรรทัด")[lang] : null;
+      return `${SUMMARY_EVENT.consult_note_drafted[lang]}${mode || lines ? ` (${join(lang, [mode, lines])})` : ""}`;
+    }
+    if (isStr(p.event)) return SUMMARY_EVENT[p.event]?.[lang] ?? `${L("บันทึกขั้นตอนการสรุป", "Passaggio del riepilogo registrato", "Summary step recorded")[lang]} (${p.event})`;
+    if (isNum(p.autoCaptured) && isNum(p.required)) {
+      return L(`สร้างสรุปแล้ว: ช่องบังคับ ${p.autoCaptured} จาก ${p.required} มีคำพูดผู้ป่วยรองรับ`, `Riepilogo generato: ${p.autoCaptured} di ${p.required} campi obbligatori dalle parole del paziente`, `Summary generated: ${p.autoCaptured} of ${p.required} required fields from the patient's words`)[lang];
+    }
+    return L("สร้างสรุปแล้ว", "Riepilogo generato", "Summary generated")[lang];
+  },
+  abstained: (p, lang) => {
+    const why = isStr(p.reason) ? ABSTAIN[p.reason]?.[lang] : undefined;
+    return `${L("ระบบไม่สรุป ต้องให้บุคลากรตรวจ", "Il sistema si è astenuto: serve revisione umana", "System abstained: needs human review")[lang]}${why ? ` (${why})` : ""}`;
+  },
+  review: (p, lang) => {
+    const acts = arr(p.actions).map((a) => (a && typeof a === "object" ? (a as P).action : undefined));
+    const n = (k: string) => acts.filter((a) => a === k).length;
+    const it = (k: number, one: string, many: string) => `${k} ${k === 1 ? one : many}`;
     const parts = [
-      ...(p.medActions ?? []).map((a) => (AUD.med as Record<string, Localized>)[a.action]?.[lang] ?? a.action),
-      ...(p.allergyActions ?? []).map((a) => (AUD.allergy as Record<string, Localized>)[a.action]?.[lang] ?? a.action),
-      ...(p.alertActions ?? []).map((a) => (AUD.alert as Record<string, Localized>)[a.action]?.[lang] ?? a.action),
-      ...(p.complete ? [AUD.signed[lang]] : []),
+      n("approve") > 0 && L(`อนุมัติ ${n("approve")}`, it(n("approve"), "approvato", "approvati"), `${n("approve")} approved`)[lang],
+      n("edit") > 0 && L(`แก้ไข ${n("edit")}`, it(n("edit"), "modificato", "modificati"), `${n("edit")} edited`)[lang],
+      n("reject") > 0 && L(`ปฏิเสธ ${n("reject")}`, it(n("reject"), "rifiutato", "rifiutati"), `${n("reject")} rejected`)[lang],
     ];
+    const head = L("แพทย์/พยาบาลทบทวนช่องข้อมูล", "Revisione clinica dei campi", "Clinician field review")[lang];
+    return parts.some(Boolean) ? `${head}: ${join(lang, parts)}` : head;
+  },
+  red_flag_review: (p, lang) => {
+    const parts = arr(p.actions).flatMap((a) => {
+      if (!a || typeof a !== "object") return [];
+      const x = a as P;
+      const verb = x.action === "acknowledge" ? L("รับทราบ", "confermato", "acknowledged") : x.action === "false_alarm" ? L("แจ้งเตือนผิด", "falso allarme", "false alarm") : null;
+      return [`${isStr(x.ruleId) ? x.ruleId : ""}${verb ? ` ${verb[lang]}` : ""}`.trim()].filter(Boolean);
+    });
+    const head = L("แพทย์/พยาบาลทบทวนสัญญาณอันตราย", "Revisione clinica del segnale d'allarme", "Clinician reviewed red flag")[lang];
+    return parts.length ? `${head}: ${parts.join("; ")}` : head;
+  },
+  pharmacy_review: (p, lang) => {
+    const acts = (v: unknown, map: Record<string, Localized>) => arr(v).map((a) => (a && typeof a === "object" ? String((a as P).action ?? "") : "")).filter(Boolean).map((a) => map[a]?.[lang] ?? a);
+    const parts = [...acts(p.medActions, AUD.med), ...acts(p.allergyActions, AUD.allergy), ...acts(p.alertActions, AUD.alert), ...(p.complete === true ? [AUD.signed[lang]] : [])];
     return `${AUD.review[lang]}: ${parts.join(", ") || AUD.opened[lang]}`;
-  }
-  return AUD.events[e.type]?.[lang] ?? `${L("เหตุการณ์", "Evento", "Event")[lang]}: ${e.type}`;
+  },
+  consult_turn: (p, lang) => {
+    const who = isStr(p.speaker) ? SPEAKER_WORD[p.speaker]?.[lang] : undefined;
+    const mode = isStr(p.mode) ? MODE_WORD[p.mode]?.[lang] : undefined;
+    const voice = p.inputMode === "voice" ? L("เสียง", "voce", "voice")[lang] : undefined;
+    const head = L("เพิ่มบรรทัดการตรวจ", "Riga di visita aggiunta", "Consult line added")[lang];
+    return who || mode || voice ? `${head} (${join(lang, [who, mode && L(`การตรวจของ${mode}`, `visita ${mode}`, `${mode} consult`)[lang], voice])})` : head;
+  },
+  consult_suggestion: (p, lang) => {
+    const st = isStr(p.status) ? SUGGESTION_WORD[p.status]?.[lang] : undefined;
+    const head = L("คำแนะนำระหว่างการตรวจ", "Suggerimento di visita", "Consult suggestion")[lang];
+    return st ? `${head}: ${st}` : head;
+  },
+  consult_note_signed: (p, lang) => {
+    const mode = isStr(p.mode) ? MODE_WORD[p.mode]?.[lang] : undefined;
+    const lines = isNum(p.lineCount) ? count(p.lineCount, ["line", "lines"], ["riga", "righe"], "บรรทัด")[lang] : null;
+    const kept = strs(p.keptConsiderationIds).length;
+    const keptWord = kept ? count(kept, ["consideration kept", "considerations kept"], ["ipotesi mantenuta", "ipotesi mantenute"], "ข้อพิจารณาที่เก็บไว้")[lang] : null;
+    const head = L("ลงนามบันทึกการตรวจแล้ว", "Nota di visita firmata", "Consult note signed")[lang];
+    return mode || lines || keptWord ? `${head} (${join(lang, [mode && L(`บันทึกของ${mode}`, `nota ${mode}`, `${mode} note`)[lang], lines, keptWord])})` : head;
+  },
+  vitals_recorded: (p, lang) => {
+    const lvl = isNum(p.suggestedLevel) ? p.suggestedLevel : null;
+    return L(`บันทึกสัญญาณชีพแล้ว${lvl ? ` ระดับคัดกรองที่เสนอ ${lvl}` : ""}`, `Parametri vitali registrati${lvl ? `, livello di triage suggerito ${lvl}` : ""}`, `Vital signs recorded${lvl ? `, suggested triage level ${lvl}` : ""}`)[lang];
+  },
+  triage_confirmed: (p, lang) => {
+    const lvl = isNum(p.level) ? p.level : null;
+    const sug = isNum(p.suggestedLevel) && p.suggestedLevel !== lvl ? p.suggestedLevel : null;
+    return L(
+      `ยืนยันระดับคัดกรอง${lvl ? ` ระดับ ${lvl}` : ""}${sug ? ` (ระบบเสนอ ${sug})` : ""}`,
+      `Triage confermato${lvl ? `: livello ${lvl}` : ""}${sug ? ` (suggerito ${sug})` : ""}`,
+      `Triage confirmed${lvl ? `: level ${lvl}` : ""}${sug ? ` (suggested ${sug})` : ""}`,
+    )[lang];
+  },
+  order_drafted: (p, lang, ctx) => {
+    const drug = drugOf(p, ctx);
+    if (p.action === "cancel") return withDrug(L("ยกเลิกใบสั่งยา", "Ordine annullato", "Order cancelled"), drug)[lang]; // the engine records a cancel as order_drafted + action
+    const head = p.updated === true ? L("แพทย์แก้ไขร่างใบสั่งยา", "Il prescrittore ha aggiornato una bozza", "Prescriber updated a draft order") : L("แพทย์บันทึกร่างใบสั่งยา", "Il prescrittore ha salvato una bozza", "Prescriber saved a draft order");
+    const n = strs(p.checkIds).length;
+    return join(lang, [withDrug(head, drug)[lang], Array.isArray(p.checkIds) && count(n, ["rule check", "rule checks"], ["controllo", "controlli"], "การตรวจตามกฎ")[lang]]);
+  },
+  order_submitted: (p, lang, ctx) => {
+    if (p.kind === "investigation") return withDrug(L("สั่งการตรวจเพิ่มเติม", "Esame richiesto", "Investigation ordered"), isStr(p.code) ? p.code : null)[lang];
+    const n = arr(p.overrides).length;
+    return join(lang, [
+      withDrug(L("แพทย์ส่งใบสั่งยาไปห้องยา", "Il prescrittore ha inviato l'ordine alla farmacia", "Prescriber sent the order to pharmacy"), drugOf(p, ctx))[lang],
+      Array.isArray(p.overrides) && count(n, ["prescriber override", "prescriber overrides"], ["deroga del prescrittore", "deroghe del prescrittore"], "เหตุผลยืนยันของแพทย์")[lang],
+      p.pickupReset === true && L("เริ่มรอบรับยาใหม่", "nuovo ciclo di ritiro", "new pickup cycle")[lang],
+    ]);
+  },
+  order_pharmacy_action: (p, lang, ctx) => {
+    const drug = drugOf(p, ctx);
+    const again = p.afterRecheck === true ? L("หลังการตรวจซ้ำ", "dopo il ricontrollo", "after re-check")[lang] : null;
+    if (p.action === "return") {
+      const r = (p.report && typeof p.report === "object" ? p.report : {}) as P;
+      const a = strs(r.alertIds).length, g = strs(r.suggestedGenerics).length;
+      return join(lang, [
+        withDrug(L("เภสัชกรคนแรกส่งใบสั่งยากลับแพทย์พร้อมรายงาน", "Il primo farmacista ha restituito l'ordine con un rapporto", "First pharmacist returned the order with a report"), drug)[lang],
+        a > 0 && count(a, ["alert raised", "alerts raised"], ["avviso segnalato", "avvisi segnalati"], "การแจ้งเตือนที่แจ้งแพทย์")[lang],
+        g > 0 && count(g, ["option for prescriber review", "options for prescriber review"], ["opzione per il prescrittore", "opzioni per il prescrittore"], "ทางเลือกให้แพทย์พิจารณา")[lang],
+        again,
+      ]);
+    }
+    return join(lang, [withDrug(L("เภสัชกรคนแรกตรวจสอบใบสั่งยาแล้ว", "Il primo farmacista ha verificato l'ordine", "First pharmacist verified the order"), drug)[lang], again]);
+  },
+  order_cancelled: (p, lang, ctx) => withDrug(L("ยกเลิกใบสั่งยา", "Ordine annullato", "Order cancelled"), drugOf(p, ctx))[lang],
+  order_dispensed: (p, lang, ctx) => {
+    const list = p.checklist && typeof p.checklist === "object" ? (p.checklist as P) : null;
+    const ticked = list ? CHECKLIST_KEYS.filter((k) => list[k] === true).length : null;
+    return join(lang, [
+      withDrug(L("เภสัชกรคนที่สองตรวจขั้นสุดท้ายและจ่ายยาแล้ว", "Il secondo farmacista ha fatto il controllo finale e dispensato", "Second pharmacist did the final check and dispensed"), drugOf(p, ctx))[lang],
+      isStr(p.verifiedBy) && L(`ตรวจสอบโดย ${p.verifiedBy}`, `verificato da ${p.verifiedBy}`, `verified by ${p.verifiedBy}`)[lang],
+      ticked !== null && L(`ตรวจครบ ${ticked} จาก 6 ข้อ`, `controlli ${ticked} di 6`, `${ticked} of 6 checks`)[lang],
+    ]);
+  },
+  order_recheck: (p, lang, ctx) => {
+    const rules = strs(p.ruleIds).join(", ");
+    const prev = isStr(p.previousPharmacist) ? p.previousPharmacist : null;
+    return join(lang, [
+      withDrug(L("ต้องตรวจซ้ำ: มีการแจ้งเตือนสูงใหม่หลังตรวจสอบ ส่งกลับเภสัชกรคนแรก", "Ricontrollo necessario: nuovo avviso alto dopo la verifica, l'ordine torna al primo farmacista", "Re-check needed: new high alert after verification, back to the first pharmacist"), drugOf(p, ctx))[lang],
+      rules && L(`กฎ ${rules}`, `regola ${rules}`, `rule ${rules}`)[lang],
+      prev && L(`เคยตรวจสอบโดย ${prev}`, `verificato prima da ${prev}`, `earlier verified by ${prev}`)[lang],
+    ]);
+  },
+  pickup_called: (p, lang) => {
+    const counter = isStr(p.counter) ? p.counter : null;
+    const n = strs(p.orderIds).length;
+    return join(lang, [
+      L(p.recall === true ? "เรียกผู้ป่วยซ้ำ" : "เรียกผู้ป่วยรับยา", p.recall === true ? "Paziente richiamato" : "Paziente chiamato al ritiro", p.recall === true ? "Patient called again" : "Patient called to collect")[lang],
+      counter && L(`ช่อง ${counter}`, `sportello ${counter}`, `counter ${counter}`)[lang],
+      n > 0 && count(n, ["order", "orders"], ["ordine", "ordini"], "รายการยา")[lang],
+    ]);
+  },
+  pickup_collected: (p, lang) => {
+    const n = strs(p.orderIds).length;
+    return join(lang, [L("ผู้ป่วยรับยาแล้ว", "Farmaci ritirati dal paziente", "Patient collected the medicines")[lang], n > 0 && count(n, ["order", "orders"], ["ordine", "ordini"], "รายการยา")[lang]]);
+  },
+  takeover: (_p, lang) => L("แพทย์/พยาบาลรับช่วงต่อการรับข้อมูล", "Un clinico ha preso in carico l'accesso", "Clinician took over the intake")[lang],
+};
+
+/**
+ * One audit line in the UI language: what happened, its key fields (drug, triage level, override count, verifier,
+ * counter) and who did it. Never empty and never a raw type name. Notes and free text stay on the order card.
+ */
+export function auditLine(e: AuditEvent, lang: Lang, ctx?: AuditCtx): string {
+  const p = (e.payload && typeof e.payload === "object" ? e.payload : {}) as P;
+  const text = AUDIT_TEXT[e.type]?.(p, lang, ctx) ?? L("บันทึกในระบบ", "Registrato nel sistema", "Recorded in the system")[lang];
+  return `${text}, ${auditActor(e, lang)}`;
 }
 
 /** The completed (signed-off) pharmacy_review event, the only trustworthy source for the receipt time and signer. */
@@ -340,7 +509,15 @@ export const ABSTAIN: Record<string, Localized> = {
 
 /** Chrome strings (th/it/en). */
 export const C = {
+  pharmacyQueue: L("คิวห้องยา", "Coda della farmacia", "Pharmacy queue"),
   queueTitle: L("คิวเทียบรายการยา", "Coda di riconciliazione", "Reconciliation queue"),
+  reconTab: L("เทียบรายการยา", "Riconciliazione", "Reconciliation"),
+  findCode: L("ค้นหารหัสผู้ป่วย", "Cerca il codice paziente", "Find a patient code"),
+  findCodeHint: L("พิมพ์ B-012 หรือ 12", "Scriva B-012 o 12", "Type B-012 or 12"),
+  noCodeMatch: (q: string) => L(`ไม่พบรหัส "${q}" ในคิวนี้`, `Nessun codice "${q}" in questa coda`, `No code "${q}" in this queue`),
+  noCodeMatchBody: L("ลองหาในขั้นตอนอื่น หรือล้างคำค้นหา", "Provi un'altra fase o cancelli la ricerca.", "Try another stage, or clear the search."),
+  clearSearch: L("ล้างคำค้นหา", "Cancella la ricerca", "Clear search"),
+  newArrival: L("ใหม่", "Nuovo", "New"),
   queue: L("คิว", "Coda", "Queue"),
   pendingStat: L("รอเทียบรายการยา", "In attesa di riconciliazione", "Pending reconciliation"),
   urgentStat: L("การแจ้งเตือนสูงและสัญญาณอันตรายที่ยังเปิดอยู่", "Avvisi alti e segnali d'allarme aperti", "High alerts and red flags open"),
@@ -414,14 +591,30 @@ export function orderBlock(o: MedicationOrder): string | null {
 export const orderTitle = (o: MedicationOrder) => `${o.generic ?? o.drugText} ${o.dose}`;
 
 // ---------- two-stage pharmacy: verify (pharmacist 1), dispense (pharmacist 2), pickup ----------
-/** Non-cancelled orders. Drafts and returned orders count: the engine calls the patient only when every one is dispensed. */
+/** Non-cancelled orders (drafts included). */
 export const activeOrders = (s: IntakeSession) => ordersOf(s).filter((o) => o.status !== "cancelled");
+/** Orders that left the prescriber: not cancelled and not drafts. Drafts stay with the prescriber and never block a call. */
+export const sentOrders = (s: IntakeSession) => ordersOf(s).filter((o) => o.status !== "cancelled" && o.status !== "draft");
 export const verifiedOrders = (s: IntakeSession) => ordersOf(s).filter((o) => o.status === "verified");
-/** Mirrors the engine's call rule: at least one active order, every one dispensed, never after collection. */
-export function canCall(s: IntakeSession) {
-  const a = activeOrders(s);
-  return a.length > 0 && a.every((o) => o.status === "dispensed") && s.pickup?.status !== "collected";
+/** Waiting on pharmacist 1 (submitted), pharmacist 2 (verified) or back with the prescriber (returned): these block the call. */
+const PHARMACY_PENDING = new Set<MedicationOrder["status"]>(["submitted", "returned", "verified"]);
+export const blockingOrders = (s: IntakeSession) => sentOrders(s).filter((o) => PHARMACY_PENDING.has(o.status));
+/** Dispensed orders already handed over in an earlier pickup cycle, from the append-only audit (empty when it is not loaded). */
+export function collectedOrderIds(audit: AuditEvent[] | undefined): Set<string> {
+  return new Set((audit ?? []).filter((e) => e.type === "pickup_collected").flatMap((e) => strs((e.payload as P | undefined)?.orderIds)));
 }
+/** Dispensed orders of the current pickup cycle. */
+export const newlyDispensed = (s: IntakeSession, collected: ReadonlySet<string> = new Set()) => sentOrders(s).filter((o) => o.status === "dispensed" && !collected.has(o.id));
+/**
+ * Mirrors the engine's call rule (gate decisions a and b): nothing waiting on the pharmacy or the prescriber after a
+ * return, at least one dispensed order not collected in an earlier cycle, never while the current cycle is collected.
+ * Without the audit, earlier-cycle orders cannot be told apart; the server then refuses with its own words.
+ */
+export function canCall(s: IntakeSession, collected?: ReadonlySet<string>) {
+  return s.pickup?.status !== "collected" && blockingOrders(s).length === 0 && newlyDispensed(s, collected).length > 0;
+}
+/** An order sent back to pharmacist 1 because a new high alert appeared after it was verified. */
+export const isRecheck = (o: MedicationOrder) => o.status === "submitted" && !!o.recheck;
 
 export type Stage = "verify" | "dispense" | "call" | "ready" | "collected";
 export const STAGES: Stage[] = ["verify", "dispense", "call", "ready", "collected"];
@@ -498,17 +691,18 @@ export function applyDispense(s: IntakeSession, orderId: string, req: DispenseOr
   if (CHECKLIST_KEYS.some((k) => req.checklist[k] !== true)) refuse("Every dispense checklist item must be confirmed");
   const note = req.note?.trim();
   return withOrder(s, orderId, (o) => {
+    if (isRecheck(o)) refuse("Re-check needed: a new high alert appeared after verification, so the order went back to pharmacist 1. Only verified orders can be dispensed");
     if (o.status !== "verified") refuse("Only verified orders can be dispensed");
     if (!o.pharmacist || samePerson(o.pharmacist.by, req.reviewerId)) refuse("A second pharmacist must dispense: the pharmacist who verified this order cannot also dispense it");
     return { ...o, status: "dispensed", dispense: { by: req.reviewerId, at, checklist: { ...req.checklist }, ...(note ? { note } : {}) } };
   }, at);
 }
-export function applyPickup(s: IntakeSession, req: PickupReq, at: string): IntakeSession {
+export function applyPickup(s: IntakeSession, req: PickupReq, at: string, collected: ReadonlySet<string> = new Set()): IntakeSession {
   if (req.action === "call") {
     if (s.pickup?.status === "collected") refuse("Medicines already collected");
-    const active = activeOrders(s);
-    if (!active.length) refuse("No medication orders to collect");
-    if (active.some((o) => o.status !== "dispensed")) refuse("Every active medication order must be dispensed before calling the patient");
+    const sent = sentOrders(s);
+    if (blockingOrders(s).length) refuse("Every active medication order must be dispensed before calling the patient");
+    if (!newlyDispensed(s, collected).length) refuse(sent.length ? "No newly dispensed medicines to collect" : "No medication orders to collect");
     const where = req.counter?.trim() || (s.pickup?.status === "ready" ? s.pickup.counter : undefined);
     return { ...s, pickup: { status: "ready", ...(where ? { counter: where } : {}), calledBy: req.reviewerId, calledAt: at }, updatedAt: at };
   }

@@ -1,12 +1,12 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AuditEvent, ConsultState, ConsultSuggestion, GetSessionRes, IntakeSession, InvestigationOrderReq, Localized } from "@medx/shared";
+import { WRITE_ROLES, type AuditEvent, type ConsultState, type ConsultSuggestion, type GetSessionRes, type IntakeSession, type InvestigationOrderReq, type Localized } from "@medx/shared";
 import { Button, Card, CardHeader, Field, Icon, Pill } from "@/components/ui";
-import { Head, Notice, ReadOnlyNote, useIdentity } from "../../../_bits";
+import { notifyCaseChanged } from "../../../../_shared/caseEvents";
+import { Head, Notice, ReadOnlyNote, investigationBadge, useIdentity } from "../../../_bits";
 import { CATALOG, fixtureConsider, fixtureInvestigation, fixtureSession } from "../../../_fixture";
 import { asSession, call, clockOf, tr, type TKey } from "../../../_lib";
 import { Meds } from "./_meds";
-import { statusBadge } from "../../../_bits";
 
 type Cat = "lab" | "imaging" | "ecg" | "other";
 const CATS: { v: "all" | Cat; k: TKey }[] = [{ v: "all", k: "all" }, { v: "lab", k: "lab" }, { v: "imaging", k: "imaging" }, { v: "ecg", k: "ecg" }, { v: "other", k: "other" }];
@@ -14,7 +14,8 @@ interface Pick { code: string; label: Localized; category: Cat; fromSuggestionId
 
 export function Orders({ id }: { id: string }) {
   const { lang, reviewer, role } = useIdentity("Orders");
-  const canOrder = role === "doctor";
+  // Server enforces the same rule (403): prescribing and investigation orders are doctor writes.
+  const canOrder = (WRITE_ROLES.orders as readonly string[]).includes(role);
   const [session, setSession] = useState<IntakeSession | null>(null);
   const [fixture, setFixture] = useState(false);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -38,13 +39,13 @@ export function Orders({ id }: { id: string }) {
   useEffect(() => { void load(); }, [load]);
 
   const apply = (s: IntakeSession, fx: boolean) => {
-    setSession(s); if (fx) setFixture(true);
+    setSession(s); if (fx) setFixture(true); else notifyCaseChanged(id);
     // writes return only the session; re-read for the audit trail behind the order timeline
     call<GetSessionRes>(`/api/sessions/${id}`, undefined, () => ({ session: s, audit: [] })).then((r) => { if (!r.fixture) setAudit(r.data.audit ?? []); }, () => {});
   };
   return (
-    <div className="cl-enter mx-auto max-w-6xl px-4 py-6 sm:px-6">
-      <Head id={id} title={tr("ordersTitle", lang)} session={session} lang={lang} fixture={fixture} />
+    <div className="mx-auto max-w-6xl">
+      <Head id={id} active="orders" title={tr("ordersTitle", lang)} session={session} lang={lang} fixture={fixture} />
       {loadErr && <Notice>{tr("loadFail", lang)} {loadErr}</Notice>}
       {!canOrder && <ReadOnlyNote>{tr("doctorsOnly", lang)}</ReadOnlyNote>}
       <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
@@ -157,6 +158,7 @@ function Investigations({ id, session, consider, lang, reviewer, apply, readOnly
       )}
 
       <h3 className="mt-6 text-small font-bold text-ink">{tr("ordered", lang)}</h3>
+      <p className="mt-0.5 flex items-start gap-1.5 text-micro text-ink-soft"><Icon name="info" size={14} className="mt-px shrink-0" />{tr("invNoLab", lang)}</p>
       {ordered.length === 0 ? (
         <p className="mt-1 text-body text-ink-soft">{tr("noneOrdered", lang)}</p>
       ) : (
@@ -164,7 +166,7 @@ function Investigations({ id, session, consider, lang, reviewer, apply, readOnly
           {ordered.map((o) => (
             <li key={o.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5">
               <span className="text-body font-semibold text-ink">{o.label[lang]}</span>
-              {statusBadge(o.status, lang)}
+              {investigationBadge(o.status, lang)}
               <span className="ml-auto text-small text-ink-soft">{o.orderedBy}, {clockOf(o.at, lang)}</span>
               {o.reason && <span className="basis-full text-small text-ink-soft">{o.reason}</span>}
             </li>

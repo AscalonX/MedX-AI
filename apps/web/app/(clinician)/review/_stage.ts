@@ -1,4 +1,5 @@
-import type { IntakeSession, MedicationOrder } from "@medx/shared";
+import { JOURNEY_STAGE_LABELS, type IntakeSession, type JourneyStage, type Localized, type MedicationOrder } from "@medx/shared";
+import { T, fmt } from "./_i18n";
 
 /** Pharmacy stage of a case, for a neutral status chip in the queue and the case header. */
 export type PharmacyStage = "toVerify" | "toDispense" | "toCall" | "ready" | "collected";
@@ -27,4 +28,18 @@ export function returnReport(o: MedicationOrder) {
   const flagged = report.alertIds.map((id) => o.checks.find((c) => c.id === id)).filter((c): c is NonNullable<typeof c> => Boolean(c));
   const options = [...new Set(report.suggestedGenerics.filter((g) => g.trim()))];
   return flagged.length || options.length ? { flagged, options } : null;
+}
+
+/**
+ * Words for the journey stage chip (S-01). The shared JOURNEY_STAGE_LABELS word, made more precise where the
+ * pharmacy record says more: "Dispensed, patient not called" and the pickup counter. A neutral marker only:
+ * it never decides urgency (red flags and triage do).
+ */
+export function stageWords(s: Pick<IntakeSession, "orders" | "pickup">, stage: JourneyStage): Localized {
+  if (stage === "pharmacy_dispense" && pharmacyStage(s as IntakeSession) === "toCall") return T.stDispensedNotCalled;
+  if (stage === "ready_for_pickup" && s.pickup?.counter) {
+    const n = s.pickup.counter;
+    return { en: fmt(T.stReadyCounter.en, { n }), th: fmt(T.stReadyCounter.th, { n }), it: fmt(T.stReadyCounter.it, { n }) };
+  }
+  return JOURNEY_STAGE_LABELS[stage];
 }

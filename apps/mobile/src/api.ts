@@ -12,6 +12,8 @@ export interface PatientView {
   summary: null | { nextQuestion: { field: string; text: Localized } | null; redFlags: { patientMessage: Localized; severity: RedFlagSeverity }[]; abstained: boolean };
   /** null until a prescription is sent to the pharmacy (older servers and stored copies: missing, read as null). */
   pickup: PatientPickup;
+  /** One boolean, never who or what: staff acted on the case (intake approved or taken over, triage confirmed, or a note signed). Older servers: false. */
+  seenByStaff: boolean;
 }
 
 const PICKUP: readonly PickupStatus[] = ["preparing", "ready", "collected"];
@@ -32,6 +34,7 @@ export function toPatient(x: PatientView): PatientView {
     turns: (x.turns ?? []).filter((t) => t.role === "patient").map((t) => ({ id: t.id, role: "patient", text: t.text, at: t.at, inputMode: t.inputMode })),
     summary: sm ? { nextQuestion: sm.nextQuestion ? { field: sm.nextQuestion.field, text: sm.nextQuestion.text } : null, redFlags: (sm.redFlags ?? []).map((r) => ({ patientMessage: r.patientMessage, severity: r.severity })), abstained: !!sm.abstained } : null,
     pickup: toPickup(x.pickup),
+    seenByStaff: x.seenByStaff === true,
   };
 }
 

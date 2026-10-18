@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import { STAFF } from '@medx/shared';
-import type { DispenseChecklist, IntakeSession, Localized, MedAlert, MedicationEntry, MedicationOrder, MedRuleFile } from '@medx/shared';
+import { STAFF, WRITE_ROLES } from '@medx/shared';
+import type { AuditType, DispenseChecklist, IntakeSession, Localized, MedAlert, MedicationEntry, MedicationOrder, MedRuleFile } from '@medx/shared';
 import catalog from '@medx/shared/src/investigations.json';
-import { actorId, conflict, invalid, optionalText, properties, sessionFor, text, written } from './clinicalWrites';
+import { actorId, conflict, invalid, optionalText, properties, requireStaffRole, sessionFor, text, written } from './clinicalWrites';
+import { PipelineError } from './errors';
 import { checkMedRules, lookupDrug, MEDRULES, stableId } from './medrules';
-import { PipelineError } from './pipeline';
 import { object, shortString } from './schema';
-import { getConsultRecord, withSessionLock } from './store';
+import { appendAudit, getAudit, getConsultRecord, saveSession, withSessionLock } from './store';
 
 // References are opaque server-issued identities, not prose. Validate shape here
 // and membership below before saving; redacting a numeric hash breaks provenance.
@@ -102,8 +102,96 @@ function baseChecks(s: IntakeSession, order: MedicationOrder) {
   }
   return checks;
 }
+export interface OrderRecheck { orderId: string; alertIds: string[]; ruleIds: string[]; previousPharmacist?: string; previousDispenser?: string; at: string }
+const RECHECK_MESSAGE = 'New high alert after verification: returned to pharmacist 1 for re-check';
+const RECHECK_DISPENSED_MESSAGE = 'New high alert after dispensing, before the patient collected it: returned to pharmacist 1 for re-check';
+// Orders waiting on the pharmacy: they block the patient call.
+const PHARMACY_PENDING = new Set<MedicationOrder['status']>(['submitted', 'returned', 'verified']);
+// Orders still with the prescriber: their alerts only count once the order is submitted.
+const WITH_PRESCRIBER = new Set<MedicationOrder['status']>(['draft', 'returned']);
+/** High alerts on `o` with no prescriber override on that order, ignoring alerts that involve another order still with the prescriber. */
+function openHighAlerts(o: MedicationOrder, pending: Set<string>) {
+  return o.checks.filter(a => a.severity === 'high' && !o.overrides.some(p => p.alertId === a.id && p.reason.trim()) && !a.medIds.some(id => id !== o.id && pending.has(id)));
+}
+const pendingWithPrescriber = (meds: MedicationOrder[]) => new Set(meds.filter(o => WITH_PRESCRIBER.has(o.status)).map(o => o.id));
+/** Dispensed orders already handed over in a pickup cycle (from the append-only audit). */
+function collectedOrderIds(sessionId: string) {
+  return new Set(getAudit(sessionId).filter(e => e.type === 'pickup_collected').flatMap(e => Array.isArray(e.payload.orderIds) ? e.payload.orderIds.filter((x): x is string => typeof x === 'string') : []));
+}
+/**
+ * Recompute every active order's prescribing checks (deterministic). Safety: an order that has not reached the patient
+ * (verified, or dispensed but not yet collected) and now carries a high alert with no prescriber override on that order
+ * goes back to "submitted" for pharmacist 1 ("Re-check needed"); the pharmacist record moves to pharmacistHistory and a
+ * dispense record is dropped from the order (the audit log keeps it). A patient already called to the counter goes back
+ * to "preparing". Orders the patient already collected are never pulled back. Alerts that involve an order still with
+ * the prescriber (draft or returned) wait until that order is submitted. Mutates `s`; the caller saves the session and
+ * passes the result to auditRechecks.
+ */
+export function refreshOrders(s: IntakeSession, at = new Date().toISOString()): OrderRecheck[] {
+  const meds = s.orders?.medications || [];
+  for (const o of meds) if (o.status !== 'cancelled') o.checks = prescribingChecks(s, o);
+  const pending = pendingWithPrescriber(meds);
+  const collected = meds.some(o => o.status === 'dispensed') ? collectedOrderIds(s.id) : new Set<string>();
+  const out: OrderRecheck[] = [];
+  for (const o of meds) {
+    const dispensed = o.status === 'dispensed' && !collected.has(o.id);
+    if (o.status !== 'verified' && !dispensed) continue;
+    const fresh = openHighAlerts(o, pending);
+    if (!fresh.length) continue;
+    const previous = o.pharmacist, dispenser = dispensed ? o.dispense?.by ?? 'unknown' : undefined;
+    if (previous) o.pharmacistHistory = [...(o.pharmacistHistory || []), { ...previous, supersededAt: at, reason: 'new_high_alert' }];
+    delete o.pharmacist; delete o.dispense;
+    o.status = 'submitted';
+    o.recheck = { reason: 'new_high_alert', alertIds: fresh.map(a => a.id), at };
+    out.push({ orderId: o.id, alertIds: fresh.map(a => a.id), ruleIds: [...new Set(fresh.map(a => a.ruleId))], ...(previous ? { previousPharmacist: previous.by } : {}), ...(dispenser ? { previousDispenser: dispenser } : {}), at });
+  }
+  // Medicines waiting on the counter are no longer cleared for handover: the patient goes back to "preparing".
+  if (out.some(r => r.previousDispenser) && s.pickup?.status === 'ready') delete s.pickup;
+  return out;
+}
+/**
+ * One "order_recheck" audit event (actor system) per order sent back, with a plain reason. It is stamped when it is
+ * appended (never before r.at), so the append-only log stays chronological when a turn's own events land first.
+ */
+export function auditRechecks(sessionId: string, rechecks: OrderRecheck[]) {
+  for (const r of rechecks) {
+    const at = new Date(Math.max(Date.parse(r.at) || 0, Date.now())).toISOString();
+    appendAudit(sessionId, 'order_recheck', 'system', { orderId: r.orderId, reason: 'new_high_alert', alertIds: r.alertIds, ruleIds: r.ruleIds, ...(r.previousPharmacist ? { previousPharmacist: r.previousPharmacist } : {}), ...(r.previousDispenser ? { wasDispensed: true, previousDispenser: r.previousDispenser } : {}), message: r.previousDispenser ? RECHECK_DISPENSED_MESSAGE : RECHECK_MESSAGE }, undefined, at);
+  }
+}
+/**
+ * A follow-up order that never reached the patient (cancelled, or edited back to a draft) leaves the earlier
+ * collection standing: when nothing waits on the pharmacy and every dispensed order was collected, the pickup state
+ * is rebuilt from the last pickup_called / pickup_collected audit events. Returns true when it restored one.
+ */
+function restoreCollectedPickup(s: IntakeSession): boolean {
+  if (s.pickup) return false;
+  const meds = (s.orders?.medications || []).filter(o => o.status !== 'cancelled' && o.status !== 'draft');
+  const dispensed = meds.filter(o => o.status === 'dispensed');
+  if (!dispensed.length || meds.some(o => PHARMACY_PENDING.has(o.status))) return false;
+  const done = collectedOrderIds(s.id);
+  if (!dispensed.every(o => done.has(o.id))) return false;
+  const audit = getAudit(s.id);
+  const collected = audit.filter(e => e.type === 'pickup_collected').at(-1);
+  if (!collected) return false;
+  const called = audit.filter(e => e.type === 'pickup_called' && e.at <= collected.at).at(-1);
+  const counter = typeof called?.payload.counter === 'string' ? called.payload.counter : undefined;
+  const calledBy = typeof collected.payload.calledBy === 'string' ? collected.payload.calledBy : called?.actorId ?? 'unknown';
+  const calledAt = typeof collected.payload.calledAt === 'string' ? collected.payload.calledAt : called?.at ?? collected.at;
+  s.pickup = { status: 'collected', ...(counter ? { counter } : {}), calledBy, calledAt, collectedBy: collected.actorId ?? 'unknown', collectedAt: collected.at };
+  return true;
+}
+/** Start of every order write (inside the lock): a re-check is saved at once, so a later refusal cannot drop it. */
 function refresh(s: IntakeSession) {
-  for (const o of s.orders?.medications || []) if (o.status !== 'cancelled') o.checks = prescribingChecks(s, o);
+  const rechecks = refreshOrders(s);
+  if (rechecks.length) { s.updatedAt = rechecks[0].at; saveSession(s); auditRechecks(s.id, rechecks); }
+}
+/** End of every successful order write: re-run the checks on the new state, save, then audit the action and any re-check. */
+function commit(s: IntakeSession, type: AuditType, actor: string, payload: Record<string, unknown>) {
+  const rechecks = refreshOrders(s);
+  const restored = restoreCollectedPickup(s);
+  written(s, type, actor, restored ? { ...payload, pickupRestored: 'collected' } : payload); auditRechecks(s.id, rechecks);
+  return s;
 }
 function orderFor(s: IntakeSession, id: string) {
   const o = s.orders?.medications.find(o => o.id === id);
@@ -111,7 +199,8 @@ function orderFor(s: IntakeSession, id: string) {
 }
 export function investigationOrder(id: string, req: unknown) {
   properties(req, ['orderedBy', 'code', 'reason', 'fromSuggestionId']);
-  const actor = actorId(req.orderedBy, 'orderedBy'); const code = text(req.code, 'code', 200);
+  const actor = actorId(req.orderedBy, 'orderedBy'); requireStaffRole(actor, WRITE_ROLES.orders, 'order investigations');
+  const code = text(req.code, 'code', 200);
   const item = catalog.items.find(i => i.id === code); if (!item) invalid('Unknown investigation code');
   const reason = optionalText(req.reason, 'reason'); const fromSuggestionId = req.fromSuggestionId === undefined ? undefined : reference(req.fromSuggestionId, 'fromSuggestionId', 300);
   return withSessionLock(id, () => {
@@ -124,21 +213,25 @@ export function investigationOrder(id: string, req: unknown) {
 }
 export function medicationOrder(id: string, req: unknown) {
   properties(req, ['orderedBy', 'orderId', 'drugText', 'dose', 'route', 'frequency', 'duration']);
-  const actor = actorId(req.orderedBy, 'orderedBy'); const orderId = req.orderId === undefined ? undefined : reference(req.orderId, 'orderId');
+  const actor = actorId(req.orderedBy, 'orderedBy'); requireStaffRole(actor, WRITE_ROLES.orders, 'write medication orders');
+  const orderId = req.orderId === undefined ? undefined : reference(req.orderId, 'orderId');
   const drugText = text(req.drugText, 'drugText', 300), dose = text(req.dose, 'dose', 200), route = text(req.route, 'route', 100), frequency = text(req.frequency, 'frequency', 200), duration = optionalText(req.duration, 'duration', 200);
   return withSessionLock(id, () => {
-    const s = sessionFor(id); const old = orderId ? orderFor(s, orderId) : undefined;
+    const s = sessionFor(id); refresh(s); const old = orderId ? orderFor(s, orderId) : undefined;
     if (old && !['draft', 'returned'].includes(old.status)) conflict('Only draft or returned orders can be edited');
     const drug = lookupDrug(drugText);
-    const o: MedicationOrder = { id: old?.id || randomUUID(), drugText, dose, route, frequency, ...(duration ? { duration } : {}), ...parsePrescription(dose, frequency), generic: drug?.generic || null, drugClass: drug?.drugClass || null, orderedBy: actor, at: new Date().toISOString(), status: 'draft', checks: [], overrides: [] };
+    const o: MedicationOrder = { id: old?.id || randomUUID(), drugText, dose, route, frequency, ...(duration ? { duration } : {}), ...parsePrescription(dose, frequency), generic: drug?.generic || null, drugClass: drug?.drugClass || null, orderedBy: actor, at: new Date().toISOString(), status: 'draft', checks: [], overrides: [], ...(old?.pharmacistHistory?.length ? { pharmacistHistory: old.pharmacistHistory } : {}) };
     const orders = (s.orders ||= { medications: [], investigations: [] }).medications;
     if (old) orders[orders.indexOf(old)] = o; else orders.push(o);
-    refresh(s); return written(s, 'order_drafted', actor, { orderId: o.id, updated: !!old, checkIds: o.checks.map(a => a.id) });
+    o.checks = prescribingChecks(s, o);
+    return commit(s, 'order_drafted', actor, { orderId: o.id, updated: !!old, checkIds: o.checks.map(a => a.id) });
   });
 }
 export function medicationAction(id: string, orderId: string, action: 'submit' | 'cancel' | 'pharmacy', req: unknown) {
   properties(req, action === 'submit' ? ['orderedBy', 'overrides'] : action === 'cancel' ? ['orderedBy', 'reason'] : ['reviewerId', 'action', 'note', 'alertIds', 'suggestedGenerics']);
   const actor = actorId(action === 'pharmacy' ? req.reviewerId : req.orderedBy, 'reviewer');
+  if (action === 'pharmacy') requireStaffRole(actor, WRITE_ROLES.pharmacy, 'verify or return prescriptions');
+  else requireStaffRole(actor, WRITE_ROLES.orders, action === 'submit' ? 'submit medication orders' : 'cancel medication orders');
   const note = optionalText(action === 'cancel' ? req.reason : action === 'pharmacy' ? req.note : undefined, 'note');
   if (action === 'pharmacy' && ((req.action !== 'verify' && req.action !== 'return') || (req.action === 'return' && !note))) invalid('Return requires a note');
   // Pharmacist report (stored only on return): shape and dictionary checks here, membership inside the lock.
@@ -158,27 +251,29 @@ export function medicationAction(id: string, orderId: string, action: 'submit' |
       if (o.status === 'cancelled') conflict('Order already cancelled');
       if (o.status === 'verified') conflict('Verified orders cannot be cancelled');
       if (o.status === 'dispensed') conflict('Dispensed orders cannot be cancelled');
-      o.status = 'cancelled'; refresh(s);
-      // Contract has no cancellation audit type; record the action explicitly.
-      return written(s, 'order_drafted', actor, { orderId, action: 'cancel', ...(note ? { reason: note } : {}) });
+      o.status = 'cancelled';
+      // Kept as order_drafted + action cancel: the orders UI timeline and the trace read it this way.
+      return commit(s, 'order_drafted', actor, { orderId, action: 'cancel', ...(note ? { reason: note } : {}) });
     }
     if (action === 'submit') {
       if (!['draft', 'returned'].includes(o.status)) conflict('Only draft or returned orders can be submitted');
       if (parsed.some(p => !o.checks.some(a => a.id === p.alertId))) invalid('Unknown alert override');
       if (o.checks.some(a => a.severity === 'high' && !parsed.some(p => p.alertId === a.id))) conflict('Every high alert requires an override reason');
-      o.overrides = parsed; o.status = 'submitted'; delete o.pharmacist; delete o.dispense;
-      // A new prescription after the patient was called: medicines are being prepared again.
-      const pickupReset = s.pickup?.status === 'ready';
-      if (pickupReset) delete s.pickup;
-      return written(s, 'order_submitted', actor, { orderId, overrides: parsed, ...(pickupReset ? { pickupReset: true } : {}) });
+      o.overrides = parsed; o.status = 'submitted'; delete o.pharmacist; delete o.dispense; delete o.recheck;
+      // A new prescription after the patient was called or collected: medicines are being prepared again,
+      // and a new pickup cycle starts (the earlier call and collection stay in the audit log).
+      const pickupStatus = s.pickup?.status;
+      if (pickupStatus) delete s.pickup;
+      return commit(s, 'order_submitted', actor, { orderId, overrides: parsed, ...(pickupStatus ? { pickupReset: true, previousPickup: pickupStatus } : {}) });
     }
     if (o.status !== 'submitted') conflict('Only submitted orders can be reviewed by pharmacy');
     if (alertIds.some(a => !o.checks.some(c => c.id === a))) invalid('Unknown alert for this order');
     if (o.generic && suggestedGenerics.includes(o.generic)) invalid('Suggested generic is the ordered drug');
     if (req.action === 'verify' && o.checks.some(a => a.severity === 'high' && !o.overrides.some(p => p.alertId === a.id && p.reason.trim()))) conflict('Every high alert requires an override reason');
     o.status = req.action === 'verify' ? 'verified' : 'returned';
+    const recheck = o.recheck; delete o.recheck;
     o.pharmacist = { action: req.action as 'verify' | 'return', by: actor, at: new Date().toISOString(), ...(note ? { note } : {}), ...(req.action === 'return' ? { report: { alertIds, suggestedGenerics } } : {}) };
-    return written(s, 'order_pharmacy_action', actor, { orderId, ...o.pharmacist });
+    return commit(s, 'order_pharmacy_action', actor, { orderId, ...o.pharmacist, ...(recheck ? { afterRecheck: true } : {}) });
   });
 }
 
@@ -212,42 +307,56 @@ function person(value: string) {
 /** Pharmacist 2: pick + final double check. Two-person rule: never the pharmacist who verified the order. */
 export function dispenseOrder(id: string, orderId: string, req: unknown) {
   properties(req, ['reviewerId', 'checklist', 'note']);
-  const actor = actorId(req.reviewerId, 'reviewerId'); const note = optionalText(req.note, 'note');
+  const actor = actorId(req.reviewerId, 'reviewerId'); requireStaffRole(actor, WRITE_ROLES.pharmacy, 'dispense medicines');
+  const note = optionalText(req.note, 'note');
   const list = req.checklist;
   if (!object(list) || Object.keys(list).some(k => !(CHECKLIST as string[]).includes(k)) || CHECKLIST.some(k => typeof list[k] !== 'boolean')) invalid('Invalid checklist');
   if (CHECKLIST.some(k => list[k] !== true)) invalid('Every dispense checklist item must be confirmed');
   const checklist = Object.fromEntries(CHECKLIST.map(k => [k, true])) as unknown as DispenseChecklist;
   return withSessionLock(id, () => {
     const s = sessionFor(id), o = orderFor(s, orderId); refresh(s);
+    if (o.status === 'submitted' && o.recheck) conflict('Re-check needed: a new high alert appeared after verification, so the order went back to pharmacist 1. Only verified orders can be dispensed');
     if (o.status !== 'verified') conflict('Only verified orders can be dispensed');
     if (!o.pharmacist || person(o.pharmacist.by) === person(actor)) conflict('A second pharmacist must dispense: the pharmacist who verified this order cannot also dispense it');
     o.status = 'dispensed';
     o.dispense = { by: actor, at: new Date().toISOString(), checklist, ...(note ? { note } : {}) };
-    return written(s, 'order_dispensed', actor, { orderId, verifiedBy: o.pharmacist.by, ...o.dispense });
+    return commit(s, 'order_dispensed', actor, { orderId, verifiedBy: o.pharmacist.by, ...o.dispense });
   });
 }
 
-/** Call the patient to the counter once every active medication order is dispensed; then record collection. */
+/**
+ * Call the patient to the counter, then record collection. The call needs no order waiting on the pharmacy
+ * (submitted, returned or verified; drafts stay with the prescriber and do not block) and at least one
+ * dispensed order not collected in an earlier cycle.
+ */
 export function pickupAction(id: string, req: unknown) {
   properties(req, ['reviewerId', 'action', 'counter']);
-  const actor = actorId(req.reviewerId, 'reviewerId');
+  const actor = actorId(req.reviewerId, 'reviewerId'); requireStaffRole(actor, WRITE_ROLES.pharmacy, 'call patients or record collection');
   if (req.action !== 'call' && req.action !== 'collected') invalid('Invalid pickup action');
   const counter = optionalText(req.counter, 'counter', 40);
   if (counter !== undefined && req.action !== 'call') invalid('counter applies only to call');
   return withSessionLock(id, () => {
-    const s = sessionFor(id); const at = new Date().toISOString();
+    // Fresh checks first (saved even when the call is then refused): a new high alert on a dispensed order that the
+    // patient has not collected sends it back to pharmacist 1, so it never reaches the patient unreviewed.
+    const s = sessionFor(id); refresh(s); const at = new Date().toISOString();
+    const active = (s.orders?.medications || []).filter(o => o.status !== 'cancelled' && o.status !== 'draft');
+    if (active.some(o => o.status === 'submitted' && o.recheck)) conflict('Re-check needed: a new high alert appeared before the patient collected the medicines, so the order went back to pharmacist 1');
+    const done = collectedOrderIds(id);
+    const handover = active.filter(o => o.status === 'dispensed' && !done.has(o.id));
+    const pending = pendingWithPrescriber(s.orders?.medications || []);
+    if (handover.some(o => openHighAlerts(o, pending).length)) conflict('Re-check needed: a dispensed order has a high alert with no prescriber override');
     if (req.action === 'call') {
       if (s.pickup?.status === 'collected') conflict('Medicines already collected');
-      const active = (s.orders?.medications || []).filter(o => o.status !== 'cancelled');
-      if (!active.length) conflict('No medication orders to collect');
-      if (active.some(o => o.status !== 'dispensed')) conflict('Every active medication order must be dispensed before calling the patient');
+      if (active.some(o => PHARMACY_PENDING.has(o.status))) conflict('Every active medication order must be dispensed before calling the patient');
+      const ready = handover;
+      if (!ready.length) conflict(active.length ? 'No newly dispensed medicines to collect' : 'No medication orders to collect');
       const recall = s.pickup?.status === 'ready';
       const where = counter ?? (recall ? s.pickup?.counter : undefined);
       s.pickup = { status: 'ready', ...(where ? { counter: where } : {}), calledBy: actor, calledAt: at };
-      return written(s, 'pickup_called', actor, { orderIds: active.map(o => o.id), recall, ...(where ? { counter: where } : {}) });
+      return written(s, 'pickup_called', actor, { orderIds: ready.map(o => o.id), recall, ...(where ? { counter: where } : {}) });
     }
     if (s.pickup?.status !== 'ready') conflict('Patient has not been called for pickup');
     s.pickup = { ...s.pickup, status: 'collected', collectedBy: actor, collectedAt: at };
-    return written(s, 'pickup_collected', actor, { calledBy: s.pickup.calledBy, calledAt: s.pickup.calledAt, orderIds: (s.orders?.medications || []).filter(o => o.status === 'dispensed').map(o => o.id) });
+    return written(s, 'pickup_collected', actor, { calledBy: s.pickup.calledBy, calledAt: s.pickup.calledAt, orderIds: handover.map(o => o.id) });
   });
 }

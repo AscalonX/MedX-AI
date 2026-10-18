@@ -11,7 +11,15 @@ export const C = {
   modeDoctor: L("Doctor consult", "การตรวจโดยแพทย์", "Consulto medico"),
   backToCase: L("Back to case", "กลับไปที่รายการ", "Torna al caso"),
   fixture: L("fixture", "ข้อมูลตัวอย่าง", "dati di esempio"),
-  fixtureHint: L("The consult service is not answering, so this screen runs on built-in sample logic.", "บริการยังไม่ตอบสนอง หน้านี้ใช้ตรรกะตัวอย่างในเครื่อง", "Il servizio non risponde: questa schermata usa una logica di esempio integrata."),
+  fixtureHint: L("This server has no consult service, so this screen runs on built-in sample logic. Nothing here is saved or part of a record.", "เซิร์ฟเวอร์นี้ไม่มีบริการการสอบถาม หน้านี้จึงใช้ตรรกะตัวอย่างในเครื่อง ไม่มีสิ่งใดถูกบันทึกหรือเป็นส่วนหนึ่งของเวชระเบียน", "Questo server non ha il servizio di consulto: la schermata usa una logica di esempio integrata. Nulla viene salvato né entra in una cartella."),
+  // w20: the consult service failed for a real case (shared store busy or unavailable, network). Never sample logic here.
+  serviceDown: L("The consult service is not answering ({reason}). Showing the last saved state; needs human review.", "บริการการสอบถามไม่ตอบสนอง ({reason}) แสดงข้อมูลที่บันทึกล่าสุด ต้องให้บุคลากรตรวจสอบ", "Il servizio di consulto non risponde ({reason}). Si vede l'ultimo stato salvato; serve una revisione umana."),
+  unsavedBanner: L("{n} line(s) not saved yet. They stay on this screen and are sent again automatically; they are not in the record until then.", "ยังไม่ได้บันทึก {n} บรรทัด บรรทัดเหล่านี้จะอยู่บนหน้าจอและส่งใหม่โดยอัตโนมัติ และยังไม่อยู่ในเวชระเบียนจนกว่าจะบันทึกสำเร็จ", "{n} righe non ancora salvate. Restano su questa schermata e vengono rinviate in automatico; fino ad allora non sono nella cartella."),
+  sendAgain: L("Send again", "ส่งอีกครั้ง", "Invia di nuovo"),
+  lineSending: L("Sending", "กำลังส่ง", "Invio in corso"),
+  lineUnsent: L("Not saved yet", "ยังไม่ได้บันทึก", "Non ancora salvata"),
+  lineRefused: L("Not saved", "ไม่ได้บันทึก", "Non salvata"),
+  signUnsaved: L("Some lines are not saved yet. Sign after they are sent.", "ยังมีบางบรรทัดที่ไม่ได้บันทึก ลงนามหลังจากส่งสำเร็จแล้ว", "Alcune righe non sono ancora salvate. Firmi dopo che sono state inviate."),
   mic: L("Listen", "ฟัง", "Ascolta"),
   micStop: L("Stop listening", "หยุดฟัง", "Smetti di ascoltare"),
   listening: L("Listening", "กำลังฟัง", "In ascolto"),
@@ -88,6 +96,7 @@ export const C = {
   signedBanner: L("Signed. This note is read only.", "ลงนามแล้ว บันทึกนี้อ่านได้อย่างเดียว", "Firmata. Questa nota è di sola lettura."),
   writeOrders: L("Write orders", "เขียนคำสั่ง", "Scrivi gli ordini"),
   nextVitals: L("Next: vitals", "ถัดไป: สัญญาณชีพ", "Poi: parametri vitali"),
+  signDoctorsOnly: L("Only a doctor can sign the visit note. Switch the role to Doctor.", "เฉพาะแพทย์เท่านั้นที่ลงนามบันทึกการตรวจได้ เปลี่ยนบทบาทเป็นแพทย์", "Solo un medico può firmare la nota. Passi al ruolo Medico."),
 } satisfies Record<string, Localized>;
 export type CKey = keyof typeof C;
 export const ct = (k: CKey, lang: Lang) => C[k][lang];

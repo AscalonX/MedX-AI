@@ -1,13 +1,16 @@
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type { AuditEvent, ExtractedField, IntakeSession, IntakeSummary, Lang, OpsMetrics, RedFlagReviewAction, ReviewAction, SessionStatus } from '@medx/shared';
+import { PipelineError } from './errors';
+import { auditRechecks, refreshOrders } from './orders';
 import { applyRequiredFields, emptyFields, FIELD_KEYS, isPresent, providerInfo } from './config';
 import { extract } from './extract';
 import type { EngineContext } from './extract';
 import type { ModelClient } from './llm';
 import { nextQuestion } from './nextQuestion';
+import { refreshMedAlerts } from './medrules';
 import { checkRedFlags } from './redflags';
 import { redFlagScreen } from './redFlagScreen';
-import { redact } from './redact';
+import { redact, redactActor } from './redact';
 import { appendAudit, getAudit, getSession, getSessions, hasClientTurnId, saveSession, withSessionLock } from './store';
 import { words } from './verify';
 import { mergePharmacy, mockPharmacy, pharmacyEntries } from './pharmacyExtraction';
@@ -17,20 +20,35 @@ import { assessTriage } from './triage';
 export type { ModelClient } from './llm';
 export const TURN_TIMEOUT_MS = 40000;
 
-export class PipelineError extends Error {
-  constructor(message: string, public code: 'bad_request' | 'not_found', public status?: number) { super(message); }
+export { PipelineError };
+/** Seeded demo cases get a stable id (same link after every reset): sha256('medx-demo:' + demoCaseId), UUID-shaped. */
+export function demoSessionId(demoCaseId: string) {
+  const h = createHash('sha256').update(`medx-demo:${demoCaseId}`).digest('hex');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
 }
-export function createSession(patientLang: Lang, opts: { persist?: boolean; now?: () => string; demoCaseId?: string } = {}): IntakeSession {
+/**
+ * Patient sessions get a random id. `demoCaseId` (seed only) gives the deterministic demo id; `demoStart` marks a
+ * per-visitor demo session (random id, counted for the demo-start cap). Neither is ever exposed to the patient view.
+ */
+export function createSession(patientLang: Lang, opts: { persist?: boolean; now?: () => string; demoCaseId?: string; demoStart?: string } = {}): IntakeSession {
   if (!['th', 'it', 'en'].includes(patientLang)) throw new PipelineError('Invalid patient language', 'bad_request');
   const at = opts.now?.() || new Date().toISOString();
   const used = new Set(opts.persist === false ? [] : getSessions().map(s => s.code));
   let code = '';
   for (let n = 1; n <= used.size + 1; n++) { const candidate = `B-${String(n).padStart(3, '0')}`; if (!used.has(candidate)) { code = candidate; break; } }
-  const session: IntakeSession = { id: randomUUID(), code, patientLang, status: 'collecting', turns: [], summary: null, createdAt: at, updatedAt: at };
-  if (opts.persist !== false) { saveSession(session); appendAudit(session.id, 'session_created', 'patient', { patientLang, ...(opts.demoCaseId ? { demoCaseId: opts.demoCaseId } : {}) }, undefined, at); }
+  const id = opts.demoCaseId ? demoSessionId(opts.demoCaseId) : randomUUID();
+  // A deterministic id must never silently replace an existing record.
+  if (opts.persist !== false && opts.demoCaseId && getSession(id)) throw new PipelineError('Demo case already exists', 'bad_request', 409);
+  const session: IntakeSession = { id, code, patientLang, status: 'collecting', turns: [], summary: null, createdAt: at, updatedAt: at };
+  if (opts.persist !== false) { saveSession(session); appendAudit(session.id, 'session_created', 'patient', { patientLang, ...(opts.demoCaseId ? { demoCaseId: opts.demoCaseId } : {}), ...(opts.demoStart ? { demoStart: opts.demoStart } : {}) }, undefined, at); }
   return session;
 }
 export interface RunOptions {
+  /**
+   * Patient speech captured in the consult room (POST /consult/turns, speaker "patient"). Only this skips the
+   * "approved" guard: approval ends the patient's own intake, not the visit. Red flags still run first.
+   */
+  fromConsult?: boolean;
   inputMode?: 'text' | 'voice';
   client?: ModelClient;
   trace?: EngineContext['trace'];
@@ -66,7 +84,10 @@ function unsupportedLanguage(text: string, modelLang: string | undefined, lang: 
 export async function runTurn(input: IntakeSession, rawText: string, opts: RunOptions = {}): Promise<IntakeSession> {
   const deadline = Date.now() + TURN_TIMEOUT_MS;
   if (typeof rawText !== 'string' || !rawText.replace(/[\u200B-\u200D\uFEFF]/g, '').trim() || rawText.length > 4000) throw new PipelineError('Text must contain 1–4000 characters', 'bad_request');
-  if (['approved', 'taken_over'].includes(input.status)) throw new PipelineError(input.status === 'taken_over' ? 'A clinician has taken over this session' : 'Session no longer accepts patient turns', 'bad_request', 409);
+  if (input.status === 'taken_over' || (input.status === 'approved' && !opts.fromConsult)) throw new PipelineError(input.status === 'taken_over' ? 'A clinician has taken over this session' : 'Session no longer accepts patient turns', 'bad_request', 409);
+  // Approved intake + consult speech: new findings are added for review, the approved fields stay approved, and the
+  // patient is not asked intake follow-ups. Escalation, abstention and conflicts still change the status below.
+  const keepApproved = opts.fromConsult === true && input.status === 'approved';
   if (input.turns.filter(t => t.role === 'patient').length >= 20) throw new PipelineError('Patient turn limit reached', 'bad_request', 409);
   if (opts.inputMode !== undefined && !['text', 'voice'].includes(opts.inputMode)) throw new PipelineError('Invalid inputMode', 'bad_request');
   const session = structuredClone(input);
@@ -119,7 +140,7 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
   if (!reason && ((extracted.proposed >= 2 && extracted.failed / extracted.proposed >= 0.5) || (supportedRequired.length > 0 && supportedRequired.reduce((n, f) => n + f.confidence, 0) / supportedRequired.length < 0.55) || (session.turns.filter(t => t.role === 'patient').length >= 3 && !summary.fields.some(f => f.key === 'chief_complaint' && isPresent(f))))) reason = 'low_confidence';
   if (!reason && unsupportedLanguage(session.turns.filter(t => t.role === 'patient').map(t => t.text).join(' '), extracted.language, session.patientLang)) reason = 'unsupported_language';
   if (!reason && Date.now() >= ctx.deadline) reason = 'provider_error';
-  if (!reason) {
+  if (!reason && !keepApproved) {
     summary.nextQuestion = await nextQuestion(session, summary.fields, ctx);
     if (summary.nextQuestion) summary.nextQuestion.text = { th: redact(summary.nextQuestion.text.th).text, it: redact(summary.nextQuestion.text.it).text, en: redact(summary.nextQuestion.text.en).text };
     if (Date.now() >= ctx.deadline) reason = 'provider_error';
@@ -129,7 +150,7 @@ export async function runTurn(input: IntakeSession, rawText: string, opts: RunOp
     summary.fields = applyRequiredFields(summary.fields.map(f => f.status === 'supported' ? { ...f, status: 'unsupported', confidence: Math.min(0.3, f.confidence) } : f));
     audit('abstained', { reason });
   } else {
-    session.status = summary.nextQuestion ? 'collecting' : 'awaiting_review';
+    session.status = keepApproved ? 'approved' : summary.nextQuestion ? 'collecting' : 'awaiting_review';
     if ((summary.fields as ReviewedField[]).some(f => f.reviewMemory?.flags?.includes('conflict'))) { session.status = 'awaiting_review'; summary.nextQuestion = null; }
     if (summary.nextQuestion) session.turns.push({ id: randomUUID(), role: 'assistant', lang: session.patientLang, text: redact(summary.nextQuestion.text[session.patientLang]).text, at: now() });
   }
@@ -141,16 +162,19 @@ function requireSession(id: string) { const session = getSession(id); if (!sessi
 export async function addTurn(sessionId: string, rawText: string, inputMode?: 'text' | 'voice', clientTurnId?: string) {
   return withSessionLock(sessionId, () => addTurnInLock(sessionId, rawText, inputMode, clientTurnId));
 }
-/** Caller must hold the session lock; shared by intake and ambient consult. */
-export async function addTurnInLock(sessionId: string, rawText: string, inputMode?: 'text' | 'voice', clientTurnId?: string) {
+/** Caller must hold the session lock; shared by intake and ambient consult (`fromConsult`). */
+export async function addTurnInLock(sessionId: string, rawText: string, inputMode?: 'text' | 'voice', clientTurnId?: string, opts: { fromConsult?: boolean } = {}) {
   if (clientTurnId !== undefined && (typeof clientTurnId !== 'string' || !clientTurnId.trim() || clientTurnId.length > 200)) throw new PipelineError('Invalid clientTurnId', 'bad_request');
   const current = requireSession(sessionId);
   if (clientTurnId !== undefined && hasClientTurnId(sessionId, clientTurnId)) return current;
   const events: { type: AuditEvent['type']; payload: Record<string, unknown> }[] = [];
-  const session = await runTurn(current, rawText, { inputMode, audit: (type, payload) => events.push({ type, payload }) });
+  const session = await runTurn(current, rawText, { inputMode, fromConsult: opts.fromConsult, audit: (type, payload) => events.push({ type, payload }) });
   if (session.triage) session.triage = assessTriage(session);
+  // New allergies or medicines change prescribing checks; a verified order with a new high alert goes back to pharmacist 1.
+  const rechecks = refreshOrders(session);
   saveSession(session, clientTurnId);
   for (const e of events) appendAudit(sessionId, e.type, 'system', e.payload);
+  auditRechecks(sessionId, rechecks);
   return session;
 }
 export async function review(sessionId: string, reviewerId: string, actions: ReviewAction[], redFlagActions: RedFlagReviewAction[] = []) {
@@ -175,7 +199,7 @@ export async function review(sessionId: string, reviewerId: string, actions: Rev
     }
     session.summary.fields = applyRequiredFields(session.summary.fields);
     const at = new Date().toISOString();
-    const actorId = reviewerId.trim();
+    const actorId = redactActor(reviewerId);
     const safeFlagActions = redFlagActions.map(a => ({ ...a, ...(a.note !== undefined ? { note: redact(a.note.trim()).text } : {}) }));
     for (const action of safeFlagActions) {
       session.summary.redFlags.find(f => f.ruleId === action.ruleId)!.review = { action: action.action, reviewerId: actorId, at, ...(action.note !== undefined ? { note: action.note } : {}) };
@@ -183,9 +207,14 @@ export async function review(sessionId: string, reviewerId: string, actions: Rev
     if (session.summary.redFlags.length) { session.summary.nextQuestion = null; if (session.status !== 'taken_over') session.status = 'escalated'; }
     else if (session.status !== 'taken_over') session.status = session.summary.fields.filter(f => f.required).every(f => ['approved', 'edited'].includes(f.status)) ? 'approved' : session.summary.abstained ? 'needs_human' : 'awaiting_review';
     if (session.status === 'approved') session.summary.nextQuestion = null;
+    // Edited pregnancy or allergy fields change prescribing checks: refresh the pharmacy alerts and the orders, so a
+    // verified order with a new high alert goes back to pharmacist 1 now, not at dispense.
+    if (actions.some(a => a.fieldKey === 'pregnancy_status' || a.fieldKey === 'allergies') && (session.summary.medAlerts || session.summary.medications?.length)) refreshMedAlerts(session.summary);
+    const rechecks = refreshOrders(session, at);
     session.updatedAt = at; saveSession(session);
     if (actions.length) appendAudit(sessionId, 'review', 'clinician', { actions: actions.map(a => ({ ...a, ...(a.newValue ? { newValue: redact(a.newValue).text } : {}) })) }, actorId, at);
     if (safeFlagActions.length) appendAudit(sessionId, 'red_flag_review', 'clinician', { actions: safeFlagActions }, actorId, at);
+    auditRechecks(sessionId, rechecks);
     return session;
   });
 }
@@ -196,15 +225,25 @@ export async function takeover(sessionId: string, reviewerId: string, reason?: s
     if (session.status === 'approved') throw new PipelineError('Approved session cannot be taken over', 'bad_request', 409);
     session.status = 'taken_over'; session.updatedAt = new Date().toISOString();
     if (session.summary) session.summary.nextQuestion = null;
-    saveSession(session); appendAudit(sessionId, 'takeover', 'clinician', { reason: reason ? redact(reason).text : undefined }, reviewerId.trim()); return session;
+    saveSession(session); appendAudit(sessionId, 'takeover', 'clinician', { reason: reason ? redact(reason).text : undefined }, redactActor(reviewerId)); return session;
   });
 }
 export function listSessions() { return getSessions().filter(s => s.turns.some(t => t.role === 'patient')).sort((a, b) => Number(b.status === 'escalated') - Number(a.status === 'escalated') || b.createdAt.localeCompare(a.createdAt)); }
+/**
+ * "Today" follows the clinic's calendar day (MEDX_TZ, default Asia/Bangkok), not the server's UTC clock, so the ops and
+ * landing counts agree with the pharmacy queue and the times staff see. An invalid MEDX_TZ falls back to UTC.
+ */
+function clinicDay(): (iso: string | undefined) => string {
+  const opts = { year: 'numeric', month: '2-digit', day: '2-digit' } as const;
+  let fmt: Intl.DateTimeFormat;
+  try { fmt = new Intl.DateTimeFormat('en-CA', { ...opts, timeZone: process.env.MEDX_TZ || 'Asia/Bangkok' }); } catch { fmt = new Intl.DateTimeFormat('en-CA', { ...opts, timeZone: 'UTC' }); }
+  return iso => { const d = iso ? new Date(iso) : null; return d && !Number.isNaN(d.getTime()) ? fmt.format(d) : ''; };
+}
 export function metrics(): OpsMetrics {
   // Ops uses exactly the queue's visibility filter: empty abandoned starts
   // stay addressable by ID, but are excluded from every metric and audit sample.
   const sessions = listSessions(); const visible = new Set(sessions.map(s => s.id));
-  const audit = getAudit().filter(e => visible.has(e.sessionId)); const today = new Date().toISOString().slice(0, 10);
+  const audit = getAudit().filter(e => visible.has(e.sessionId)); const day = clinicDay(); const today = day(new Date().toISOString());
   const byStatus = Object.fromEntries(['collecting', 'escalated', 'awaiting_review', 'needs_human', 'approved', 'taken_over'].map(s => [s, sessions.filter(x => x.status === s).length])) as Record<SessionStatus, number>;
   const summaries = sessions.flatMap(s => s.summary ? [s.summary] : []);
   const generated = sessions.flatMap(s => { const firstReview = audit.findIndex(a => a.sessionId === s.id && a.type === 'review'); const beforeReview = firstReview < 0 ? audit : audit.slice(0, firstReview); const e = beforeReview.filter(a => a.sessionId === s.id && a.type === 'summary_generated' && typeof a.payload.autoCaptured === 'number').at(-1); return e ? [e] : []; });
@@ -219,7 +258,7 @@ export function metrics(): OpsMetrics {
     toVerify: medOrders.filter(o => o.status === 'submitted').length,
     toDispense: medOrders.filter(o => o.status === 'verified').length,
     readyForPickup: sessions.filter(s => s.pickup?.status === 'ready').length,
-    collectedToday: sessions.filter(s => s.pickup?.status === 'collected' && s.pickup.collectedAt?.startsWith(today)).length,
+    collectedToday: sessions.filter(s => s.pickup?.status === 'collected' && day(s.pickup.collectedAt) === today).length,
   };
-  return { sessionsToday: sessions.filter(s => s.createdAt.startsWith(today)).length, byStatus, escalations: sessions.filter(s => s.summary?.redFlags.length).length, autoCapturedRate: required ? generated.reduce((n, e) => n + Number(e.payload.autoCaptured), 0) / required : 0, abstainRate: summaries.length ? summaries.filter(s => s.abstained).length / summaries.length : 0, medianReviewSeconds: quantile(reviews, 0.5), modelLatencyMs: { p50: quantile(latencies, 0.5), p95: quantile(latencies, 0.95) }, provider: providerInfo(), pharmacy };
+  return { sessionsToday: sessions.filter(s => day(s.createdAt) === today).length, byStatus, escalations: sessions.filter(s => s.summary?.redFlags.length).length, autoCapturedRate: required ? generated.reduce((n, e) => n + Number(e.payload.autoCaptured), 0) / required : 0, abstainRate: summaries.length ? summaries.filter(s => s.abstained).length / summaries.length : 0, medianReviewSeconds: quantile(reviews, 0.5), modelLatencyMs: { p50: quantile(latencies, 0.5), p95: quantile(latencies, 0.95) }, provider: providerInfo(), pharmacy };
 }

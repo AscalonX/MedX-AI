@@ -15,6 +15,8 @@ const eslintConfig = [
     ignores: [
       "node_modules/**",
       ".next/**",
+      // Isolated check builds (MEDX_DIST_DIR=.next-<name>, see next.config.ts) are build output too.
+      ".next-*/**",
       "out/**",
       "build/**",
       "next-env.d.ts",

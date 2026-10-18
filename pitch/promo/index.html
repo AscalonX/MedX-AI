@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>MedX launch film</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="stage">
+
+  <!-- ===== Background stages ===== -->
+  <div class="bg" id="bgInk"><div class="blob b-teal" id="inkKey"></div><div class="blob b-ocean" id="inkFill"></div><div class="vignette"></div></div>
+  <div class="bg" id="bgMist"><div class="blob b-tealSoft" id="mistA"></div><div class="blob b-oceanSoft" id="mistB"></div><div class="keyshade"></div><div class="floor"></div></div>
+  <div class="bg" id="bgDip"><div class="dip-key" id="dipKey"></div><div class="vignette dip"></div></div>
+  <div class="bg" id="bgGrad"><div class="blob b-caustic" id="gradA"></div><div class="blob b-caustic" id="gradB"></div><div id="gradSweep"></div><div class="vignette soft"></div></div>
+
+  <!-- ===== S01 cold open ===== -->
+  <section class="scene" id="s01"><div class="cam">
+    <div class="keyglow" id="s01glow"></div>
+    <canvas class="wave" id="wave1" width="1920" height="220"></canvas>
+    <div class="thai hero-thai" id="thai1"><span class="tc" id="t1c1">แพ้เพนิซิลลิน</span> <span class="tc" id="t1c2">กินแล้ว</span><span class="tc" id="t1c3">ผื่นขึ้นตามตัว</span><span class="baseline-probe"></span></div>
+    <div class="gloss" id="gloss1">“Allergic to penicillin. It gave me a rash all over.”</div>
+  </div></section>
+
+  <!-- particles shared by S01/S02 and S16 (stage coordinates) -->
+  <canvas id="dust" width="1920" height="1080"></canvas>
+
+  <!-- ===== S02 ===== -->
+  <section class="scene" id="s02"><div class="cam">
+    <div class="layer" id="s02far"><div class="it-line">Che cosa la porta qui oggi?</div></div>
+    <div class="layer" id="s02line">
+      <svg width="1920" height="1080" viewBox="0 0 1920 1080">
+        <defs>
+          <linearGradient id="dashG" x1="470" y1="0" x2="1080" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#E1F4F1"/><stop offset="1" stop-color="#1A5FC4"/></linearGradient>
+          <filter id="glow6" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <radialGradient id="nodeG"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".45" stop-color="#E1F4F1"/><stop offset="1" stop-color="#0A8077" stop-opacity="0"/></radialGradient>
+        </defs>
+        <g filter="url(#glow6)">
+          <path id="dashA" d="M478 438 C 600 430, 690 400, 770 382" stroke="url(#dashG)" stroke-width="3" fill="none" stroke-dasharray="12 10" stroke-linecap="round"/>
+          <path id="dashB" d="M770 382 C 860 362, 960 345, 1062 338" stroke="url(#dashG)" stroke-width="3" fill="none" stroke-dasharray="12 10" stroke-linecap="round"/>
+        </g>
+        <circle id="snapNode" cx="770" cy="382" r="16" fill="url(#nodeG)" opacity="0"/>
+      </svg>
+    </div>
+    <div class="layer" id="s02near">
+      <div class="glass-chip" id="thChip"><span class="mini-wave"><i></i><i></i><i></i><i></i><i></i></span><span class="thai">ไทย</span></div>
+    </div>
+  </div>
+  <h1 class="hero white center" id="s02h">Some words can’t get lost.</h1>
+  </section>
+
+  <!-- ===== S03 stat ===== -->
+  <section class="scene" id="s03"><div class="cam">
+    <h2 class="h72 white" id="s03h">Language gaps cause harm.</h2>
+    <div class="caption" id="s03cap">Adverse events that involved physical harm</div>
+    <div id="s03bars">
+      <div class="baseline-glow"></div>
+      <div class="capsule" id="barA"><div class="fill fillA"></div><div class="capsule-gloss"></div></div>
+      <div class="bloomTop" id="barABloom"></div>
+      <div class="capsule" id="barB"><div class="fill fillB"></div><div class="capsule-gloss"></div></div>
+      <div class="stat-label" id="labA">Limited English</div>
+      <div class="stat-label" id="labB">English speakers</div>
+    </div>
+    <div id="s03nums">
+      <div class="statnum big" id="numA">0.0%</div>
+      <div class="statnum small" id="numB">0.0%</div>
+    </div>
+  </div>
+  <div class="source" id="s03src">Source: Divi et al., Int J Qual Health Care 2007 · six US hospitals</div>
+  </section>
+
+  <!-- ===== S04 reveal ===== -->
+  <section class="scene" id="s04"><div class="cam" id="s04cam">
+    <div class="halo" id="finHalo"></div>
+    <div class="contact" id="finShadow"></div>
+    <div id="finL"><img class="asset-img" data-src="brand.finListening" alt=""><div class="sweep-mask" id="finSweep"></div></div>
+    <div id="logoFlash"></div>
+    <div id="lockupWrap">
+      <svg id="lockupC" viewBox="0 -157.5 4330.1 1015" width="760" height="178.15">
+        <defs>
+          <linearGradient id="lkW" gradientUnits="userSpaceOnUse" x1="10" y1="10" x2="54" y2="54"><stop offset="0" stop-color="#0A8077"/><stop offset="1" stop-color="#1A5FC4"/></linearGradient>
+          <linearGradient id="lkT" gradientUnits="userSpaceOnUse" x1="0" y1="-157.5" x2="1015.0" y2="1015.0"><stop offset="0" stop-color="#0A8077"/><stop offset="1" stop-color="#1A5FC4"/></linearGradient>
+          <clipPath id="lkMedClip"><rect id="lkMedRect" x="0" y="-200" width="0" height="1100"/></clipPath>
+        </defs>
+        <g id="lkTile">
+          <rect x="0" y="-157.5" width="1015.0" height="1015.0" rx="237.9" fill="url(#lkT)"/>
+          <g transform="translate(73.8 -36.3) scale(12.8126)" fill="none" stroke="#FFFFFF" stroke-linecap="round">
+            <path d="M32.0 32.0L14.00 14.00M32.0 32.0L14.00 50.00M32.0 32.0L50.00 50.00" stroke-width="11.0"/>
+            <path d="M34.58 18.75A13.5 13.5 0 0 1 45.25 29.42M38.34 8.33A24.5 24.5 0 0 1 55.67 25.66" stroke-width="7.0"/>
+          </g>
+        </g>
+        <g transform="translate(1360.1 0)">
+          <g clip-path="url(#lkMedClip)"><path id="lkMed" d="M78.0 700H207.0V229L427.0 700H499.0L719.0 233V700H848.0V0H698.0L463.0 516L228.0 0H78.0ZM1232.0 712C1362.0 712 1467.0 637 1491.0 537H1363.0C1346.0 576 1297.0 606 1237.0 606C1154.0 606 1089.0 550 1079.0 467H1497.0V427C1497.0 267 1388.0 159 1230.0 159C1067.0 159 951.0 275 951.0 434C951.0 596 1071.0 712 1232.0 712ZM1083.0 378C1100.0 308 1156.0 261 1230.0 261C1304.0 261 1357.0 308 1371.0 378ZM1834.0 705H1871.0C1881.0 705 1888.0 702 1895.0 695L2002.0 588V700H2122.0V-40H1996.0V230C1958.0 187 1898.0 159 1824.0 159C1673.0 159 1559.0 275 1559.0 435C1559.0 593 1670.0 705 1834.0 705ZM1844.0 602C1751.0 602 1687.0 530 1687.0 435C1687.0 340 1751.0 268 1844.0 268C1937.0 268 2000.0 340 2000.0 435C2000.0 530 1937.0 602 1844.0 602Z" fill="#0F1E2E"/></g>
+          <g transform="translate(2119.9 -82.9) scale(14.359)" fill="none" stroke="url(#lkW)" stroke-linecap="round">
+            <path class="lkX" d="M32 32L14 14" stroke-width="11"/>
+            <path class="lkX" d="M32 32L14 50" stroke-width="11"/>
+            <path class="lkX" d="M32 32L50 50" stroke-width="11"/>
+            <path class="lkA" id="lkA1" d="M34.58 18.75A13.5 13.5 0 0 1 45.25 29.42" stroke-width="7"/>
+            <path class="lkA" id="lkA2" d="M38.34 8.33A24.5 24.5 0 0 1 55.67 25.66" stroke-width="7"/>
+          </g>
+        </g>
+      </svg>
+      <div class="sweep-mask" id="lockSweep"></div>
+    </div>
+    <h2 class="h64 ink center" id="s04tag">Every word, <span class="grad">understood.</span></h2>
+    <svg id="arcLayer" width="1920" height="1080" viewBox="0 0 1920 1080">
+      <defs><linearGradient id="arcG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0A8077"/><stop offset="1" stop-color="#1A5FC4"/></linearGradient>
+      <filter id="arcGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+      <g filter="url(#arcGlow)"><path id="fa1" fill="none" stroke="url(#arcG)" stroke-linecap="round"/><path id="fa2" fill="none" stroke="url(#arcG)" stroke-linecap="round"/></g>
+    </svg>
+  </div></section>
+
+  <!-- ===== S06 patient ===== -->
+  <section class="scene" id="s06"><div class="cam" id="s06cam">
+    <div class="copy-left" id="s06copy">
+      <h2 class="h72 ink" id="s06h1">Speak your own<br>language.</h2>
+      <p class="sub44" id="s06h2">Check the words.<br>Then send.</p>
+    </div>
+    <div class="phones" id="s06phones">
+      <div class="phone-halo" id="haloL"></div><div class="phone-halo" id="haloC"></div><div class="phone-halo" id="haloR"></div>
+      <div class="dev-shadow" id="shL"></div><div class="dev-shadow" id="shC"></div><div class="dev-shadow" id="shR"></div>
+      <div class="phone" id="phL"><div class="ph-screen">
+        <div class="app-q"><div class="app-q-title thai">วันนี้คุณมาด้วยเรื่องอะไร</div><div class="app-spk on" id="thSpk"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.6 7.6 0 0 1 0 11"/></svg></div></div>
+        <div class="rings" id="spkRings"><i></i><i></i><i></i></div>
+        <div class="app-card">
+          <div class="app-box thai">แพ้เพนิซิลลิน กินแล้ว<wbr><span class="nw">ผื่นขึ้นตามตัว</span></div>
+          <div class="app-confirm thai">คุณพูดแบบนี้ใช่ไหม</div>
+          <div class="app-confirm-sub thai">ตรวจดูคำและแก้ไขที่ผิดก่อนส่ง</div>
+        </div>
+        <div class="app-send thai" id="thSend">ส่ง<div class="ripple" id="sendRipple"></div></div>
+      </div><div class="spec"></div></div>
+      <div class="phone" id="phR"><div class="ph-screen">
+        <div class="app-q"><div class="app-q-title">Che cosa la porta qui oggi?</div><div class="app-spk"><svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.6 7.6 0 0 1 0 11"/></svg></div></div>
+        <div class="app-card listen">
+          <div class="mic-btn"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></div>
+          <div class="listen-label">In ascolto</div>
+          <div class="listen-bars" id="itBars"></div>
+        </div>
+      </div><div class="spec"></div></div>
+      <div class="phone" id="phC"><div class="ph-screen light">
+        <div class="cropbox" id="cbIntake" data-asset="patientIntake" data-crop="screen" data-w="360" style="left:0;top:38px">
+          <div class="hl-band" data-hot="line1" id="hlL1"></div>
+          <div class="hl-band" data-hot="line2" id="hlL2"></div>
+          <div class="hot-glow" data-hot="confirm" id="hotConfirm"></div>
+        </div>
+        <div class="card-cont" data-follow="cbIntake"></div>
+      </div><div class="spec"></div></div>
+    </div>
+    <div class="lang-chips">
+      <div class="lchip" id="lcTh"><span class="thai">ไทย</span></div>
+      <div class="lchip" id="lcEn">English</div>
+      <div class="lchip" id="lcIt">Italiano</div>
+    </div>
+  </div></section>
+
+  <!-- ===== S05 rail ===== -->
+  <section class="scene" id="s05"><div class="cam" id="s05cam">
+    <h2 class="h80 ink center" id="s05h">From first words to the <span class="grad">pharmacy counter.</span></h2>
+    <div id="bigRail">
+      <div class="br-line"><div class="br-base"></div><div class="br-fill"></div></div>
+    </div>
+  </div></section>
+
+  <!-- ===== S07 nurse: evidence ===== -->
+  <section class="scene" id="s07"><div class="cam" id="s07cam">
+    <h2 class="h64 ink center top" id="s07h">Every fact points back to <span class="grad">their words.</span></h2>
+    <div class="laptop" id="lap7">
+      <div class="lap-screen"><div class="cropbox blurred6" data-asset="nurseCase" data-crop="plate" data-w="1040" style="left:0;top:0"></div><div class="screen-gloss"></div></div>
+      <div class="lap-base"></div>
+    </div>
+    <div id="s07group">
+      <div class="card ui-card" id="cardWords" data-autobg><div class="cropbox" id="cbWords" data-asset="nurseCase" data-crop="patientWords" data-w="498">
+        <div class="hl-band" data-hot="sorePhrase" id="hlSore"></div>
+        <div class="hl-band" data-hot="agePhraseA" id="hlAgeA"></div>
+        <div class="hl-band" data-hot="agePhraseB" id="hlAgeB"></div>
+      </div><div class="spec"></div></div>
+      <div class="card ui-card" id="cardCC" data-autobg><div class="cropbox" id="cbCC" data-asset="nurseCase" data-crop="chiefComplaint" data-w="613">
+        <div class="chip-glow" data-hot="soreChip" id="glowSore"></div>
+      </div><div class="spec"></div></div>
+      <div class="card ui-card" id="cardAge" data-autobg><div class="cropbox" id="cbAge" data-asset="nurseCase" data-crop="ageRow" data-w="613">
+        <div class="chip-glow" data-hot="ageChip" id="glowAge"></div>
+      </div><div class="spec"></div></div>
+      <svg id="threads7" width="1920" height="1080" viewBox="0 0 1920 1080">
+        <defs><filter id="thGlow" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+        <g filter="url(#thGlow)" fill="none" stroke="#1A5CBF" stroke-width="3" stroke-linecap="round">
+          <path id="th1"/><path id="th2"/>
+        </g>
+        <circle id="th1a" r="5" fill="#1A5CBF" opacity="0"/><circle id="th2a" r="5" fill="#1A5CBF" opacity="0"/>
+      </svg>
+    </div>
+  </div></section>
+
+  <!-- ===== S08 triage ===== -->
+  <section class="scene" id="s08"><div class="cam" id="s08cam">
+    <h2 class="h64 ink left-col" id="s08h">Triage suggested.<br>The nurse <span class="grad">confirms.</span></h2>
+    <div class="card ui-card" id="triCard">
+      <div class="cropbox" data-asset="triage" data-crop="suggestion" data-w="806" id="cbSug"></div>
+      <div class="conf-box" id="confBox">
+        <div class="cropbox" data-asset="triage" data-crop="confirmed" data-w="789" id="cbConf">
+          <div class="pop-check" data-hot="check" id="triCheck"><svg viewBox="0 0 24 24"><path d="M7 12.5l3.2 3.2L17 9"/></svg></div>
+        </div>
+      </div>
+      <div class="spec"></div>
+    </div>
+  </div></section>
+
+  <!-- ===== S09 doctor ===== -->
+  <section class="scene" id="s09"><div class="cam" id="s09cam">
+    <div class="cropbox plate-blur" id="cbPlate9" data-asset="consultFull" data-crop="transcriptPlate" data-w="760"></div>
+    <div class="copy-left" id="s09copy">
+      <h2 class="h64 ink" id="s09h">Considerations<br>for the <span class="grad">doctor.</span></h2>
+      <p class="small32" id="s09s">Not a diagnosis. The doctor decides.</p>
+    </div>
+    <div class="card ui-card bordered" id="consCard" data-autobg><div class="cropbox" id="cbCons" data-asset="consultFull" data-crop="considerations" data-w="564">
+      <div class="underline" data-hot="notDiagnosis" id="ulNotDx"></div>
+      <div class="press-ring" data-hot="keepInNote" id="pressKeep"><div class="ripple"></div></div>
+    </div><div class="spec"></div></div>
+  </div></section>
+
+  <!-- ===== S10 note ===== -->
+  <section class="scene" id="s10"><div class="cam" id="s10cam">
+    <div class="bokeh-lap" id="bokeh10"></div>
+    <div class="copy-left" id="s10copy">
+      <h2 class="h64 ink" id="s10h1">Drafted from<br>their words.</h2>
+      <h2 class="h64 ink" id="s10h2">Signed by a<br><span class="grad">clinician.</span></h2>
+    </div>
+    <div class="card note-card" id="draftCard">
+      <div class="nc-head"><span class="nc-title">Draft visit note</span><span class="nc-btn"><svg viewBox="0 0 24 24"><rect x="5.5" y="4.5" width="13" height="16.5" rx="2.2"/><path d="M9 4.5h6v3H9zM9 11.5h6M9 15.5h4"/></svg>Draft note</span></div>
+      <div class="nc-amber" id="ncAmber">Draft for clinician review. Not a diagnosis.</div>
+      <div class="nc-lines"><div class="nc-line">Presenting complaint: sore throat</div><div class="nc-line">Onset: two days ago</div><div class="nc-line">Severity: 7/10</div></div>
+      <div class="spec"></div>
+    </div>
+    <div class="card note-card" id="signedCard">
+      <div class="nc-title">Signed visit note</div>
+      <div class="nc-ro">Signed. This note is read only.</div>
+      <div class="nc-signed" id="ncSigned"><span class="stamp" id="stamp"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M8.2 12.3l2.6 2.6 5-5.3"/></svg></span><span class="ns-t"><b>Note signed</b><span>Dr. Marco Bianchi, 03:07</span></span></div>
+      <div class="nc-label">Presenting complaint</div>
+      <div class="nc-line">Presenting complaint: sore throat</div>
+      <div class="spec"></div>
+    </div>
+  </div></section>
+
+  <!-- ===== S11 pharmacist 1: the only red ===== -->
+  <section class="scene" id="s11"><div class="cam" id="s11cam">
+    <div class="copy-top" id="s11copy">
+      <h2 class="h60 white" id="s11h1">A rule check flags the allergy.</h2>
+      <h2 class="h60 white" id="s11h2">Options go back to the prescriber.</h2>
+      <p class="small30 on-dark" id="s11s">Not a prescription. The prescriber decides.</p>
+    </div>
+    <div class="card ui-card" id="card11"><div id="win11">
+      <div class="plate" id="plateA">
+        <div class="alert11" id="alert11">
+          <div class="a-ctx"><span class="a-disc"><svg viewBox="0 0 24 24"><rect x="2.6" y="8.6" width="18.8" height="6.8" rx="3.4" transform="rotate(-45 12 12)"/><path d="M9.6 9.6l4.8 4.8"/></svg></span><span class="a-ctx-t"><b id="aDrug"></b><span id="aDetail"></span></span></div>
+          <div class="a-box" id="aBox">
+            <div class="a-head"><span class="a-badge"><svg viewBox="0 0 24 24"><path d="M12 4.2L21 19.5H3z"/><path d="M12 10v4.2M12 16.9v.2"/></svg><span id="aBadge"></span></span><span class="a-title" id="aTitle"></span><span class="a-rule" id="aRule"></span></div>
+            <p class="a-msg" id="aMsg"></p>
+            <p class="a-act" id="aAct"></p>
+            <div class="rim" id="rimRed"></div>
+          </div>
+        </div>
+      </div>
+      <div class="plate" id="plateB">
+        <div class="op-title">Options for prescriber review (optional, up to 5)</div>
+        <div class="op-sub">An option is never written into the order. The prescriber decides, and an edited order is checked again from scratch.</div>
+        <div class="op-row"><span class="op-box"><span class="op-fill" id="clarFill"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></span><span class="tick-ring" id="clarRing"></span></span><b>clarithromycin</b><span class="op-src">from the table</span></div>
+        <div class="op-row"><span class="op-box"></span><b>doxycycline</b><span class="op-src">from the table</span></div>
+        <div class="op-btns"><span class="op-return">Return with report<span class="press-ring" id="pressReturn"><span class="ripple"></span></span></span><span class="op-cancel">Cancel</span></div>
+      </div>
+    </div></div>
+    <div class="warn-chip" id="returnedChip">Returned to prescriber: 1</div>
+  </div></section>
+
+  <!-- ===== S12 pharmacist 2 ===== -->
+  <section class="scene" id="s12"><div class="cam" id="s12cam">
+    <div class="copy-left top" id="s12copy">
+      <h2 class="h64 ink" id="s12h1">A second pharmacist.<br>Six final checks.</h2>
+      <p class="sub40" id="s12h2">Never the same person.</p>
+    </div>
+    <div id="seal">
+      <div class="seal-ring" id="sealRing"></div>
+      <div class="avatar" id="avLC"><span>LC</span></div>
+      <div class="avatar" id="avNW"><span>NW</span></div>
+      <div class="av-label" id="avLCl">LC · Verified</div>
+      <div class="av-label" id="avNWl">NW · Final check</div>
+      <div class="seal-cap" id="sealCap">A second pharmacist must dispense.</div>
+    </div>
+    <div class="card" id="checkCard">
+      <div class="ck-title" id="ckTitle"></div>
+      <div id="ckRows"></div>
+      <div class="spec"></div>
+    </div>
+    <div class="ok-chip" id="sixChip"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg>6 of 6 confirmed</div>
+  </div></section>
+
+  <!-- ===== S13 pickup ===== -->
+  <section class="scene" id="s13"><div class="cam" id="s13cam">
+    <div class="rays" id="rays13"></div>
+    <div class="ghost thai" id="ghostTh"></div>
+    <div class="ghost" id="ghostIt"></div>
+    <div class="orbit" id="orbit13">
+      <div class="dev-shadow" id="sh13"></div>
+      <div class="phone" id="ph13"><div class="ph-screen light">
+        <div class="cropbox" data-asset="patientPickup" data-crop="codeCard" data-w="360" style="left:0;top:40px" id="cbPick"></div>
+        <div class="pk-card" id="pkCard">
+          <div class="pk-eyebrow"><i></i><span id="pkEyebrow"></span></div>
+          <div class="pk-counter" id="pkCounter"></div>
+          <div class="pk-no" id="pkNo"></div>
+          <div class="pk-body" id="pkBody"></div>
+        </div>
+      </div><div class="spec"></div></div>
+    </div>
+    <div class="ctr-shadow" id="ctrShadow"></div>
+    <div class="counter-badge" id="ctrBadge"><div class="cb-label">Counter</div><div class="cb-num">2</div></div>
+    <div class="copy-right" id="s13copy">
+      <div class="thai th88" id="thai13">ยาของคุณพร้อมแล้ว</div>
+      <div class="gloss-ink" id="gloss13">Your medicine is ready.</div>
+      <h2 class="h56 ink" id="s13h">Ready at <span class="grad">counter 2.</span></h2>
+    </div>
+  </div></section>
+
+  <!-- ===== S14 trace (CSS recreation of the Case trace graph) ===== -->
+  <section class="scene" id="s14"><div class="cam" id="s14cam">
+    <h2 class="h64 ink center" id="s14h">Red-flag rules run <span class="grad">before any model.</span></h2>
+    <div class="trace-summary center" id="trSum">8 steps · 4 rule checks · 2 model calls</div>
+    <div class="card" id="traceCard">
+      <svg id="traceSvg" width="1600" height="300" viewBox="0 0 1600 300"></svg>
+      <div id="traceNodes"></div>
+      <div class="t-gate" id="tGate"><div class="g-glow"></div><div class="g-glow g-pass"></div><div class="g-core"></div><div class="g-scan"></div></div>
+      <div class="t-pulse" id="tpA"></div><div class="t-pulse" id="tpB"></div>
+      <div class="spec"></div>
+    </div>
+    <div class="glass-tag" id="auditTag"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>Every step in the audit log</div>
+  </div></section>
+
+  <!-- ===== S15 trust band ===== -->
+  <section class="scene" id="s15">
+    <div class="band-bg" id="band15"><div class="blob b-teal" id="b15a"></div><div class="blob b-ocean" id="b15b"></div><div class="warm" id="warm15"></div></div>
+    <div class="cam" id="s15cam">
+      <div class="copy-left mid" id="s15copy">
+        <h2 class="h80 white" id="s15h1">No quote?<br>It shows “Needs check.”</h2>
+        <h2 class="h80 white" id="s15h2">MedX prepares.<br><span class="grad-light">People decide.</span></h2>
+      </div>
+      <div id="chips15">
+        <div class="state-chip ocean" id="sc1"><svg viewBox="0 0 24 24"><path d="M5 17.5c1.6-.6 2.6-2 2.6-4V9.8H4.8V6h5.4v7.2c0 3-1.7 5.4-4.6 6.3zM13.8 17.5c1.6-.6 2.6-2 2.6-4V9.8h-2.8V6H19v7.2c0 3-1.7 5.4-4.6 6.3z" class="fillicon"/></svg>From patient’s words</div>
+        <div class="state-chip warn" id="sc2"><svg class="dash-outline" preserveAspectRatio="none"><rect id="dashRect" x="1.5" y="1.5" rx="36" ry="36"/></svg><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v5.2M12 15.8v.4"/></svg>Needs check</div>
+        <div class="state-chip teal" id="sc3"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg>Approved</div>
+      </div>
+      <div class="ledger" id="ledger">
+        <div class="ledger-head">Audit log</div>
+        <div class="ledger-win"><div class="ledger-rows" id="ledgerRows"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== S16 callback ===== -->
+  <section class="scene" id="s16">
+    <div class="warm-bg"><div class="blob b-teal" id="b16a"></div><div class="blob b-ocean" id="b16b"></div><div class="horizon"></div></div>
+    <div class="cam" id="s16cam">
+      <canvas class="wave" id="wave2" width="1920" height="220"></canvas>
+      <div class="thai hero-thai" id="thai2"><span class="tc" id="t2c1">แพ้เพนิซิลลิน</span> <span class="tc" id="t2c2">กินแล้ว</span><span class="tc" id="t2c3">ผื่นขึ้นตามตัว</span></div>
+      <svg id="ul16" width="1920" height="1080" viewBox="0 0 1920 1080">
+        <path id="dotLine" fill="none" stroke="#5B9BF0" stroke-width="5" stroke-linecap="round" stroke-dasharray="0.1 13"/>
+        <path id="thread16" fill="none" stroke="#2BB3A6" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="card" id="allergyCard"><div class="al-row"><span class="al-disc"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg></span><span class="al-t"><b>penicillin</b><span class="al-re">Reaction: rash</span><span class="ev-chip"><svg viewBox="0 0 24 24"><path d="M5 17.5c1.6-.6 2.6-2 2.6-4V9.8H4.8V6h5.4v7.2c0 3-1.7 5.4-4.6 6.3zM13.8 17.5c1.6-.6 2.6-2 2.6-4V9.8h-2.8V6H19v7.2c0 3-1.7 5.4-4.6 6.3z"/></svg>From patient’s words</span></span></div></div>
+      <h2 class="h64 white center" id="s16h">This time, every word <span class="grad-light">arrived.</span></h2>
+    </div>
+  </section>
+
+  <!-- ===== S17 CTA ===== -->
+  <section class="scene" id="s17"><div class="cam" id="s17cam">
+    <div id="dev17">
+      <div class="card" id="card17">
+        <div class="bw-bar"><i></i><i></i><i></i><span class="bw-url">medx.areazeroai.com</span></div>
+        <div class="ls-body"><div class="ls-title">Live summary</div><div class="ls-grid"><div class="ls-cell"><div class="ls-l">Chief complaint</div><div class="ls-v">sore throat<span class="ls-bars"><i></i><i></i><i></i><i></i></span></div><span class="ev-chip"><svg viewBox="0 0 24 24"><path d="M5 17.5c1.6-.6 2.6-2 2.6-4V9.8H4.8V6h5.4v7.2c0 3-1.7 5.4-4.6 6.3zM13.8 17.5c1.6-.6 2.6-2 2.6-4V9.8h-2.8V6H19v7.2c0 3-1.7 5.4-4.6 6.3z"/></svg>From patient’s words</span></div><div class="ls-cell"><div class="ls-l">Onset</div><div class="ls-v">two days ago<span class="ls-bars"><i></i><i></i><i></i><i></i></span></div><span class="ev-chip"><svg viewBox="0 0 24 24"><path d="M5 17.5c1.6-.6 2.6-2 2.6-4V9.8H4.8V6h5.4v7.2c0 3-1.7 5.4-4.6 6.3zM13.8 17.5c1.6-.6 2.6-2 2.6-4V9.8h-2.8V6H19v7.2c0 3-1.7 5.4-4.6 6.3z"/></svg>From patient’s words</span></div><div class="ls-cell"><div class="ls-l">Severity</div><div class="ls-v">7/10<span class="ls-bars"><i></i><i></i><i></i><i></i></span></div><span class="ev-chip"><svg viewBox="0 0 24 24"><path d="M5 17.5c1.6-.6 2.6-2 2.6-4V9.8H4.8V6h5.4v7.2c0 3-1.7 5.4-4.6 6.3zM13.8 17.5c1.6-.6 2.6-2 2.6-4V9.8h-2.8V6H19v7.2c0 3-1.7 5.4-4.6 6.3z"/></svg>From patient’s words</span></div><div class="ls-cell"><div class="ls-l">Medications</div><div class="ls-v">no medicines<span class="ls-bars"><i></i><i></i><i></i><i></i></span></div><span class="ev-chip"><svg viewBox="0 0 24 24"><path d="M5 17.5c1.6-.6 2.6-2 2.6-4V9.8H4.8V6h5.4v7.2c0 3-1.7 5.4-4.6 6.3zM13.8 17.5c1.6-.6 2.6-2 2.6-4V9.8h-2.8V6H19v7.2c0 3-1.7 5.4-4.6 6.3z"/></svg>From patient’s words</span></div><div class="ls-cell"><div class="ls-l">Allergies</div><div class="ls-v">penicillin (rash)<span class="ls-bars"><i></i><i></i><i></i><i></i></span></div><span class="ev-chip"><svg viewBox="0 0 24 24"><path d="M5 17.5c1.6-.6 2.6-2 2.6-4V9.8H4.8V6h5.4v7.2c0 3-1.7 5.4-4.6 6.3zM13.8 17.5c1.6-.6 2.6-2 2.6-4V9.8h-2.8V6H19v7.2c0 3-1.7 5.4-4.6 6.3z"/></svg>From patient’s words</span></div><div class="ls-cell"><div class="ls-l">Age</div><div class="ls-v">24 years<span class="ls-bars"><i></i><i></i><i></i><i></i></span></div><span class="ev-chip"><svg viewBox="0 0 24 24"><path d="M5 17.5c1.6-.6 2.6-2 2.6-4V9.8H4.8V6h5.4v7.2c0 3-1.7 5.4-4.6 6.3zM13.8 17.5c1.6-.6 2.6-2 2.6-4V9.8h-2.8V6H19v7.2c0 3-1.7 5.4-4.6 6.3z"/></svg>From patient’s words</span></div></div></div>
+        <div class="spec"></div>
+      </div>
+      <div class="dev-shadow" id="sh17"></div>
+      <div class="phone small" id="ph17"><div class="ph-screen light">
+        <div class="cropbox" data-asset="patientIntake" data-crop="screen" data-w="244" style="left:0;top:26px" id="cb17ph"></div>
+        <div class="card-cont" data-follow="cb17ph"></div>
+      </div><div class="spec"></div></div>
+    </div>
+    <h2 class="hero ink" id="s17h">Try the <span class="grad">live demo.</span></h2>
+  </div></section>
+
+  <!-- ===== S18 end card ===== -->
+  <section class="scene" id="s18">
+    <div id="lockW">
+      <svg viewBox="0 -157.5 4330.1 1015" width="420" height="98.45">
+        <rect x="0" y="-157.5" width="1015.0" height="1015.0" rx="237.9" fill="#FFFFFF"/>
+        <g transform="translate(73.8 -36.3) scale(12.8126)" fill="none" stroke="#1A5FC4" stroke-linecap="round"><path d="M32.0 32.0L14.00 14.00M32.0 32.0L14.00 50.00M32.0 32.0L50.00 50.00" stroke-width="11.0"/><path d="M34.58 18.75A13.5 13.5 0 0 1 45.25 29.42M38.34 8.33A24.5 24.5 0 0 1 55.67 25.66" stroke-width="7.0"/></g>
+        <g transform="translate(1360.1 0)"><path d="M78.0 700H207.0V229L427.0 700H499.0L719.0 233V700H848.0V0H698.0L463.0 516L228.0 0H78.0ZM1232.0 712C1362.0 712 1467.0 637 1491.0 537H1363.0C1346.0 576 1297.0 606 1237.0 606C1154.0 606 1089.0 550 1079.0 467H1497.0V427C1497.0 267 1388.0 159 1230.0 159C1067.0 159 951.0 275 951.0 434C951.0 596 1071.0 712 1232.0 712ZM1083.0 378C1100.0 308 1156.0 261 1230.0 261C1304.0 261 1357.0 308 1371.0 378ZM1834.0 705H1871.0C1881.0 705 1888.0 702 1895.0 695L2002.0 588V700H2122.0V-40H1996.0V230C1958.0 187 1898.0 159 1824.0 159C1673.0 159 1559.0 275 1559.0 435C1559.0 593 1670.0 705 1834.0 705ZM1844.0 602C1751.0 602 1687.0 530 1687.0 435C1687.0 340 1751.0 268 1844.0 268C1937.0 268 2000.0 340 2000.0 435C2000.0 530 1937.0 602 1844.0 602Z" fill="#FFFFFF"/><g transform="translate(2119.9 -82.9) scale(14.359)" fill="none" stroke="#FFFFFF" stroke-linecap="round"><path d="M32.0 32.0L14.00 14.00M32.0 32.0L14.00 50.00M32.0 32.0L50.00 50.00" stroke-width="11.0"/><path d="M34.58 18.75A13.5 13.5 0 0 1 45.25 29.42M38.34 8.33A24.5 24.5 0 0 1 55.67 25.66" stroke-width="7.0"/></g></g>
+      </svg>
+      <div class="sweep-mask" id="endSweep"></div>
+    </div>
+    <h2 class="h60 white center" id="s18tag">Every word, understood.</h2>
+    <div class="claim" id="claim">Research prototype · Synthetic data · Not a medical device</div>
+  </section>
+
+  <!-- 7.85-8.6 exposure bloom (procedural) -->
+  <div id="bloom"></div>
+
+  <!-- ===== Shared CTA elements (S17 -> S18) ===== -->
+  <div id="shared">
+    <div class="cta-pill" id="ctaPill">Try the live demo</div>
+    <div class="url" id="url"></div>
+    <div id="finP"><img class="asset-img" data-src="brand.finPointing" alt=""></div>
+    <div class="qr-card" id="qrCard"><img class="asset-img" data-src="data.qr" alt=""><div class="glint" id="qrGlint"></div></div>
+    <div class="qr-cap" id="qrCap">Scan to try</div>
+  </div>
+
+  <!-- S04 -> S05 match cut: the logo's outer sound arc straightens into the rail -->
+  <svg id="matchArc" width="1920" height="1080" viewBox="0 0 1920 1080">
+    <defs><linearGradient id="maG" gradientUnits="userSpaceOnUse" x1="210" y1="0" x2="1710" y2="0"><stop offset="0" stop-color="#0A8077"/><stop offset="1" stop-color="#1A5FC4"/></linearGradient></defs>
+    <polyline id="maLine" fill="none" stroke="url(#maG)" stroke-linecap="round" stroke-linejoin="round" points=""/>
+  </svg>
+
+  <div id="vig"></div>
+
+  <!-- ===== Journey rail (docked 14-39 s), above every transition ===== -->
+  <div id="rail"><div class="r-line"><div class="r-fill" id="railFill"></div><div class="r-pulse" id="railPulse"></div></div></div>
+
+  <div class="microtag" id="microtag"><span id="mtText">Synthetic demo data</span></div>
+</div>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="assets.js"></script>
+<script src="timeline.js"></script>
+</body>
+</html>

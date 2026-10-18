@@ -33,8 +33,6 @@ export const copy = {
   hours: { en: "h", it: "h", th: "ชม." },
   pharmacy: { en: "Pharmacy", it: "Farmacia", th: "เภสัชกรรม" },
   pharmacyAlerts: { en: "Pharmacy high alerts open", it: "Avvisi farmaceutici gravi aperti", th: "รายการยาเตือนระดับสูงที่รอตรวจสอบ" },
-  pharmacyPipeline: { en: "Pharmacy pipeline", it: "Percorso in farmacia", th: "ขั้นตอนห้องยา" },
-  pharmacyPipelineNote: { en: "Counts from /api/metrics. To verify and To dispense count medication orders; Ready for pickup and Collected today count patients. Today follows the server's UTC date. Counts only, no drug names.", it: "Conteggi da /api/metrics. Da verificare e Da dispensare contano ordini di farmaci; Pronti per il ritiro e Ritirati oggi contano pazienti. Oggi segue la data UTC del server. Solo conteggi, nessun nome di farmaco.", th: "ตัวเลขจาก /api/metrics ช่องรอตรวจใบสั่งยาและรอจัดยานับเป็นคำสั่งยา ช่องพร้อมรับยาและรับยาแล้ววันนี้นับเป็นผู้ป่วย วันนี้ใช้วันที่ UTC ของเซิร์ฟเวอร์ แสดงเฉพาะจำนวน ไม่แสดงชื่อยา" },
   pharmacyUnavailable: { en: "The metrics API did not report pharmacy counts.", it: "L'API delle metriche non ha riportato i conteggi della farmacia.", th: "API ตัวชี้วัดไม่ได้ส่งจำนวนของห้องยา" },
   stageToVerify: { en: "To verify", it: "Da verificare", th: "รอตรวจใบสั่งยา" },
   stageToVerifyWho: { en: "Pharmacist 1 checks the prescription", it: "Il farmacista 1 controlla la prescrizione", th: "เภสัชกรคนที่ 1 ตรวจใบสั่งยา" },
@@ -55,7 +53,6 @@ export const copy = {
   noCounter: { en: "Counter not set", it: "Sportello non indicato", th: "ไม่ได้ระบุช่องรับยา" },
   calledAt: { en: "Called", it: "Chiamato alle", th: "เรียกเมื่อ" },
   openPharmacy: { en: "Open in pharmacy", it: "Apri in farmacia", th: "เปิดในหน้าห้องยา" },
-  pharmacyNote: { en: "High alerts without a pharmacist review", it: "Avvisi gravi senza revisione farmaceutica", th: "รายการเตือนระดับสูงที่ยังไม่มีเภสัชกรตรวจสอบ" },
   title: { en: "Clinic operations", it: "Attività della clinica", th: "ภาพรวมการดำเนินงานคลินิก" },
   today: { en: "Today", it: "Oggi", th: "วันนี้" },
   subtitle: { en: "Intake queue and system ledger", it: "Coda delle raccolte e registro del sistema", th: "คิวรับข้อมูลและบันทึกระบบ" },
@@ -122,6 +119,20 @@ export const copy = {
   providerNote: { en: "Current configuration from /api/health. Missing or conflicting hardware is not displayed. Historical calls retain their own provider and model.", it: "Configurazione da /api/health. Hardware assente o incoerente non visualizzato. Le chiamate storiche conservano provider e modello propri.", th: "การตั้งค่าจาก /api/health ไม่แสดงฮาร์ดแวร์ที่ไม่มีข้อมูลหรือขัดแย้ง บันทึกเดิมคงผู้ให้บริการและโมเดลของแต่ละครั้ง" },
   system: { en: "System ledger", it: "Registro del sistema", th: "บันทึกระบบ" },
   footer: { en: "Decision support for clinicians. Nothing is final until a clinician approves it.", it: "Supporto alle decisioni cliniche. Nulla è definitivo senza approvazione del clinico.", th: "สนับสนุนการตัดสินใจของแพทย์ ข้อมูลยังไม่เป็นข้อสรุปจนกว่าแพทย์จะอนุมัติ" },
+  // pharmacy flow strip (S-03)
+  pharmacyFlow: { en: "Pharmacy flow", it: "Flusso della farmacia", th: "ขั้นตอนห้องยา" },
+  pharmacyFlowNote: { en: "Counts from /api/metrics. To verify and To dispense count medication orders; Ready for pickup and Collected today count patients. Today follows the server's UTC date. Counts only, no drug names. Each count opens that stage in the pharmacy.", it: "Conteggi da /api/metrics. Da verificare e Da dispensare contano ordini; Pronti per il ritiro e Ritirati oggi contano pazienti. Oggi segue la data UTC del server. Solo conteggi, nessun nome di farmaco. Ogni conteggio apre quella fase in farmacia.", th: "ตัวเลขจาก /api/metrics ช่องรอตรวจใบสั่งยาและรอจัดยานับเป็นคำสั่งยา ช่องพร้อมรับยาและรับยาแล้ววันนี้นับเป็นผู้ป่วย วันนี้ใช้วันที่ UTC ของเซิร์ฟเวอร์ แสดงเฉพาะจำนวน ไม่แสดงชื่อยา กดตัวเลขเพื่อเปิดขั้นตอนนั้นในห้องยา" },
+  openStage: { en: "Open in pharmacy", it: "Apri in farmacia", th: "เปิดในห้องยา" },
+  pharmacyAlertsNote: { en: "Reconciliation alerts with no review, plus high checks on orders waiting for pharmacist 1", it: "Avvisi di riconciliazione non rivisti, più controlli alti sugli ordini in attesa del primo farmacista", th: "การแจ้งเตือนจากการเทียบรายการยาที่ยังไม่ทบทวน รวมกับการตรวจระดับสูงของใบสั่งยาที่รอเภสัชกรคนแรก" },
+  // triage column (S-03)
+  triage: { en: "Triage", it: "Triage", th: "คัดกรอง" },
+  triageLevel: { en: "Level {n}", it: "Livello {n}", th: "ระดับ {n}" },
+  triageConfirmed: { en: "Confirmed", it: "Confermato", th: "ยืนยันแล้ว" },
+  triageBy: { en: "by {name}", it: "da {name}", th: "โดย {name}" },
+  triageNotConfirmed: { en: "Not confirmed", it: "Non confermato", th: "ยังไม่ยืนยัน" },
+  triageSuggested: { en: "Suggested level {n}, for nurse review", it: "Livello suggerito {n}, da confermare", th: "ระบบเสนอระดับ {n} รอพยาบาลยืนยัน" },
+  triageNone: { en: "No triage yet", it: "Triage non ancora fatto", th: "ยังไม่คัดกรอง" },
+  triageNote: { en: "Triage: level 1 is most urgent, 5 least. A level is shown only when a nurse confirmed it; a suggestion is labelled as one.", it: "Triage: livello 1 il più urgente, 5 il meno. Un livello compare solo se confermato da un infermiere; un suggerimento è indicato come tale.", th: "คัดกรอง: ระดับ 1 เร่งด่วนที่สุด ระดับ 5 น้อยที่สุด แสดงระดับเมื่อพยาบาลยืนยันแล้วเท่านั้น ค่าที่ระบบเสนอจะระบุว่าเป็นค่าที่เสนอ" },
 } satisfies Record<string, Localized>;
 
 export const statusCopy: Record<SessionStatus, Localized> = {

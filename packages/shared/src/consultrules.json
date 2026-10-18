@@ -1,5 +1,5 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "rules": [
     {
       "id": "CR-CHEST-01",
@@ -3362,6 +3362,69 @@
         }
       ],
       "source": "NICE NG84 Sore throat (acute): antimicrobial prescribing (FeverPAIN/Centor; red flags for quinsy and epiglottitis)"
+    },
+    {
+      "id": "CR-THROAT-05",
+      "match": [
+        [
+          "sore throat",
+          "throat hurts",
+          "throat pain",
+          "painful to swallow",
+          "hurts to swallow",
+          "mal di gola",
+          "gola infiammata",
+          "fa male la gola",
+          "dolore alla gola",
+          "เจ็บคอ",
+          "คออักเสบ",
+          "กลืนเจ็บ",
+          "กลืนน้ำลายก็เจ็บ",
+          "กลืนน้ำลายเจ็บ"
+        ],
+        [
+          "white spots",
+          "white patches",
+          "spots on my tonsils",
+          "pus on my tonsils",
+          "pus on the tonsils",
+          "swollen tonsils",
+          "tonsils are swollen",
+          "tonsils look swollen",
+          "tonsils are big",
+          "placche bianche",
+          "puntini bianchi",
+          "pus sulle tonsille",
+          "tonsille gonfie",
+          "tonsille ingrossate",
+          "จุดขาวที่ต่อมทอนซิล",
+          "หนองที่ต่อมทอนซิล",
+          "ต่อมทอนซิลบวม",
+          "ทอนซิลบวม",
+          "จุดหนองที่คอ"
+        ]
+      ],
+      "questions": [],
+      "considerations": [
+        {
+          "id": "CR-THROAT-05-C1",
+          "text": {
+            "th": "พิจารณาต่อมทอนซิลอักเสบจากแบคทีเรีย: ประเมินคะแนน FeverPAIN หรือ Centor",
+            "it": "Considerare tonsillite batterica: valutare il punteggio FeverPAIN o Centor",
+            "en": "Consider bacterial tonsillitis: check the FeverPAIN or Centor score"
+          },
+          "why": {
+            "th": "เจ็บคอร่วมกับมีหนองหรือต่อมทอนซิลบวม คะแนน FeverPAIN นับไข้ การมาพบภายใน 3 วัน ต่อมทอนซิลอักเสบ และการไม่มีไอหรือน้ำมูกด้วย",
+            "it": "Mal di gola con essudato o tonsille gonfie. FeverPAIN conta anche febbre, visita entro 3 giorni, tonsille infiammate e assenza di tosse o raffreddore.",
+            "en": "Sore throat with pus or swelling on the tonsils. FeverPAIN also counts fever, attending within 3 days, inflamed tonsils and no cough or coryza."
+          },
+          "guideline": {
+            "title": "NICE NG84: Sore throat (acute): antimicrobial prescribing",
+            "url": "https://www.nice.org.uk/guidance/ng84"
+          }
+        }
+      ],
+      "source": "NICE NG84 Sore throat (acute): antimicrobial prescribing (FeverPAIN/Centor scoring to guide clinician review; w20 synthetic-demo addition, needs Doctor sign-off)"
     },
     {
       "id": "CR-RASH-01",

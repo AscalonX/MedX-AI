@@ -18,6 +18,15 @@ type S = {
   pickupEyebrow: string; pickupPreparingTitle: string; pickupPreparingBody: string;
   pickupReadyTitle: string; pickupReadyBody: (code: string, counter?: string) => string; pickupCounter: string;
   pickupCollectedTitle: string; pickupCollectedBody: string; stepPreparing: string; stepReady: string; stepCollected: string;
+  // Synthetic-data notice and "Try saying" examples (DEMO_SAMPLES: synthetic fixture sentences, never sent without the patient pressing Send).
+  synthetic: string; samplesTitle: string; samplesSub: string; sampleLabel: string; sampleRedFlag: string; sampleA11yHint: string;
+  sampleConfirmTitle: string; sampleClear: string;
+  // Staff have seen the case (seenByStaff): one boolean, never who or what.
+  seenTitle: string; seenNext: string; stepSeen: string;
+  // Home with a visit on this phone, and "Start a new visit" (clears this phone only; the care team keeps what was sent).
+  heroVisitTitle: string; heroVisitSub: (code: string) => string; openVisit: string;
+  newVisit: string; newVisitSub: string; newVisitTitle: string; newVisitBody: string; newVisitCode: (code: string) => string;
+  newVisitPickup: string; newVisitConfirm: string; newVisitKeep: string; newVisitDone: string;
 };
 
 export const STR: Record<Lang, S> = {
@@ -36,7 +45,7 @@ export const STR: Record<Lang, S> = {
     stepSent: "Sent", stepReview: "Waiting for a nurse", stepReviewed: "Reviewed", nextTitle: "What happens next", sentTitle: "Your answers are in",
     pickTitle: "Tell us why you came in today.",
     pickSub: "A nurse will read it before your visit.",
-    privacy: "Demo with made-up cases. Please do not type real names, phone numbers or ID numbers. A nurse reads what you write. If you use the microphone, your voice is processed by your phone's speech service (Apple or Google).",
+    privacy: "Please do not type real names, phone numbers or ID numbers. A nurse reads what you write. If you use the microphone, your voice is processed by your phone's speech service (Apple or Google).",
     disclaimer: "This does not replace a doctor. In an emergency, go to the desk now.",
     pickA11y: (l) => `Continue in ${l}`,
     q1: "What brings you in today?", hint: "Write in your own words. Short is fine.", hintFollow: "A few words are enough.",
@@ -62,6 +71,19 @@ export const STR: Record<Lang, S> = {
     pickupCollectedTitle: "You have collected your medicine.",
     pickupCollectedBody: "If you have a question about your medicine, ask the pharmacist before you leave.",
     stepPreparing: "Preparing your medicine", stepReady: "Ready to collect", stepCollected: "Medicine collected",
+    synthetic: "Synthetic data only. Do not enter real patient information.",
+    samplesTitle: "Try saying",
+    samplesSub: "Synthetic examples for this demo. Tap one to fill the box, check it, then press Send.",
+    sampleLabel: "Synthetic example", sampleRedFlag: "Synthetic example, red flag",
+    sampleA11yHint: "Fills the answer box. Nothing is sent until you press Send.",
+    sampleConfirmTitle: "Check this example before you send it.", sampleClear: "Clear",
+    seenTitle: "The care team has seen your answers.", seenNext: "Please wait to be called.", stepSeen: "Seen by the care team",
+    heroVisitTitle: "Your visit is open", heroVisitSub: (c) => `Code ${c}. See where things are.`, openVisit: "Open my visit",
+    newVisit: "Start a new visit", newVisitSub: "Sharing this phone? Clear this visit so the next person can start fresh.",
+    newVisitTitle: "Start a new visit?", newVisitBody: "This clears your visit from this phone. Answers you already sent stay with the care team.",
+    newVisitCode: (c) => `Your code is ${c}. Write it down if you still need it.`,
+    newVisitPickup: "You have not collected your medicine yet. After clearing, this phone will not tell you when it is ready. Show your code at the pharmacy.",
+    newVisitConfirm: "Clear and start again", newVisitKeep: "Keep my visit", newVisitDone: "This phone is ready for a new visit.",
   },
   it: {
     micStart: "Tocchi per parlare", micStop: "Smetti di ascoltare", listening: "In ascolto", confirmTitle: "È questo che ha detto?", confirmSub: "Controlli le parole e corregga eventuali errori prima di inviare.", send: "Invia", tryAgain: "Riprova", speakToggle: "Leggi le domande ad alta voce",
@@ -78,7 +100,7 @@ export const STR: Record<Lang, S> = {
     stepSent: "Inviato", stepReview: "In attesa di un infermiere", stepReviewed: "Letto", nextTitle: "Cosa succede ora", sentTitle: "Le sue risposte sono arrivate",
     pickTitle: "Ci dica perché è venuto oggi.",
     pickSub: "Un infermiere lo leggerà prima della visita.",
-    privacy: "Demo con casi inventati. Non scriva nomi, numeri di telefono o documenti reali. Un infermiere legge ciò che scrive. Se usa il microfono, la sua voce viene elaborata dal servizio vocale del telefono (Apple o Google).",
+    privacy: "Non scriva nomi, numeri di telefono o documenti reali. Un infermiere legge ciò che scrive. Se usa il microfono, la sua voce viene elaborata dal servizio vocale del telefono (Apple o Google).",
     disclaimer: "Non sostituisce un medico. In caso di emergenza, vada subito al banco.",
     pickA11y: (l) => `Continua in ${l}`,
     q1: "Che cosa la porta qui oggi?", hint: "Scriva con parole sue. Basta poco.", hintFollow: "Bastano poche parole.",
@@ -104,6 +126,19 @@ export const STR: Record<Lang, S> = {
     pickupCollectedTitle: "Ha ritirato i suoi medicinali.",
     pickupCollectedBody: "Se ha domande sui medicinali, chieda al farmacista prima di andare via.",
     stepPreparing: "Preparazione dei medicinali", stepReady: "Pronti da ritirare", stepCollected: "Medicinali ritirati",
+    synthetic: "Solo dati sintetici. Non inserisca informazioni reali di pazienti.",
+    samplesTitle: "Provi a dire",
+    samplesSub: "Esempi sintetici per questa demo. Ne tocchi uno per riempire il campo, lo controlli, poi prema Invia.",
+    sampleLabel: "Esempio sintetico", sampleRedFlag: "Esempio sintetico, segnale d'allarme",
+    sampleA11yHint: "Riempie il campo della risposta. Non viene inviato nulla finché non preme Invia.",
+    sampleConfirmTitle: "Controlli questo esempio prima di inviarlo.", sampleClear: "Cancella",
+    seenTitle: "Il personale sanitario ha visto le sue risposte.", seenNext: "Attenda la chiamata.", stepSeen: "Visto dal personale sanitario",
+    heroVisitTitle: "La sua visita è aperta", heroVisitSub: (c) => `Codice ${c}. Veda a che punto è.`, openVisit: "Apri la mia visita",
+    newVisit: "Inizia una nuova visita", newVisitSub: "Usa un telefono condiviso? Cancelli questa visita così la prossima persona può iniziare da capo.",
+    newVisitTitle: "Iniziare una nuova visita?", newVisitBody: "La visita verrà cancellata da questo telefono. Le risposte già inviate restano al personale sanitario.",
+    newVisitCode: (c) => `Il suo codice è ${c}. Lo annoti se le serve ancora.`,
+    newVisitPickup: "Non ha ancora ritirato i suoi medicinali. Dopo la cancellazione, questo telefono non le dirà quando sono pronti. Mostri il suo codice in farmacia.",
+    newVisitConfirm: "Cancella e ricomincia", newVisitKeep: "Mantieni la mia visita", newVisitDone: "Questo telefono è pronto per una nuova visita.",
   },
   th: {
     micStart: "แตะเพื่อพูด", micStop: "หยุดฟัง", listening: "กำลังฟัง", confirmTitle: "คุณพูดแบบนี้ใช่ไหม", confirmSub: "ตรวจดูคำและแก้ไขที่ผิดก่อนส่ง", send: "ส่ง", tryAgain: "ลองอีกครั้ง", speakToggle: "อ่านคำถามออกเสียง",
@@ -120,7 +155,7 @@ export const STR: Record<Lang, S> = {
     stepSent: "ส่งแล้ว", stepReview: "รอพยาบาล", stepReviewed: "ตรวจดูแล้ว", nextTitle: "ขั้นตอนต่อไป", sentTitle: "ได้รับคำตอบของคุณแล้ว",
     pickTitle: "บอกเราว่าวันนี้คุณมาด้วยเรื่องอะไร",
     pickSub: "พยาบาลจะอ่านคำตอบของคุณก่อนเรียกตรวจ",
-    privacy: "นี่คือเดโมที่ใช้กรณีสมมติ กรุณาอย่าพิมพ์ชื่อ เบอร์โทร หรือเลขบัตรจริง พยาบาลจะอ่านสิ่งที่คุณเขียน หากคุณใช้ไมโครโฟน เสียงของคุณจะถูกประมวลผลโดยบริการเสียงของโทรศัพท์ (Apple หรือ Google)",
+    privacy: "กรุณาอย่าพิมพ์ชื่อ เบอร์โทร หรือเลขบัตรจริง พยาบาลจะอ่านสิ่งที่คุณเขียน หากคุณใช้ไมโครโฟน เสียงของคุณจะถูกประมวลผลโดยบริการเสียงของโทรศัพท์ (Apple หรือ Google)",
     disclaimer: "ไม่ได้ใช้แทนแพทย์ หากฉุกเฉิน กรุณาไปที่เคาน์เตอร์ทันที",
     pickA11y: (l) => `ใช้ภาษา ${l} ต่อ`,
     q1: "วันนี้คุณมาด้วยเรื่องอะไร", hint: "เขียนด้วยคำพูดของคุณเอง สั้น ๆ ก็ได้", hintFollow: "ตอบสั้น ๆ ก็พอ",
@@ -146,6 +181,19 @@ export const STR: Record<Lang, S> = {
     pickupCollectedTitle: "คุณรับยาเรียบร้อยแล้ว",
     pickupCollectedBody: "หากมีคำถามเกี่ยวกับยา กรุณาสอบถามเภสัชกรก่อนกลับ",
     stepPreparing: "กำลังจัดยา", stepReady: "พร้อมรับยา", stepCollected: "รับยาแล้ว",
+    synthetic: "ใช้ข้อมูลสมมติเท่านั้น กรุณาอย่ากรอกข้อมูลผู้ป่วยจริง",
+    samplesTitle: "ลองพูดว่า",
+    samplesSub: "ตัวอย่างสมมติสำหรับเดโมนี้ แตะหนึ่งข้อเพื่อใส่ข้อความในช่อง ตรวจดู แล้วกดส่ง",
+    sampleLabel: "ตัวอย่างสมมติ", sampleRedFlag: "ตัวอย่างสมมติ สัญญาณอันตราย",
+    sampleA11yHint: "ใส่ข้อความในช่องคำตอบ จะยังไม่ส่งจนกว่าคุณจะกดส่ง",
+    sampleConfirmTitle: "ตรวจดูตัวอย่างนี้ก่อนส่ง", sampleClear: "ล้าง",
+    seenTitle: "เจ้าหน้าที่ดูคำตอบของคุณแล้ว", seenNext: "กรุณารอเรียกชื่อ", stepSeen: "เจ้าหน้าที่ดูแล้ว",
+    heroVisitTitle: "การมาพบของคุณยังเปิดอยู่", heroVisitSub: (c) => `รหัส ${c} ดูว่าถึงขั้นตอนไหนแล้ว`, openVisit: "เปิดการมาพบของฉัน",
+    newVisit: "เริ่มการมาพบครั้งใหม่", newVisitSub: "ใช้โทรศัพท์ร่วมกับผู้อื่น? ล้างการมาพบนี้เพื่อให้คนถัดไปเริ่มใหม่ได้",
+    newVisitTitle: "เริ่มการมาพบครั้งใหม่ใช่ไหม", newVisitBody: "ระบบจะล้างการมาพบนี้ออกจากโทรศัพท์เครื่องนี้ คำตอบที่ส่งไปแล้วยังอยู่กับทีมดูแลรักษา",
+    newVisitCode: (c) => `รหัสของคุณคือ ${c} จดไว้หากยังต้องใช้`,
+    newVisitPickup: "คุณยังไม่ได้รับยา หลังล้างข้อมูล โทรศัพท์เครื่องนี้จะไม่แจ้งเมื่อยาพร้อม กรุณาแสดงรหัสของคุณที่ห้องยา",
+    newVisitConfirm: "ล้างและเริ่มใหม่", newVisitKeep: "เก็บการมาพบไว้", newVisitDone: "โทรศัพท์เครื่องนี้พร้อมสำหรับการมาพบครั้งใหม่แล้ว",
   },
 };
 

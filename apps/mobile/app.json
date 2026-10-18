@@ -4,17 +4,17 @@
     "slug": "medx-bridge",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/brand/icon.png",
+    "icon": "./assets/brand/icon-3d.png",
     "scheme": "medx",
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "dev.medx.bridge",
-      "icon": "./assets/brand/icon.png"
+      "icon": "./assets/brand/icon-3d.png"
     },
     "android": {
       "predictiveBackGestureEnabled": false,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/brand/adaptive-foreground.png",
+        "foregroundImage": "./assets/brand/adaptive-foreground-3d.png",
         "backgroundColor": "#0A8077"
       }
     },
@@ -28,8 +28,8 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#FFFFFF",
-          "image": "./assets/brand/splash-mark.png",
-          "imageWidth": 140
+          "image": "./assets/brand/splash-3d.png",
+          "imageWidth": 128
         }
       ],
       [

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ListSessionsRes, MetricsRes } from "@medx/shared/src/api";
+import { startVisiblePolling } from "../../_shared/visiblePolling";
 import { isHealth, isMetrics, isSessions, type OpsHealth } from "../ops-data";
 
 export interface OpsSnapshot { sessions: ListSessionsRes; metrics: MetricsRes; health: OpsHealth; fetchedAt: number }
@@ -44,12 +45,13 @@ export function useOpsSnapshot() {
         if (!disposed) setRefreshing(false);
       }
     };
-    void load();
-    const interval = window.setInterval(() => void load(), 5000);
+    // Every 5 s while the tab is visible; a hidden tab sends nothing to /api/sessions or /api/metrics (C-03) and
+    // refreshes at once when it is shown again.
+    const stop = startVisiblePolling(() => void load(), 5000);
     return () => {
       disposed = true;
       controller?.abort();
-      window.clearInterval(interval);
+      stop();
     };
   }, [attempt]);
 

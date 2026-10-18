@@ -1,8 +1,11 @@
+import { WRITE_ROLES } from '@medx/shared';
 import type { PharmacyReviewReq } from '@medx/shared';
-import { PipelineError } from './pipeline';
+import { requireStaffRole } from './clinicalWrites';
+import { PipelineError } from './errors';
 import { lookupDrug, MEDRULES, refreshMedAlerts } from './medrules';
+import { auditRechecks, refreshOrders } from './orders';
 import { object, shortString } from './schema';
-import { redact } from './redact';
+import { redact, redactActor } from './redact';
 import { appendAudit, getSession, saveSession, withSessionLock } from './store';
 
 function invalid(reason: string): never { throw new PipelineError(reason, 'bad_request'); }
@@ -37,12 +40,13 @@ export function validatePharmacyReview(value: unknown): asserts value is Pharmac
 
 export async function pharmacyReview(sessionId: string, value: unknown) {
   validatePharmacyReview(value);
+  requireStaffRole(value.reviewerId, WRITE_ROLES.pharmacy, 'reconcile medicines');
   return withSessionLock(sessionId, () => {
     const session = getSession(sessionId);
     if (!session) throw new PipelineError('Session not found', 'not_found');
     if (!session.summary) invalid('Session has no summary to review');
     const summary = session.summary!; const at = new Date().toISOString();
-    const reviewerId = value.reviewerId;
+    const reviewerId = redactActor(value.reviewerId);
     for (const a of value.medActions) {
       const m = summary.medications?.find(m => m.id === a.medId); if (!m) invalid('Unknown medication');
       if (a.action === 'edit') {
@@ -83,8 +87,11 @@ export async function pharmacyReview(sessionId: string, value: unknown) {
     }
     session.pharmacyStatus = value.complete ? 'reconciled' : 'in_review';
     session.pharmacyReviewerId = reviewerId; session.updatedAt = at;
+    // Corrected allergies or medicines change prescribing checks: a verified order with a new high alert goes back to pharmacist 1.
+    const rechecks = refreshOrders(session, at);
     const payload = { ...value } as Record<string, unknown>; delete payload.reviewerId;
     saveSession(session); appendAudit(sessionId, 'pharmacy_review', 'clinician', payload, reviewerId, at);
+    auditRechecks(sessionId, rechecks);
     return session;
   });
 }

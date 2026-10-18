@@ -1,14 +1,19 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AuditEvent, Evidence, ExtractedField, FieldKey, IntakeSession, Lang, RedFlagHit, RedFlagReviewAction, ReviewAction } from "@medx/shared";
-import { Badge, Button, Card, EvidenceHighlight, FieldValue, GradientHero, Icon, LangMorph, RedFlagInterrupt, type Mark } from "@/components/ui";
-import { FIELD_GROUPS, FIELD_LABEL, LANG_NAME, auditLine, clock, fetchSession, post, waited } from "./_lib";
+import type { AuditEvent, Evidence, ExtractedField, FieldKey, IntakeSession, Lang, RedFlagHit, RedFlagReviewAction, ReviewAction, SessionStatus } from "@medx/shared";
+import { Badge, Button, Card, EvidenceHighlight, FieldValue, GradientHero, Icon, LangMorph, RedFlagInterrupt, buttonClasses, type IconName, type Mark } from "@/components/ui";
+import { StageChip } from "../../_shared/StageChip";
+import { useVisiblePolling } from "../../_shared/visiblePolling";
+import { FIELD_GROUPS, FIELD_LABEL, LANG_NAME, auditRow, clock, fetchSession, post, waited, type AuditCtx } from "./_lib";
 import { fmt, tr, type TKey } from "./_i18n";
-import { Complaint, FlagChip, LangBadge, PharmacyChip, StatusChip, returnedOrders } from "./_queue";
+import { Complaint, FlagChip, LangBadge, StatusChip, returnedOrders } from "./_queue";
 import { returnReport } from "./_stage";
 import { useClinician } from "./_shell";
 import { ct } from "./[id]/consult/_c18n";
+
+/** The consult accepts lines in these states (engine consult.ts); collecting stays with the patient, taken over is closed. */
+const CONSULT_OPEN: SessionStatus[] = ["awaiting_review", "needs_human", "escalated", "approved"];
 
 type Sel = { type: "field"; key: FieldKey } | { type: "flag"; key: string };
 const selId = (s: Sel | null) => (s ? `${s.type}:${s.key}` : "");
@@ -81,11 +86,11 @@ export function Workspace({ id }: { id: string }) {
     gen.current++;
     prevStatus.current = undefined; setData(null); setLive(""); setSel(null); setEditing(null); setPrev({}); setActionError(null); setAuditOpen(false); setLoadError(null);
     scrollRef.current?.scrollTo({ top: 0 });
-    load();
-    const t = setInterval(() => load(), 5000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    return () => { clearInterval(t); gen.current++; reqId.current++; inflight.current = false; }; // cancel on unmount or id change
-  }, [id, load]);
+    return () => { gen.current++; reqId.current++; inflight.current = false; }; // cancel on unmount or id change
+  }, [id]);
+  // First load at once, then every 5 s while the tab is visible; paused while hidden, at once when it comes back (C-03).
+  useVisiblePolling(() => { void load(); }, 5000, id);
 
   // Escape clears the highlight (DIRECTION 6a) and closes the drawer.
   useEffect(() => {
@@ -196,24 +201,37 @@ export function Workspace({ id }: { id: string }) {
 
   // Patient header: the one gradient hero, replaced by a plain card while a red flag is the bold element.
   const waitText = session.status !== "approved" && now > 0 ? `${tr("waiting", lang)} ${waited(session.createdAt, now, tr("min", lang))}` : null;
-  const headerActions = (hero: boolean) => {
-    const cls = hero
-      ? "inline-flex h-10 items-center gap-2 rounded-full bg-sheet px-4 text-small font-semibold text-ocean shadow-[0_8px_16px_-10px_rgba(0,0,0,0.4)] transition-transform duration-quick ease-pen active:scale-[0.97]"
-      : "inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink transition-colors duration-quick ease-pen hover:border-ocean hover:text-ocean";
+  const consultOpen = CONSULT_OPEN.includes(session.status);
+  const row = sorted?.find((s) => s.id === id);
+  const approvedEv = [...audit].reverse().find((e) => e.type === "review");
+  const nextOpen = sorted?.find((x) => x.id !== id && (x.status === "escalated" || x.status === "awaiting_review")) ?? nextCase;
+  /**
+   * Case actions, the same set on every header (M-06): the consult (whenever the engine accepts consult lines,
+   * approved cases included), vitals, orders and the case trace; then the queue and the next case.
+   * `tone`: "hero" white pills on the gradient, "plain" on a white card, "receipt" on the approved receipt.
+   */
+  const headerActions = (tone: "hero" | "plain" | "receipt") => {
+    const pill = (primary = false) =>
+      buttonClasses({ variant: tone === "hero" ? "onDark" : primary ? "primary" : "secondary", size: "md", className: "text-small!" });
+    const link = (href: string, icon: IconName, label: string, primary = false, title?: string) => (
+      <Link href={href} title={title} className={pill(primary)}><Icon name={icon} size={14} />{label}</Link>
+    );
+    const consultPrimary = tone === "plain" || (tone === "receipt" && clinicianRole === "doctor");
+    const next = tone === "receipt" ? nextOpen : nextCase;
     return (
       <>
-        <Link href="/review" className={cls}><Icon name="chevron-right" size={14} className="rotate-180" />{tr("navQueue", lang)}</Link>
-        <Link href={`/review/${id}/trace`} title={tr("caseTraceHint", lang)} className={cls}><Icon name="clock" size={14} />{tr("caseTrace", lang)}</Link>
-        <Link href={`/review/${id}/${clinicianRole === "doctor" ? "orders" : "vitals"}`} className={cls}>
-          <Icon name={clinicianRole === "doctor" ? "clipboard-list" : "activity"} size={14} />{ct(clinicianRole === "doctor" ? "orders" : "vitals", lang)}
-        </Link>
-        {session.status !== "approved" && session.status !== "collecting" && (
-          <Link href={`/review/${id}/consult?mode=${clinicianRole}`} className={hero ? cls : "inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-4 text-small font-semibold text-on-primary shadow-[0_10px_18px_-10px_rgba(26,95,196,0.8)]"}>
-            <Icon name="mic" size={14} />{ct(clinicianRole === "doctor" ? "startDoctor" : "startNurse", lang)}
+        {consultOpen && link(`/review/${id}/consult?mode=${clinicianRole}`, "mic", ct(clinicianRole === "doctor" ? "startDoctor" : "startNurse", lang), consultPrimary)}
+        {link(`/review/${id}/vitals`, "activity", ct("vitals", lang))}
+        {link(`/review/${id}/orders`, "pill", ct("orders", lang))}
+        {link(`/review/${id}/trace`, "route", tr("caseTrace", lang), false, tr("caseTraceHint", lang))}
+        <span aria-hidden="true" className={`mx-0.5 hidden h-6 w-px self-center sm:block ${tone === "hero" ? "bg-white/30" : "bg-rule"}`} />
+        <Link href="/review" className={pill()}><Icon name="chevron-right" size={14} className="rotate-180" />{tr("navQueue", lang)}</Link>
+        {next && (
+          <Link href={`/review/${next.id}`} className={pill(tone === "receipt" && !consultPrimary)}>
+            {tr("nextCase", lang)} <span className="tabular-nums">{next.code}</span><Icon name="chevron-right" size={14} />
           </Link>
         )}
-        {nextCase && <Link href={`/review/${nextCase.id}`} className={cls}>{tr("nextCase", lang)} {nextCase.code}<Icon name="chevron-right" size={14} /></Link>}
-        <button type="button" onClick={openDrawer} aria-expanded={drawer} aria-controls="transcript" className={`${cls} min-[1280px]:hidden`}>
+        <button type="button" onClick={openDrawer} aria-expanded={drawer} aria-controls="transcript" className={`${pill()} min-[1280px]:hidden`}>
           <Icon name="quote" size={14} />{tr("patientsWords", lang)}
         </button>
       </>
@@ -236,7 +254,7 @@ export function Workspace({ id }: { id: string }) {
     <span className="flex flex-wrap items-center gap-2">
       <StatusChip s={session} lang={lang} />
       <FlagChip s={session} lang={lang} />
-      <PharmacyChip s={session} lang={lang} />
+      <StageChip s={session} stage={row?.stage} lang={lang} />
       <span lang={session.patientLang} className={hero ? "rounded-full bg-white/15 px-3 py-0.5 text-small font-semibold" : "rounded-full bg-muted px-3 py-0.5 text-small font-semibold text-ink-soft"}>
         {LANG_NAME[session.patientLang]}
       </span>
@@ -247,22 +265,37 @@ export function Workspace({ id }: { id: string }) {
   );
   const complaint = <Complaint s={session} lang={lang} onDark={!hasFlags} />;
   const codeTitle = <span className="text-stat font-extrabold tabular-nums">{session.code}</span>;
-  const approvedEv = [...audit].reverse().find((e) => e.type === "review");
   const approver = approvedEv?.actorId ?? reviewer;
   const approvedCount = fields.filter((f) => f.status === "approved" || f.status === "edited").length;
-  const nextOpen = sorted?.find((x) => x.id !== id && (x.status === "escalated" || x.status === "awaiting_review")) ?? nextCase;
+  // Approved receipt (DIRECTION 6f). The case stays open: every case action is still here (M-06).
   const headerBlock = session.status === "approved" && !hasFlags ? (
-    <Card className="cl-enter flex flex-wrap items-center gap-4 border-teal/30 !bg-teal-tint">
-      <span className="grid size-12 shrink-0 place-items-center rounded-full bg-primary-gradient text-on-primary"><Icon name="circle-check" size={24} /></span>
-      <div className="min-w-0 flex-1">
-        <h1 className="text-title font-extrabold text-teal">{tr("approvedReceipt", lang)} · <span className="tabular-nums">{session.code}</span></h1>
-        <p className="text-small text-ink-soft">{approver}, {clock(approvedEv?.at ?? session.updatedAt, lang)} · {fmt(tr("receiptFields", lang), { n: approvedCount })}</p>
-        <span className="mt-1.5 flex flex-wrap gap-2 empty:hidden"><PharmacyChip s={session} lang={lang} /></span>
+    <Card className="cl-enter flex flex-col gap-4 border-teal/30 !bg-teal-tint" data-receipt="approved">
+      <div className="flex flex-wrap items-center gap-4">
+        <span className="grid size-12 shrink-0 place-items-center rounded-full bg-teal text-on-primary"><Icon name="circle-check" size={24} /></span>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-title font-extrabold text-teal">{tr("approvedReceipt", lang)} · <span className="tabular-nums">{session.code}</span></h1>
+          <p className="text-small text-ink-soft">{approver}, {clock(approvedEv?.at ?? session.updatedAt, lang)} · {fmt(tr("receiptFields", lang), { n: approvedCount })}</p>
+        </div>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {nextOpen && <Link href={`/review/${nextOpen.id}`} className="inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-5 text-small font-semibold text-on-primary shadow-[0_10px_18px_-10px_rgba(26,95,196,0.8)] transition-transform duration-quick ease-pen active:scale-[0.97]">{tr("nextCase", lang)} {nextOpen.code}<Icon name="chevron-right" size={14} /></Link>}
-        <Link href="/review" className="inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean">{tr("navQueue", lang)}</Link>
-      </div>
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-2 rounded-2xl bg-sheet/80 px-4 py-3 text-small sm:grid-cols-[auto_minmax(0,1fr)]">
+        <dt className="text-ink-soft">{tr("stageLabel", lang)}</dt>
+        <dd className="flex flex-wrap items-center gap-2">
+          {row?.stage ? <StageChip s={session} stage={row.stage} lang={lang} /> : <span className="text-graphite">-</span>}
+          <span lang={session.patientLang} className="rounded-full bg-muted px-2.5 py-0.5 text-micro font-semibold text-ink-soft">{LANG_NAME[session.patientLang]}</span>
+        </dd>
+        {triage && (
+          <>
+            <dt className="text-ink-soft">{tr("vitalsLink", lang)}</dt>
+            <dd className="font-semibold text-ink">
+              {conf ? fmt(tr("triageConfirmed", lang), { n: conf.level }) : fmt(tr("triageSuggested", lang), { n: triage.suggestedLevel })}
+              {triage.warningScore !== undefined && <span className="font-normal text-ink-soft"> · {fmt(tr("news2", lang), { n: triage.warningScore })}</span>}
+              {moreUrgent && <span className="ml-2 rounded-full bg-signal-tint px-2.5 py-0.5 text-micro text-signal">{fmt(tr("triageReconfirm", lang), { n: triage.suggestedLevel })}</span>}
+            </dd>
+          </>
+        )}
+      </dl>
+      <p className="text-small text-ink-soft">{tr("receiptNext", lang)}</p>
+      <div role="group" aria-label={tr("caseActions", lang)} className="flex flex-wrap items-center gap-2">{headerActions("receipt")}</div>
     </Card>
   ) : hasFlags ? (
     <Card className="cl-enter flex flex-col gap-3">
@@ -275,14 +308,14 @@ export function Workspace({ id }: { id: string }) {
       </div>
       {headerMeta(false)}
       {triageRow(false)}
-      <div className="flex flex-wrap gap-2">{headerActions(false)}</div>
+      <div role="group" aria-label={tr("caseActions", lang)} className="flex flex-wrap items-center gap-2">{headerActions("plain")}</div>
     </Card>
   ) : (
     <GradientHero
       className="cl-enter"
       title={<span className="flex items-center gap-3">{codeTitle}</span>}
       subtitle={<span className="block text-lead font-semibold text-on-primary">{complaint}</span>}
-      action={headerActions(true)}
+      action={<div role="group" aria-label={tr("caseActions", lang)} className="flex flex-wrap items-center gap-2">{headerActions("hero")}</div>}
     >
       {headerMeta(true)}
       {triageRow(true)}
@@ -391,7 +424,7 @@ export function Workspace({ id }: { id: string }) {
   const wrapped = <div className="flex flex-col gap-4 px-3 pt-4">{hasFlags && flagReview}{sheet}</div>;
 
   return (
-    <div className="grid h-[calc(100dvh-9rem)] min-h-[560px] grid-cols-1 gap-6 min-[1280px]:grid-cols-[minmax(0,1fr)_400px]">
+    <div className="cl-workspace grid h-[calc(100dvh-9rem)] min-h-[560px] grid-cols-1 gap-6 min-[1280px]:grid-cols-[minmax(0,1fr)_400px]">
       <p aria-live="polite" className="sr-only">{announce}</p>
       <p role="status" aria-live="polite" className="sr-only">{live}</p>
       <section aria-label={`Summary ${session.code}`} className="flex min-h-0 min-w-0 flex-col gap-3">
@@ -445,6 +478,7 @@ export function Workspace({ id }: { id: string }) {
           onJump={(k) => { const el = scrollRef.current?.querySelector<HTMLElement>(`[data-field-key="${k}"]`); el?.scrollIntoView({ block: "center", behavior: "smooth" }); el?.focus(); }}
           error={actionError ?? (loadError ? `${tr("notRefreshed", lang)}: ${loadError}` : null)}
           audit={audit}
+          auditCtx={{ medications: session.orders?.medications, investigations: session.orders?.investigations }}
           open={auditOpen}
           onToggle={() => setAuditOpen((o) => !o)}
           onApproveAll={() => sendReview(fields.filter((f) => f.status === "supported" && f.value).map((f) => ({ fieldKey: f.key, action: "approve" as const })))}
@@ -693,8 +727,8 @@ function Provenance({ s, lang, health }: { s: IntakeSession; lang: Lang; health:
   );
 }
 
-function ActionBar({ lang, approved, busy, canAct, closed, blocked, supportedCount, left, onJump, stopped, error, audit, open, onToggle, onApproveAll, onTakeover }: {
-  lang: Lang; approved: boolean; busy: boolean; canAct: boolean; closed: boolean; blocked: boolean; supportedCount: number; stopped: boolean; left: { key: string; label: string }[]; onJump: (k: string) => void; error: string | null; audit: AuditEvent[];
+function ActionBar({ lang, approved, busy, canAct, closed, blocked, supportedCount, left, onJump, stopped, error, audit, auditCtx, open, onToggle, onApproveAll, onTakeover }: {
+  lang: Lang; approved: boolean; busy: boolean; canAct: boolean; closed: boolean; blocked: boolean; supportedCount: number; stopped: boolean; left: { key: string; label: string }[]; onJump: (k: string) => void; error: string | null; audit: AuditEvent[]; auditCtx: AuditCtx;
   open: boolean; onToggle: () => void; onApproveAll: () => void; onTakeover: (reason: string) => void;
 }) {
   const [taking, setTaking] = useState(false);
@@ -706,7 +740,7 @@ function ActionBar({ lang, approved, busy, canAct, closed, blocked, supportedCou
           <h2 className="pb-1 text-small font-bold">{tr("auditTrail", lang)}</h2>
           <table className="w-full text-small">
             <tbody>
-              {mergeAudit(audit, lang).map((r) => (
+              {mergeAudit(audit, lang, auditCtx).map((r) => (
                 <tr key={r.id} className="align-baseline">
                   <td className="whitespace-nowrap pr-3 tabular-nums text-ink-soft">{clock(r.at, lang)}</td>
                   <td className="whitespace-nowrap pr-3 text-ink-soft">{r.who}</td>
@@ -764,11 +798,10 @@ function ActionBar({ lang, approved, busy, canAct, closed, blocked, supportedCou
 }
 
 /** Merge consecutive identical events, localize actors, and show model and latency on model events. */
-function mergeAudit(audit: AuditEvent[], lang: Lang) {
+function mergeAudit(audit: AuditEvent[], lang: Lang, ctx: AuditCtx) {
   const rows: { id: string; at: string; who: string; text: string; n: number; chip?: string }[] = [];
   for (const e of audit) {
-    const who = e.actorId ?? tr(`actor_${e.actor}` as TKey, lang);
-    const text = auditLine(e, lang);
+    const { who, text } = auditRow(e, lang, ctx);
     if (!text) continue;
     const calls = Array.isArray((e.payload as { modelCalls?: unknown }).modelCalls) ? ((e.payload as { modelCalls: { model: string; latencyMs: number }[] }).modelCalls) : [];
     const chip = calls.length ? `${calls[0].model} · ${calls.reduce((a, c) => a + c.latencyMs, 0)} ms` : undefined;

@@ -1,6 +1,14 @@
 import type { ConsultMode, ConsultNote, ConsultNoteLine, ConsultState, ConsultSuggestion, Evidence, Localized } from "@medx/shared";
 
-export interface Line { id: string; speaker: "patient" | "clinician"; text: string; at: string; /** intake question from the system, not the clinician */ system?: boolean; /** how a local line was entered */ input?: "text" | "voice" }
+export interface Line {
+  id: string; speaker: "patient" | "clinician"; text: string; at: string;
+  /** intake question from the system, not the clinician */ system?: boolean;
+  /** how a local line was entered */ input?: "text" | "voice";
+  /** A local line the server has not saved yet (sending, waiting to retry, or refused): never shown as part of the record. */
+  pending?: "sending" | "unsent" | "refused";
+  /** The server's reason when it refused the line. */
+  pendingError?: string;
+}
 
 const L = (en: string, th = en, it = en): Localized => ({ en, th, it });
 

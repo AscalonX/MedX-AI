@@ -8,11 +8,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { IntakeSession, MedicationOrder, PharmacyOrderActionReq } from "@medx/shared";
 import { addTurn, createSession } from "../../lib/pipeline/pipeline";
 import { medicationAction, medicationOrder } from "../../lib/pipeline/orders";
-import { getSession } from "../../lib/pipeline/store";
+import { getAudit, getSession } from "../../lib/pipeline/store";
 import { POST as postPharmacy } from "../api/sessions/[id]/orders/medications/[orderId]/pharmacy/route";
 import { POST as postDispense } from "../api/sessions/[id]/orders/medications/[orderId]/dispense/route";
 import { POST as postPickup } from "../api/sessions/[id]/pickup/route";
-import { PHARMACISTS, applyDispense, applyOrderAction, applyPickup, canCall, samePerson, stageRows } from "./_lib";
+import { PHARMACISTS, applyDispense, applyOrderAction, applyPickup, auditLine, canCall, collectedOrderIds, isRecheck, samePerson, stageRows } from "./_lib";
 
 let dir: string;
 beforeEach(() => {
@@ -97,5 +97,43 @@ describe("two-stage pharmacy against the live routes", () => {
     expect(stageRows([{ session: s }], Date.now()).collected).toHaveLength(1);
     const again = { reviewerId: P2, action: "call" as const };
     expect(await refused(await postPickup(req(again), ctx(id)), 409)).toBe(localMessage(() => applyPickup(s, again, "t")));
+
+    // S-02: the real audit trail of this visit reads as words with the actor and key fields, in every language.
+    const audit = getAudit(id);
+    expect(collectedOrderIds(audit).has(oid)).toBe(true);
+    for (const lang of ["en", "th", "it"] as const) {
+      for (const e of audit) {
+        const line = auditLine(e, lang, { orders: s.orders!.medications });
+        expect(line, `${e.type} ${lang}`).not.toMatch(/^(Event|Evento|เหตุการณ์)\s*:/);
+        expect(line, `${e.type} ${lang}`).not.toMatch(/\bundefined\b|\bnull\b|\[object/);
+      }
+    }
+    const en = audit.map((e) => auditLine(e, "en", { orders: s.orders!.medications }));
+    expect(en).toContain(`Second pharmacist did the final check and dispensed: paracetamol 500 mg, verified by ${P1}, 6 of 6 checks, by ${P2}`);
+    expect(en.some((l) => l.startsWith("Patient called to collect, counter 2"))).toBe(true);
+    expect(en.some((l) => l.startsWith("First pharmacist returned the order with a report: paracetamol 500 mg"))).toBe(true);
+  });
+
+  it("re-check: a verified order sent back by a new high alert shows as a re-check, and the mirror refuses dispense with the server's words", async () => {
+    const id = (await addTurn(createSession("en").id, "I have a headache since today. It is 4/10. No allergies.")).id;
+    let s = await medicationOrder(id, { orderedBy: doctor, drugText: "amoxicillin", dose: "500 mg", route: "oral", frequency: "three times daily", duration: "5 days" });
+    const oid = s.orders!.medications.at(-1)!.id;
+    const o0 = orderOf(getSession(id)!, oid);
+    await medicationAction(id, oid, "submit", { orderedBy: doctor, overrides: o0.checks.filter((c) => c.severity === "high").map((c) => ({ alertId: c.id, reason: "Reviewed synthetic case" })) });
+    s = await accepted(await postPharmacy(req({ reviewerId: P1, action: "verify" }), ctx(id, oid)), id);
+    expect(orderOf(s, oid).status).toBe("verified");
+
+    await addTurn(id, "Sorry, I forgot: I am allergic to penicillin, it gave me a rash.");
+    s = getSession(id)!;
+    const o = orderOf(s, oid);
+    expect(isRecheck(o)).toBe(true);
+    expect(o.pharmacistHistory?.[0]).toMatchObject({ action: "verify", by: P1 });
+    expect(stageRows([{ session: s }], Date.now()).verify.map((r) => r.o.id)).toEqual([oid]);
+    expect(stageRows([{ session: s }], Date.now()).dispense).toHaveLength(0);
+
+    const d = { reviewerId: P2, checklist: ALL };
+    expect(await refused(await postDispense(req(d), ctx(id, oid)), 409)).toBe(localMessage(() => applyDispense(s, oid, d, "t")));
+    const line = getAudit(id).filter((e) => e.type === "order_recheck").map((e) => auditLine(e, "en", { orders: s.orders!.medications })).at(-1);
+    expect(line).toBe(`Re-check needed: new high alert after verification, back to the first pharmacist: amoxicillin 500 mg, rule MR-ALLERGY-PEN, earlier verified by ${P1}, by the system`);
   });
 });

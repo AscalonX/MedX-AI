@@ -190,13 +190,16 @@ describe('demo reset endpoint', () => {
     const response = await reset(); expect(response.status).toBe(200);
     expect(response.headers.get('Cache-Control')).toBe('no-store');
     expect(response.headers.has('Access-Control-Allow-Origin')).toBe(false); expect(OPTIONS(new Request('http://localhost/api/demo/reset')).status).toBe(204);
-    const body = await response.json(); expect(body.created).toBe(11); expect(body.reused).toBe(0);
-    expect(getSessions()).toHaveLength(11); expect(getSession(stale.id)).toBeUndefined(); expect(getAudit(stale.id)).toEqual([]);
+    const body = await response.json(); expect(body.created).toBe(14); expect(body.reused).toBe(0);
+    expect(getSessions()).toHaveLength(14); expect(getSession(stale.id)).toBeUndefined(); expect(getAudit(stale.id)).toEqual([]);
     const stored = JSON.parse(readFileSync(path.join(dir, 'store.json'), 'utf8'));
-    expect(stored.sessions).toHaveLength(11); expect(JSON.stringify(stored)).not.toContain(stale.id);
-    const ids = getSessions().map(s => s.id);
-    const again = await reset(); expect(again.status).toBe(200); expect((await again.json()).created).toBe(11);
-    expect(getSessions().every(s => !ids.includes(s.id))).toBe(true); expect(getSessions()).toHaveLength(11);
+    expect(stored.sessions).toHaveLength(14); expect(JSON.stringify(stored)).not.toContain(stale.id);
+    const ids = getSessions().map(s => s.id).sort(); const firstAudit = getAudit().map(e => e.id);
+    const again = await reset(); expect(again.status).toBe(200); expect((await again.json()).created).toBe(14);
+    // w20 (M-04): seeded ids are deterministic, so links survive a reset; the records themselves are rebuilt from scratch.
+    expect(getSessions().map(s => s.id).sort()).toEqual(ids); expect(getSessions()).toHaveLength(14);
+    expect(getAudit().some(e => firstAudit.includes(e.id))).toBe(false);
+    expect(getAudit().filter(e => e.type === 'session_created')).toHaveLength(14);
   });
   it('refuses to wipe while a session write is in flight', async () => {
     vi.stubEnv('DEMO_SEED', '1'); const s = createSession('en');

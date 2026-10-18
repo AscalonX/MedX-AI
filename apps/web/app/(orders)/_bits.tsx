@@ -1,26 +1,24 @@
 "use client";
-import Link from "next/link";
 import { useEffect, type ReactNode } from "react";
 import type { StaffRole } from "@medx/shared";
 import { useFrame } from "../(clinician)/_frame";
 import type { IntakeSession, InvestigationOrder, Lang } from "@medx/shared";
 import { Badge, Icon, type IconName } from "@/components/ui";
+import { CaseHeader, type CaseTab } from "../_shared/CaseHeader";
 import { tr, type TKey } from "./_lib";
 
-/** Page header: patient code, back link, fixture badge. */
-export function Head({ title, session, lang, fixture, id, children }: { title: string; session: IntakeSession | null; lang: Lang; fixture: boolean; id: string; children?: ReactNode }) {
+/** Page header for vitals and orders: case tabs, title, patient code, language, stage chip, fixture badge. */
+export function Head({ title, session, lang, fixture, id, active, children }: { title: string; session: IntakeSession | null; lang: Lang; fixture: boolean; id: string; active: CaseTab; children?: ReactNode }) {
   return (
-    <header className="mb-5 flex flex-wrap items-center gap-3">
-      <div className="min-w-0 flex-1">
-        <Link href={`/review/${id}`} className="text-small font-semibold text-ocean hover:underline">{tr("backToCase", lang)}</Link>
-        <h1 className="text-title font-bold text-ink">
-          {title}
-          {session && <span className="ml-3 text-lead font-semibold text-ink-soft">{tr("patient", lang)} {session.code}</span>}
-        </h1>
-      </div>
-      {fixture && <span title={tr("fixtureWhy", lang)}><Badge tone="pencil" icon={<Icon name="triangle-alert" size={12} />}>{tr("fixture", lang)}</Badge></span>}
-      {children}
-    </header>
+    <CaseHeader
+      id={id}
+      active={active}
+      title={title}
+      lang={lang}
+      session={session}
+      badges={fixture ? <span title={tr("fixtureWhy", lang)}><Badge tone="pencil" icon={<Icon name="triangle-alert" size={12} />}>{tr("fixture", lang)}</Badge></span> : undefined}
+      actions={children}
+    />
   );
 }
 
@@ -36,6 +34,15 @@ export const statusBadge = (st: InvestigationOrder["status"], lang: "en" | "th" 
   const icon = ORDER_ICON[st];
   return <Badge tone={ORDER_TONE[st]} icon={icon ? <Icon name={icon} size={12} /> : undefined}>{tr(ORDER_KEY[st], lang)}</Badge>;
 };
+
+/**
+ * Status of an investigation order (C-05). No lab system exists in this prototype, so a sent order reads
+ * "Sent (no lab system in this prototype)" and never shows a pharmacy, verified or result state.
+ */
+export const investigationBadge = (st: InvestigationOrder["status"], lang: "en" | "th" | "it") =>
+  st === "draft" || st === "cancelled"
+    ? <Badge tone="outline">{tr(st === "draft" ? "stDraft" : "stCancelled", lang)}</Badge>
+    : <Badge tone="outline" icon={<Icon name="clipboard-list" size={12} />} className="h-auto! min-h-6 whitespace-normal! py-0.5 text-left"><span data-investigation-status="sent">{tr("invSent", lang)}</span></Badge>;
 
 
 /** Frame state; role and person are restored by ClinicianFrame (read first, write only on an explicit choice). `ready` is true once storage was read. */

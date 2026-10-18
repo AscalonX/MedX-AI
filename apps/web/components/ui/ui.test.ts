@@ -88,3 +88,27 @@ describe("mascot", () => {
     }
   });
 });
+
+// w20: a choice that navigates (landing language, role switches) must not change on arrow keys (WCAG 3.2.2).
+describe("segmented control keyboard", () => {
+  it("arrow / Home / End targets wrap around; other keys do nothing", async () => {
+    const { segmentKeyTarget } = await import("./SegmentedControl");
+    expect(segmentKeyTarget("ArrowRight", 0, 3)).toBe(1);
+    expect(segmentKeyTarget("ArrowDown", 2, 3)).toBe(0);
+    expect(segmentKeyTarget("ArrowLeft", 0, 3)).toBe(2);
+    expect(segmentKeyTarget("ArrowUp", 1, 3)).toBe(0);
+    expect(segmentKeyTarget("Home", 2, 3)).toBe(0);
+    expect(segmentKeyTarget("End", 0, 3)).toBe(2);
+    expect(segmentKeyTarget("Enter", 0, 3)).toBe(-1);
+    expect(segmentKeyTarget("ArrowRight", 0, 0)).toBe(-1);
+  });
+  it("manual activation selects only on click/Enter/Space, and every navigating switch uses it", () => {
+    const read = (p: string) => readFileSync(join(__dirname, "..", "..", p), "utf8");
+    const seg = read("components/ui/SegmentedControl.tsx");
+    expect(seg).toMatch(/if \(activation === "auto"\) onChange\(options\[next\]!\.value\);/);
+    expect(read("components/ui/MarketingNav.tsx")).toMatch(/<SegmentedControl[\s\S]*?ariaLabel=\{t\.language\}[\s\S]*?activation="manual"/);
+    expect(read("components/ui/AppShell.tsx")).toMatch(/layout="grid2"\s+activation="manual"/);
+    expect(read("app/(clinician)/_frame.tsx")).toMatch(/roleGroup\}\s+size="sm"\s+activation="manual"/);
+    expect(read("app/(ops)/components/OpsShell.tsx")).toMatch(/if \(!grid\) onChange\(options\[next\]\.value\);/);
+  });
+});

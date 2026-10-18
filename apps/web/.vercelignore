@@ -1,0 +1,11 @@
+# Used only when the Vercel CLI uploads from apps/web (e.g. `vercel build` + `vercel deploy --prebuilt` here).
+# A source deploy must upload the repo root (apps/web imports ../../packages/shared and ../../data/cases);
+# the repo-root .vercelignore applies then.
+node_modules
+.next
+.next-*
+.data
+*.tsbuildinfo
+.env
+.env.*
+!.env.example

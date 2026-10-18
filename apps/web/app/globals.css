@@ -1,10 +1,11 @@
 @import "tailwindcss";
 
 /*
- * MedX v2, "Calm clinical banking". Source of truth: packages/shared/src/tokens.ts.
- * Spec: docs/design/DIRECTION.md. Light theme. v1 utility names are kept and remapped
+ * MedX v3, "Calm clinical banking". Source of truth: packages/shared/src/tokens.ts.
+ * Spec: docs/design/DIRECTION.md (v3). Light theme. v1/v2 utility names are kept and remapped
  * (bg-sheet = white card, bg-desk = app background, text-ink, text-graphite, bg-signal = urgency red ...),
- * so screens built on v1 re-skin without edits.
+ * so every screen re-skins without edits. Marketing additions (section 12 of DIRECTION.md) reference tokens only:
+ * no hex value appears outside the colour block below (ui.test.ts checks this).
  */
 
 @theme {
@@ -14,6 +15,7 @@
   --color-sheet: #FFFFFF;
   --color-muted: #EDF1F5;
   --color-ink: #0F1E2E;
+  --color-ink-raised: #173A63;
   --color-ink-soft: #45566A;
   --color-graphite: #56657A;
   --color-rule: #E3E9EF;
@@ -33,67 +35,126 @@
   --color-signal-tint: #FDEAEC;
   --color-on-signal: #FFFFFF;
 
-  /* type: SCBXBeta2 everywhere (Latin, Italian, Thai). `font-serif` and `font-display` are aliases. */
-  --font-sans: var(--font-scbx), system-ui, "Noto Sans Thai", sans-serif;
-  --font-display: var(--font-scbx), system-ui, "Noto Sans Thai", sans-serif;
-  --font-serif: var(--font-scbx), system-ui, "Noto Sans Thai", sans-serif;
+  /*
+   * type (v3.1): Plus Jakarta Sans for Latin and Italian, Noto Sans Thai for Thai, both self-hosted by next/font/google
+   * (components/ui/fonts.ts, on <html> in layout.tsx). These are the only UI fonts on the web: SCBXBeta2 is no longer in
+   * the stack (its licence metadata reads "All rights reserved"). Thai falls back to the platform Thai faces while Noto
+   * Sans Thai loads (Leelawadee UI on Windows, Thonburi on Apple, Noto Sans Thai UI on Android).
+   * `font-serif` and `font-display` are aliases.
+   */
+  --font-sans: var(--font-jakarta, "Plus Jakarta Sans"), var(--font-noto-thai, "Noto Sans Thai"), "Leelawadee UI", Thonburi, "Noto Sans Thai UI", Tahoma, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-jakarta, "Plus Jakarta Sans"), var(--font-noto-thai, "Noto Sans Thai"), "Leelawadee UI", Thonburi, "Noto Sans Thai UI", Tahoma, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-jakarta, "Plus Jakarta Sans"), var(--font-noto-thai, "Noto Sans Thai"), "Leelawadee UI", Thonburi, "Noto Sans Thai UI", Tahoma, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* SCBXBeta2 ships 300/400/700 only: map Tailwind weights onto real cuts (no synthesis). */
+  /* Both web fonts are variable (Jakarta 200-800, Noto Sans Thai 100-900): every weight below is a real instance. */
   --font-weight-light: 300;
   --font-weight-normal: 400;
-  --font-weight-medium: 400;
-  --font-weight-semibold: 700;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  --font-weight-extrabold: 700;
-  --font-weight-black: 700;
+  --font-weight-extrabold: 800;
+  --font-weight-black: 800;
 
+  /*
+   * app scale (sizes unchanged; v3.1 tuning for Jakarta): text runs at 1.5 to 1.6 line height, headings tighten as they
+   * grow (-0.02em at 22px to -0.03em at 32px and up). Thai overrides line height and tracking (see :lang(th) below).
+   */
   --text-micro: 12px;
-  --text-micro--line-height: 1.4;
+  --text-micro--line-height: 1.45;
   --text-small: 13px;
-  --text-small--line-height: 1.45;
+  --text-small--line-height: 1.5;
   --text-body: 15px;
-  --text-body--line-height: 1.5;
+  --text-body--line-height: 1.6;
   --text-body-patient: 18px;
-  --text-body-patient--line-height: 1.5;
+  --text-body-patient--line-height: 1.6;
   --text-lead: 17px;
-  --text-lead--line-height: 1.45;
+  --text-lead--line-height: 1.5;
   --text-title: 22px;
   --text-title--line-height: 1.25;
-  --text-title--letter-spacing: -0.015em;
+  --text-title--letter-spacing: -0.02em;
   --text-question: 26px;
   --text-question--line-height: 1.2;
-  --text-question--letter-spacing: -0.02em;
+  --text-question--letter-spacing: -0.022em;
   --text-stat: 32px;
   --text-stat--line-height: 1.1;
-  --text-stat--letter-spacing: -0.025em;
+  --text-stat--letter-spacing: -0.03em;
   --text-display: 34px;
   --text-display--line-height: 1.1;
-  --text-display--letter-spacing: -0.025em;
+  --text-display--letter-spacing: -0.03em;
   --text-code: 52px;
   --text-code--line-height: 1;
   --text-code--letter-spacing: -0.03em;
+
+  /* marketing scale (tokens.marketingType): fluid from a 390px to a 1440px viewport. The root size is 15px, so px. */
+  --text-hero: clamp(40px, calc(18px + 4.2vw), 76px);
+  --text-hero--line-height: 1.04;
+  --text-hero--letter-spacing: -0.035em;
+  --text-hero--font-weight: 800;
+  --text-h2: clamp(30px, calc(16px + 2.3vw), 48px);
+  --text-h2--line-height: 1.08;
+  --text-h2--letter-spacing: -0.03em;
+  --text-h2--font-weight: 800;
+  --text-h3: clamp(20px, calc(16px + 0.55vw), 24px);
+  --text-h3--line-height: 1.25;
+  --text-h3--letter-spacing: -0.02em;
+  --text-lead-lg: clamp(17px, calc(14px + 0.45vw), 20px);
+  --text-lead-lg--line-height: 1.6;
+  --text-eyebrow: 13px;
+  --text-eyebrow--line-height: 1.2;
+  --text-eyebrow--letter-spacing: 0.01em;
 
   /* shape */
   --radius-control: 14px;
   --radius-card: 22px;
   --radius-hero: 28px;
+  --radius-bento: 28px;
+  --radius-media: 16px;
 
-  /* elevation: diffuse, navy-tinted, offset down */
-  --shadow-sheet: 0 1px 2px rgba(15, 45, 80, 0.06), 0 8px 24px -12px rgba(15, 45, 80, 0.16);
-  --shadow-sheet-lifted: 0 1px 2px rgba(15, 45, 80, 0.06), 0 18px 40px -16px rgba(15, 45, 80, 0.24);
+  /* space and width (marketing rhythm: py-section, max-w-page) */
+  --spacing-section: clamp(56px, 7vw, 104px);
+  --container-page: 1200px;
+
+  /* elevation: diffuse, navy-tinted, offset down, never black, never a glow */
+  --shadow-hairline: 0 1px 2px rgba(15, 45, 80, 0.06);
+  --shadow-sheet: 0 1px 2px rgba(15, 45, 80, 0.05), 0 10px 28px -14px rgba(15, 45, 80, 0.18);
+  --shadow-sheet-lifted: 0 1px 2px rgba(15, 45, 80, 0.06), 0 20px 44px -18px rgba(15, 45, 80, 0.26);
   --shadow-hero: 0 22px 40px -20px rgba(26, 95, 196, 0.55);
   --shadow-signal: 0 22px 40px -20px rgba(158, 16, 36, 0.55);
+  --shadow-float: 0 1px 2px rgba(15, 45, 80, 0.06), 0 24px 48px -20px rgba(15, 45, 80, 0.28);
+  --shadow-nav: 0 1px 0 rgba(15, 45, 80, 0.04), 0 12px 32px -20px rgba(15, 45, 80, 0.3);
+  --shadow-ink: 0 30px 60px -30px rgba(15, 30, 46, 0.6);
+  --shadow-button: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 20px -10px rgba(26, 95, 196, 0.75);
 
-  /* motion: mirrors tokens.easing / tokens.duration */
+  /* motion: mirrors tokens.easing / tokens.duration (DIRECTION.md 5) */
   --ease-pen: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-marker: cubic-bezier(0.55, 0.05, 0.25, 1);
   --ease-interrupt: cubic-bezier(0.7, 0, 0.2, 1);
+  /* v3.1: `glide` is the entrance and lift curve (fast start, long soft landing); `drift` is for slow ambient loops. */
+  --ease-glide: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-drift: cubic-bezier(0.45, 0, 0.55, 1);
   --duration-quick: 140ms;
   --duration-base: 240ms;
   --duration-morph: 260ms;
   --duration-sweep: 520ms;
   --duration-interrupt: 420ms;
+  --duration-enter: 360ms; /* page enter, list items, toasts, dialogs */
+  --duration-reveal: 450ms; /* scroll reveal, hero entrance, check draw */
+  /* Tailwind's duration-* utilities read --transition-duration-*: these make duration-quick / -base / -morph /
+     -enter / -reveal real classes (before v3.1 duration-quick and duration-base silently fell back to 150ms). */
+  --transition-duration-quick: 140ms;
+  --transition-duration-base: 240ms;
+  --transition-duration-morph: 260ms;
+  --transition-duration-enter: 360ms;
+  --transition-duration-reveal: 450ms;
 }
+
+/* Motion knobs that are not Tailwind theme values. */
+:root {
+  --mx-step: 70ms; /* stagger step between siblings */
+  --mx-rise: 14px; /* reveal and entrance travel */
+}
+
+/* ---------- Surfaces ---------- */
 
 @utility bg-primary-gradient {
   background-color: var(--color-primary-to);
@@ -102,14 +163,82 @@
     linear-gradient(135deg, var(--color-primary-from), var(--color-primary-to));
 }
 @utility bg-signal-gradient {
+  /* tokens.gradient.signal: red-flag interrupt and red-flag actions only */
   background-color: var(--color-signal);
   background-image: linear-gradient(135deg, #C81E2C, var(--color-signal-deep));
+}
+/* Dark marketing surface on the ink token (DIRECTION.md 12): the one dark bento card and the safety band. Never red. */
+@utility bg-ink-gradient {
+  background-color: var(--color-ink);
+  background-image:
+    radial-gradient(70% 60% at 100% 0%, color-mix(in srgb, var(--color-primary-to) 38%, transparent), transparent 70%),
+    radial-gradient(60% 55% at 0% 100%, color-mix(in srgb, var(--color-primary-from) 26%, transparent), transparent 70%),
+    linear-gradient(160deg, var(--color-ink), var(--color-ink-raised));
+}
+/* Mist page background with soft radial tints (marketing pages; the app body has a quieter version). */
+@utility bg-mist {
+  background-color: var(--color-desk);
+  background-image:
+    radial-gradient(55% 45% at 8% 0%, color-mix(in srgb, var(--color-primary-from) 14%, transparent), transparent 70%),
+    radial-gradient(50% 40% at 95% 6%, color-mix(in srgb, var(--color-primary-to) 13%, transparent), transparent 70%),
+    radial-gradient(70% 50% at 50% 100%, color-mix(in srgb, var(--color-ocean-tint) 80%, transparent), transparent 70%);
+}
+/* Soft light disc behind Fin and hero art. */
+@utility bg-halo {
+  background-image: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--color-sheet) 92%, transparent),
+    color-mix(in srgb, var(--color-ocean-tint) 70%, transparent) 62%,
+    transparent
+  );
+}
+/* Translucent surface for sticky navigation and floating cards. Opaque fallback below. */
+@utility glass {
+  background-color: color-mix(in srgb, var(--color-sheet) 72%, transparent);
+  -webkit-backdrop-filter: saturate(1.5) blur(18px);
+  backdrop-filter: saturate(1.5) blur(18px);
+}
+/* Second tone of a two-tone headline: teal to ocean text. Large text only (24px and up; 4.3:1 on desk). */
+@utility text-brand-gradient {
+  background-image: linear-gradient(100deg, var(--color-primary-from), var(--color-primary-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  padding-block: 0.08em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+/* The same on the ink surface or the brand gradient: light tints, white-level contrast (13:1 on ink). */
+@utility text-brand-gradient-light {
+  background-image: linear-gradient(100deg, var(--color-teal-tint), var(--color-highlighter));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  padding-block: 0.08em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 @utility rounded-card {
   border-radius: var(--radius-card);
 }
 @utility rounded-hero {
   border-radius: var(--radius-hero);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background-color: color-mix(in srgb, var(--color-sheet) 96%, transparent);
+  }
+}
+@media (forced-colors: active) {
+  .text-brand-gradient,
+  .text-brand-gradient-light {
+    background: none;
+    color: CanvasText;
+    -webkit-text-fill-color: currentColor;
+  }
 }
 
 /* v1 screens: a "sheet" with the sheet shadow is now a card. */
@@ -125,8 +254,15 @@
 :lang(th) :is(.italic, em, i, q) {
   font-style: normal;
 }
-:lang(th) :is(h1, h2, h3, .text-title, .text-question, .text-display, .text-stat) {
+:lang(th) :is(h1, h2, h3, .text-title, .text-question, .text-display, .text-stat, .text-h3) {
   line-height: 1.45;
+  letter-spacing: 0;
+}
+:lang(th) :is(.text-hero, .text-h2) {
+  line-height: 1.3;
+  letter-spacing: 0;
+}
+:lang(th) .text-eyebrow {
   letter-spacing: 0;
 }
 
@@ -136,18 +272,23 @@
     color: var(--color-ink);
     font-family: var(--font-sans);
     font-size: 15px;
-    line-height: 1.5;
+    line-height: 1.6;
+    font-kerning: normal;
+    /* The app is data first: tabular, lining figures everywhere, so counters, times and tables never shift.
+       Marketing pages switch prose back to proportional figures (.mx-marketing below). */
     font-variant-numeric: tabular-nums lining-nums;
     -webkit-text-size-adjust: 100%;
-    scrollbar-color: #C5D0DB transparent;
+    scrollbar-color: color-mix(in srgb, var(--color-rule-strong) 45%, transparent) transparent;
     scrollbar-width: thin;
+    /* anchors land below the sticky marketing nav */
+    scroll-padding-top: 88px;
   }
   body {
     min-height: 100dvh;
     background-color: var(--color-desk);
     background-image:
-      radial-gradient(900px 600px at 0% -10%, rgba(10, 128, 119, 0.10), transparent 60%),
-      radial-gradient(900px 640px at 100% 110%, rgba(26, 95, 196, 0.10), transparent 60%);
+      radial-gradient(900px 600px at 0% -10%, color-mix(in srgb, var(--color-primary-from) 10%, transparent), transparent 60%),
+      radial-gradient(900px 640px at 100% 110%, color-mix(in srgb, var(--color-primary-to) 10%, transparent), transparent 60%);
     background-attachment: fixed;
   }
   h1,
@@ -155,11 +296,29 @@
   h3 {
     font-family: var(--font-display);
     font-weight: 700;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+    text-rendering: optimizeLegibility;
+  }
+  :is(.text-hero, .text-h2, .text-h3, .text-title, .text-question, .text-stat, .text-display) {
     text-wrap: balance;
   }
-  p {
+  p,
+  li,
+  dd,
+  figcaption {
     text-wrap: pretty;
+  }
+  /* Data: tabular, lining figures with the OpenType features spelled out (Jakarta ships `tnum` and `lnum`). */
+  :is(table, time, kbd, code, samp, output, .tabular-nums, [data-numeric]) {
+    font-variant-numeric: tabular-nums lining-nums;
+    font-feature-settings: "tnum" 1, "lnum" 1;
+  }
+  /* Focus ring settles in: the outline grows out from the edge (offset 0 to 2px). Off under reduced motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    :where(a, button, input, select, textarea, summary, [tabindex], [role="radio"]) {
+      transition: outline-offset var(--duration-quick) var(--ease-glide);
+    }
   }
   ::selection {
     background: var(--color-highlighter);
@@ -180,6 +339,397 @@
   ::placeholder {
     color: var(--color-graphite);
     opacity: 1;
+  }
+}
+
+/* ---------- Marketing surfaces (DIRECTION.md section 12) ---------- */
+
+@layer components {
+  /* Big headlines read better with proportional digits ("60 seconds"); the app keeps tabular figures. */
+  .text-hero,
+  .text-h2,
+  .text-h3 {
+    font-variant-numeric: proportional-nums lining-nums;
+  }
+
+  /* Screenshot crop inside a bento card: real UI only, framed like a device window. */
+  .mx-media {
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    background: var(--color-paper);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-ink) 8%, transparent),
+      var(--shadow-sheet);
+  }
+  .mx-media-ink {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-sheet) 14%, transparent),
+      0 24px 48px -24px rgba(5, 15, 30, 0.55);
+  }
+}
+
+/* ==========================================================================================================
+ * Motion system v3.1 (DIRECTION.md 5). Rules every class below follows:
+ * - Only transform (incl. the `translate` / `scale` properties) and opacity animate. No layout shift: nothing that
+ *   moves changes its box, and reveals start from a transform, never from height.
+ * - Durations 150 to 450 ms on `glide`. The only longer motions are ambient loops (hero float, skeleton shimmer).
+ * - prefers-reduced-motion: reduce turns every one of them off (nothing animates, nothing is hidden).
+ * - Urgent content never moves: see "Urgent stays still" at the end of this file.
+ * ======================================================================================================== */
+
+/* Delay and stagger index stay on the element that sets them (a parent's delay never leaks into its children). */
+@property --mx-delay {
+  syntax: "<time>";
+  inherits: false;
+  initial-value: 0s;
+}
+@property --mx-i {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@keyframes mx-rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--mx-rise), 0);
+  }
+}
+@keyframes mx-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes mx-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes mx-page-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+}
+
+/* Stagger delay helpers: .mx-d1 to .mx-d8 = 1 to 8 steps of --mx-step (70ms). */
+.mx-d1 { --mx-delay: calc(var(--mx-step) * 1); }
+.mx-d2 { --mx-delay: calc(var(--mx-step) * 2); }
+.mx-d3 { --mx-delay: calc(var(--mx-step) * 3); }
+.mx-d4 { --mx-delay: calc(var(--mx-step) * 4); }
+.mx-d5 { --mx-delay: calc(var(--mx-step) * 5); }
+.mx-d6 { --mx-delay: calc(var(--mx-step) * 6); }
+.mx-d7 { --mx-delay: calc(var(--mx-step) * 7); }
+.mx-d8 { --mx-delay: calc(var(--mx-step) * 8); }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* (1) Enter on mount: fade + rise, CSS only (runs on first paint, needs no JS). Hero items, receipts, empty states. */
+  .mx-enter {
+    animation: mx-rise-in var(--duration-reveal) var(--ease-glide) var(--mx-delay) backwards;
+  }
+  .mx-enter-pop {
+    animation: mx-pop-in var(--duration-reveal) var(--ease-glide) var(--mx-delay) backwards;
+  }
+  /* The direct child enters (for a wrapper that already animates its own transform, e.g. a floating hero card).
+     The fade sits on the glass card itself, so its backdrop blur is right from the first frame. */
+  .mx-enter-child > * {
+    animation: mx-rise-in var(--duration-reveal) var(--ease-glide) var(--mx-child-delay, 0ms) backwards;
+  }
+  /* Two-tone hero headline: the line rises, then the accent fades in a beat later (opacity only: it is inline). */
+  .mx-hero-title.mx-enter .text-brand-gradient {
+    --mx-delay: inherit;
+    animation: mx-fade-in var(--duration-reveal) var(--ease-glide) calc(var(--mx-delay) + 180ms) backwards;
+  }
+
+  /* (2) List stagger on mount: direct children rise in one after another, 40ms apart (the first ten, then together).
+     Use on lists whose order is stable; a row that React moves in the DOM replays its entrance. */
+  /* Only where :has() works, so the urgent guard below can always stop it. */
+  @supports selector(:has(*)) {
+    .mx-stagger > * {
+      --mx-rise: 8px;
+      animation: mx-rise-in var(--duration-enter) var(--ease-glide) calc(var(--mx-i) * 40ms) backwards;
+    }
+  }
+  .mx-stagger > :nth-child(2) { --mx-i: 1; }
+  .mx-stagger > :nth-child(3) { --mx-i: 2; }
+  .mx-stagger > :nth-child(4) { --mx-i: 3; }
+  .mx-stagger > :nth-child(5) { --mx-i: 4; }
+  .mx-stagger > :nth-child(6) { --mx-i: 5; }
+  .mx-stagger > :nth-child(7) { --mx-i: 6; }
+  .mx-stagger > :nth-child(8) { --mx-i: 7; }
+  .mx-stagger > :nth-child(9) { --mx-i: 8; }
+  .mx-stagger > :nth-child(n + 10) { --mx-i: 9; }
+
+  /* (3) Page enter: the app's main column fades up 8px on load (CSS) and on client navigations (MotionRuntime, Web
+     Animations). Marketing pages opt out with data-page-motion="off" (they have their own hero entrance). */
+  @supports selector(:has(*)) {
+    main#main-content:not([data-page-motion="off"]) {
+      animation: mx-page-enter var(--duration-enter) var(--ease-glide) backwards;
+    }
+  }
+
+  /* (4) Reveal on scroll (IntersectionObserver in MotionRuntime). Content is visible by default: only an element the
+     runtime has marked data-reveal="wait" (below the fold when the page loaded, JS running, motion allowed) is
+     hidden, and it fades up when it enters the viewport. Elements entering in the same frame stagger by --mx-batch
+     steps (set by the runtime); children of .mx-reveal-stagger stagger by their position (--mx-i). */
+  :root[data-motion="on"] .mx-reveal[data-reveal="wait"]:not(.mx-reveal-stagger),
+  :root[data-motion="on"] .mx-reveal-stagger[data-reveal="wait"] > * {
+    opacity: 0;
+    transform: translate3d(0, var(--mx-rise), 0);
+  }
+  :root[data-motion="on"] .mx-reveal[data-reveal="in"]:not(.mx-reveal-stagger),
+  :root[data-motion="on"] .mx-reveal-stagger[data-reveal="in"] > * {
+    --mx-at: calc(var(--mx-delay) + (var(--mx-i) + var(--mx-batch, 0)) * var(--mx-step));
+    transition:
+      opacity var(--duration-reveal) var(--ease-glide) var(--mx-at),
+      transform var(--duration-reveal) var(--ease-glide) var(--mx-at),
+      translate var(--duration-base) var(--ease-glide);
+  }
+  .mx-reveal-stagger > * {
+    --mx-delay: inherit;
+  }
+  /* A line inside a revealed block that draws left to right just after the block lands (StepCard progress line). */
+  :root[data-motion="on"] .mx-reveal[data-reveal="wait"] .mx-draw {
+    transform: scaleX(0);
+  }
+  :root[data-motion="on"] .mx-reveal[data-reveal="in"] .mx-draw {
+    transition: transform var(--duration-reveal) var(--ease-glide) calc(var(--mx-at, 0ms) + 240ms);
+  }
+  .mx-reveal-stagger > :nth-child(2) { --mx-i: 1; }
+  .mx-reveal-stagger > :nth-child(3) { --mx-i: 2; }
+  .mx-reveal-stagger > :nth-child(4) { --mx-i: 3; }
+  .mx-reveal-stagger > :nth-child(5) { --mx-i: 4; }
+  .mx-reveal-stagger > :nth-child(n + 6) { --mx-i: 5; }
+}
+@media print {
+  .mx-reveal,
+  .mx-reveal-stagger > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+@layer components {
+  /* (5) Hover lift for cards: rises 3px (the `translate` property, so it composes with reveals and floats) and fades
+     in the lifted shadow on a pseudo-element (opacity, not box-shadow). Pointer devices only. In the components
+     layer so utilities still win; a utility transition list on the same element must include `translate`. */
+  .mx-lift {
+    position: relative;
+    isolation: isolate;
+    transition: translate var(--duration-base) var(--ease-glide);
+  }
+  .mx-lift::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    box-shadow: var(--shadow-sheet-lifted);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-base) var(--ease-glide);
+  }
+  .mx-lift-ink::before {
+    box-shadow: 0 34px 64px -28px color-mix(in srgb, var(--color-ink) 72%, transparent);
+  }
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .mx-lift:hover,
+    .mx-lift:is(:focus-visible, :has(:focus-visible)) {
+      translate: 0 -3px;
+    }
+    .mx-lift:hover::before,
+    .mx-lift:is(:focus-visible, :has(:focus-visible))::before {
+      opacity: 1;
+    }
+    /* A screenshot inside a lifted card zooms a little (`scale` composes with BentoMedia's crop zoom). */
+    .mx-zoom {
+      transition: scale var(--duration-reveal) var(--ease-glide);
+    }
+    .mx-lift:hover .mx-zoom {
+      scale: 1.035;
+    }
+  }
+  @media (hover: none), (prefers-reduced-motion: reduce) {
+    .mx-lift::before {
+      display: none;
+    }
+  }
+
+  /* (6) Press: buttons dip to 98% while held. Under reduced motion they neither dip nor lift on hover. */
+  @media (prefers-reduced-motion: no-preference) {
+    .mx-press:active:not(:disabled) {
+      scale: 0.98;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mx-press {
+      translate: none !important;
+      scale: none !important;
+    }
+  }
+}
+
+/* (7) Floating patient-side cards around the hero art: each bobs on its own period so they never move in step.
+   The wrapper floats (transform); pointer parallax rides on the `translate` property of the same wrapper. */
+@keyframes mx-float {
+  50% {
+    transform: translate3d(0, -8px, 0);
+  }
+}
+@keyframes mx-fin-float {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(-1.2deg);
+  }
+  100% {
+    transform: translate3d(0, -12px, 0) rotate(1.2deg);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mx-float {
+    animation: mx-float 6.4s var(--ease-drift) infinite;
+    will-change: transform;
+  }
+  .mx-float-delay-1 {
+    animation-duration: 7.2s;
+    animation-delay: -2.4s;
+  }
+  .mx-float-delay-2 {
+    animation-duration: 8s;
+    animation-delay: -5s;
+  }
+  /* 3D Fin: a slow float with a slight tilt. */
+  .mx-fin-float {
+    animation: mx-fin-float 4.2s var(--ease-drift) infinite alternate;
+    will-change: transform;
+  }
+  /* Pointer parallax (PointerParallax sets --mx-px / --mx-py in -1..1 on desktop only). */
+  .mx-depth {
+    translate: calc(var(--mx-px, 0) * var(--mx-depth, 8) * 1px) calc(var(--mx-py, 0) * var(--mx-depth, 8) * 1px);
+    transition: translate var(--duration-reveal) var(--ease-glide);
+  }
+}
+
+/* (8) Sticky marketing nav: a translucent pill that, once the page scrolls, shrinks a little and fades in a denser,
+   blurrier glass layer with the nav shadow. The header keeps its height (no layout shift). */
+.mx-nav-pill {
+  position: relative;
+  isolation: isolate;
+  transform-origin: 50% 0;
+  transition: transform var(--duration-base) var(--ease-glide);
+}
+.mx-nav-pill::before,
+.mx-nav-pill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.mx-nav-pill::before {
+  background-color: color-mix(in srgb, var(--color-sheet) 62%, transparent);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  backdrop-filter: saturate(1.4) blur(14px);
+  box-shadow: var(--shadow-hairline);
+}
+.mx-nav-pill::after {
+  background-color: color-mix(in srgb, var(--color-sheet) 84%, transparent);
+  -webkit-backdrop-filter: saturate(1.6) blur(24px);
+  backdrop-filter: saturate(1.6) blur(24px);
+  box-shadow: var(--shadow-nav);
+  opacity: 0;
+  transition: opacity var(--duration-base) var(--ease-glide);
+}
+.mx-nav-pill[data-scrolled="true"]::after {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mx-nav-pill[data-scrolled="true"] {
+    transform: translate3d(0, -4px, 0) scale(0.985);
+  }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .mx-nav-pill::before,
+  .mx-nav-pill::after {
+    background-color: color-mix(in srgb, var(--color-sheet) 96%, transparent);
+  }
+}
+
+/* (9) Video frame: a soft teal-to-ocean halo behind the frame (marketing only; the one glow in the system). */
+.mx-glow {
+  position: relative;
+  isolation: isolate;
+}
+.mx-glow::before {
+  content: "";
+  position: absolute;
+  inset: 6% 4% -4%;
+  z-index: -1;
+  border-radius: 48px;
+  background:
+    radial-gradient(60% 70% at 25% 40%, color-mix(in srgb, var(--color-primary-from) 34%, transparent), transparent 70%),
+    radial-gradient(60% 70% at 78% 60%, color-mix(in srgb, var(--color-primary-to) 30%, transparent), transparent 70%);
+  filter: blur(44px);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+/* (10) Toast: slides up 12px and fades in. Never for urgent content (urgency is the red-flag card, never a toast). */
+@keyframes mx-toast-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.98);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mx-toast {
+    animation: mx-toast-in var(--duration-enter) var(--ease-glide) backwards;
+  }
+}
+
+/* (11) Success check: the disc pops in, then the tick draws itself (receipts, approvals, sign-offs). */
+@keyframes mx-check-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mx-check-disc {
+    animation: mx-pop-in var(--duration-enter) var(--ease-glide) backwards;
+  }
+  .mx-check-path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    animation: mx-check-draw var(--duration-reveal) var(--ease-glide) 120ms backwards;
+  }
+}
+
+/* (12) Dialog (video walkthrough): the panel rises in over a fading scrim. */
+@media (prefers-reduced-motion: no-preference) {
+  dialog.mx-dialog[open] {
+    animation: mx-pop-in var(--duration-enter) var(--ease-glide) backwards;
+  }
+  dialog.mx-dialog[open]::backdrop {
+    animation: mx-fade-in var(--duration-enter) var(--ease-glide) backwards;
+  }
+}
+dialog.mx-dialog::backdrop {
+  background: color-mix(in srgb, var(--color-ink) 72%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* Marketing pages (the landing, /demo): proportional figures in prose, smooth in-page anchor scroll. */
+.mx-marketing {
+  font-variant-numeric: proportional-nums lining-nums;
+}
+.mx-marketing :is(table, time, code, kbd, .tabular-nums, [data-numeric]) {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.mx-marketing) {
+    scroll-behavior: smooth;
   }
 }
 
@@ -232,24 +782,28 @@
   vertical-align: middle;
 }
 
-/* (e) Language morph: new text fades and settles. */
+/* (e) Language morph: new text fades and settles 2px (v3.1: opacity and transform only, the blur is gone). */
 @keyframes mx-ink-in {
   from {
     opacity: 0;
-    filter: blur(3px);
-    transform: translateY(2px);
+    transform: translate3d(0, 2px, 0);
   }
 }
 .mx-morph {
   display: inline-block;
-  animation: mx-ink-in var(--duration-morph) var(--ease-pen) both;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mx-morph {
+    animation: mx-ink-in var(--duration-morph) var(--ease-pen) backwards;
+  }
 }
 
-/* (c) Red-flag band grows its grid row, which pushes the content below it down. */
+/* (c) Red-flag band (v3.1): it is in place at the top of its container from the first frame and pushes the content
+   below it down. No grow, no fade, no delay (owner rule, wave 20: urgent content appears instantly and stays still).
+   The grid wrapper is kept so existing selectors (.mx-interrupt, data-open) keep working. */
 .mx-interrupt {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows var(--duration-interrupt) var(--ease-interrupt);
 }
 .mx-interrupt[data-open="true"] {
   grid-template-rows: 1fr;
@@ -267,16 +821,40 @@
   color: var(--color-graphite);
 }
 
-/* Skeleton shimmer for loading cards (static under reduced motion). */
+/* Skeleton (v3.1): a muted block with a soft light band that sweeps across it. The band is a pseudo-element that
+   moves by transform (no background-position repaint). Static muted block under reduced motion. Kept unlayered and
+   with the same radius as before, so existing `!h-12` / `!rounded-full` overrides behave as they did. */
 @keyframes mx-shimmer {
+  from {
+    transform: translate3d(-100%, 0, 0);
+  }
   to {
-    background-position: -200% 0;
+    transform: translate3d(100%, 0, 0);
   }
 }
 .mx-skeleton {
+  position: relative;
+  overflow: hidden;
   border-radius: 12px;
-  background: linear-gradient(90deg, var(--color-muted) 30%, #F6F9FB 50%, var(--color-muted) 70%) 0 0 / 200% 100%;
-  animation: mx-shimmer 1.4s linear infinite;
+  background-color: var(--color-muted);
+}
+.mx-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-sheet) 70%, transparent) 50%,
+    transparent
+  );
+  transform: translate3d(-100%, 0, 0);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mx-skeleton::after {
+    animation: mx-shimmer 1.5s var(--ease-drift) infinite;
+  }
 }
 
 /* Fin (mascot) idle motion (DIRECTION.md 11). Subtle; removed under reduced motion by the rule below. */
@@ -326,15 +904,74 @@
 .mascot-animate .mascot-signal {
   animation: mascot-pulse 1.8s ease-in-out infinite;
 }
+/* 3D Fin (96px and up): the same gentle bob on the whole image. */
+.mascot-3d {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.mascot-3d-animate {
+  animation: mascot-bob 3.2s ease-in-out infinite;
+}
+
+/* ---------- Urgent stays still (owner rule, wave 20; DIRECTION.md 5) ----------
+ * Red-flag interrupts, emergency alerts and high alerts appear instantly and never move: no entrance, reveal, stagger,
+ * lift, colour fade or page fade touches them. Urgent = role="alert", data-urgent, the red-flag band (.mx-interrupt)
+ * or a signal colour class. (1) Urgent elements and everything inside them are static. (2) A container that holds
+ * urgent content drops its own motion: if urgent content arrives mid-entrance, the container snaps to its final
+ * state in that frame. Keep the list in step with URGENT_SELECTOR in components/ui/motion.ts (motion.test.ts checks).
+ */
+:is([role="alert"], [data-urgent], .mx-interrupt, .bg-signal, .bg-signal-gradient, .bg-signal-tint, .text-signal),
+:is([role="alert"], [data-urgent], .mx-interrupt, .bg-signal, .bg-signal-gradient, .bg-signal-tint, .text-signal) * {
+  animation: none !important;
+  transition: none !important;
+}
+:is(.mx-enter, .mx-enter-pop, .mx-reveal, .mx-reveal-stagger > *, .mx-stagger > *, .mx-lift, .mx-toast):has(
+    :is([role="alert"], [data-urgent], .mx-interrupt, .bg-signal, .bg-signal-gradient, .bg-signal-tint, .text-signal)
+  ) {
+  animation: none !important;
+  transition: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  translate: none !important;
+}
+/* The page itself only drops its fade: no transform/translate here. The minifier folds those two into
+ * transform:translate(0), which would make <main> a containing block and push fixed layers (the sign-in sheet) off screen. */
+main#main-content:has(
+    :is([role="alert"], [data-urgent], .mx-interrupt, .bg-signal, .bg-signal-gradient, .bg-signal-tint, .text-signal)
+  ) {
+  animation: none !important;
+  transition: none !important;
+  opacity: 1 !important;
+}
+.mx-lift:has(:is([role="alert"], [data-urgent], .mx-interrupt, .bg-signal, .bg-signal-gradient, .bg-signal-tint, .text-signal))::before {
+  display: none;
+}
+/* The page fade also steps aside for fixed layers inside the page (a transformed ancestor would move them). */
+main#main-content:has(.fixed) {
+  animation: none !important;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
     transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
+}
+/* The same with ?motion=off (MotionRuntime sets data-motion="off"), for screenshot and video capture. */
+:root[data-motion="off"],
+:root[data-motion="off"] *,
+:root[data-motion="off"] *::before,
+:root[data-motion="off"] *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  transition-delay: 0ms !important;
+  scroll-behavior: auto !important;
 }

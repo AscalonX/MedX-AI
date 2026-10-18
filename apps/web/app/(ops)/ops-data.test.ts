@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { ExtractedField, IntakeSession, MedAlert, OpsMetrics, RedFlagHit, SessionStatus } from "@medx/shared";
-import { healthHardware, highAlertsOpen, isEmptySession, isEmergency, isHealth, isMetrics, isModelFlag, isSessions, orderedQueue, pendingEscalations, pharmacyStages, readyForPickup, recordedCalls, verifiedComplaint, waitingSeconds } from "./ops-data";
+import type { ExtractedField, IntakeSession, MedAlert, MedicationOrder, OpsMetrics, RedFlagHit, SessionStatus } from "@medx/shared";
+import { healthHardware, highAlertsOpen, isEmptySession, isEmergency, isHealth, isMetrics, isModelFlag, isSessions, orderedQueue, pendingEscalations, pharmacyStages, readyForPickup, recordedCalls, triageView, verifiedComplaint, waitingSeconds } from "./ops-data";
 
 const localized = { en: "headache", it: "mal di testa", th: "ปวดหัว" };
 const field: ExtractedField = { key: "chief_complaint", value: localized, valueOriginal: "headache", status: "supported", confidence: 0.9, required: true, evidence: [{ turnId: "turn-1", quote: "headache", start: 0, end: 8 }] };
@@ -94,6 +94,38 @@ describe("ops data integrity", () => {
     const alert: MedAlert = { id: "high", ruleId: "MR-ALLERGY-01", kind: "allergy_conflict", severity: "high", message: localized, action: localized, medIds: [], allergyIds: [], evidence: [], source: "synthetic" };
     s.summary!.medAlerts = [alert, { ...alert, id: "moderate", severity: "moderate" }, { ...alert, id: "reviewed", review: { action: "acknowledge", reviewerId: "pharmacist", at: s.updatedAt } }];
     expect(highAlertsOpen([s])).toBe(1);
+  });
+  it("also counts high prescribing checks on orders waiting for pharmacist 1, and nothing else", () => {
+    const s = session();
+    const alert: MedAlert = { id: "high", ruleId: "MR-ALLERGY-01", kind: "allergy_conflict", severity: "high", message: localized, action: localized, medIds: [], allergyIds: [], evidence: [], source: "synthetic" };
+    s.summary!.medAlerts = [alert];
+    const order = (id: string, status: MedicationOrder["status"], checks: MedAlert[], extra: Partial<MedicationOrder> = {}): MedicationOrder =>
+      ({ id, drugText: "amoxicillin", generic: "amoxicillin", drugClass: "penicillin", dose: "500 mg", route: "oral", frequency: "every 8 hours", orderedBy: "Dr. Test", at: s.createdAt, status, checks, overrides: [], ...extra });
+    s.orders = { investigations: [], medications: [
+      // waiting for pharmacist 1: the high check counts even with a prescriber override, the moderate one does not
+      order("o1", "submitted", [{ ...alert, id: "c1" }, { ...alert, id: "c2", severity: "moderate" }], { overrides: [{ alertId: "c1", reason: "Reviewed, synthetic", by: "Dr. Test", at: s.createdAt }] }),
+      // re-check: back with pharmacist 1
+      order("o2", "submitted", [{ ...alert, id: "c3" }], { recheck: { reason: "new_high_alert", alertIds: ["c3"], at: s.createdAt } }),
+      // a pharmacist already acted, or the order never reached the pharmacy
+      order("o3", "verified", [{ ...alert, id: "c4" }]),
+      order("o4", "returned", [{ ...alert, id: "c5" }]),
+      order("o5", "dispensed", [{ ...alert, id: "c6" }]),
+      order("o6", "draft", [{ ...alert, id: "c7" }]),
+      order("o7", "cancelled", [{ ...alert, id: "c8" }]),
+    ] };
+    expect(highAlertsOpen([s])).toBe(3); // 1 reconciliation alert + c1 + c3
+    expect(highAlertsOpen([{ ...s, summary: null }])).toBe(2);
+    // malformed orders never throw and never count
+    expect(highAlertsOpen([{ ...s, summary: null, orders: { investigations: [], medications: [null, { status: "submitted" }, { status: "submitted", checks: [null, { severity: "high" }] }] } } as unknown as IntakeSession])).toBe(1);
+  });
+  it("shows confirmed triage as the clinician's level and a suggestion only as a suggestion", () => {
+    const s = session();
+    expect(triageView(s)).toEqual({ kind: "none" });
+    s.triage = { suggestedLevel: 3, reasons: [], vitalAlerts: [] };
+    expect(triageView(s)).toEqual({ kind: "suggested", level: 3 });
+    s.triage.confirmed = { level: 2, by: "Nurse Test", at: s.createdAt };
+    expect(triageView(s)).toEqual({ kind: "confirmed", level: 2, by: "Nurse Test" });
+    expect(triageView({ ...s, triage: { suggestedLevel: 9, reasons: [], vitalAlerts: [] } } as unknown as IntakeSession)).toEqual({ kind: "none" });
   });
   it("uses health hardware verbatim and never invents an AMD claim for mock", () => {
     expect(isHealth({ provider: "mock", model: "deterministic-mock" })).toBe(true);

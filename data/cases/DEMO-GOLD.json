@@ -1,0 +1,166 @@
+{
+  "id": "DEMO-GOLD",
+  "lang": "en",
+  "tags": [
+    "demo",
+    "golden",
+    "allergy_conflict",
+    "consult_consideration"
+  ],
+  "synthetic": true,
+  "turns": [
+    {
+      "role": "patient",
+      "text": "I've had a sore throat for two days and I can see white spots on my tonsils. It hurts to swallow. It's about 7 out of 10. I'm a 24 year old man. I'm allergic to penicillin, it gave me a rash. I don't take any medication."
+    }
+  ],
+  "gold": {
+    "fields": {
+      "chief_complaint": {
+        "value_en": "Sore throat",
+        "evidence": [
+          "sore throat"
+        ]
+      },
+      "onset": {
+        "value_en": "2 days ago",
+        "evidence": [
+          "for two days"
+        ]
+      },
+      "duration": {
+        "value_en": "2 days",
+        "evidence": [
+          "two days"
+        ]
+      },
+      "severity": {
+        "value_en": "7/10",
+        "evidence": [
+          "7 out of 10"
+        ]
+      },
+      "location": {
+        "value_en": "Throat, tonsils",
+        "evidence": [
+          "white spots on my tonsils"
+        ]
+      },
+      "associated_symptoms": {
+        "value_en": "Painful swallowing, white spots on the tonsils",
+        "evidence": [
+          "It hurts to swallow",
+          "white spots on my tonsils"
+        ]
+      },
+      "medications": {
+        "value_en": "None",
+        "evidence": [
+          "I don't take any medication"
+        ]
+      },
+      "allergies": {
+        "value_en": "Penicillin (rash)",
+        "evidence": [
+          "allergic to penicillin, it gave me a rash"
+        ]
+      },
+      "medical_history": null,
+      "pregnancy_status": null,
+      "age": {
+        "value_en": "24",
+        "evidence": [
+          "24 year old"
+        ]
+      },
+      "sex": {
+        "value_en": "Male",
+        "evidence": [
+          "man"
+        ]
+      }
+    },
+    "redFlags": [],
+    "shouldAbstain": false,
+    "nextQuestionField": null,
+    "pii": [],
+    "injectionPresent": false,
+    "allergies": [
+      {
+        "allergenOriginal": "penicillin",
+        "allergenClass": "penicillin",
+        "reaction": "rash",
+        "evidence": [
+          "penicillin",
+          "rash"
+        ]
+      }
+    ],
+    "consultConsiderations": [
+      "CR-THROAT-05-C1"
+    ],
+    "medAlerts": [
+      {
+        "kind": "allergy_conflict",
+        "ruleId": "MR-ALLERGY-PEN",
+        "drugs": [
+          "amoxicillin"
+        ],
+        "allergenClass": "penicillin"
+      }
+    ]
+  },
+  "demo": {
+    "purpose": "Synthetic golden journey for the live demo: an uncomplicated sore throat (no one-sided pain, trismus or drooling, so no quinsy consideration) with a penicillin rash allergy (seed and POST /api/demo/start). Every staff step below is a synthetic action by a named demo staff member, run through the real engine: red-flag rules first, deterministic checks, two-person dispense. Nothing here is model output or a clinical recommendation.",
+    "nurse": {
+      "by": "nurse-rossi",
+      "vitals": {
+        "heartRate": 104,
+        "systolicBP": 128,
+        "diastolicBP": 78,
+        "respRate": 18,
+        "tempC": 38.4,
+        "spo2": 98,
+        "onOxygen": false,
+        "consciousness": "alert",
+        "painScore": 7
+      },
+      "consultLine": "Can you swallow your saliva? Any drooling, voice change or noisy breathing?"
+    },
+    "doctor": {
+      "by": "doctor-bianchi",
+      "keepConsiderations": [
+        "consider:CR-THROAT-05:CR-THROAT-05-C1"
+      ],
+      "investigations": [
+        "throat_swab"
+      ],
+      "order": {
+        "drugText": "amoxicillin",
+        "dose": "500 mg",
+        "route": "oral",
+        "frequency": "three times daily",
+        "duration": "5 days"
+      },
+      "overrideReason": "Synthetic demo case: rash history is old and unclear, asking pharmacy to review the allergy alert",
+      "reorder": {
+        "drugText": "clarithromycin",
+        "dose": "500 mg",
+        "route": "oral",
+        "frequency": "twice daily",
+        "duration": "5 days"
+      }
+    },
+    "pharmacist1": {
+      "by": "pharm-conti",
+      "returnNote": "Penicillin allergy with rash on record. Returned with an option for prescriber review.",
+      "suggestedGenerics": [
+        "clarithromycin"
+      ]
+    },
+    "pharmacist2": {
+      "by": "pharm-wong",
+      "counter": "2"
+    }
+  }
+}

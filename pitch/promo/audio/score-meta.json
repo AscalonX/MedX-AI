@@ -1,0 +1,441 @@
+{
+ "file": "audio/score.wav",
+ "generator": "audio/make_score.py (numpy 2.1.3, deterministic)",
+ "sampleRate": 48000,
+ "channels": 2,
+ "bitDepth": 16,
+ "frames": 2880000,
+ "durationSec": 60.0,
+ "bpm": 120,
+ "key": "D major, opening in its relative minor B minor (0-8 s)",
+ "targetLufs": -14.0,
+ "ceilingDbtp": -2.4,
+ "measured": {
+  "integratedLufs": -14.01,
+  "truePeakDbtp": -2.4,
+  "samplePeakDbfs": -2.4,
+  "shortTermMaxLufs": -11.75,
+  "preMasterLufs": -11.83,
+  "masterGainDb": -0.68,
+  "limiterMaxGrDb": 7.41,
+  "limiterMaxGrAtSec": 50.017,
+  "limiterTimeOver1dbGrPct": 12.2,
+  "tail59_7to59_8Dbfs": -96.4,
+  "tailRmsDbfs": {
+   "54.0-55.0": -11.0,
+   "55.0-56.0": -14.5,
+   "56.0-57.0": -16.2,
+   "57.0-58.0": -24.3,
+   "58.0-59.0": -35.3,
+   "59.0-59.5": -89.3,
+   "59.5-59.8": -96.3
+  },
+  "dcOffsetDbfs": [
+   -76.1,
+   -76.2
+  ],
+  "digitalSilence": {
+   "7.750-8.000": true,
+   "49.875-50.000": true,
+   "59.800-60.000": true
+  },
+  "groove12to27_5Lufs": -13.55,
+  "alert28_6to29_2Lufs": -16.89
+ },
+ "sections": [
+  {
+   "section": "intro",
+   "from": 0,
+   "to": 8,
+   "lufs": -17.8
+  },
+  {
+   "section": "reveal",
+   "from": 8,
+   "to": 12,
+   "lufs": -13.23
+  },
+  {
+   "section": "groove",
+   "from": 12,
+   "to": 28,
+   "lufs": -13.62
+  },
+  {
+   "section": "dip",
+   "from": 28,
+   "to": 32,
+   "lufs": -18.64
+  },
+  {
+   "section": "return",
+   "from": 32,
+   "to": 36,
+   "lufs": -13.49
+  },
+  {
+   "section": "chorus",
+   "from": 36,
+   "to": 39,
+   "lufs": -12.04
+  },
+  {
+   "section": "trace",
+   "from": 39,
+   "to": 42,
+   "lufs": -14.33
+  },
+  {
+   "section": "break",
+   "from": 42,
+   "to": 46,
+   "lufs": -14.78
+  },
+  {
+   "section": "callback",
+   "from": 46,
+   "to": 50,
+   "lufs": -13.25
+  },
+  {
+   "section": "final",
+   "from": 50,
+   "to": 54,
+   "lufs": -12.56
+  },
+  {
+   "section": "outro",
+   "from": 54,
+   "to": 60.0,
+   "lufs": -14.98
+  }
+ ],
+ "events": [
+  {
+   "t": 0.0,
+   "kind": "sfx:roomtone",
+   "detail": "pink noise LP 800 Hz, -38 dBFS RMS, gone by 3.0"
+  },
+  {
+   "t": 0.5,
+   "kind": "music",
+   "detail": "motif B3-D4-F#4, E4 hangs at 2.0"
+  },
+  {
+   "t": 2.2,
+   "kind": "sfx:glyphScatter",
+   "detail": "granular dissolve drifting right, HP sweep, reverse shimmer"
+  },
+  {
+   "t": 3.0,
+   "kind": "music",
+   "detail": "faint sub swell"
+  },
+  {
+   "t": 4.0,
+   "kind": "sfx:snap",
+   "detail": "filtered click + 70 Hz thump"
+  },
+  {
+   "t": 4.5,
+   "kind": "sfx:subPulse",
+   "detail": "B1 sub pulse"
+  },
+  {
+   "t": 4.8,
+   "kind": "sfx:tickRoll",
+   "detail": "16 ticks 1800-2600 Hz to 5.60"
+  },
+  {
+   "t": 6.0,
+   "kind": "sfx:riser",
+   "detail": "riser to 7.750"
+  },
+  {
+   "t": 8.0,
+   "kind": "sfx:impact",
+   "detail": "sub drop 60->40 Hz + noise burst"
+  },
+  {
+   "t": 8.3,
+   "kind": "sfx:bubblePop",
+   "detail": "sine 300->600 Hz, 80 ms"
+  },
+  {
+   "t": 8.75,
+   "kind": "sfx:arcPing",
+   "detail": "soft arc ping"
+  },
+  {
+   "t": 9.0,
+   "kind": "sfx:arcPing",
+   "detail": "soft arc ping"
+  },
+  {
+   "t": 9.5,
+   "kind": "sfx:logoBell",
+   "detail": "FM bell 880 Hz + air whoosh"
+  },
+  {
+   "t": 10.9,
+   "kind": "sfx:shimmer",
+   "detail": "high cluster swell"
+  },
+  {
+   "t": 11.6,
+   "kind": "sfx:whoosh",
+   "detail": "band-passed noise 300->6000 Hz, 0.50 s"
+  },
+  {
+   "t": 12.0,
+   "kind": "music",
+   "detail": "groove starts: kick 1+3, clap 2+4, hats, arp, sub"
+  },
+  {
+   "t": 12.0,
+   "kind": "music",
+   "detail": "crash"
+  },
+  {
+   "t": 12.0,
+   "kind": "sfx:nodeBlip",
+   "detail": "node blips at 12.00, 12.12, 12.25, 12.38, 12.50, 12.62"
+  },
+  {
+   "t": 14.5,
+   "kind": "sfx:langChime",
+   "detail": "glass pluck E6 (left phone)"
+  },
+  {
+   "t": 15.0,
+   "kind": "sfx:langChime",
+   "detail": "FM bell A5 (right phone) + read-aloud ping"
+  },
+  {
+   "t": 15.5,
+   "kind": "sfx:langChime",
+   "detail": "mallet C#6 (centre phone)"
+  },
+  {
+   "t": 16.0,
+   "kind": "sfx:highlightSwish",
+   "detail": "highlighter swish L->R"
+  },
+  {
+   "t": 17.0,
+   "kind": "sfx:sendPop",
+   "detail": "pop + airy upward whoosh"
+  },
+  {
+   "t": 17.7,
+   "kind": "sfx:whipWhoosh",
+   "detail": "whip R->L"
+  },
+  {
+   "t": 18.8,
+   "kind": "sfx:linkChirp",
+   "detail": "thread zip + G6->C7 chirp"
+  },
+  {
+   "t": 19.6,
+   "kind": "sfx:linkChirp",
+   "detail": "thread zip + G6->C7 chirp"
+  },
+  {
+   "t": 22.0,
+   "kind": "sfx:confirmPop",
+   "detail": "880+1320 Hz pop, major-third chime D6+F#6"
+  },
+  {
+   "t": 24.0,
+   "kind": "music",
+   "detail": "piano counter-melody D-E-F#-A"
+  },
+  {
+   "t": 24.8,
+   "kind": "sfx:pressClick",
+   "detail": "press click"
+  },
+  {
+   "t": 25.2,
+   "kind": "sfx:pillWhoosh",
+   "detail": "short downward whoosh"
+  },
+  {
+   "t": 26.5,
+   "kind": "sfx:signatureStamp",
+   "detail": "pen swish + 220 Hz thud + check pop"
+  },
+  {
+   "t": 28.6,
+   "kind": "sfx:calmAlert",
+   "detail": "B2 + F#3 triangle, 0.6 s, calm (no siren)"
+  },
+  {
+   "t": 30.6,
+   "kind": "sfx:uiTick",
+   "detail": "2.4 kHz, 30 ms"
+  },
+  {
+   "t": 31.0,
+   "kind": "sfx:uiTick",
+   "detail": "2.4 kHz, 30 ms + soft send whoosh"
+  },
+  {
+   "t": 32.0,
+   "kind": "music",
+   "detail": "crash"
+  },
+  {
+   "t": 32.5,
+   "kind": "sfx:sealClick",
+   "detail": "wood tick + 1320 Hz"
+  },
+  {
+   "t": 33.0,
+   "kind": "sfx:checkPluck",
+   "detail": "KS pluck D5"
+  },
+  {
+   "t": 33.25,
+   "kind": "sfx:checkPluck",
+   "detail": "KS pluck E5"
+  },
+  {
+   "t": 33.5,
+   "kind": "sfx:checkPluck",
+   "detail": "KS pluck F#5"
+  },
+  {
+   "t": 33.75,
+   "kind": "sfx:checkPluck",
+   "detail": "KS pluck A5"
+  },
+  {
+   "t": 34.0,
+   "kind": "sfx:checkPluck",
+   "detail": "KS pluck B5"
+  },
+  {
+   "t": 34.25,
+   "kind": "sfx:checkPluck",
+   "detail": "KS pluck D6"
+  },
+  {
+   "t": 34.5,
+   "kind": "sfx:confirmChord",
+   "detail": "D major confirm chord"
+  },
+  {
+   "t": 36.0,
+   "kind": "music",
+   "detail": "crash"
+  },
+  {
+   "t": 36.6,
+   "kind": "sfx:counterChime",
+   "detail": "FM bell D6 -> A5, 1.2 s decay"
+  },
+  {
+   "t": 38.0,
+   "kind": "sfx:railShimmer",
+   "detail": "rail-complete shimmer"
+  },
+  {
+   "t": 39.0,
+   "kind": "sfx:nodeBlip",
+   "detail": "node blips at 39.00, 39.25, 39.50, 40.50, 40.75, 41.00, 41.25, 41.50"
+  },
+  {
+   "t": 39.75,
+   "kind": "sfx:gateScan",
+   "detail": "filtered noise sweep up to 40.50"
+  },
+  {
+   "t": 40.5,
+   "kind": "sfx:gatePass",
+   "detail": "gate pass chime A5+E6"
+  },
+  {
+   "t": 41.0,
+   "kind": "sfx:riser",
+   "detail": "riser to 42.000"
+  },
+  {
+   "t": 42.0,
+   "kind": "music",
+   "detail": "breakdown: 60 bpm heartbeat (45 Hz double thump)"
+  },
+  {
+   "t": 42.25,
+   "kind": "sfx:softTick",
+   "detail": "soft tick"
+  },
+  {
+   "t": 44.0,
+   "kind": "sfx:softTick",
+   "detail": "soft tick + ledger ticks every 0.25 s to 45.50 at -24 dB"
+  },
+  {
+   "t": 47.4,
+   "kind": "sfx:reverseLock",
+   "detail": "reverse shimmer, lock tick at 47.90"
+  },
+  {
+   "t": 48.5,
+   "kind": "music",
+   "detail": "motif resolves E4 -> D4 (understood)"
+  },
+  {
+   "t": 49.0,
+   "kind": "sfx:riser",
+   "detail": "riser to 49.875"
+  },
+  {
+   "t": 50.0,
+   "kind": "music",
+   "detail": "crash"
+  },
+  {
+   "t": 50.9,
+   "kind": "sfx:typingTicks",
+   "detail": "19 typing ticks to 51.70"
+  },
+  {
+   "t": 51.0,
+   "kind": "sfx:bubblePop",
+   "detail": "sine 450->900 Hz, 80 ms (Fin entrance)"
+  },
+  {
+   "t": 51.5,
+   "kind": "sfx:glint",
+   "detail": "QR glint"
+  },
+  {
+   "t": 52.6,
+   "kind": "sfx:shimmer",
+   "detail": "high cluster swell"
+  },
+  {
+   "t": 53.5,
+   "kind": "sfx:whoosh",
+   "detail": "band-passed noise 300->6000 Hz, 0.50 s"
+  },
+  {
+   "t": 54.0,
+   "kind": "music",
+   "detail": "final impact, D(add9) ring-out, groove stops"
+  },
+  {
+   "t": 54.0,
+   "kind": "sfx:impact",
+   "detail": "final impact + lockup whoosh-in"
+  },
+  {
+   "t": 56.0,
+   "kind": "sfx:bell",
+   "detail": "last bell D6 + A5"
+  }
+ ],
+ "warnings": []
+}

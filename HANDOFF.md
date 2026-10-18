@@ -1,43 +1,79 @@
-# MedX — handoff (สำหรับเพื่อนในทีม)
+# MedX: handoff for teammates
 
-อัปเดต: เสาร์ 17 ต.ค. 2026 ~22:00 ICT · ส่งงาน: **อาทิตย์ 18 ต.ค. 17:00 ICT** (lablab, AMD Developer Hackathon ACT III, Track 2 Health & Wellbeing)
+Updated: Sun 18 Oct 2026, about 07:30 ICT. Submission deadline: **Sun 18 Oct 2026, 17:00 ICT** (internal target 15:00) on lablab, AMD Developer Hackathon ACT III, Track 2 (Health and Wellbeing).
+The earlier Thai copy of this handoff (Sat 17 Oct, 22:00) is kept at [docs/HANDOFF.th.md](docs/HANDOFF.th.md). This English file is the current one.
 
-## 1. MedX คืออะไร (30 วินาที)
-ผู้ช่วยการคัดกรองหลายภาษา (ไทย / อิตาลี / อังกฤษ) ตลอดเส้นทางคนไข้:
-**คนไข้** เล่าอาการในแอป (พิมพ์หรือพูด) → **พยาบาล** ซักประวัติด้วย consult assistant (ฟังแล้วเด้งคำถาม) + สัญญาณชีพ / NEWS2 → **หมอ** consult, ดู "considerations" (หมอเท่านั้น), เซ็นใบสรุป, สั่งตรวจ / สั่งยา (มีระบบตรวจแพ้ยา ยาตีกัน ขนาดยา) → **เภสัช** ตรวจรายการยา, ยืนยันหรือส่งคืนใบสั่งยา → **Ops** ภาพรวม
-ทุกช่องข้อมูลชี้กลับไปที่ "คำพูดจริงของคนไข้" · red flag ใช้กฎตายตัว รันก่อนโมเดลเสมอ · **AI ไม่วินิจฉัย ไม่สั่งยา ไม่ตัดสิน triage** คนเป็นคนกดยืนยันทุกครั้ง · ข้อมูลสังเคราะห์เท่านั้น
-มาสคอต: **Fin** (โลมา)
+## 1. What MedX is (30 seconds)
 
-## 2. รันในเครื่อง (5 นาที)
+Multilingual pre-visit intake and care journey for clinics where patient and staff do not share a language (Thai, Italian, English; English is the default everywhere, Thai and Italian are one toggle away).
+
+**Patient** tells Fin what brings them in, by voice or text, and checks the words before sending → **Nurse** reviews fields that each cite the patient's sentence, records vitals and confirms a NEWS2-based triage suggestion → **Doctor** runs the consult with doctor-only considerations (not a diagnosis), signs the note and writes orders with deterministic checks (allergy, interaction, duplicate, pregnancy, dose range) → **Pharmacist 1** verifies, or returns with a report and options for prescriber review → **Pharmacist 2** does a six-item final check and dispenses (the verifier cannot dispense) → **Pickup**: the phone shows the counter and the code → **Ops** sees the queue and the pharmacy pipeline; **Case trace** shows every rule check, model call and human decision.
+
+Every field points back to the patient's own words. Red flags are deterministic code that runs before any model. **The AI never diagnoses, prescribes or decides urgency; a person confirms every step.** Synthetic data only. Mascot: **Fin** the dolphin.
+
+## 2. Links
+
+| What | Where |
+|---|---|
+| Live demo | **https://medx.areazeroai.com** (persona hub: https://medx.areazeroai.com/demo) |
+| 60-second film | `apps/web/public/media/medx-promo.mp4` (served at `/media/medx-promo.mp4`) |
+| 60-second product walkthrough | `apps/web/public/media/medx-demo.mp4` (served at `/media/medx-demo.mp4`, captions `/media/medx-demo.en.vtt`) |
+| Repo | https://github.com/KingPhuripol/MedX-AI |
+| Deck | `pitch/deck/MedX-deck.pdf` (source `pitch/deck/deck.html`) |
+| Submission copy | `pitch/SUBMISSION.md` |
+| Deploy guide | `docs/DEPLOY.md` |
+| Spec of record | `docs/SPEC.md` |
+
+The older Vercel URL medx-bridge.vercel.app is retired and is not the demo; do not share it.
+
+Production status at about 07:15 ICT: https://medx.areazeroai.com still served the previous build (`/api/health` returned the old three-field body, no `/media` files). The wave 20 deploy is pending (orchestrator, M-13).
+
+## 3. Run it locally (5 minutes)
+
 ```bash
 git clone https://github.com/KingPhuripol/MedX-AI.git && cd MedX-AI
 npm --prefix apps/web install
 cd apps/web && MODEL_PROVIDER=mock DEMO_SEED=1 DEMO_AUTOSEED=1 DEMO_TOKEN=pick-a-secret npm run dev
-# เปิด http://localhost:3000  (ข้อมูลเดโม 11 เคสจะ seed อัตโนมัติ)
-# ล้างข้อมูลเดโม:  curl -X POST -H "x-demo-token: pick-a-secret" localhost:3000/api/demo/reset
+# open http://localhost:3000 (14 synthetic demo cases are seeded automatically)
+# reset the demo data: curl -X POST -H "x-demo-token: pick-a-secret" localhost:3000/api/demo/reset
 ```
-หน้าหลัก: `/` · `/review` (พยาบาล/หมอ) · `/review/<id>/consult?mode=nurse|doctor` · `/review/<id>/vitals` · `/review/<id>/orders` · `/pharmacy` · `/ops` · `/patient/` (แอปผู้ป่วยเวอร์ชันเว็บ)
-แอปผู้ป่วย native: `cd apps/mobile && npm install && npx expo start` (ดู `docs/DEMO.md`)
-Docker: `docker build -f apps/web/Dockerfile -t medx . && docker run -p 3000:3000 -e MODEL_PROVIDER=mock -e DEMO_SEED=1 -e DEMO_AUTOSEED=1 medx`
-เทสต์: `npm --prefix apps/web test` (1,872 tests) · กฎทางคลินิก: `node docs/clinical/check-redflags.mjs` (และ check-medrules / check-consultrules)
 
-## 3. สิ่งที่ยังต้องทำก่อนส่ง (เรียงตามความสำคัญ)
-| # | งาน | ใคร | วิธี |
+- Pages: `/` (landing) · `/demo` (pick a role) · `/review` (nurse, doctor) · `/review/<id>/consult?mode=nurse|doctor` · `/review/<id>/vitals` · `/review/<id>/orders` · `/review/<id>/trace` · `/pharmacy` · `/ops` · `/patient/` (patient app, web export).
+- Native patient app: `cd apps/mobile && npm install && npx expo start` (see `docs/DEMO.md`). After changing `apps/mobile/src` or `packages/shared/src`, run `bash scripts/build-patient-web.sh`.
+- Docker: `docker build -f apps/web/Dockerfile -t medx . && docker run -p 3000:3000 -e MODEL_PROVIDER=mock -e DEMO_SEED=1 -e DEMO_AUTOSEED=1 -e DEMO_TOKEN=pick-a-secret medx`
+- Tests: `cd apps/web && ./node_modules/.bin/vitest run` (2,436 tests in 51 files, all passing at 07:14 ICT). Clinical rules, from the repo root: `node docs/clinical/check-redflags.mjs` (175/175), `check-medrules.mjs` (253/253), `check-consultrules.mjs` (87/87), `check-vitalrules.mjs` (all passed).
+- Whole journey against a running server: `BASE=http://localhost:3000 node scripts/e2e-journey.mjs`.
+
+## 4. What is left before submission (in priority order)
+
+| # | Task | Who | How |
 |---|---|---|---|
-| 1 | **AMD key (บังคับตามกติกา)** | เจ้าของทีมบน lablab | สร้างทีมบน lablab ให้เสร็จ → https://notebooks.amd.com/tokenfactory → เอา base URL, API key, model id ของ Gemma → ใส่ใน `apps/web/.env.local`: `MODEL_PROVIDER=amd`, `AMD_BASE_URL=`, `AMD_API_KEY=`, `AMD_MODEL=` (ห้าม commit) → รีสตาร์ท → `curl localhost:3000/api/health` ต้องขึ้น `amd-tokenfactory` |
-| 2 | รันวัดผลบน AMD | ใครก็ได้ | `cd apps/web && npx vite-node ../../eval/run.ts -- --split dev` แล้ว `--split test` (ดู `eval/README.md`, `docs/ai/METRICS.md`) → เอาตัวเลขไปแทน "[pending AMD run]" ใน `pitch/deck/deck.html`, `pitch/SUBMISSION.md`, `README.md` → export PDF ใหม่ (Chrome headless, ดู `docs/reports/w9-pitch.md`) |
-| 3 | ลิงก์เดโมออนไลน์ | เจ้าของ GitHub | https://render.com → login ด้วย GitHub → New → **Blueprint** → เลือก repo → Apply (ใช้ `render.yaml` ที่เตรียมไว้) · ถ้าได้ AMD key ให้ใส่ env AMD_* ใน Render dashboard ด้วย · (Vercel https://medx-bridge.vercel.app ขึ้นแล้วแต่ state แยกตาม instance — อย่าใช้เป็นลิงก์หลัก) |
-| 4 | อัดวิดีโอ 3 นาที (อังกฤษ) | ทีม | สคริปต์ `pitch/VIDEO-SCRIPT.md` · ขั้นตอน + เคสที่ seed ไว้ `docs/DEMO.md` · ถ้า `/api/health` ยังเป็น mock **ห้ามพูดว่า "runs on AMD"** |
-| 5 | กรอกฟอร์มส่งงานบน lablab | เจ้าของทีม | ใช้ข้อความใน `pitch/SUBMISSION.md` (short/long/tags/limitations), cover `pitch/cover/cover-v4.png`, สไลด์ `pitch/deck/MedX-deck.pdf`, GitHub repo, ลิงก์เดโม, วิดีโอ |
-| 6 | (ถ้ามีเวลา) คนไทย/อิตาลีอ่านทวนข้อความในแอป | ใครก็ได้ | ข้อความ th/it เขียนโดย AI ยังไม่ผ่าน native speaker: `apps/mobile/src/i18n.ts`, `apps/web/app/**/_i18n.ts`, `packages/shared/src/redflags.json` (patientMessage) |
+| 1 | **Commit the wave 20 work** | Orchestrator | Many build inputs are untracked (landing, `/demo`, store, media, brand art, patient export, `tsconfig.build.json`, `vercel.json`, both `.vercelignore` files). A partial commit breaks the GitHub copy; see `docs/reports/w20-gates.md`. Push to GitHub. |
+| 2 | **Deploy to Vercel** (M-13) | Orchestrator | Follow `docs/DEPLOY.md`: from the repo root, `vercel deploy --prod --build-env MEDX_COMMIT=$(git rev-parse --short HEAD)`. Set `MEDX_STRICT_ROLES=1`, `CRON_SECRET`, `DEMO_TOKEN`, `DEMO_SEED=1`, `DEMO_AUTOSEED=1`, `MODEL_PROVIDER=mock`. `DATABASE_URL` (Neon) is already set. Then run the post-deploy QA commands in `docs/DEPLOY.md` and check `/api/health` reports `store: "postgres"`. |
+| 3 | **AMD key (required by the hackathon rules)** | Team owner on lablab | Finish the team on lablab → https://notebooks.amd.com/tokenfactory → copy the base URL, API key and Gemma model id. Locally put them in `apps/web/.env.local` (`MODEL_PROVIDER=amd`, `AMD_BASE_URL`, `AMD_API_KEY`, `AMD_MODEL`; never commit it), restart, and check `curl localhost:3000/api/health` reports `amd-tokenfactory` with `providerConfigured: true`. On Vercel, add the same variables and redeploy. |
+| 4 | Evaluation on AMD | Anyone | `cd apps/web && npx vite-node ../../eval/run.ts -- --split dev`, then `--split test` (see `eval/README.md`, `docs/ai/METRICS.md`). Replace "[pending AMD run]" in `pitch/deck/deck.html`, `pitch/SUBMISSION.md` and `README.md` with numbers from `eval/REPORT.md` only, then re-export the deck PDF (`docs/reports/w20-docs.md` has the command). |
+| 5 | Fill in the lablab form | Team owner | Text from `pitch/SUBMISSION.md` (short and long description, tags, limitations). Cover `pitch/cover/cover-v6.png`, deck `pitch/deck/MedX-deck.pdf`, the GitHub repo, the live demo link, and the film (`medx-promo.mp4`) and walkthrough (`medx-demo.mp4`). While `/api/health` reports mock, **do not claim the demo uses AMD hardware**: say Gemma on AMD is the designed target and the measurement is pending. |
+| 6 | Clinical sign-offs | Doctor | CR-THROAT-05 (consult rules 1.3, the golden demo case), the known red-flag gaps listed in `docs/reports/w20-qa.md` (two paraphrased chest-pain lines that rules alone miss), and RF-ANAPH-01 firing on a past hives reaction. |
+| 7 | Native-speaker review (if time allows) | Anyone fluent | Thai and Italian strings were written with AI help: `apps/mobile/src/i18n.ts`, `apps/web/app/**/_i18n.ts`, `apps/web/app/_landing/copy.ts`, `packages/shared/src/redflags.json` (patient messages). |
 
-## 4. ไฟล์สำคัญ
-- กติกาทีม / ข้อห้าม: `CLAUDE.md` · การตัดสินใจทั้งหมด: `docs/DECISIONS.md` · สถานะ: `docs/PROGRESS.md`
-- ข้อมูลทางคลินิก (Doctor-owned): `packages/shared/src/{redflags,medrules,consultrules,vitalrules,investigations}.json`, `docs/clinical/*`
-- AI / prompts / metrics: `docs/ai/DESIGN.md`, `docs/ai/METRICS.md`, `apps/web/lib/pipeline/`
-- ดีไซน์: `docs/design/DIRECTION.md` (v2 + Fin §11), components `apps/web/components/ui/`
-- รายงานทุกรอบ (review, QA, UX, safety): `docs/reports/`
-- พิช: `pitch/` (deck, cover, video script, submission, safety)
+## 5. How the demo works (for whoever presents it)
 
-## 5. ข้อจำกัดที่ต้องพูดตรง ๆ (อยู่ใน SUBMISSION/README แล้ว)
-ข้อมูลสังเคราะห์ ไม่ได้ validate ทางคลินิก · กฎ red flag แบบคีย์เวิร์ดพลาดคำที่พูดอ้อม (holdout 7/10) · ยังไม่ได้วัดบน Gemma/AMD จริง (ถ้าไม่ได้ key) · เสียงพูดไปที่ speech service ของ Apple/Google/browser · ไม่มีระบบล็อกอินจริง (reviewer เลือกเอง) · การซ่อนข้อมูลส่วนตัวเป็นแบบ pattern · ฐานข้อมูลยา 59 ตัว 18 interactions · ฟอนต์ SCBXBeta2 เจ้าของตัดสินใจใช้แม้เมทาดาทาเป็น "All rights reserved"
+- Visitors pick one of six roles on the landing page or `/demo`: Patient, Nurse (Anna Rossi), Doctor (Marco Bianchi), Pharmacist 1 (Laura Conti), Pharmacist 2 (Nattaya Wong), Clinic operations (Elena Greco). Staff cards open a fresh synthetic case at that person's step. Runbook: `docs/DEMO.md`.
+- **Account menu** on every staff page: "Signed in as", "Demo identity · synthetic staff", **Switch role** (to `/demo`) and **Sign out** (clears the demo identity from this browser and returns to `/demo` with a "Signed out." notice).
+- **"Who's signing in?"** sheet: a staff page opened with no identity can be read, but any write waits until a synthetic staff member is chosen. It never covers a red flag.
+- Patient app: **Start a new visit** on Home and Help clears the visit from this phone only (the care team keeps what was sent), with an extra warning if medicine is still waiting at the pharmacy.
+- The public demo resets daily at 03:00 ICT (Vercel Cron). A manual reset: `curl -X POST -H "x-demo-token: $DEMO_TOKEN" https://medx.areazeroai.com/api/demo/reset`.
+
+## 6. Key files
+
+- Team rules: `CLAUDE.md` · decisions: `docs/DECISIONS.md` · status: `docs/PROGRESS.md` · spec of record: `docs/SPEC.md`
+- Clinical rules (Doctor-owned): `packages/shared/src/{redflags,medrules,consultrules,vitalrules,investigations}.json`, `docs/clinical/*`
+- AI design, prompts and metrics: `docs/ai/DESIGN.md`, `docs/ai/METRICS.md`, `apps/web/lib/pipeline/`
+- Design: `docs/design/DIRECTION.md` (v3.1: Plus Jakarta Sans and Noto Sans Thai, motion system, Fin rules in section 11), components in `apps/web/components/ui/`
+- Deploy: `docs/DEPLOY.md`, `apps/web/vercel.json`, `.vercelignore`, `render.yaml`
+- Every wave report (reviews, QA, UX, safety): `docs/reports/`
+- Pitch: `pitch/` (deck, cover, film source, video script, submission copy, safety answers)
+
+## 7. Limits to say out loud (already in README and SUBMISSION)
+
+Synthetic data only, not clinically validated, not a medical device. The demo runs a mock model; Gemma on AMD is not measured yet. Keyword red-flag rules miss paraphrases (7 of 10 emergencies on the 18-case blind holdout). Speech goes to the browser's or phone's cloud speech service. There is no real login: reviewer identity is self-declared, so the two-person dispense check is procedural. Redaction is pattern-based. The prescribing rule set is small (59 drugs, 18 interactions, adult dose ceilings for 31). Considerations come from a fixed 12-presentation list. The earlier SCBXBeta2 font is no longer used by the web or the patient app (now Plus Jakarta Sans and Noto Sans Thai, both OFL).

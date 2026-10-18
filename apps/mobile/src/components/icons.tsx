@@ -21,7 +21,14 @@ export const Globe = ({ size = 24, color, sw = 2 }: P) => (
 export const Mic = ({ size = 30, color, sw = 2.2 }: P) => (
   <Svg {...base(size)} accessibilityElementsHidden importantForAccessibility="no"><Path d="M12 3.5a3 3 0 0 0-3 3V12a3 3 0 0 0 6 0V6.5a3 3 0 0 0-3-3zM6 11.5a6 6 0 0 0 12 0M12 17.5V21" {...stroke(color, sw)} /></Svg>
 );
-export const Stop = ({ size = 26, color }: P) => <Svg {...base(size)} accessibilityElementsHidden importantForAccessibility="no"><Path d="M7 7h10v10H7z" fill={color} stroke={color} strokeWidth={2} strokeLinejoin="round" /></Svg>;
+export const Info = ({ size = 24, color, sw = 2.2 }: P) => (
+  <Svg {...base(size)} accessibilityElementsHidden importantForAccessibility="no"><Circle cx="12" cy="12" r="9" {...stroke(color, sw)} /><Path d="M12 11v5.5" {...stroke(color, sw)} /><Circle cx="12" cy="7.6" r="1.3" fill={color} /></Svg>
+);
+export const Refresh = ({ size = 22, color, sw = 2.2 }: P) => (
+  <Svg {...base(size)} accessibilityElementsHidden importantForAccessibility="no"><Path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3M19.5 4.5v4h-4" {...stroke(color, sw)} /></Svg>
+);
+export const Chevron = ({ size = 20, color, sw = 2.2 }: P) => <Svg {...base(size)} accessibilityElementsHidden importantForAccessibility="no"><Path d="M9.5 6l6 6-6 6" {...stroke(color, sw)} /></Svg>;
+export const Stop =({ size = 26, color }: P) => <Svg {...base(size)} accessibilityElementsHidden importantForAccessibility="no"><Path d="M7 7h10v10H7z" fill={color} stroke={color} strokeWidth={2} strokeLinejoin="round" /></Svg>;
 export const Speaker = ({ size = 22, color, sw = 2, off }: P & { off?: boolean }) => (
   <Svg {...base(size)} accessibilityElementsHidden importantForAccessibility="no">
     <Path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z" {...stroke(color, sw)} />

@@ -1,11 +1,11 @@
 "use client";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CaseTrace, GetSessionRes, IntakeSession, Lang, Localized, TraceNode } from "@medx/shared";
 import { Badge, Button, Card, CardHeader, EvidenceHighlight, Icon, SegmentedControl, type IconName } from "@/components/ui";
 import { fixtureSession } from "../../../../(orders)/_fixture";
 import { call, clockOf } from "../../../../(orders)/_lib";
 import { useIdentity } from "../../../../(orders)/_bits";
+import { CaseHeader } from "../../../../_shared/CaseHeader";
 import { NODE_H, NODE_W, edgeLabel, layoutTrace, summarize } from "../../../_graph";
 import { fixtureTrace } from "../../../_fixture";
 
@@ -132,18 +132,17 @@ export function Trace({ id }: { id: string }) {
 
   return (
     <div className="mx-auto max-w-[1400px]">
-      <header className="mb-4 flex flex-wrap items-center gap-3">
-        <div className="min-w-0 flex-1">
-          <Link href={`/review/${id}`} className="text-small font-semibold text-ocean hover:underline">{tr("back", lang)}</Link>
-          <h1 className="text-title font-bold text-ink">
-            {tr("title", lang)}
-            {session && <span className="ml-3 text-lead font-semibold text-ink-soft">{tr("patient", lang)} {session.code}</span>}
-          </h1>
-        </div>
-        {fixture && <span title={tr("fixtureWhy", lang)}><Badge tone="pencil" icon={<Icon name="triangle-alert" size={12} />}>{tr("fixture", lang)}</Badge></span>}
-        <Button variant="secondary" onClick={exportJson} disabled={!trace}>{tr("export", lang)}</Button>
-      </header>
-      <p className="mb-4 text-small text-ink-soft">{tr("scope", lang)}</p>
+      <CaseHeader
+        id={id}
+        active="trace"
+        title={tr("title", lang)}
+        lang={lang}
+        session={session}
+        badges={fixture ? <span title={tr("fixtureWhy", lang)}><Badge tone="pencil" icon={<Icon name="triangle-alert" size={12} />}>{tr("fixture", lang)}</Badge></span> : undefined}
+        actions={<Button variant="secondary" onClick={exportJson} disabled={!trace} icon={<Icon name="file-text" size={16} />}>{tr("export", lang)}</Button>}
+      >
+        <p className="max-w-[80ch] text-small text-ink-soft">{tr("scope", lang)}</p>
+      </CaseHeader>
 
       {err && <p role="alert" className="mb-3 rounded-2xl bg-signal-tint px-4 py-2 text-small font-semibold text-signal">{tr("loadFail", lang)} {err}</p>}
       {!trace && !err && <p className="text-body text-ink-soft" role="status">…</p>}

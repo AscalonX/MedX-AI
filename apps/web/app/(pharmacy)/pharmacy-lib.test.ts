@@ -3,7 +3,8 @@ import type { DispenseChecklist, IntakeSession, MedicationOrder } from "@medx/sh
 import { alternativesFor } from "../../lib/pipeline/orders";
 import { FIXTURES } from "./_fixtures";
 import {
-  CHECKLIST_KEYS, DICTIONARY_GENERICS, PHARMACISTS, activeOrders, alternativeEntries, applyDispense, applyOrderAction, applyPickup, canCall, samePerson, stageRows, toDictionaryGeneric,
+  CHECKLIST_KEYS, DICTIONARY_GENERICS, PHARMACISTS, activeOrders, alternativeEntries, applyDispense, applyOrderAction, applyPickup, canCall, collectedOrderIds, isRecheck, newlyDispensed,
+  samePerson, stageRows, toDictionaryGeneric,
 } from "./_lib";
 
 const AT = "2026-10-18T09:00:00.000Z";
@@ -91,6 +92,52 @@ describe("pickup", () => {
     const s = fx("fixture-th-abstained");
     expect(activeOrders(s)).toHaveLength(0);
     expect(() => applyPickup(s, { reviewerId: P1, action: "call" }, AT)).toThrow("No medication orders to collect");
+  });
+});
+
+describe("pickup cycles mirror the engine (gate decisions a and b)", () => {
+  const withOrders = (s: IntakeSession, meds: MedicationOrder[]): IntakeSession => ({ ...s, orders: { investigations: [], medications: meds } });
+  const dispensed = (s: IntakeSession) => order(applyDispense(s, "fx6-o1", { reviewerId: P2, checklist: ALL }, AT), "fx6-o1");
+  it("drafts do not block the call; returned, submitted and verified orders do", () => {
+    const s = fx("fixture-th-verified");
+    const done = dispensed(s);
+    const draft = { ...done, id: "d1", status: "draft" as const, pharmacist: undefined, dispense: undefined };
+    expect(canCall(withOrders(s, [done, draft]))).toBe(true);
+    expect(() => applyPickup(withOrders(s, [done, draft]), { reviewerId: P2, action: "call" }, AT)).not.toThrow();
+    for (const status of ["returned", "submitted", "verified"] as const) {
+      const other = { ...done, id: `x-${status}`, status, dispense: undefined };
+      expect(canCall(withOrders(s, [done, other])), status).toBe(false);
+      expect(() => applyPickup(withOrders(s, [done, other]), { reviewerId: P2, action: "call" }, AT)).toThrow("Every active medication order must be dispensed before calling the patient");
+    }
+  });
+  it("needs at least one dispensed order of this cycle: earlier-cycle orders come from the audit", () => {
+    const s = fx("fixture-th-verified");
+    const done = dispensed(s);
+    const fresh = withOrders(s, [done]);
+    const audit = [{ id: "a1", sessionId: s.id, at: AT, actor: "clinician" as const, actorId: P2, type: "pickup_collected" as const, payload: { orderIds: [done.id] } }];
+    const collected = collectedOrderIds(audit);
+    expect(collected.has(done.id)).toBe(true);
+    expect(newlyDispensed(fresh, collected)).toHaveLength(0);
+    expect(canCall(fresh, collected)).toBe(false);
+    expect(() => applyPickup(fresh, { reviewerId: P2, action: "call" }, AT, collected)).toThrow("No newly dispensed medicines to collect");
+    // a new order dispensed in this cycle makes the call possible again
+    const next = { ...done, id: "o-new" };
+    expect(canCall(withOrders(s, [done, next]), collected)).toBe(true);
+    expect(collectedOrderIds(undefined).size).toBe(0);
+  });
+});
+
+describe("re-check after verification", () => {
+  it("an order sent back to pharmacist 1 is a re-check, sits in the verify stage, and cannot be dispensed or verified without an override", () => {
+    const s = fx("fixture-th-penicillin");
+    const o = order(s, "fx2-o1");
+    const rechecked: MedicationOrder = { ...o, status: "submitted", recheck: { reason: "new_high_alert", alertIds: [o.checks[0].id], at: AT }, pharmacistHistory: [{ action: "verify", by: P1, at: AT, supersededAt: AT, reason: "new_high_alert" }] };
+    const s2: IntakeSession = { ...s, orders: { investigations: [], medications: [rechecked] } };
+    expect(isRecheck(rechecked)).toBe(true);
+    expect(isRecheck({ ...rechecked, status: "verified" })).toBe(false);
+    expect(stageRows([{ session: s2, fixture: true }], Date.now()).verify.map((r) => r.o.id)).toEqual(["fx2-o1"]);
+    expect(() => applyDispense(s2, "fx2-o1", { reviewerId: P2, checklist: ALL }, AT)).toThrow(/^Re-check needed: .*Only verified orders can be dispensed$/);
+    expect(() => applyOrderAction(s2, "fx2-o1", { reviewerId: P1, action: "verify" }, AT)).toThrow("Every high alert requires an override reason");
   });
 });
 

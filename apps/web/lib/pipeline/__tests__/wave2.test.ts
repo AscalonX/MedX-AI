@@ -139,18 +139,22 @@ describe('demo fixture replay', () => {
     vi.stubEnv('DEMO_SEED', value);
     expect((await seedRoute()).status).toBe(404); expect(getSessions()).toHaveLength(0); expect(getAudit()).toHaveLength(0);
   });
-  it('creates the eleven-session mix through the real pipeline, once even with concurrent requests', async () => {
+  // w20: 11 fixture cases + the golden case at three hand-offs = 14. EN-01 and IT-01 reach the pharmacy through an
+  // approved intake, vitals, triage, consult and a signed note, so they now count as approved.
+  it('creates the fourteen-session mix through the real pipeline, once even with concurrent requests', async () => {
     const [first, second] = await Promise.all([seedDemo(), seedDemo()]);
-    expect(first.created).toBe(11); expect(second.created).toBe(0); expect(second.reused).toBe(11);
-    expect(first.byStatus).toEqual({ escalated: 2, awaiting_review: 2, needs_human: 2, collecting: 4, approved: 1, taken_over: 0 });
-    expect(first.mismatches).toEqual([]); expect(getSessions()).toHaveLength(11);
+    expect(first.created).toBe(14); expect(second.created).toBe(0); expect(second.reused).toBe(14);
+    expect(first.byStatus).toEqual({ escalated: 2, awaiting_review: 1, needs_human: 2, collecting: 4, approved: 5, taken_over: 0 });
+    expect(first.mismatches).toEqual([]); expect(first.stageMismatches).toEqual([]); expect(getSessions()).toHaveLength(14);
     expect(new Set(first.sessions.map(s => s.patientLang))).toEqual(new Set(['en', 'it', 'th']));
     expect(first.sessions.filter(s => s.status === 'escalated').every(s => s.summary?.modelCalls.length === 0)).toBe(true);
     for (const session of first.sessions) {
       expect(getAudit(session.id).some(e => e.type === 'turn_added')).toBe(true);
       for (const field of session.summary!.fields) for (const e of field.evidence) expect(session.turns.find(t => t.id === e.turnId)?.text.slice(e.start, e.end)).toBe(e.quote);
     }
-    const approved = first.sessions.find(s => s.status === 'approved')!;
+    // EN-02 is the approval-only case: it still ends with its synthetic review.
+    const approved = first.sessions.find(s => getAudit(s.id)[0].payload.demoCaseId === 'EN-02')!;
+    expect(approved.status).toBe('approved');
     expect(getAudit(approved.id).at(-1)).toMatchObject({ type: 'review', actor: 'clinician', actorId: 'Dr. Marco Bianchi' });
   });
   it('uses the configured AMD transport and records actual provider calls', async () => {
@@ -161,7 +165,9 @@ describe('demo fixture replay', () => {
       arrivals.push(Date.now());
       const payload = JSON.parse(init.body as string);
       const user = payload.messages[1].content;
-      const data = mockJSON({ step: user.startsWith('Missing information:') ? 'next_question' : payload.messages[0].content.startsWith('You are a safety screen') ? 'red_flags' : 'extract', schemaName: 'seed_transport_test', system: payload.messages[0].content, user });
+      // w20: the seeded visits also run the consult assistant (one suggestion call per transcript revision).
+      const consult = payload.messages[0].content.startsWith('You suggest questions for a clinician');
+      const data = mockJSON({ step: user.startsWith('Missing information:') ? 'next_question' : payload.messages[0].content.startsWith('You are a safety screen') ? 'red_flags' : 'extract', schemaName: consult ? 'consult_suggestions' : 'seed_transport_test', system: payload.messages[0].content, user });
       return Response.json({ choices: [{ message: { content: JSON.stringify(data) } }] });
     });
     vi.stubGlobal('fetch', fetcher);
@@ -181,8 +187,10 @@ describe('demo fixture replay', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Synthetic failure', { status: 500, headers: { 'Retry-After': '3' } })));
     const pending = seedDemo(); await vi.runAllTimersAsync(); const result = await pending;
     expect(vi.getTimerCount()).toBe(0);
-    expect(result.created).toBe(11); expect(result.byStatus.escalated).toBe(2); expect(result.byStatus.needs_human).toBe(9); expect(result.byStatus.approved).toBe(0);
-    expect(result.mismatches).toHaveLength(7);
+    expect(result.created).toBe(14); expect(result.byStatus.escalated).toBe(2); expect(result.byStatus.needs_human).toBe(12); expect(result.byStatus.approved).toBe(0);
+    expect(result.mismatches).toHaveLength(10);
+    // No synthetic staff step runs after a provider failure: no vitals, consult notes or orders anywhere.
+    expect(result.sessions.every(s => !s.vitals && !s.orders)).toBe(true);
     expect(result.sessions.filter(s => s.status === 'needs_human').every(s => s.summary?.abstainReason === 'provider_error' && s.summary.fields.every(f => f.status !== 'supported'))).toBe(true);
   });
 });

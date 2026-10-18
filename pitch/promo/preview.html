@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MedX film preview</title>
+<style>
+  :root { --ink: #0F1E2E; --inkSoft: #45566A; --desk: #EEF3F6; --rule: #E3E9EF; --ocean: #1A5FC4; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0A1622; color: #FFF; font: 500 14px/1.4 'Plus Jakarta Sans', system-ui, sans-serif; }
+  #wrap { width: 1280px; margin: 16px auto; }
+  #viewport { width: 1280px; height: 720px; overflow: hidden; position: relative; background: #000; border-radius: 10px; }
+  iframe { width: 1920px; height: 1080px; border: 0; transform: scale(0.6667); transform-origin: 0 0; position: absolute; left: 0; top: 0; }
+  .bar { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+  input[type=range] { flex: 1; }
+  button { background: var(--ocean); color: #FFF; border: 0; border-radius: 8px; padding: 8px 14px; font-weight: 700; cursor: pointer; }
+  #time { width: 150px; font-variant-numeric: tabular-nums; }
+  #shots { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  #shots button { background: #173A63; padding: 4px 8px; font-weight: 600; }
+  #warn { color: #FEF2D7; margin-top: 8px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="viewport"><iframe id="f" src="index.html"></iframe></div>
+  <div class="bar">
+    <button id="play">Play</button>
+    <input id="scrub" type="range" min="0" max="60" step="0.0166667" value="0">
+    <span id="time">0.000 s</span>
+    <label><input type="checkbox" id="audio"> audio</label>
+  </div>
+  <div id="shots"></div>
+  <div id="warn"></div>
+</div>
+<audio id="score" src="audio/score.wav" preload="auto"></audio>
+<script>
+  // Preview only: real-time playback lives here, never inside the composition.
+  const SHOTS = [['S01',0],['S02',3],['S03',4.5],['S04',8],['S05',12],['S06',14],['S07',18],['S08',21],['S09',23],['S10',25.5],['S11',28],['S12',32],['S13',36],['S14',39],['S15',42],['S16',46],['S17',50],['S18',54]];
+  const f = document.getElementById('f'), scrub = document.getElementById('scrub'), time = document.getElementById('time');
+  const audio = document.getElementById('score'), useAudio = document.getElementById('audio');
+  let W = null, playing = false, t0 = 0, p0 = 0;
+  const seek = (t) => { if (!W) return; W.__seek(t); scrub.value = t; time.textContent = t.toFixed(3) + ' s'; };
+  f.addEventListener('load', async () => {
+    W = f.contentWindow;
+    await W.__ready();
+    if (W.__assetWarnings && W.__assetWarnings.length) document.getElementById('warn').textContent = W.__assetWarnings.join('\n');
+    const h = parseFloat(location.hash.slice(1));
+    seek(Number.isFinite(h) ? h : 0);
+  });
+  scrub.addEventListener('input', () => { stop(); seek(parseFloat(scrub.value)); });
+  const frame = (now) => {
+    if (!playing) return;
+    const t = p0 + (now - t0) / 1000;
+    if (t >= 60) { seek(60); stop(); return; }
+    seek(t);
+    requestAnimationFrame(frame);
+  };
+  function start() { playing = true; p0 = parseFloat(scrub.value); if (p0 >= 59.9) p0 = 0; t0 = performance.now(); document.getElementById('play').textContent = 'Pause'; if (useAudio.checked) { audio.currentTime = p0; audio.play(); } requestAnimationFrame(frame); }
+  function stop() { playing = false; audio.pause(); document.getElementById('play').textContent = 'Play'; }
+  document.getElementById('play').addEventListener('click', () => (playing ? stop() : start()));
+  const sh = document.getElementById('shots');
+  for (const [id, t] of SHOTS) { const b = document.createElement('button'); b.textContent = `${id} ${t}s`; b.onclick = () => { stop(); seek(t + 0.5); }; sh.appendChild(b); }
+  addEventListener('keydown', (e) => {
+    if (e.code === 'Space') { e.preventDefault(); playing ? stop() : start(); }
+    if (e.code === 'ArrowRight') seek(Math.min(60, parseFloat(scrub.value) + (e.shiftKey ? 1 : 1 / 60)));
+    if (e.code === 'ArrowLeft') seek(Math.max(0, parseFloat(scrub.value) - (e.shiftKey ? 1 : 1 / 60)));
+  });
+</script>
+</body>
+</html>

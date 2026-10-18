@@ -175,6 +175,19 @@ export const T = {
   tlPickupReset: L("pickup reset, medicines being prepared again", "ยกเลิกการเรียกรับยา กำลังจัดยาใหม่", "ritiro annullato, farmaci di nuovo in preparazione"),
   tlCounter: L("counter {counter}", "ช่อง {counter}", "sportello {counter}"),
   tlSuggested: L("suggested for review: {drugs}", "เสนอให้พิจารณา: {drugs}", "suggeriti da valutare: {drugs}"),
+  // w20: investigations are sent, never "verified" or "resulted": there is no lab system in this prototype (C-05)
+  invSent: L("Sent (no lab system in this prototype)", "ส่งแล้ว (ต้นแบบนี้ไม่มีระบบห้องปฏิบัติการ)", "Inviato (nessun sistema di laboratorio in questo prototipo)"),
+  invNoLab: L("There is no lab system in this prototype: orders are recorded and sent, and no results come back here.", "ต้นแบบนี้ไม่มีระบบห้องปฏิบัติการ คำสั่งตรวจจะถูกบันทึกและส่ง แต่จะไม่มีผลตรวจกลับมาที่นี่", "In questo prototipo non c'è un sistema di laboratorio: gli esami sono registrati e inviati, nessun risultato torna qui."),
+  // w20: nurse to doctor handover after triage (S-01)
+  handoverTitle: L("Handover", "ส่งต่อ", "Passaggio di consegne"),
+  readyForDoctor: L("Ready for doctor", "พร้อมพบแพทย์", "Pronto per il medico"),
+  readyForDoctorHint: L("Triage is confirmed. Ready for doctor switches the role to Doctor and opens the doctor consult for this case.", "ยืนยันการคัดแยกแล้ว ปุ่มพร้อมพบแพทย์จะเปลี่ยนบทบาทเป็นแพทย์และเปิดหน้าการตรวจของเคสนี้", "Il triage è confermato. Pronto per il medico passa al ruolo Medico e apre il consulto medico di questo caso."),
+  startHistory: L("Start history taking", "เริ่มซักประวัติ", "Avvia anamnesi"),
+  yes: L("Yes", "ใช่", "Sì"),
+  no: L("No", "ไม่ใช่", "No"),
+  // w20: an order sent back to pharmacist 1 by the engine's re-check
+  recheckNote: L("Re-check needed: a new high alert came up after verification, so this order is back with pharmacist 1.", "ต้องตรวจซ้ำ: มีการแจ้งเตือนระดับสูงใหม่หลังการตรวจสอบ คำสั่งนี้จึงกลับไปที่เภสัชกรคนที่ 1", "Ricontrollo necessario: dopo la verifica è comparso un nuovo avviso alto, l'ordine torna al farmacista 1."),
+  tlRecheck: L("Re-check needed, back to pharmacist 1", "ต้องตรวจซ้ำ ส่งกลับเภสัชกรคนที่ 1", "Ricontrollo necessario, torna al farmacista 1"),
 } satisfies Record<string, Localized>;
 export type TKey = keyof typeof T;
 export const tr = (k: TKey, lang: Lang, vars?: Record<string, string | number>) =>
@@ -183,20 +196,34 @@ export const tr = (k: TKey, lang: Lang, vars?: Record<string, string | number>) 
 export const clockOf = (iso: string, lang: Lang) =>
   new Date(iso).toLocaleTimeString(lang === "th" ? "th-TH" : lang === "it" ? "it-IT" : "en-GB", { hour: "2-digit", minute: "2-digit" });
 
-/** Call a route. READS (no body) may fall back to `fixture` on 404/405/5xx/network. WRITES never do: any failure throws the server message so the form stays and the user sees it. */
-export async function call<T>(url: string, body: unknown | undefined, fixture: () => T): Promise<{ data: T; fixture: boolean }> {
+/** The page was opened with ?fixtures=1 (demos and tests): reads may then fall back to sample data on any failure. */
+export function fixturesRequested(search: string | undefined = typeof window === "undefined" ? undefined : window.location.search): boolean {
+  return !!search && new URLSearchParams(search).get("fixtures") === "1";
+}
+
+/**
+ * Call a route. READS (no body) fall back to `fixture` only when the route itself is missing on this server (404/405
+ * without an API error body, e.g. an older deploy), or on any failure when the page was opened with ?fixtures=1.
+ * A 5xx (503 "Shared store unavailable"), a 404 "Session not found" or a network error throws the server's message:
+ * the page keeps the last real data it had and shows why, never sample data under a real case URL (invariant 3).
+ * WRITES never fall back: any failure throws the server message so the form stays and the user sees it.
+ */
+export async function call<T>(url: string, body: unknown | undefined, fixture: () => T, opts: { fixtures?: boolean } = {}): Promise<{ data: T; fixture: boolean }> {
   const write = body !== undefined;
+  const allowFixture = !write && (opts.fixtures ?? fixturesRequested());
   let res: Response;
   try {
     res = await fetch(url, write ? { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) } : { cache: "no-store" });
   } catch {
     if (write) throw new Error("Network error. Nothing was saved.");
-    return { data: fixture(), fixture: true };
+    if (allowFixture) return { data: fixture(), fixture: true };
+    throw new Error("Network error: the server did not answer. Needs human review if it persists.");
   }
   const json = await res.json().catch(() => null);
   if (!res.ok) {
-    if (!write && (res.status === 404 || res.status === 405 || res.status >= 500)) return { data: fixture(), fixture: true };
-    throw new Error(json?.error ?? `Request failed (${res.status}). Nothing was saved.`);
+    const apiError = typeof json?.error === "string";
+    if (!write && (allowFixture || ((res.status === 404 || res.status === 405) && !apiError))) return { data: fixture(), fixture: true };
+    throw new Error(json?.error ?? (write ? `Request failed (${res.status}). Nothing was saved.` : `Request failed (${res.status}).`));
   }
   return { data: json as T, fixture: false };
 }

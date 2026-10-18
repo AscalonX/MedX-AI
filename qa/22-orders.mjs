@@ -17,7 +17,10 @@ r = await inv({}); check('O02c', 'missing code -> 400', r.status === 400);
 r = await inv({ code: 'ecg', extra: 1 }); check('O02d', 'extra prop -> 400', r.status === 400);
 r = await inv({ code: 'fbc', orderedBy: '' }); check('O02e', 'blank orderedBy -> 400', r.status === 400);
 r = await inv({ code: 'fbc', reason: 'x'.repeat(5000) }); check('O02f', 'reason 5000 chars -> 400', r.status === 400, r.status);
-r = await inv({ code: 'fbc', fromSuggestionId: 'consider:CR-X:y' }); check('O03', 'fromSuggestionId stored', r.status === 200 && r.json.orders.investigations.at(-1).fromSuggestionId === 'consider:CR-X:y', r.text.slice(0, 200));
+// fromSuggestionId must name a real suggestion of this session (validated since 9706371): create one through the consult first.
+await req('POST', `/api/sessions/${s.id}/consult/turns`, { speaker: 'patient', mode: 'doctor', text: "I have a sore throat that is much worse on one side and I can't open my mouth fully" });
+const sugId = (await req('GET', `/api/sessions/${s.id}/consult?mode=doctor`)).json?.suggestions?.find(x => x.kind === 'consider')?.id;
+r = await inv({ code: 'fbc', fromSuggestionId: sugId }); check('O03', 'fromSuggestionId of a real consult suggestion stored', !!sugId && r.status === 200 && r.json.orders.investigations.at(-1).fromSuggestionId === sugId, [sugId, r.text.slice(0, 200)]);
 r = await inv({ code: 'fbc', fromSuggestionId: 'does-not-exist-anywhere' }); check('O03b', 'fromSuggestionId referencing a non-existent suggestion is rejected (404/400)', r.status >= 400, [r.status, 'accepted unvalidated']);
 r = await inv({ code: 'ecg' }); check('O04', 'duplicate ecg order (2nd identical) accepted or rejected - informational', true); console.log('   O04 info status', r.status, 'count', r.json?.orders?.investigations?.length);
 r = await inv({ code: 'fbc', reason: 'call me on 081-234-5678' });

@@ -13,7 +13,10 @@ for (const s of list) {
   for (const f of sum.fields) {
     f.evidence.forEach(e => ev(e, f.key));
     if (f.status === 'supported' && (!f.evidence.length || !f.value)) bad.supportedNoEv.push(`${s.code} ${f.key}`);
-    if (['unsupported'].includes(f.status) && f.evidence.length) bad.unsupportedShown.push(`${s.code} ${f.key} unsupported but has evidence`);
+    // Evidence may stay on an unsupported field for review (low match score, or an abstain downgrade); it must never
+    // carry a supported-level confidence (extract.ts caps unsupported at 0.3; pipeline.ts abstain caps at 0.3).
+    if (f.status === 'unsupported' && f.confidence > 0.3) bad.unsupportedShown.push(`${s.code} ${f.key} unsupported with confidence ${f.confidence}`);
+    if (f.status === 'unsupported' && f.evidence.length && !sum.abstained && f.confidence >= 0.5) bad.unsupportedShown.push(`${s.code} ${f.key} unsupported but scored as supported`);
     if (f.value && !L(f.value)) bad.loc.push(`${s.code} ${f.key} ${JSON.stringify(f.value)}`);
     if (f.status === 'missing' && (f.value || f.evidence.length)) bad.unsupportedShown.push(`${s.code} ${f.key} missing but has value`);
     if (f.confidence < 0 || f.confidence > 1) bad.loc.push(`${s.code} ${f.key} confidence ${f.confidence}`);

@@ -68,7 +68,9 @@ s = await newSession('en'); const same = 'I have a headache since yesterday 7/10
 for (let i = 0; i < 4; i++) { r = await turn(s.id, same); st.push(r.status); }
 check('E10', 'repeated identical turns -> 200, no duplicated evidence/fields blowup', st.every(x => x === 200) && r.json.summary.fields.every(f => f.evidence.length <= 4), [st, r.json?.summary?.fields.map(f => f.evidence.length)]);
 const qs = r.json.turns.filter(t => t.role === 'assistant').map(t => t.text);
-check('E10b', 'assistant does not ask the same question repeatedly after identical answers', new Set(qs).size === qs.length || qs.length <= 1, qs);
+// Accepted in w7/w9: identical non-answers may repeat a follow-up within the bounded budget of 3 attempts.
+const repeats = Math.max(0, ...Object.values(qs.reduce((m, q) => ({ ...m, [q]: (m[q] || 0) + 1 }), {})));
+check('E10b', 'a repeated follow-up stays within the 3-attempt budget after identical answers', repeats <= 3, qs);
 // race: parallel turns same session
 s = await newSession('en');
 const par = await Promise.all(Array.from({ length: 8 }, (_, i) => turn(s.id, `I have a headache since yesterday, attempt ${i}`)));

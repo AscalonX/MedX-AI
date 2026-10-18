@@ -166,6 +166,11 @@ function OrderCard({ m, lang, busy, err, readOnly, audit, onEdit, onSubmit, onCa
         {statusBadge(m.status, lang)}
       </div>
       <p className="text-body text-ink-soft">{rxLine(m)}</p>
+      {m.status === "submitted" && m.recheck && (
+        <p role="status" className="mt-3 flex items-start gap-2 rounded-xl border border-dashed border-warn/60 bg-warn-tint px-3 py-2 text-small font-semibold text-warn">
+          <Icon name="triangle-alert" size={16} className="mt-px shrink-0" />{tr("recheckNote", lang)}
+        </p>
+      )}
 
       {m.status === "returned" && m.pharmacist && (
         <section aria-label={tr("pharmacistReport", lang)} className="mt-3 space-y-2 rounded-xl border border-dashed border-warn/60 bg-warn-tint px-3 py-3">
@@ -323,7 +328,7 @@ function CancelBtn({ busy, lang, onCancel }: { busy: boolean; lang: Lang; onCanc
 
 type AuditPayload = {
   orderId?: string; orderIds?: unknown; action?: string; by?: string; note?: string; reason?: string;
-  recall?: boolean; counter?: string; pickupReset?: boolean; report?: { suggestedGenerics?: string[] };
+  recall?: boolean; counter?: string; pickupReset?: boolean; report?: { suggestedGenerics?: string[] }; ruleIds?: unknown;
 };
 /** Order history from the audit trail: submitted / returned / resubmitted / verified / dispensed / pickup / cancelled, in time order. */
 function Timeline({ m, audit, lang }: { m: MedicationOrder; audit: AuditEvent[]; lang: Lang }) {
@@ -349,6 +354,9 @@ function Timeline({ m, audit, lang }: { m: MedicationOrder; audit: AuditEvent[];
       rows.push({ at: e.at, text: `${tr(p.recall ? "tlPickupRecalled" : "tlPickupCalled", lang)} ${e.actorId ?? ""}`, note: p.counter ? tr("tlCounter", lang, { counter: p.counter }) : undefined });
     } else if (e.type === "pickup_collected") {
       rows.push({ at: e.at, text: `${tr("tlPickupCollected", lang)} ${e.actorId ?? ""}` });
+    } else if (e.type === "order_recheck") {
+      const rules = Array.isArray(p.ruleIds) ? p.ruleIds.filter((r): r is string => typeof r === "string") : [];
+      rows.push({ at: e.at, text: tr("tlRecheck", lang), note: rules.join(", ") || undefined });
     } else if (e.type === "order_cancelled" || p.action === "cancel") {
       rows.push({ at: e.at, text: `${tr("tlCancelled", lang)} ${e.actorId ?? ""}`, note: p.reason });
     }

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MedX cover v6</title>
+<!--
+  lablab submission cover, wave 20 (1600x900). Replaces cover-v4.png for the submission:
+  - 3D Fin (apps/web/public/brand/fin-hello-1024.webp, owner-approved original character) on a soft light disc;
+  - patient-side, non-clinical floating cards only (language picked, a question read aloud, "Sent. A nurse will review."),
+    so no clinical or red-flag term sits next to Fin (DIRECTION.md sections 11 and 12.3);
+  - no model claim (no "Gemma on AMD" chip): the live model label comes from /api/health;
+  - Plus Jakarta Sans (OFL, ../deck/fonts), outlined Echo X lockup, brand tokens only.
+  Render from the repo root: node pitch/cover/render-cover-v6.mjs -> pitch/cover/cover-v6.png
+-->
+<style>
+@font-face{font-family:"Plus Jakarta Sans";src:url("../deck/fonts/plus-jakarta-sans-latin-400-normal.woff2") format("woff2");font-weight:400}
+@font-face{font-family:"Plus Jakarta Sans";src:url("../deck/fonts/plus-jakarta-sans-latin-600-normal.woff2") format("woff2");font-weight:600}
+@font-face{font-family:"Plus Jakarta Sans";src:url("../deck/fonts/plus-jakarta-sans-latin-700-normal.woff2") format("woff2");font-weight:700}
+@font-face{font-family:"Plus Jakarta Sans";src:url("../deck/fonts/plus-jakarta-sans-latin-800-normal.woff2") format("woff2");font-weight:800}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1600px;height:900px;overflow:hidden}
+body{position:relative;font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:#FFFFFF;-webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(820px 600px at 6% -12%,rgba(225,244,241,.22),transparent 62%),
+    radial-gradient(760px 600px at 100% 112%,rgba(210,228,255,.20),transparent 60%),
+    linear-gradient(128deg,#0A8077 0%,#1A5FC4 100%)}
+.arc{position:absolute;border-radius:50%;border:1.5px solid rgba(255,255,255,.15)}
+.a1{width:1100px;height:1100px;right:-420px;top:-420px}
+.a2{width:760px;height:760px;right:-220px;top:-170px;border-color:rgba(255,255,255,.10)}
+.disc{position:absolute;right:150px;top:150px;width:560px;height:560px;border-radius:50%;
+  background:radial-gradient(circle at 42% 38%,rgba(255,255,255,.32),rgba(255,255,255,.10) 62%,rgba(255,255,255,0) 72%)}
+.fin{position:absolute;right:178px;top:150px;width:520px;height:520px;object-fit:contain;filter:drop-shadow(0 40px 42px rgba(15,30,46,.32))}
+.lockup{position:absolute;left:110px;top:110px;height:72px}
+h1{position:absolute;left:104px;top:230px;font-size:124px;line-height:1.02;font-weight:800;letter-spacing:-.04em}
+h1 span{display:block;color:#E1F4F1;opacity:.92}
+.sub{position:absolute;left:110px;top:510px;width:720px;font-size:30px;line-height:1.45;font-weight:400;color:rgba(255,255,255,.95)}
+.chips{position:absolute;left:110px;top:640px;display:flex;gap:14px}
+.chip{border-radius:999px;padding:11px 22px;font-size:21px;font-weight:600;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.34)}
+.legal{position:absolute;left:110px;bottom:56px;font-size:20px;font-weight:600;color:rgba(255,255,255,.86)}
+.url{position:absolute;right:110px;bottom:56px;font-size:22px;font-weight:700;color:#FFFFFF}
+.card{position:absolute;background:#FFFFFF;color:#0F1E2E;border-radius:22px;padding:16px 20px;box-shadow:0 1px 2px rgba(15,45,80,.05),0 24px 44px -18px rgba(15,30,46,.45);display:flex;align-items:center;gap:12px;white-space:nowrap}
+.card small{display:block;font-size:14px;font-weight:600;color:#45566A;margin-bottom:2px}
+.card b{font-size:20px;font-weight:700}
+.dot{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#0A8077,#1A5FC4);display:grid;place-items:center;flex:none}
+.dot svg{width:20px;height:20px;fill:none;stroke:#FFFFFF;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.c1{right:560px;top:190px}
+.c2{right:90px;top:300px}
+.c3{right:130px;top:650px}
+</style>
+</head>
+<body>
+<span class="arc a1"></span><span class="arc a2"></span>
+<span class="disc"></span>
+<img class="fin" src="../../apps/web/public/brand/fin-hello-1024.webp" alt="">
+<div class="card c1"><span class="dot"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span><div><small>Language picked</small><b>English</b></div></div>
+<div class="card c2"><span class="dot"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span><div><small>Read aloud</small><b>How long have you had it?</b></div></div>
+<div class="card c3"><span class="dot"><svg viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg></span><div><small>Patient app</small><b>Sent. A nurse will review.</b></div></div>
+<img class="lockup" src="../../docs/design/logo/lockup-white.svg" alt="MedX">
+<h1>Every word,<span>understood.</span></h1>
+<p class="sub">Multilingual pre-visit intake. Fin listens while nurses, doctors and pharmacists decide.</p>
+<div class="chips"><span class="chip">Synthetic data only</span><span class="chip">Thai, Italian, English</span><span class="chip">Every field cites the patient</span></div>
+<p class="legal">Research prototype · Decision support for clinicians · Not a medical device</p>
+<p class="url">medx.areazeroai.com</p>
+</body>
+</html>

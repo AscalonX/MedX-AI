@@ -23,9 +23,35 @@ export function pendingEscalations(sessions: IntakeSession[]) {
     .sort((a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt) || a.id.localeCompare(b.id));
 }
 
+/**
+ * High medication alerts still waiting for a pharmacist review: reconciliation alerts with no review, plus high
+ * prescribing checks on orders waiting for pharmacist 1 ("submitted", re-checks included). A prescriber override does
+ * not close a check: the pharmacist still has to verify or return the order. Orders are not validated by isSessions,
+ * so this reads them defensively.
+ */
 export function highAlertsOpen(sessions: IntakeSession[]) {
-  return sessions.reduce((total, s) => total + (s.summary?.medAlerts?.filter(a => a.severity === "high" && !a.review).length ?? 0), 0);
+  return sessions.reduce((total, s) => {
+    const reconciliation = s.summary?.medAlerts?.filter(a => a.severity === "high" && !a.review).length ?? 0;
+    const meds: unknown = s.orders?.medications;
+    const orders = Array.isArray(meds) ? meds.reduce((n: number, o: unknown) => {
+      if (!object(o) || o.status !== "submitted" || !Array.isArray(o.checks)) return n;
+      return n + o.checks.filter(c => object(c) && c.severity === "high").length;
+    }, 0) : 0;
+    return total + reconciliation + orders;
+  }, 0);
 }
+
+/** Confirmed triage (a nurse's decision) or, when not confirmed, the deterministic suggestion labelled as one. */
+export type TriageView = { kind: "confirmed"; level: number; by: string } | { kind: "suggested"; level: number } | { kind: "none" };
+export function triageView(session: IntakeSession): TriageView {
+  const t: unknown = session.triage;
+  if (!object(t)) return { kind: "none" };
+  const c = t.confirmed;
+  if (object(c) && level(c.level)) return { kind: "confirmed", level: c.level as number, by: text(c.by) ? c.by : "" };
+  if (level(t.suggestedLevel)) return { kind: "suggested", level: t.suggestedLevel as number };
+  return { kind: "none" };
+}
+const level = (v: unknown) => typeof v === "number" && Number.isInteger(v) && v >= 1 && v <= 5;
 
 // Never hide an escalation or recorded safety flag, even if its patient turn is missing.
 export function isEmptySession(session: IntakeSession) {

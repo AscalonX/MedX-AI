@@ -1,0 +1,35 @@
+# Vercel CLI deploys from the repo root (project "medx", root directory apps/web), so this file applies.
+# apps/web imports packages/shared and data/cases: never exclude them.
+
+# Working folders that are not part of the product
+/NANOPROMPT/
+/F/
+/.claude/
+/.impeccable/
+
+# Build output, dependencies and local state (Vercel installs and builds itself)
+**/node_modules
+**/.next
+**/.next-*
+**/.expo
+**/.data
+**/*.tsbuildinfo
+**/.turbo
+
+# Secrets: only the example file is uploaded
+**/.env
+**/.env.*
+!.env.example
+
+# Not needed to build or run the web app (the patient web export already lives in apps/web/public/patient)
+/apps/mobile/
+/eval/runs
+/docs/
+/pitch/
+/qa/
+
+# Large media sources (the served video is apps/web/public/media/medx-demo.mp4, which stays)
+**/*.mov
+**/*.mkv
+**/*.psd
+**/*.blend

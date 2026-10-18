@@ -33,7 +33,7 @@ export function StatTile({
     <div className={cx("flex flex-col gap-2 rounded-card border border-rule/70 bg-sheet p-5 shadow-sheet", className)}>
       <div className="flex items-center justify-between gap-2 text-small font-medium text-ink-soft">
         <span>{label}</span>
-        {icon && <span className="grid size-8 place-items-center rounded-full bg-paper text-ocean">{icon}</span>}
+        {icon && <span className="grid size-9 place-items-center rounded-full bg-ocean-tint text-ocean">{icon}</span>}
       </div>
       {value === null ? (
         <span className="inline-flex h-8 w-fit items-center rounded-full bg-muted px-3 text-small text-graphite">{emptyLabel}</span>

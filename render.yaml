@@ -19,6 +19,8 @@ services:
         value: "1"
       - key: DEMO_TOKEN
         generateValue: true
+      # File store on ephemeral disk (/api/health reports store "tmp-ephemeral"). To share state with Vercel
+      # instead, add DATABASE_URL (Neon) here; MEDX_STORE_NS keeps namespaces apart (unset here = "local").
       - key: MEDX_STORE_PATH
         value: /tmp/medx/store.json
       # Add AMD_BASE_URL / AMD_API_KEY / AMD_MODEL in the Render dashboard when the AMD key arrives, then set MODEL_PROVIDER=amd.

@@ -1,4 +1,4 @@
-# MedX: consult assistant spec (Doctor, consultrules v1.1, vitalrules v1.0, investigations v1.0)
+# MedX: consult assistant spec (Doctor, consultrules v1.3, vitalrules v1.0, investigations v1.0)
 
 Ambient assistant for the nurse's history-taking and the doctor's consult: speech-to-text of the conversation → pop-up questions, don't-miss "rule out" questions, doctor-only "consider" items, and an evidence-linked draft note the doctor edits and signs.
 Contracts: `ConsultMode`, `ConsultSuggestion`, `ConsultNote`, `ConsultNoteLine`, `ConsultState`, `ConsultRuleFile` (`packages/shared/src/types.ts`). Rules: `packages/shared/src/consultrules.json`. Check: `node docs/clinical/check-consultrules.mjs` (cases in §8).
@@ -234,3 +234,19 @@ Sections, in order: **presenting_complaint · history · medications · allergie
 | CR-THROAT-02 | en | no | I have a sore throat |
 | CR-THROAT-03 | en | no | I have a sore throat |
 
+## 13. v1.3: a non-suppurative consideration for the golden demo (w20 fix, needs Doctor sign-off)
+
+- Why: the golden demo (data/cases/DEMO-GOLD.json) used to describe a suspected quinsy (one-sided pain, trismus) and then end in oral antibiotics and pickup, which goes against NICE NG84 (refer suspected quinsy). The case is now an uncomplicated sore throat with white spots on the tonsils and a penicillin rash allergy, so CR-THROAT-03 does not fire.
+- New feature rule **CR-THROAT-05** (doctor-only consideration, no workup): presenting complaint sore throat **and** tonsillar pus, white spots or swollen tonsils. Text: "Consider bacterial tonsillitis: check the FeverPAIN or Centor score". It prompts a scoring step named by NG84; it never proposes a drug, dose or decision.
+- The w16 audit case (sore throat, fever and cough, no tonsil finding) still fires no consideration (NO-CONSIDER rows above).
+- Fixer wrote this rule, not the Doctor: the Doctor should confirm the terms and the wording before the final demo.
+
+| rule | lang | expect | patient speech |
+|---|---|---|---|
+| CR-THROAT-05 | en | fire | I've had a sore throat for two days and I can see white spots on my tonsils |
+| CR-THROAT-05 | en | fire | My throat hurts and my tonsils are swollen |
+| CR-THROAT-05 | it | fire | Ho mal di gola e le tonsille gonfie con placche bianche |
+| CR-THROAT-05 | th | fire | เจ็บคอ มีจุดขาวที่ต่อมทอนซิล |
+| CR-THROAT-05 | en | no | I have a sore throat |
+| CR-THROAT-05 | en | no | I have a sore throat, no white spots on my tonsils |
+| CR-THROAT-03 | en | no | I've had a sore throat for two days and I can see white spots on my tonsils. It hurts to swallow. |

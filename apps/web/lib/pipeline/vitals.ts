@@ -1,12 +1,14 @@
 import { randomUUID } from 'node:crypto';
+import { WRITE_ROLES } from '@medx/shared';
 import type { TriageAssessment, VitalSigns } from '@medx/shared';
-import { invalid, optionalText, properties, sessionFor, text, written } from './clinicalWrites';
+import { invalid, optionalText, properties, requireStaffRole, sessionFor, text, written } from './clinicalWrites';
 import { withSessionLock } from './store';
 import { assessTriage } from './triage';
 
 const ranges = { heartRate: [20, 250], systolicBP: [40, 300], diastolicBP: [20, 200], respRate: [4, 70], tempC: [30, 43], spo2: [50, 100], painScore: [0, 10] };
 export function recordVitals(id: string, req: unknown) {
   properties(req, ['recordedBy', 'vitals']); const actor = text(req.recordedBy, 'recordedBy', 200);
+  requireStaffRole(req.recordedBy, WRITE_ROLES.vitals, 'record vitals');
   const v = req.vitals; properties(v, [...Object.keys(ranges), 'onOxygen', 'consciousness']);
   if (!Object.keys(v).length) invalid('Enter at least one vital');
   for (const [key, value] of Object.entries(v)) {
@@ -26,6 +28,7 @@ export function recordVitals(id: string, req: unknown) {
 }
 export function confirmTriage(id: string, req: unknown) {
   properties(req, ['reviewerId', 'level', 'note']); const actor = text(req.reviewerId, 'reviewerId', 200);
+  requireStaffRole(req.reviewerId, WRITE_ROLES.triage, 'confirm triage');
   const note = optionalText(req.note, 'note');
   if (typeof req.level !== 'number' || !Number.isInteger(req.level) || req.level < 1 || req.level > 5) invalid('Invalid level');
   const level = req.level as TriageAssessment['suggestedLevel'];

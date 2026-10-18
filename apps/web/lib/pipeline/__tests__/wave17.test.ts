@@ -17,10 +17,17 @@ const doctor = STAFF.find(s => s.role === 'doctor')!.name, pharm = STAFF.find(s 
 const fresh = async (text: string) => addTurn(createSession('en').id, text);
 
 describe('W17 P0-1 staff identity is never redacted', () => {
-  it.each(STAFF.map(s => s.name))('keeps %s on note receipts and audit', async name => {
+  it.each(STAFF.map(s => [s.name, s.role] as const))('keeps %s on note receipts and audit', async (name, role) => {
     const s = await fresh('Headache since today.');
     const req = { reviewerId: name, mode: 'doctor' as const };
     await consultNote(s.id, { ...req, action: 'draft' });
+    expect(getAudit(s.id).at(-1)!.actorId).toBe(name); // draft receipt
+    // w20 (M-05/S-05): only a doctor may sign; other staff get 403 and the note stays unsigned.
+    if (role !== 'doctor') {
+      await expect(consultNote(s.id, { ...req, action: 'sign' })).rejects.toMatchObject({ status: 403 });
+      expect(getConsultRecord(s.id).notes.doctor!.signed).toBeUndefined();
+      return;
+    }
     const signed = await consultNote(s.id, { ...req, action: 'sign', edits: (getConsultRecord(s.id).notes.doctor!.lines.filter(l => l.status === 'unsupported' && l.id !== 'missing:fields').map(l => ({ lineId: l.id, text: 'Not assessed' }))) });
     expect(signed.note!.signed!.reviewerId).toBe(name);
     expect(getAudit(s.id).at(-1)!.actorId).toBe(name);

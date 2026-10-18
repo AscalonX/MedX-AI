@@ -1,9 +1,9 @@
-# MedX: 8-slide deck outline
+# MedX: deck outline (original 8-slide plan, kept for history)
 
-> Updated for wave 9: the built deck is `pitch/deck/deck.html` (PDF `MedX-deck.pdf`, previews `png/`). It follows the app's v2 look and now also covers the voice agent with patient confirmation, live status on the patient phone, pharmacist reconciliation, the ops dashboard, and the Claude-reviews-Codex plus QA process. Slide order: 1 title, 2 problem (cited), 3 three users and the phone, 4 pipeline, 5 safety by design, 6 evidence (52 cases, 18 blind holdout, 1,041 tests, 7/10 keyword recall), 7 Gemma on AMD (latency [pending AMD run]), 8 next steps, pharmacist screen, team. The text below is the original outline; `deck.html` is the source of truth.
+> **Current deck (wave 20, Sun 18 Oct 2026):** `pitch/deck/deck.html` is the source of truth (PDF `MedX-deck.pdf`, previews `png/`), 10 slides in the v3 "calm clinical banking" look with Plus Jakarta Sans: 1 title, 2 problem (cited), 3 one journey and the patient phone, 4 nurse, 5 doctor, 6 prescribing checks and the two-stage pharmacy (pharmacist 1 verify or return with options for prescriber review, pharmacist 2 two-person dispense, pickup), 7 safety by design, 8 evidence (52 cases, 18 blind holdout, 175 red-flag and 253 medication-rule reference tests, 2,436 automated tests, 7/10 keyword recall; Gemma on AMD [pending AMD run]), 9 business case, 10 next steps and team. Live demo: https://medx.areazeroai.com. The outline below is the original wave-1 plan and its "Clinical paper" look is superseded.
 
 
-Visual language: "Clinical paper" (`docs/design/DIRECTION.md`): warm off-white, ink-black type, serif display, red only for urgency, no gradients, no card grids. Every number must be cited or marked [TBD-METRIC].
+Visual language at the time (superseded by DIRECTION.md v3.1): "Clinical paper": warm off-white, ink-black type, serif display, red only for urgency, no gradients, no card grids. Every number must be cited or marked [pending AMD run].
 
 ## 1. MedX
 - **Message:** Every field points back to the patient's own words.
@@ -37,13 +37,13 @@ Visual language: "Clinical paper" (`docs/design/DIRECTION.md`): warm off-white, 
 
 ## 6. Results (synthetic)
 - **Message:** We measure, including where it falls short.
-- **On slide:** Blind holdout: rules alone 7/10 emergencies caught. With Gemma screen: [TBD-METRIC]. Precision, unsupported rate, reading load: [TBD-METRIC].
+- **On slide:** Blind holdout: rules alone 7/10 emergencies caught. With Gemma screen: [pending AMD run]. Precision, unsupported rate, reading load: [pending AMD run].
 - **Visual:** One table, ink on paper: metric, value, n, threshold; unmet thresholds shown in the same style as met ones.
 - **Notes:** We wrote the holdout without seeing the rules; rules alone missed three emergencies and raised three false alarms. That motivated the screen. All numbers are synthetic, small n, with confidence intervals. Placeholders get filled from the AMD run.
 
 ## 7. Gemma on AMD
-- **Message:** AMD hardware serves every model call, behind one gateway.
-- **On slide:** Gemma via AMD Token Factory (design target). Extraction, translation, safety screen, next question. Latency p50 / p95: [TBD-METRIC].
+- **Message:** Every model call is designed to go through one gateway to Gemma on AMD Token Factory (pending a key; the demo runs a mock model).
+- **On slide:** Gemma via AMD Token Factory (design target). Extraction, translation, safety screen, next question. Latency p50 / p95: [pending AMD run].
 - **Visual:** Architecture sketch: phone and web clients, API gateway, adapter, AMD Token Factory endpoint; latency stamp box left blank on purpose.
 - **Notes:** All model calls go through one OpenAI-compatible client reading endpoint and model id from environment. Integration awaits our key; until then tests use a mock provider. Variant is chosen on a dev split by schema validity and latency.
 

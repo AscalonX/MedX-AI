@@ -1,7 +1,10 @@
 "use client";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Consciousness, GetSessionRes, IntakeSession, VitalSigns, VitalsReq } from "@medx/shared";
-import { Badge, Button, Card, CardHeader, Field, Icon, Receipt, SegmentedControl } from "@/components/ui";
+import { WRITE_ROLES, type Consciousness, type GetSessionRes, type IntakeSession, type Lang, type VitalSigns, type VitalsReq } from "@medx/shared";
+import { Badge, Button, Card, CardHeader, Field, Icon, Receipt, SegmentedControl, buttonClasses } from "@/components/ui";
+import { notifyCaseChanged } from "../../../../_shared/caseEvents";
 import { Head, Notice, ReadOnlyNote, noDash, useIdentity } from "../../../_bits";
 import { fixtureConfirm, fixtureSession, fixtureVitals } from "../../../_fixture";
 import { asSession, call, clockOf, tr, type TKey } from "../../../_lib";
@@ -24,8 +27,10 @@ const LEVELS = [1, 2, 3, 4, 5] as const;
 type Level = (typeof LEVELS)[number];
 
 export function Vitals({ id }: { id: string }) {
-  const { lang, reviewer, role } = useIdentity("Vitals");
-  const canEnter = role === "nurse";
+  const { lang, reviewer, role, setClinicianRole } = useIdentity("Vitals");
+  const router = useRouter();
+  // Server enforces the same rule (403): vitals and triage confirmation are nurse writes.
+  const canEnter = (WRITE_ROLES.vitals as readonly string[]).includes(role);
   const [session, setSession] = useState<IntakeSession | null>(null);
   const [fixture, setFixture] = useState(false);
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -91,7 +96,7 @@ export function Vitals({ id }: { id: string }) {
     try {
       const r = await call<unknown>(`/api/sessions/${id}/vitals`, req, () => fixtureVitals(session ?? fixtureSession(id), req));
       setSession(asSession(r.data));
-      if (r.fixture) setFixture(true);
+      if (r.fixture) setFixture(true); else notifyCaseChanged(id);
       setVals({ heartRate: "", systolicBP: "", diastolicBP: "", respRate: "", tempC: "", spo2: "", painScore: "" });
       setOnO2(""); setCons("");
       formRef.current?.querySelector<HTMLInputElement>("[name=heartRate]")?.focus();
@@ -108,15 +113,21 @@ export function Vitals({ id }: { id: string }) {
     try {
       const r = await call<unknown>(`/api/sessions/${id}/triage/confirm`, req, () => fixtureConfirm(session!, reviewer, level, req.note));
       setSession(asSession(r.data));
-      if (r.fixture) setFixture(true);
+      if (r.fixture) setFixture(true); else notifyCaseChanged(id);
     } catch (x) { setCErr((x as Error).message); }
     finally { setBusy(false); }
   }
 
+  /** "Ready for doctor": switch this browser to the doctor role and open the doctor consult (S-01). */
+  function handOver() {
+    setClinicianRole("doctor"); // writes medx.clinicianRole and medx.role
+    router.push(`/review/${id}/consult?mode=doctor`);
+  }
+
   const hist = [...(session?.vitals ?? [])].reverse();
   return (
-    <div className="cl-enter mx-auto max-w-6xl px-4 py-6 sm:px-6">
-      <Head id={id} title={tr("vitalsTitle", lang)} session={session} lang={lang} fixture={fixture} />
+    <div className="mx-auto max-w-6xl">
+      <Head id={id} active="vitals" title={tr("vitalsTitle", lang)} session={session} lang={lang} fixture={fixture} />
       {loadErr && <Notice>{tr("loadFail", lang)} {loadErr}</Notice>}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {canEnter ? <Card>
@@ -201,6 +212,16 @@ export function Vitals({ id }: { id: string }) {
                       { label: tr("at", lang), value: clockOf(triage.confirmed.at, lang) },
                       ...(triage.confirmed.note ? [{ label: tr("note", lang), value: triage.confirmed.note }] : []),
                     ]}
+                    footer={
+                      // S-01 handover: navigation only (the role switch is local); the doctor then runs the consult.
+                      <section aria-label={tr("handoverTitle", lang)} className="flex w-full flex-col gap-2 border-t border-rule/70 pt-3" data-handover>
+                        <p className="text-small text-ink-soft">{tr("readyForDoctorHint", lang)}</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button variant="primary" icon={<Icon name="user-check" size={16} />} onClick={handOver}>{tr("readyForDoctor", lang)}</Button>
+                          {canEnter && <Link href={`/review/${id}/consult?mode=nurse`} className={buttonClasses({ variant: "secondary" })}><Icon name="mic" size={16} />{tr("startHistory", lang)}</Link>}
+                        </div>
+                      </section>
+                    }
                   />
                 ) : !canEnter ? null : (
                   <div className="mt-4 space-y-3 border-t border-rule/70 pt-4">
@@ -250,7 +271,7 @@ function Trend({ cur, prev }: { cur?: number; prev?: number }) {
   const d = prev === undefined ? 0 : cur - prev;
   return <span>{cur}{d !== 0 && <span className="ml-1 text-small text-ink-soft" title={`${d > 0 ? "+" : ""}${Math.round(d * 10) / 10}`}>{d > 0 ? "↑" : "↓"}<span className="sr-only"> {d > 0 ? "up" : "down"} {Math.abs(Math.round(d * 10) / 10)}</span></span>}</span>;
 }
-function Row({ v, prev, lang }: { v: VitalSigns; prev?: VitalSigns; lang: "en" | "th" | "it" }) {
+function Row({ v, prev, lang }: { v: VitalSigns; prev?: VitalSigns; lang: Lang }) {
   return (
     <tr>
       <td className="py-2 pr-4 text-ink-soft">{clockOf(v.at, lang)}</td>
@@ -259,8 +280,8 @@ function Row({ v, prev, lang }: { v: VitalSigns; prev?: VitalSigns; lang: "en" |
       <td className="pr-4"><Trend cur={v.respRate} prev={prev?.respRate} /></td>
       <td className="pr-4"><Trend cur={v.tempC} prev={prev?.tempC} /></td>
       <td className="pr-4"><Trend cur={v.spo2} prev={prev?.spo2} /></td>
-      <td className="pr-4">{v.onOxygen === undefined ? "-" : v.onOxygen ? "Yes" : "No"}</td>
-      <td className="pr-4">{v.consciousness ? v.consciousness.replace("_", " ") : "-"}</td>
+      <td className="pr-4">{v.onOxygen === undefined ? "-" : tr(v.onOxygen ? "yes" : "no", lang)}</td>
+      <td className="pr-4">{v.consciousness ? tr(ACVPU.find((o) => o.value === v.consciousness)?.label ?? "notAssessed", lang) : "-"}</td>
       <td className="pr-4"><Trend cur={v.painScore} prev={prev?.painScore} /></td>
       <td className="text-ink-soft">{v.recordedBy}</td>
     </tr>

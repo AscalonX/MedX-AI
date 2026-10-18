@@ -2,6 +2,9 @@
   "name": "@medx/web",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
@@ -11,6 +14,7 @@
   },
   "dependencies": {
     "@medx/shared": "file:../../packages/shared",
+    "@neondatabase/serverless": "^1.2.0",
     "@types/qrcode": "^1.5.6",
     "next": "15.5.28",
     "qrcode": "^1.5.4",

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>MedX README banner</title>
+<!--
+  Source of docs/readme/banner.png (README banner, 1280x640 CSS px, rendered at 2x then resized to 1600x800).
+  Render from the repo root: node docs/readme/render-banner.mjs
+  Brand art: 3D Fin (apps/web/public/brand/fin-hello-1024.webp, owner-approved original character), outlined Echo X
+  lockup (docs/design/logo/lockup-white.svg). Type: Plus Jakarta Sans (OFL), local files in pitch/promo/fonts.
+  Colours are tokens only (packages/shared/src/tokens.ts): primaryFrom #0A8077, primaryTo #1A5FC4, ink #0F1E2E,
+  tealTint #E1F4F1, highlighter #D2E4FF, white. No red, no clinical content next to Fin (DIRECTION.md section 11).
+-->
+<link rel="stylesheet" href="../../pitch/promo/fonts/fonts.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1280px;height:640px;overflow:hidden}
+body{position:relative;font-family:"Plus Jakarta Sans",system-ui,sans-serif;color:#FFFFFF;-webkit-font-smoothing:antialiased;
+  background:
+    radial-gradient(720px 520px at 8% -10%,rgba(225,244,241,.22),transparent 62%),
+    radial-gradient(640px 520px at 100% 110%,rgba(210,228,255,.20),transparent 60%),
+    linear-gradient(128deg,#0A8077 0%,#1A5FC4 100%)}
+.arc{position:absolute;border-radius:50%;border:1.5px solid rgba(255,255,255,.16)}
+.a1{width:880px;height:880px;right:-330px;top:-330px}
+.a2{width:620px;height:620px;right:-170px;top:-120px;border-color:rgba(255,255,255,.10)}
+.disc{position:absolute;right:96px;top:92px;width:456px;height:456px;border-radius:50%;
+  background:radial-gradient(circle at 42% 38%,rgba(255,255,255,.30),rgba(255,255,255,.10) 62%,rgba(255,255,255,0) 72%)}
+.fin{position:absolute;right:118px;top:96px;width:420px;height:420px;object-fit:contain;
+  filter:drop-shadow(0 34px 36px rgba(15,30,46,.32))}
+.lockup{position:absolute;left:88px;top:92px;height:58px}
+h1{position:absolute;left:84px;top:178px;font-size:92px;line-height:1.02;font-weight:800;letter-spacing:-.035em}
+h1 span{display:block;color:#E1F4F1;opacity:.92}
+.sub{position:absolute;left:88px;top:392px;width:640px;font-size:24px;line-height:1.5;font-weight:500;color:rgba(255,255,255,.94)}
+.chips{position:absolute;left:88px;top:482px;display:flex;gap:12px}
+.chip{border-radius:999px;padding:9px 18px;font-size:17px;font-weight:600;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.34)}
+.chip b{display:inline-block;width:8px;height:8px;border-radius:50%;background:#E1F4F1;margin-right:9px;vertical-align:2px}
+.legal{position:absolute;left:88px;bottom:34px;font-size:15px;font-weight:500;color:rgba(255,255,255,.80)}
+.tag{position:absolute;right:96px;bottom:34px;font-size:15px;font-weight:600;color:rgba(255,255,255,.86)}
+</style></head><body>
+<span class="arc a1"></span><span class="arc a2"></span>
+<span class="disc"></span>
+<img class="fin" src="../../apps/web/public/brand/fin-hello-1024.webp" alt="">
+<img class="lockup" src="../design/logo/lockup-white.svg" alt="MedX">
+<h1>Every word,<span>understood.</span></h1>
+<p class="sub">Multilingual pre-visit intake. Fin listens while nurses, doctors and pharmacists decide.</p>
+<div class="chips">
+  <span class="chip"><b></b>Synthetic data only</span>
+  <span class="chip"><b></b>Thai, Italian, English</span>
+  <span class="chip"><b></b>Every field cites the patient</span>
+</div>
+<p class="legal">Research prototype · Decision support for clinicians · Not a medical device</p>
+<p class="tag">AMD Developer Hackathon ACT III · Track 2</p>
+</body></html>

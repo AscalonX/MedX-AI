@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import type { Lang, RedFlagHit } from "@medx/shared";
 import { Button } from "./Button";
 import { Icon } from "./Icon";
@@ -13,9 +13,10 @@ const copy = {
 } as const;
 
 /**
- * Clinician red-flag interrupt (DIRECTION.md 6c). A red card grows in at the top of the container and
- * pushes `children` (the summary) down. It cannot be dismissed: acknowledging collapses it to a
- * one-line red strip that stays for the life of the session.
+ * Clinician red-flag interrupt (DIRECTION.md 6c). A red card at the top of the container that pushes `children`
+ * (the summary) down. It is there from the first frame: no grow, fade or delay (owner rule, wave 20: urgent content
+ * appears instantly and stays still; globals.css "Urgent stays still" keeps every motion off it and its contents).
+ * It cannot be dismissed: acknowledging collapses it to a one-line red strip that stays for the life of the session.
  */
 export function RedFlagInterrupt({
   hits,
@@ -33,12 +34,8 @@ export function RedFlagInterrupt({
   onAcknowledge?: () => void;
   children: ReactNode;
 }) {
-  // Open after first paint so the push is seen even when hits arrive with the page.
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    const id = requestAnimationFrame(() => setOpen(hits.length > 0));
-    return () => cancelAnimationFrame(id);
-  }, [hits.length]);
+  // Open in the same render the hits arrive in (never a frame later, never animated).
+  const open = hits.length > 0;
   const emergency = hits.some((h) => h.severity === "emergency");
 
   // After Acknowledge, focus moves to the collapsed strip (never drops to <body>) and it is announced politely.

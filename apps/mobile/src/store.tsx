@@ -3,10 +3,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router, type Href } from "expo-router";
 import { Platform } from "react-native";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
-import { getSession, toPatient, type PatientView as IntakeSession } from "@/api";
+import { createSession, getSession, toPatient, type PatientView as IntakeSession } from "@/api";
+import { parseLaunch, type Launch } from "@/samples";
 
-type S = { lang: Lang; session: IntakeSession | null; speak: boolean };
-type Ctx = S & { ready: boolean; restored: IntakeSession | null; offline: boolean; set: (p: Partial<S>) => void; reset: () => void; update: (s: IntakeSession) => void };
+/** A "Try saying" example waiting to fill the first answer box of a visit in `lang`. Never sent by itself. */
+export type Prefill = { id: string; lang: Lang; text: string };
+type S = { lang: Lang; session: IntakeSession | null; speak: boolean; prefill: Prefill | null };
+type Ctx = S & {
+  ready: boolean; restored: IntakeSession | null; offline: boolean; set: (p: Partial<S>) => void; reset: () => void; update: (s: IntakeSession) => void;
+  /** "Start a new visit" confirm sheet (components/newvisit.tsx), shared by Home, Help and the tab bar. */
+  newVisit: boolean; askNewVisit: () => void; closeNewVisit: () => void;
+  /** Confirmed: forget the visit on this phone (stored copy included) so a shared demo device starts clean. Language is kept. */
+  startOver: () => void;
+};
 const C = createContext<Ctx>(null as never);
 export const useStore = () => useContext(C);
 
@@ -20,10 +29,12 @@ export function screenFor(s: IntakeSession): Href {
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [s, setS] = useState<S>({ lang: "en", session: null, speak: false });
+  // English by default on first launch; Thai and Italian stay one tap away on Home.
+  const [s, setS] = useState<S>({ lang: "en", session: null, speak: false, prefill: null });
   const [ready, setReady] = useState(false);
   const [offline, setOffline] = useState(false);
   const [restored, setRestored] = useState<IntakeSession | null>(null);
+  const [newVisit, setNewVisit] = useState(false);
   const booted = useRef(false);
   const touched = useRef(false); // a new intake was started or reset: any pending restore is void
 
@@ -33,17 +44,30 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     booted.current = true;
     (async () => {
       try {
-        const fresh = Platform.OS === "web" && typeof window !== "undefined" && new URLSearchParams(window.location.search).get("new") === "1";
-        const raw = fresh ? null : await AsyncStorage.getItem(KEY);
-        if (fresh) {
+        // Web deep link: /patient/?new=1&lang=it&sample=it01 (see samples.ts).
+        const launch: Launch = Platform.OS === "web" && typeof window !== "undefined" ? parseLaunch(window.location.search) : { fresh: false, lang: null, sample: null };
+        const raw = launch.fresh ? null : await AsyncStorage.getItem(KEY);
+        if (launch.fresh) {
           const keep = await AsyncStorage.getItem(KEY).then((r) => (r ? (JSON.parse(r) as { lang: Lang }).lang : null)).catch(() => null);
-          await AsyncStorage.setItem(KEY, JSON.stringify({ session: null, lang: keep ?? "en" }));
-          if (keep) setS((o) => ({ ...o, lang: keep }));
+          const lang = launch.lang ?? keep ?? "en";
+          await AsyncStorage.setItem(KEY, JSON.stringify({ session: null, lang }));
+          const sample = launch.sample;
+          setS((o) => ({ ...o, lang, prefill: sample ? { id: sample.id, lang: sample.lang, text: sample.text } : null }));
+          if (sample) {
+            // Start the visit in the example's language and open the first question with the sentence filled in (not sent).
+            // If this fails, Home shows Start as usual and the example still waits for the first answer box.
+            try {
+              const session = await createSession(sample.lang);
+              if (!touched.current) { setS((o) => ({ ...o, session })); setRestored(session); }
+            } catch { /* offline or rate limited: stay on Home */ }
+          }
         }
-        if (raw) {
-          const saved = JSON.parse(raw) as { session: IntakeSession | null; lang: Lang };
+        const saved = raw ? (JSON.parse(raw) as { session: IntakeSession | null; lang: Lang }) : null;
+        // A stored visit keeps its fixed language; with no visit stored, ?lang= wins over the remembered choice.
+        const lang = saved?.session ? saved.lang : launch.fresh ? null : launch.lang ?? saved?.lang ?? null;
+        if (lang) setS((o) => ({ ...o, lang }));
+        if (saved) {
           if (saved.session) saved.session = toPatient(saved.session); // drop clinician fields from old stored copies
-          if (saved.lang) setS((o) => ({ ...o, lang: saved.lang }));
           if (saved.session) {
             // Validate against the server: the stored copy is never trusted. 404 or no answer after a retry: forget it, go Home.
             let session: IntakeSession | null = null;
@@ -78,6 +102,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     ...s, ready, restored, offline,
     set: (p) => { if ("session" in p) touched.current = true; setS((o) => ({ ...o, ...p })); },
     reset: () => { touched.current = true; setS((o) => ({ ...o, session: null })); },
+    newVisit,
+    askNewVisit: () => setNewVisit(true),
+    closeNewVisit: () => setNewVisit(false),
+    startOver: () => {
+      touched.current = true; // a restore still in flight must not bring the old visit back
+      setNewVisit(false);
+      setOffline(false);
+      setS((o) => ({ ...o, session: null, prefill: null, speak: false }));
+      // Written now as well as by the effect above, so closing the tab right after still leaves no visit stored.
+      AsyncStorage.setItem(KEY, JSON.stringify({ session: null, lang: s.lang })).catch(() => {});
+    },
     // Apply a server copy only if it is still the active session (late responses never resurrect an old one).
     update: (n) => setS((o) => (o.session?.id === n.id ? { ...o, session: n } : o)),
   };

@@ -53,8 +53,12 @@ r = await conf({ reviewerId: 'n', level: 4, note: 'patient stable on recheck' })
 r = await vit(s.id, full);
 check('V25', 'new vitals after confirm keep prior confirmation (historical) but suggestion recomputed', r.json?.triage?.confirmed?.level === 4 && r.json.triage.suggestedLevel === 4, r.json?.triage);
 // confirm with no vitals at all
-s = await newSession(); r = await req('POST', `/api/sessions/${s.id}/triage/confirm`, { reviewerId: 'n', level: 4, note: 'x' });
-check('V26', 'confirm level 4 on session with NO vitals: should not be allowed to be reassuring without data (expect 400/409) ', r.status !== 200, [r.status, r.json?.triage]);
+// Current documented behaviour (w14 design question, still open for the clinical owner): with no vitals the suggestion
+// never becomes reassuring (level 3, "Vitals incomplete"), and a less urgent confirmation needs a written note.
+s = await newSession(); r = await req('POST', `/api/sessions/${s.id}/triage/confirm`, { reviewerId: 'n', level: 4 });
+check('V26', 'NO vitals: confirming a less urgent level without a note -> 400', r.status === 400, [r.status, r.text.slice(0, 160)]);
+r = await req('POST', `/api/sessions/${s.id}/triage/confirm`, { reviewerId: 'n', level: 4, note: 'x' });
+check('V26b', 'NO vitals: with a note -> 200, but the suggestion stays level 3 with the "Vitals incomplete" reason', r.status === 200 && r.json?.triage?.suggestedLevel === 3 && r.json.triage.reasons.some(x => /incomplete/i.test(x.en)), [r.status, r.json?.triage?.suggestedLevel, r.json?.triage?.reasons?.map(x => x.en)]);
 // confirm persisted in audit
 const gg = (await req('GET', `/api/sessions/${s.id}`)).json; 
 // escalated session

@@ -4,6 +4,7 @@ import { PipelineError } from '../../../../../../lib/pipeline/pipeline';
 import { body, handle, keys, type RouteContext } from '../../../../_http';
 export { OPTIONS } from '../../../../_http';
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 export async function POST(request: Request, context: RouteContext) {
   return handle(async () => {
     const value = await body(request); keys(value, ['reviewerId', 'mode', 'action', 'edits']);

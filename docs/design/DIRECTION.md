@@ -1,8 +1,21 @@
-# MedX design direction v2: "Calm clinical banking"
+# MedX design direction v3: "Calm clinical banking"
 
-Owner: Design lead. Status: v2, binding from wave 4.
+Owner: Design lead. Status: v3.1, binding from wave 20 (v2 was binding from wave 4).
 Tokens: `packages/shared/src/tokens.ts`. Web mapping: `apps/web/app/globals.css`. Web primitives: `apps/web/components/ui/`.
 If this file and a screen disagree, this file wins. If this file and `CLAUDE.md` safety invariants disagree, `CLAUDE.md` wins.
+
+> **v3 (owner decisions, Sat 17 Oct 2026, late evening).** Nothing in sections 1 and 6 (safety states, red-flag interrupt, highlighter) changed. What changed:
+> 1. **Polish, same brand.** "Calm clinical banking" stays: teal `#0A8077` to ocean `#1A5FC4`, Fin the dolphin, the Echo X logo. The look follows the owner's reference site (U-Talk) more closely: mist background with soft radial tints, big two-tone headlines, white rounded cards with soft shadows, one dark gradient feature card, pill chips, a translucent sticky nav.
+> 2. **Typography (web).** Plus Jakarta Sans (Latin, Italian) with Noto Sans Thai (Thai), via `next/font/google`, replace SCBXBeta2 on the web. The logo keeps its outlined vector wordmark. Mobile keeps SCBXBeta2 until the mobile builder adopts the web fonts (section 3).
+> 3. **3D brand art.** Owner-approved 3D Fin poses, a large detailed hero Fin, a 3D mark and a 3D app icon. 3D at 96px and up; vector below and for favicons (section 11).
+> 4. **English first.** All content defaults to English. Thai and Italian stay one toggle away. Language controls list EN first on marketing pages.
+> 5. **Marketing landing at `/`.** New section 12 sets the rules for it. The logo section moved from 12 to 13.
+
+> **v3.1 (owner request, Sun 18 Oct 2026, about 02:45: "make the font and front end beautiful, add beautiful animations").**
+> 1. **Type.** Plus Jakarta Sans and Noto Sans Thai are now the *only* UI fonts on the web. SCBXBeta2 left the CSS stack (its licence metadata reads "All rights reserved"). Body text runs at 1.6, display headings tighten to -0.02 to -0.035em, data uses tabular figures (section 3).
+> 2. **Motion system.** Tokens, utilities and primitives for entrances, scroll reveals, list stagger, page enter, hover lift, press, colour crossfade, skeleton shimmer, success tick, count up, toasts and the marketing hero (section 5).
+> 3. **Urgent stays still.** Red-flag interrupts, emergency alerts and high alerts appear instantly and never move. The red-flag card no longer grows in (sections 5 and 6c).
+> 4. **Video.** The primary landing video is the cinematic promo when it exists; the screen-recorded walkthrough opens from a secondary action in a dialog (section 12.7).
 
 > **v1 superseded.** v1 "Clinical paper" (paper, ink, serif) was replaced on 17 Oct 2026, 15:00 by owner decision: a modern banking-app look (reference u-talk-ten.vercel.app), teal to ocean primary. What carries over from v1 is the meaning: red only for urgency, five honest safety states, the highlighter link to the patient's sentence, the red-flag interrupt that pushes content away, and the language morph. v1 token and utility names are kept and remapped so v1 screens re-skin without code changes (section 10).
 
@@ -33,7 +46,8 @@ Still banned: emoji UI, sparkle icons, AI-assistant chat bubbles for clinical co
 | `paper` | `#F5F8FA` | Quiet surface: selected rows, inset panels, patient page | ink 15.8, graphite 5.6 |
 | `sheet` | `#FFFFFF` | Card | ink 16.9, inkSoft 7.5, graphite 5.9 |
 | `muted` | `#EDF1F5` | Missing placeholder, segmented track, skeleton | graphite 5.2 |
-| `ink` | `#0F1E2E` | Primary text, big numbers | |
+| `ink` | `#0F1E2E` | Primary text, big numbers; the dark marketing surface (section 12) | white 16.9 |
+| `inkRaised` | `#173A63` | End of the ink gradient (ink toward ocean). Marketing only | white 11.5 |
 | `inkSoft` | `#45566A` | Labels, secondary text | 7.5 on card |
 | `graphite` | `#56657A` | Hints, timestamps, placeholders | 5.9 on card, 4.6 on highlighter |
 | `rule` | `#E3E9EF` | Hairlines, card borders (decorative) | n/a |
@@ -52,7 +66,18 @@ Still banned: emoji UI, sparkle icons, AI-assistant chat bubbles for clinical co
 | `signalTint` | `#FDEAEC` | Urgent (non-emergency) background | signal 5.4 |
 | `onPrimary` / `onSignal` | `#FFFFFF` | Text on gradients | see stops |
 
-Gradients (`tokens.gradient`): `primary` 135deg `#0A8077` to `#1A5FC4`, with one soft white radial at the bottom-right corner (decoration only, never under body text). `signal` 135deg `#C81E2C` to `#9E1024`, for red flags only.
+Gradients (`tokens.gradient`):
+- `primary` 135deg `#0A8077` to `#1A5FC4`, with one soft white radial at the bottom-right corner (decoration only, never under body text).
+- `signal` 135deg `#C81E2C` to `#9E1024`, for red flags only.
+- `ink` 160deg `ink` to `inkRaised`, with faint ocean and teal radials (`bg-ink-gradient`). Marketing only: the one dark bento card and the safety band (section 12). Never in the app, never with red.
+
+Marketing tints are mixes of these tokens (`color-mix`), never new hex values:
+- `bg-mist`: desk with teal, ocean and oceanTint radials (the marketing page background).
+- `bg-halo`: a white to oceanTint disc behind Fin.
+- `glass`: 72% white with an 18px backdrop blur; 96% white where blur is unsupported.
+- `text-brand-gradient`: teal to ocean text for the second tone of a headline (large text only, 4.3:1 on desk). `text-brand-gradient-light` is the same on ink. Both fall back to plain text in forced-colours mode.
+
+`marketing.test.ts` fails if `globals.css` holds a hex value that is not a token, or if a design-system component contains a raw hex colour.
 
 Rules:
 - **One gradient hero per screen.** Everything else is a white card. The primary button is the only other gradient.
@@ -62,55 +87,68 @@ Rules:
 
 ## 3. Type
 
-**One typeface everywhere: SCBXBeta2** (owner decision, recorded in `docs/DECISIONS.md`). The same family covers Latin, Italian and Thai on web and mobile, so mixed Thai and Latin lines share one design. Checked with fontTools:
-- all 87 assigned Thai code points (U+0E01 to U+0E5B);
-- all 12 Italian accented vowels (à è é ì ò ù and capitals);
-- `kern`, `mark` and `mkmk` positioning for Thai stacking.
-
-| Cut | File | Role |
-|---|---|---|
-| Light 300 | `SCBXBeta2-Light.otf` | Large secondary text only (17px and up): greeting line, hero subtitle. Never for small text or values |
-| Regular 400 | `SCBXBeta2-Regular.otf` | Body, labels, chips' secondary text, inputs |
-| Bold 700 | `SCBXBeta2-Bold.otf` | Headings, values, buttons, chips, big numbers, the patient code |
-
-Weights map onto the three real cuts, so the browser never synthesises a weight:
-- Tailwind `font-medium` = 400.
-- `font-semibold`, `font-bold` and `font-extrabold` = 700.
+**Web (v3): Plus Jakarta Sans + Noto Sans Thai** (owner decision, 17 Oct 2026, late evening).
+- **Plus Jakarta Sans** sets Latin and Italian. Checked with fontTools on the Google Fonts `latin` subset: all 12 Italian accented vowels (à è é ì ò ù and capitals) and the `tnum` feature (tabular figures) are present.
+- **Noto Sans Thai** sets Thai. Checked on the `thai` subset: all 87 assigned Thai code points (U+0E01 to U+0E5B) and `mark`/`mkmk` positioning for stacked vowels and tone marks.
+- Both are **variable fonts** (Jakarta 200 to 800, Noto Sans Thai 100 to 900), so every weight below is a real instance; the browser never synthesises one.
 
 Loading:
-- **Web:** `next/font/local` in `layout.tsx` from `apps/web/app/fonts/`, exposed as `--font-scbx`. Fallback stack: system-ui, Noto Sans Thai, sans-serif.
-- **Mobile:** register with expo-font as `"SCBXBeta2-Light"`, `"SCBXBeta2-Regular"` and `"SCBXBeta2-Bold"` from `apps/mobile/assets/fonts/`.
-  - `mobileFont(role, lang, weight)` returns these names for every language.
-  - `sans` maps regular and medium to Regular, semibold and bold to Bold, and light to Light.
-  - `display` defaults to Bold.
-- `serif` and `display` remain as aliases so earlier calls compile.
+- **Web:** `apps/web/components/ui/fonts.ts` calls `next/font/google` and exports `fontVariables` (`--font-jakarta`, `--font-noto-thai`). `layout.tsx` puts it on `<html>`. The files are self-hosted at build time (no request to Google at runtime). Jakarta has a metric-matched local fallback, so text does not reflow when it arrives. Noto Sans Thai is not preloaded (most first views are English); it loads on the first Thai glyph.
+- **v3.1: these are the only UI fonts on the web.** The CSS stack is `var(--font-jakarta), var(--font-noto-thai), "Leelawadee UI", Thonburi, "Noto Sans Thai UI", Tahoma, system-ui, sans-serif`. The platform Thai faces only cover the moment before Noto Sans Thai loads. SCBXBeta2 is no longer in the stack: its licence metadata reads "All rights reserved". The unused `apps/web/app/fonts/SCBXBeta2-*.otf` files can be deleted; that call belongs to the orchestrator, because the folder is outside the design lead's scope.
+- **Mobile:** unchanged for now. SCBXBeta2 through expo-font (`"SCBXBeta2-Light"`, `"SCBXBeta2-Regular"`, `"SCBXBeta2-Bold"`); `mobileFont(role, lang, weight)` returns these names. The mobile builder may move to the Expo Google Fonts packages for both families later; tokens keep both (`webFont`, `scbxFont`).
+- `serif` and `display` remain aliases of the sans so earlier calls compile.
+- The logo wordmark stays outlined vector paths (section 13), so it never depends on a font.
 
-Numerals: SCBXBeta2 has **no `tnum` feature**, so digits are proportional and `tabular-nums` has no effect.
-- Single big numbers (StatTile, patient code) are unaffected.
-- In tables and live counters, right-align number columns and give them a fixed width so changing digits do not shift the layout.
+Weights (Tailwind):
 
-Scale (px; line height Latin / Thai):
+| Class | Weight | Use |
+|---|---|---|
+| `font-light` | 300 | Large secondary text only (17px and up) |
+| `font-normal` | 400 | Body, labels, inputs |
+| `font-medium` | 500 | Quiet emphasis, unverified values (`.mx-pencil`) |
+| `font-semibold` | 600 | Buttons, chips, nav, eyebrows |
+| `font-bold` | 700 | Headings, values, card titles |
+| `font-extrabold` | 800 | Big numbers, marketing headlines |
 
-| Token | Size | LH | Weight | Use |
+Numerals (v3.1):
+- **The app is data first.** Every page uses tabular, lining figures (set on `<html>`), so counters, times and tables never shift when digits change.
+- **Data elements** spell out the OpenType features: `table`, `time`, `code`, `kbd`, `output`, `.tabular-nums` and `[data-numeric]` get `"tnum" 1, "lnum" 1`.
+- **Marketing prose** returns to proportional figures. Pages with `.mx-marketing` on their root (the landing, `/demo`) and the marketing headlines (`.text-hero`, `.text-h2`, `.text-h3`) do this. Counting numbers stay tabular.
+
+App scale (px; line height Latin / Thai). Sizes are unchanged from v2. Line heights and tracking were tuned in v3.1 for Jakarta: text runs at 1.5 to 1.6, and headings tighten as they grow.
+
+| Token | Size | LH | Weight, tracking | Use |
 |---|---|---|---|---|
-| `micro` | 12 | 1.4 / 1.6 | 700 in chips | Chips, meta |
-| `small` | 13 | 1.45 / 1.65 | 400 or 700 | Labels, table meta |
-| `body` | 15 | 1.5 / 1.7 | 400; values 700 | Clinician body |
-| `lead` | 17 | 1.45 / 1.6 | 400 or 700 | Card titles, red-flag action |
-| `bodyPatient` | 18 | 1.5 / 1.7 | 400 | Patient body |
-| `title` | 22 | 1.25 / 1.5 | 700 | Screen titles, hero title, greeting name |
-| `question` | 26 | 1.2 / 1.45 | 700 | The one patient question |
-| `stat` | 32 | 1.1 / 1.3 | 700 | Big numbers |
-| `display` | 34 | 1.1 / 1.4 | 700 | Red-flag screen (mobile) |
-| `code` | 52 | 1.0 | 700 | Patient code B-042 |
+| `micro` | 12 | 1.45 / 1.6 | 600 in chips | Chips, meta |
+| `small` | 13 | 1.5 / 1.65 | 400 or 600 | Labels, table meta |
+| `body` | 15 | 1.6 / 1.7 | 400; values 700 | Clinician body |
+| `lead` | 17 | 1.5 / 1.6 | 400 or 700 | Card titles, red-flag action |
+| `bodyPatient` | 18 | 1.6 / 1.7 | 400 | Patient body |
+| `title` | 22 | 1.25 / 1.5 | 700, -0.02em | Screen titles, hero title, greeting name |
+| `question` | 26 | 1.2 / 1.45 | 700, -0.022em | The one patient question |
+| `stat` | 32 | 1.1 / 1.3 | 800, -0.03em | Big numbers |
+| `display` | 34 | 1.1 / 1.4 | 700, -0.03em | Red-flag screen (mobile) |
+| `code` | 52 | 1.0 | 700, -0.03em | Patient code B-042 |
 
-Rules: sentence case; no ALL CAPS. Negative tracking on Latin headings only; Thai tracking is always 0. Thai never gets italics (the CSS forces normal).
+Marketing scale (`tokens.marketingType`; fluid between a 390px and a 1440px viewport):
+
+| Utility | Size | LH Latin / Thai | Weight, tracking | Use |
+|---|---|---|---|---|
+| `text-hero` | 40 to 76 | 1.04 / 1.3 | 800, -0.035em | The page H1 only |
+| `text-h2` | 30 to 48 | 1.08 / 1.35 | 800, -0.03em | Section titles |
+| `text-h3` | 20 to 24 | 1.25 / 1.5 | 700, -0.02em | Card and step titles |
+| `text-lead-lg` | 17 to 20 | 1.6 / 1.7 | 400 | Hero and section subtitles |
+| `text-eyebrow` | 13 | 1.2 / 1.5 | 600, +0.01em | Eyebrow chips |
+
+Hierarchy is set by weight before size: 400 for reading, 600 for things you press, 700 for names of things, 800 for the one number or headline that matters. Headings (`h1` to `h3`, `text-title` and every display utility) use `text-wrap: balance`. Paragraphs, list items and captions use `pretty`.
+
+Rules: sentence case; no ALL CAPS (eyebrows too). Negative tracking on Latin headings only; Thai tracking is always 0 (the CSS forces it). Thai never gets italics (the CSS forces normal).
 
 ## 4. Shape, elevation, spacing, grid
 
-Radii: `control` 14 (inputs), `card` 22, `hero` 28, `pill` 999 (buttons, chips, segmented controls, nav items, avatars). Squares are only for icons in a rounded square (brand mark, 12px).
+Radii: `control` 14 (inputs), `card` 22, `hero` 28, `pill` 999 (buttons, chips, segmented controls, nav items, avatars). Marketing adds `bento` 28 (bento cards, the ink band, the video frame) and `media` 16 (screenshot crops). Squares are only for icons in a rounded square (brand mark, bento and step icons, 16px corner).
 
-Elevation (diffuse, navy-tinted, offset down, never black, never a glow):
+Elevation (diffuse, navy-tinted, offset down, never black, never a glow; the one exception is the soft halo behind the landing video frame, `.mx-glow`, section 12.7):
 
 | Token | Value | Use |
 |---|---|---|
@@ -119,33 +157,89 @@ Elevation (diffuse, navy-tinted, offset down, never black, never a glow):
 | `sheetLifted` | 0 18 40 -16 rgba(15,45,80,.24) | Hover lift, drawer, mobile tab bar |
 | `hero` | 0 22 40 -20 rgba(26,95,196,.55) | Gradient hero, primary button (smaller) |
 | `signal` | 0 22 40 -20 rgba(158,16,36,.55) | Red-flag card |
+| `button` | inset 0 1 0 white 22% + 0 10 20 -10 rgba(26,95,196,.75) | Primary gradient button (soft top highlight) |
+| `float` | 0 24 48 -20 rgba(15,45,80,.28) | Marketing floating cards, the video frame |
+| `nav` | 0 12 32 -20 rgba(15,45,80,.3) | Sticky marketing nav |
+| `ink` | 0 30 60 -30 rgba(15,30,46,.6) | The dark marketing card and band |
 
 Cards have a 1px `rule` border at 70% plus the `sheet` shadow. Any element that already uses the `shadow-sheet` class becomes a 22px-radius card automatically.
 
-Space: 4px base (4, 8, 12, 16, 20, 24, 32, 40, 48, 64). Card padding is 20. The gap between cards is 16 on mobile and 24 on web.
+Space: 4px base (4, 8, 12, 16, 20, 24, 32, 40, 48, 64, plus 80, 96 and 128 for marketing). Card padding is 20 (bento 24 to 28). The gap between cards is 16 on mobile and 24 on web.
+
+Marketing rhythm: sections use `py-section` (`clamp(56px, 7vw, 104px)` top and bottom) inside a `max-w-page` (1200px) column with a 16px gutter on phones and 32px from 640px. Anchor jumps land below the sticky nav (`scroll-padding-top: 88px`).
 
 Grid:
 - **Web shell:** sidebar 248 | content (max 1440).
 - **Clinician content:** queue 300 | summary min 560 | transcript 400, gutter 24.
 - **Ops:** 12 columns.
 - **Mobile:** single column, 20pt side margin, a 72pt bottom tab bar with a 60pt raised centre action.
+- **Marketing (`/`):** 1200px column; bento 3 columns from 1024px, 2 from 640px, 1 below.
 
 ## 5. Motion
 
-Smooth micro-motion that answers the user. Nothing loops except the loading skeleton shimmer (static under reduced motion).
+Calm, premium motion that answers the user and never performs. v3.1 (owner request, 18 Oct 2026) adds a full motion system: tokens and utilities in `globals.css`, primitives in `components/ui`, and one runtime (`MotionRuntime`, mounted in `app/layout.tsx`).
 
-| Token | ms | Easing | What |
-|---|---|---|---|
-| `quick` | 140 | pen | Press (`scale .97`), hover colour, chip change |
-| `base` | 240 | pen | Segmented thumb, nav active, card hover lift (`translateY(-2px)` + `sheetLifted`) |
-| `morph` | 260 | pen | Language switch: fade + 3px blur + 2px rise |
-| `scroll` | 360 | browser | Transcript scrolls to the evidence |
-| `sweep` | 520 | marker | Highlighter sweep |
-| `interrupt` | 420 | interrupt | Red-flag card grows in and pushes content |
+### 5.1 Rules (every motion follows them)
+1. **Only transform and opacity animate.** This includes the `translate` and `scale` properties. Shadows fade in on a pseudo-element; they never animate `box-shadow`. Nothing that moves changes its box, so there is no layout shift: reveals start from a transform, never from height. Two documented exceptions: the success tick draws its stroke (`stroke-dashoffset`), and the focus ring grows its `outline-offset` from 0 to 2px.
+2. **Durations 150 to 450 ms on `glide`.** Longer motions are slow ambient loops only (the hero float, the skeleton shimmer, Fin's bob) and the count-up tween (900 ms, section 6g).
+3. **Reduced motion means no motion at all.** Every new class is declared only inside `@media (prefers-reduced-motion: no-preference)`. A global rule also zeroes durations and delays, so nothing waits hidden. `?motion=off` does the same for capture tools: `MotionRuntime` sets `data-motion="off"` on `<html>`. Nothing is ever hidden under reduced motion.
+4. **Content is visible without JS.** Scroll reveals hide only what the runtime has marked as waiting. Counts render the real number on the server.
+5. **Urgent stays still** (owner rule, wave 20). Red-flag interrupts, emergency alerts and high alerts appear instantly and never move:
+   - **What counts as urgent:** `role="alert"`, `data-urgent`, `.mx-interrupt`, `.bg-signal`, `.bg-signal-gradient`, `.bg-signal-tint`, `.text-signal`. The list is `URGENT_SELECTORS` in `components/ui/motion.ts`, and `motion.test.ts` checks it matches the CSS.
+   - Urgent elements and everything inside them get `animation: none; transition: none`.
+   - Any entrance, reveal, stagger row, lift card, toast or page `<main>` that holds urgent content drops its own motion. This uses `:has()`, so if urgent content arrives mid-entrance, the container snaps to its final state in that frame.
+   - Badges change into red instantly. A red count never counts up (`CountUp` checks for an urgent ancestor before paint).
+   - Never put Fin, a toast or a decorative motion next to urgent content.
 
-Easings: `pen` (0.22, 1, 0.36, 1), an out-quint and the default. `marker` (0.55, 0.05, 0.25, 1). `interrupt` (0.7, 0, 0.2, 1). No springs or bounces on clinical content.
+### 5.2 Tokens
 
-Reduced motion: every duration becomes instant; end states are identical.
+| Token | Value | Use |
+|---|---|---|
+| `--ease-glide` (`ease-glide`) | cubic-bezier(0.2, 0.8, 0.2, 1) | Entrances, reveals, lifts, crossfades. JS uses the same curve (`easeGlide`) |
+| `--ease-pen` (`ease-pen`) | (0.22, 1, 0.36, 1) | Hover colour, language morph |
+| `--ease-drift` | (0.45, 0, 0.55, 1) | Ambient loops (float, shimmer) |
+| `--ease-marker`, `--ease-interrupt` | unchanged | Highlighter sweep; `interrupt` is no longer used for the red flag |
+| `quick` | 140 ms | Press, hover colour, focus ring |
+| `base` | 240 ms | Card lift, chip and status crossfade, segmented thumb, nav compaction |
+| `morph` | 260 ms | Language switch |
+| `enter` | 360 ms | Page enter, list rows, toasts, dialogs |
+| `reveal` | 450 ms | Scroll reveal, hero entrance, success tick |
+| `--mx-step` | 70 ms | Stagger step between siblings (`.mx-d1` to `.mx-d8`) |
+| `--mx-rise` | 14px | Reveal and entrance travel (list rows use 8px) |
+
+`duration-quick`, `duration-base`, `duration-morph`, `duration-enter` and `duration-reveal` are real Tailwind classes, because the theme defines `--transition-duration-*`. Before v3.1, `duration-quick` and `duration-base` silently fell back to Tailwind's default 150 ms.
+
+### 5.3 Utilities and primitives
+
+| What | How | Notes |
+|---|---|---|
+| Enter on mount | `.mx-enter` (fade + 14px rise), `.mx-enter-pop` (fade + scale 0.96), `.mx-enter-child` (the direct child enters), delays `.mx-d1` to `.mx-d8` | CSS only; plays on first paint. Hero lines, `Receipt`, `EmptyState`, the `/demo` header |
+| Scroll reveal | `.mx-reveal`, or `<Reveal>` (`stagger`, `delay`) | `MotionRuntime` uses one IntersectionObserver. An element below the fold at load gets `data-reveal="wait"` (hidden) and fades up as it enters. Anything on screen or above stays as is, so nothing blinks. Elements entering together stagger 70 ms apart (capped at five steps) |
+| List stagger | `.mx-stagger` on the list | Direct children rise 8px, 40 ms apart, on mount (the first ten, then together). Only where `:has()` works, so the urgent guard can always stop it. Use on lists with a stable order; a row React moves in the DOM replays its entrance |
+| Page enter | Automatic on `main#main-content` | Fade + 8px rise over 360 ms. CSS on the first load; Web Animations on client navigations. Off on marketing pages (`data-page-motion="off"`), when the page holds urgent content, and when it holds a `.fixed` layer (the sign-in sheet) |
+| Hover lift | `.mx-lift` (Card `interactive`, `BentoCard`, `PersonaCard`) | Rises 3px (`translate`). The lifted shadow fades in on `::before`. Pointer devices only. A utility transition list on the same element must include `translate` |
+| Image zoom | `.mx-zoom` inside a lifted card | `scale` 1.035 over 450 ms; composes with `BentoMedia`'s crop zoom |
+| Press | `.mx-press` (`buttonClasses`, `HeroAction`, segmented control, filter pill) | Dips to `scale(0.98)` while held. No dip and no hover lift under reduced motion |
+| Focus ring | All interactive elements | The outline grows out from the edge (offset 0 to 2px, 140 ms). It never changes colour or width |
+| Colour crossfade | `Badge`, `Pill`, `SegmentedControl` | 240 ms on background, text and border. A change into red is instant |
+| Skeleton | `.mx-skeleton` | A light band sweeps across, moved by transform on `::after` (1.5 s loop). A plain muted block under reduced motion |
+| Success tick | `<SuccessCheck>` (inside `Receipt`) | The disc pops in (360 ms), then the tick draws itself (450 ms, 120 ms delay) |
+| Count up | `<CountUp value>`, `<CountUpText text>` | Section 6g |
+| Toast | `<Toast>`, `.mx-toast` | Slides up 12px and fades in (360 ms). Calm news only ("Saved"); never red flags, alerts or errors |
+| Dialog | `dialog.mx-dialog` | The panel pops in over a fading scrim (360 ms) |
+| Language morph | `LangMorph`, `.mx-morph` | Fade + 2px settle over 260 ms (v3.1: the blur is gone) |
+
+### 5.4 Marketing motion (`/` and `/demo`; never in the app)
+- **Hero entrance:** the eyebrow, headline, subtitle, calls to action and trust chips rise in 70 ms apart. The headline's accent fades in a beat after its first line (opacity only, because it is inline). 3D Fin pops in; the patient-side cards arrive after Fin (300, 420 and 540 ms).
+- **Fin:** a slow float with a slight tilt (12px, plus or minus 1.2 degrees, 4.2 s alternate). The floating cards bob on their own periods (6.4, 7.2 and 8 s), so they never move in step.
+- **Pointer parallax** (`PointerParallax`, desktop mouse only, 1024px and up, only while on screen): the halo, Fin and cards drift on `translate` at different depths. Fin moves with the pointer; the cards move against it, up to 20px.
+- **Sections:** headers, bento cards, step cards, persona cards, the stat strip and the video reveal on scroll.
+- **Step cards:** a progress line along the top edge of each card draws left to right just after the card lands (`.mx-draw`), so a row reads 1, 2, 3.
+- **Stat strip:** each written figure counts up once when it comes on screen ("49.1%", "13 to 59%").
+- **Sticky nav:** once the page scrolls 12px, the pill shrinks to 98.5% and lifts 4px, and a denser, blurrier glass layer with the nav shadow fades in. The header keeps its height.
+- **Anchor links** scroll smoothly (`html:has(.mx-marketing)`). `data-scroll-behavior="smooth"` on `<html>` lets Next.js turn this off during route changes.
+- **Video frame:** a soft teal-to-ocean halo (`.mx-glow`, static).
+- **Screenshot and video tools:** run with `reducedMotion: "reduce"`, Playwright's `animations: "disabled"`, or `?motion=off`, or scroll the page first. Otherwise sections below the fold are still waiting to reveal.
 
 ## 6. Signature interactions (implement exactly)
 
@@ -167,7 +261,7 @@ Use `FieldValue` for every summary value; never style a status by hand. The tabl
 
 ### 6c. Red-flag interrupt
 **Clinician web (`RedFlagInterrupt`, API unchanged):**
-1. A red gradient card (radius 22, signal shadow) grows at the top of its container by animating `grid-template-rows: 0fr` to `1fr` over `interrupt`. It pushes the summary down; it does not overlay it.
+1. A red gradient card (radius 22, signal shadow) at the top of its container. It pushes the summary down; it does not overlay it. **v3.1: it is there from the first frame.** It no longer grows in, fades or waits a frame (owner rule, wave 20: urgent content appears instantly and stays still, section 5.1). The `.mx-interrupt` grid wrapper and `data-open` stay, so existing selectors keep working; they no longer transition.
 2. Content:
    - a white alert icon in a translucent circle;
    - a small "Red flag" label;
@@ -179,7 +273,7 @@ Use `FieldValue` for every summary value; never style a status by hand. The tabl
 4. Urgent (not emergency) uses the `signalTint` card with a red ring and red icon disc.
 
 **Patient mobile:**
-1. A full-screen red gradient view slides up over `interrupt` and pushes the intake away.
+1. A full-screen red gradient view replaces the intake. v3.1: it appears instantly, with no slide-up (same owner rule). The patient mobile builder should drop any slide-up.
 2. Top-aligned on the view:
    - a white alert icon disc;
    - `display` text from `patientMessage[lang]`;
@@ -199,7 +293,7 @@ Never a number or %. The accessible name is "Confidence: high". API is unchanged
 ### 6e. Language switch
 The language control is a `SegmentedControl` pill: muted track, white raised thumb, labels in their own language (ไทย, Italiano/IT, English/EN).
 
-On change, text morphs in place: opacity 0, blur 3px, 2px down, settling over `morph`. The box never moves.
+On change, text morphs in place: opacity 0 and 2px down, settling over `morph` (v3.1: no blur, so only opacity and transform animate). The box never moves. It is static under reduced motion and inside urgent content.
 
 `LangMorph` fix (wave 4): it animates only nodes born from a real text or language change. Parent re-renders and polling no longer replay it. The clinician `_morph.tsx` memo wrapper can be removed.
 
@@ -207,17 +301,20 @@ Patient quotes are never translated in place.
 
 ### 6f. Receipts (approval and sign-off)
 Use `Receipt` when the status reaches `approved` (clinician) or after a pharmacy sign-off:
-- **Header:** a teal check disc and the title, e.g. "Intake approved".
+- **Header:** a teal check disc (`SuccessCheck`: the disc pops in, then the tick draws itself) and the title, e.g. "Intake approved". The card rises in on arrival (static under reduced motion).
 - **Rows:** label/value pairs on a quiet inset, e.g. "Approved by: Nurse A. Rossi", "Time: 15:28", "Fields: 7, 4 from patient's words, 3 edited".
 - **Footer:** the next action, e.g. a primary "Next case".
 
 The receipt is a polite `role="status"` region and takes focus when it appears, so focus never drops to `<body>`.
 
 ### 6g. Counting numbers (ops)
-Use `CountUp` for ops tiles. It counts from 0 on first load and from the previous value on change, with `pen` easing over about 900 ms.
-- Under reduced motion the number appears instantly.
+Use `CountUp` for number tiles. It counts from 0 when it first mounts on the client and from the previous value on each change. It runs on the exact `glide` curve over about 900 ms. `startOnView` waits until the number is on screen (marketing pages).
+- **The server HTML always shows the real number,** so no-JS and the first paint are true. A hydrated number that is already visible does not flash back to zero.
+- **Instant under reduced motion and inside urgent content.** A red escalation count shows its real value from the first frame; the check runs before paint.
 - Screen readers hear only the final value.
-- The number sits in a minimum-width box, because SCBXBeta2 digits are proportional.
+- The number is tabular and sits in a box as wide as the final number: 1ch per digit plus about 0.32em per separator. It follows the surrounding alignment, so nothing beside it moves.
+- `CountUpText` does the same for a written figure such as "49.1%" or "13 to 59%". Every number in the string counts, and the words stay. Figure spaces keep the width constant. It is used by `StatStrip`.
+- The ops dashboard has its own `CountUp` (`app/(ops)/components/CountUp.tsx`, owned by ops). Its urgent hero count should follow the same rule.
 
 ### 6h. Shell accessibility
 - **`AppShell` language:** sets `document.documentElement.lang` and `lang` on the shell root to the UI language, so the `:lang(th)` rules (line height, tracking, no italics) and screen-reader voices follow the toggle.
@@ -235,6 +332,7 @@ Use `CountUp` for ops tiles. It counts from 0 on first load and from the previou
 
 Lucide geometry, 24 grid, 1.75 stroke, round caps, `currentColor`, 16 to 22px. Icons always come with a text label, except close/back, which get an aria-label.
 - **Now:** `components/ui/Icon.tsx` ships the needed glyphs as inline SVG (paths from Lucide, ISC licence): check, circle-check, triangle-alert, quote, pencil, circle-minus, globe, clipboard-list, user, pill, activity, bell, inbox, chevron-right, clock, home, mic.
+- **v3 additions (marketing):** arrow-right, arrow-up-right, chevron-down, play, circle-play, shield-check, languages, audio-lines, smartphone, monitor, file-text, file-check, list-checks, route, scroll-text, users, user-check, package-check, megaphone, gauge, thermometer, rotate-ccw, search, lock, cpu, qr-code, info, book-open, external-link, menu, x.
 - **If `lucide-react` is approved:** swap `Icon` to it (same names).
 - **Mobile:** `lucide-react-native` (needs `react-native-svg`), or the Material Symbols package already installed, at the same visual weight.
 
@@ -394,12 +492,34 @@ New utilities: `bg-primary-gradient`, `bg-signal-gradient`, `rounded-card`, `rou
 
 New primitives: `Card`, `CardHeader`, `GradientHero`, `HeroAction`, `StatTile`, `SegmentedControl`, `Pill`, `AppShell`, `Avatar`, `EmptyState`, `Icon`, `Receipt`, `CountUp`.
 
+v3 additions. Every v2 API and class name still works, so every page re-skins without edits.
+- **Utilities:** `bg-mist`, `bg-ink-gradient`, `bg-halo`, `glass`, `text-brand-gradient`, `text-brand-gradient-light`, `text-hero`, `text-h2`, `text-h3`, `text-lead-lg`, `text-eyebrow`, `rounded-bento`, `rounded-media`, `py-section`, `max-w-page`, `shadow-hairline`, `shadow-float`, `shadow-nav`, `shadow-ink`, `shadow-button`, `.mx-reveal`, `.mx-float`, `.mx-media`.
+- **Existing primitives, new options:**
+  - `Button` gains `size="sm"` and `variant="onDark"`; `ButtonLink` and `buttonClasses()` give links the same look.
+  - `Card` gains `tone="glass" | "ink"` (marketing only).
+  - `Mascot` switches to the 3D art at 96px (`variant` forces one or the other); `GradientHero` and `EmptyState` therefore show the 3D Fin.
+  - `AppShell`'s sidebar is translucent (`glass`).
+- **Brand art:** `FinArt` (section 11), `FinStage` and `FloatCard` (landing hero, section 12).
+- **Marketing primitives (section 12):** `Section`, `SectionHeader`, `Eyebrow`, `Accent`, `Chip`, `BentoGrid`, `BentoCard`, `BentoMedia`, `StepList`, `StepCard`, `PersonaGrid`, `PersonaCard`, `VideoFrame`, `StatStrip`, `MarketingNav`, `Footer`.
+- **Fonts:** `components/ui/fonts.ts`, imported by `layout.tsx` only (not from the barrel, because `next/font` runs only inside the Next compiler).
+
+v3.1 additions (motion, section 5):
+- **Primitives:** `Reveal`, `PointerParallax`, `SuccessCheck`, `Toast`, `CountUpText`. `MotionRuntime` is imported by `layout.tsx` only.
+- **Helpers:** `motion.ts` with `URGENT_SELECTOR`, `motionOff()`, `cubicBezier()`, `easeGlide`, `countText()`.
+- **Classes:** `.mx-enter`, `.mx-enter-pop`, `.mx-enter-child`, `.mx-d1` to `.mx-d8`, `.mx-reveal-stagger`, `.mx-stagger`, `.mx-lift` (`.mx-lift-ink`), `.mx-zoom`, `.mx-press`, `.mx-draw`, `.mx-depth`, `.mx-fin-float`, `.mx-nav-pill`, `.mx-glow`, `.mx-toast`, `.mx-dialog`, `.mx-marketing`, `data-page-motion="off"`, `data-urgent`.
+- **Tailwind:** `ease-glide`, plus `duration-enter` and `duration-reveal`. `duration-quick` and `duration-base` now actually apply.
+- **For builders:**
+  - Add `mx-stagger` to queue lists.
+  - Use `Card interactive` for clickable rows.
+  - Mark any urgent element that does not use a signal class with `data-urgent`.
+  - Never animate red.
+
 Checklist:
 - Use tokens and primitives only; no raw hex.
 - Use one gradient hero per screen.
 - Every state must be built: loading (skeleton), empty (`EmptyState`), error (says what failed and what to do), abstained.
 - Keyboard: visible ocean focus ring; Escape clears the highlight.
-- Test at 375px and 1440px, and with reduced motion.
+- Test at 375px (390px for marketing) and 1440px, and with reduced motion.
 
 ## 11. Mascot: Fin
 
@@ -431,6 +551,23 @@ Fin is **a helper, not a clinician**. Fin never gives advice, never speaks clini
 - Static files: `docs/design/mascot/fin-<pose>.svg`, generated by `node docs/design/mascot/build.mjs`.
 - Preview: `docs/design/mascot/preview.png`.
 
+**3D art (v3, owner-approved, 17 Oct 2026 late evening).** Original character renders of Fin and the mark. Sources and a review copy: `docs/design/brand3d/` (`review-sheet.png` shows every file on desk, card, the primary gradient and ink). Served files: `apps/web/public/brand/` (webp with transparency, 18 files, 692 KB).
+
+| Art (`FinArt art=`) | Files | Use |
+|---|---|---|
+| `wave`, `listening`, `thinking`, `happy`, `pointing` | `fin3d-<pose>-256.webp`, `-512.webp` | The same five poses as the vector set, at 96px and up: `GradientHero`, `EmptyState`, patient done and voice states |
+| `hero-hello`, `hero-wave` | `fin-hello-*.webp`, `fin-wave-*.webp` (256, 512, 1024) | The large detailed Fin for the landing hero (`FinStage`) and covers, 240px and up |
+| `mark` | `mark-3d-256.webp`, `-512.webp` | The 3D Echo X for large light or ink moments. Never on the primary gradient (it disappears there, see the review sheet) and never as the logo |
+| App icon | `docs/design/brand3d/app-icon-3d-{180,192,512,1024}.png` | `apps/web/app/apple-icon.png` (180). Home-screen and store icons. Never as a favicon |
+
+Rules:
+- **Switch at 96px.** `Mascot` renders the 3D art from 96px (`MASCOT_3D_MIN`) and the vector drawing below. Favicons, the tab icon and anything under 96px stay vector (`icon.svg`, `favicon.ico`, `mark-small-color.svg`).
+- **Component:** `FinArt` (next/image with a fixed size and a loader that picks the 256, 512 or 1024 file, so there is no optimizer round trip). Decorative by default (empty alt, `aria-hidden`); pass `label` only when the art carries meaning. `priority` only for the landing hero.
+- **On the primary gradient** Fin always sits on the soft light disc (`GradientHero` does this) so the blue body separates from the blue gradient.
+- **Never** on red, next to an alert, a red badge, a "Needs check" chip or an error, inside clinical content, or as a chat avatar. Everything under "Where Fin must never appear" applies to the 3D art too.
+- **Do not edit the art** (no recolouring, cropping into the body, added props, speech bubbles or sparkles). New poses go through the owner.
+- **Mobile:** the patient app may use the same `fin3d-*` files at 96pt and up (mobile builder, `apps/mobile/assets`), and keeps the vector `mascot.tsx` below that.
+
 **Poses.** The API is unchanged.
 
 | Pose | Looks like | Use |
@@ -442,6 +579,7 @@ Fin is **a helper, not a clinician**. Fin never gives advice, never speaks clini
 | `pointing` | Back fin points to the side | Empty states and "ask the nurse at the desk" hints |
 
 **Where Fin may appear.**
+- On the marketing landing `/`: in the hero only (`FinStage`, section 12).
 - Inside the primary `GradientHero` (`mascot="wave"`), on the bottom-right edge with a soft light disc behind it; one hero per screen.
 - In `EmptyState` (`mascot="pointing"` or `"happy"`).
 - On the patient app's home, voice and done screens.
@@ -454,18 +592,109 @@ Fin is **a helper, not a clinician**. Fin never gives advice, never speaks clini
 - Inside clinical content such as summaries, transcripts or orders.
 - `GradientHero` refuses the mascot when `tone="signal"`.
 
-**Size.** 48px minimum (Fin stays readable down to 48px). Typical sizes are 112px in empty states, about 176px in heroes and 240px on the cover.
+**Size.** Vector 48 to 95px (48px minimum); 3D from 96px. Typical sizes are 112px in empty states, about 176px in heroes, 240px on the cover and 320 to 420px in the landing hero.
 
-**Motion.** A subtle idle bob (3.2 s), a blink every 4.8 s, the waving fin in `wave`, and a pulse on the echo arcs or bubbles. Everything is static under reduced motion.
+**Motion.** A subtle idle bob (3.2 s); the vector drawing also blinks every 4.8 s, waves in `wave` and pulses the echo arcs or bubbles. On the landing hero, Fin floats with a slight tilt and drifts with the pointer on desktop (`FinStage`, section 5.4). Everything is static under reduced motion.
 
 **Accessibility.** Fin is decorative by default (`aria-hidden`). Pass `label` only when Fin carries meaning on its own.
 
 **Builder guide.**
-- Landing page: `<GradientHero mascot="wave" ... />`.
+- Landing page `/`: `<FinStage art="hero-hello" cards={[...]} />` in the hero (section 12).
+- App heroes: `<GradientHero mascot="wave" ... />`.
 - Empty states: `<EmptyState mascot="pointing" | "happy" ... />`.
 - React Native: render `mascotPoses[pose]` with `react-native-svg`, prefixing gradient ids per instance.
 
-## 12. Logo: MedX "Echo X"
+## 12. Marketing surfaces
+
+Owner decision (17 Oct 2026, late evening): a marketing landing at `/` in the reference's structure, then the live demo through persona cards. This section covers `/` and any marketing page (for example `/demo` if it is built). App screens keep sections 1 to 11. Primitives: `components/ui` (section 10). Copy is MedX's own; never copy the reference's text.
+
+### 12.1 Claim boundary on marketing pages
+- Words: "supports clinicians", "suggests for review", "flags for clinician", "decision support". Never "diagnoses", "triages", "decides", "AI doctor", "replaces".
+- Every page shows "Synthetic data only" above the fold (a trust chip) and the full disclaimer in the `Footer` (research prototype, supports clinicians, synthetic data only, not a medical device).
+- Model and hardware claims come from `/api/health` at runtime: show the model label it returns. Never write "runs on AMD" unless health says the provider is AMD.
+- The built-with strip says "Built with" (AMD Developer Hackathon ACT III, Gemma, Next.js, Expo) as text. Never "partners", never third-party logos.
+
+### 12.2 Page order
+Sticky nav, hero, built-with strip, "MedX in 60 seconds" video, How it works (+ "Try saying" phrases in English, Thai and Italian), features bento, Safety by design, Why (sourced numbers), Try a role (persona cards), phone and web one record (QR to `/patient`), under the hood, limitations, final call to action, footer.
+
+### 12.3 Fin on `/`: hero only
+- Fin appears **once** on `/`: the large 3D hero art in `FinStage` (`hero-hello` or `hero-wave`), on the halo disc with faint echo rings.
+- Around Fin float up to three `FloatCard`s, and they are **patient-side real UI only**: the language choice, a non-urgent question ("How long have you had it?"), "Fin is listening", the patient code and "answers sent", a pickup counter. The third card hides below 640px.
+- Never next to Fin: a red flag, an urgent symptom quote, an alert, a "Needs check" chip, a clinical summary, an order, a diagnosis-like label, or a chat bubble.
+- No Fin in the bento, the video section, the safety band, the stats, the personas, the final call to action or the footer. The subtitle may name Fin as the helper who listens while people decide.
+
+### 12.4 Surfaces
+- Page background: `bg-mist`. Content: white cards (`Card`, `BentoCard`, `StepCard`, `PersonaCard`) with the sheet shadow and a hairline.
+- **Dark surfaces are on the ink token only** (`bg-ink-gradient`, `tone="ink"`): exactly one bento card (the lead feature) and the Safety by design band. Nothing else is dark. Never red on ink, never ink in the app.
+- **Primary gradient:** primary buttons and, optionally, the final call-to-action panel (white text, `variant="onDark"` button). One gradient panel per page. The 3D mark never sits on it.
+- **Glass:** the sticky nav, floating cards, the video frame and chip variants only.
+
+### 12.5 Bento grid
+- `BentoGrid` (1, 2, 3 columns) with `BentoCard`s. Wide cards span 2 (`cols={2}`) and may put the media on the right.
+- **Every card shows the real product:** a `BentoMedia` crop of a real screen from `/landing/*.webp` (`hero-consult`, `nurse-case`, `consult`, `orders`, `pharmacy-verify`, `pharmacy-dispense`, `patient-pickup`, `ops`, `trace`), or real UI rendered by the page. The icon is a small label next to the eyebrow, never the content.
+- **No generic icon cards**, no stock photos, no illustrations, no Fin.
+- Crops show one panel at a legible size: pick the region with `position` and enlarge with `zoom` (1 to 3); text in a crop should render at about 11px or more. `alt` says what the screen shows. `chrome` adds neutral grey window dots, never red, amber and green traffic lights.
+- The lead `tone="ink"` card is the voice intake (patient side). It carries one ink-toned crop (`tone="ink"` on `BentoMedia`).
+
+### 12.6 Red stays on the red-flag card
+- Red (`signal`) appears on `/` **only** on the red-flag feature card: `accent="signal"` gives it a red icon disc and red eyebrow, and its crop may show the red-flag interrupt.
+- Nowhere else: not in the nav, buttons, chips, stats, steps, personas, video frame, safety band, numbers or decoration. Crops for other cards are chosen (with `position`/`zoom`) so that no red UI shows, for example the ops card crops away the red escalation count.
+- Amber stays "needs a human check" and teal stays "done by a person", as in the app.
+
+### 12.7 Video frame
+- **Primary video (v3.1, owner request):** the cinematic promo `/media/medx-promo.mp4` with `/media/medx-promo-poster.jpg`. A separate pipeline produces it.
+  - If the promo is missing, the screen-recorded walkthrough `/media/medx-demo.mp4` (poster `/media/medx-demo-poster.jpg`) takes its place.
+  - If neither exists, the section shows a poster-only state and never a broken player.
+  - The landing is static, so a new file appears on the next build.
+- **"Watch the full product walkthrough":** a secondary button under the promo. It opens the walkthrough in a native modal `<dialog>`:
+  - focus moves to its close button and returns when it closes;
+  - Escape, the close button or a click on the scrim close it;
+  - the page behind is inert.
+
+  The click that opens it starts that video, and closing it pauses it. The button is shown only when the promo exists (otherwise the walkthrough is already the primary).
+- Both players: native controls, `preload="metadata"`, `playsInline`, **no autoplay attribute**, never sound without a click (the primary starts muted until "Play with sound"). `title` is the accessible name ("MedX in 60 seconds"). Captions go in `tracks` (WebVTT) when available (`medx-promo.en.vtt`, `medx-demo.en.vtt`).
+- Glass frame, `rounded-bento`, a dark 16:9 stage, the float shadow. Max width 1040px. Nothing overlays the video (no Fin, no play badge that hides the controls).
+- A soft teal-to-ocean halo sits behind the frame (`.mx-glow`): static, marketing only, and the one glow in the system.
+
+### 12.8 How it works
+- `StepList` of `StepCard`s with a big faint step number. **The last step is always the human** (`human`, `humanLabel` "A person decides"): teal ring, teal icon tile, teal chip. It is never the dark card and never red.
+- "Try saying" phrases are `Chip`s with the quote icon and `lang` set (`en`, `th`, `it`), non-urgent examples only.
+
+### 12.9 Persona card
+- `PersonaGrid` of `PersonaCard`s, one per entry in `DEMO_PERSONAS` (six roles).
+- The whole card is **one link** into the demo as that person; the patient persona uses `hardNav` to `/patient/`.
+- Initials (or a role icon) on the brand gradient, a synthetic name, the role in teal, one line on what they do, a "Phone" or "Web" tag, an arrow in an ocean disc. `cta` gives screen readers "Open the demo as this person".
+- No photos, no Fin, no red, no urgency.
+
+### 12.10 Numbers, chips, nav, footer
+- **Why:** `StatStrip` with published research numbers from the README only, each with its source (linked where possible). Never demo counts, never red.
+- **Chips:** `Chip` for trust chips, "Try saying", built-with and under-the-hood lists. Statuses still use `Badge`; filters still use `Pill`.
+- **Nav:** `MarketingNav`: vector logo, How it works, Features, Safety, Try a role, the EN/ไทย/IT toggle (EN first) and one primary call to action, "Try the demo". It includes the skip link to `#main-content`.
+- **Footer:** `Footer` with the full disclaimer (required) and the hackathon note.
+
+### 12.11 Type, copy and motion
+- One `text-hero` H1 per page, two-tone with one `Accent` span. Section titles are `text-h2` with at most one `Accent` each. Sentence case, no em or en dashes, no exclamation marks, no emoji.
+- Motion follows section 5.4: hero entrance, Fin float and parallax, card bob, scroll reveals, bento lift with screenshot zoom, step progress lines, stat count-up, persona lift, the compacting nav, smooth anchors and the video halo. Calm, never busy. All of it is off under reduced motion, and none of it touches the red-flag card.
+
+### 12.12 Responsive and sign-off checklist (`/` and `/demo`, at 1440px and 390px)
+1. No horizontal scroll at 390px; the nav fits (logo, call to action, menu).
+2. Fin appears once, in the hero, with patient-side cards only (12.3).
+3. Red appears only on the red-flag card (12.6).
+4. Exactly one ink bento card plus the safety band; no other dark surface (12.4).
+5. Every bento card shows real UI with alt text (12.5).
+6. The video has controls, a poster and no autoplay (12.7).
+7. The last step is the human, in teal (12.8).
+8. Persona cards are single links with synthetic names (12.9).
+9. "Synthetic data only" is above the fold and the footer disclaimer is present (12.1).
+10. Thai toggle: Noto Sans Thai renders, Thai headings use the taller line height and no negative tracking.
+11. Reduced motion: no reveal, no float, no parallax, no count-up; nothing is hidden.
+12. Motion is calm: the hero settles in under a second, sections reveal once, the red-flag card never moves, and the video's walkthrough dialog opens and closes from the keyboard (12.7).
+
+Screenshots of the review go to `docs/reports/screens/landing-*.png`.
+
+## 13. Logo: MedX "Echo X"
+
+(Section 12 in v2.)
 
 **Concept.** A medical plus turned 45° into an X. Three arms are solid. The fourth (top right) becomes two sound/echo arcs radiating from the centre. The mark says medicine and listening at once, and the echo arcs nod to Fin's echolocation. I chose it over "Wave X" (a sine stroke, muddy at small sizes) and "Fluke X" (a curved X, too generic); see `docs/design/logo/concepts.png`. There is no red cross, no heart-pulse line and no stethoscope.
 
@@ -479,7 +708,8 @@ Fin is **a helper, not a clinician**. Fin never gives advice, never speaks clini
 | Wordmark | `wordmark-{color,white,ink}.svg` ("Med" in ink or white, X = mark) |
 | Lockup | `lockup-{color,white,ink}.svg` (gradient tile + wordmark). On gradient or dark, use `white` (white tile, ocean mark) |
 | App icon | `app-icon.svg`, `app-icon-1024.png` (full-bleed gradient square; iOS/Android apply the corner mask); `app-icon-rounded.svg` for slides |
-| Favicon | `favicon.svg`, `favicon-16.png`, `favicon-32.png`, `apple-touch-icon-180.png` (also wired to `apps/web/app/icon.svg`, `favicon.ico`, `apple-icon.png`) |
+| Favicon | `favicon.svg`, `favicon-16.png`, `favicon-32.png` (also wired to `apps/web/app/icon.svg` and `favicon.ico`; both stay vector in v3) |
+| Apple touch icon | v3: `apps/web/app/apple-icon.png` is the 3D app icon (`docs/design/brand3d/app-icon-3d-180.png`). The vector `apple-touch-icon-180.png` stays as the flat alternative |
 | Banner | `readme-banner.html`, `readme-banner.png` (1280x640) |
 | Review sheets | `review-sheet.png` |
 
@@ -506,3 +736,4 @@ Fin is **a helper, not a clinician**. Fin never gives advice, never speaks clini
 - Don't stretch the logo, add effects or glows, or outline it.
 - Don't put the full-colour logo on the gradient (use white).
 - Don't place Fin overlapping the logo.
+- Don't use the 3D mark (`FinArt art="mark"`) as the logo, in the nav, in the footer or below 96px; the logo is always the vector lockup or mark.

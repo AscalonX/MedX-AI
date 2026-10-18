@@ -55,9 +55,10 @@ const rev = await req('POST', `/api/sessions/${s.id}/review`, { reviewerId: 'dr'
 r = await note(s.id, { action: 'sign' });
 check('C23', 'after red flags acknowledged, sign -> 200 with signed.reviewerId', r.status === 200 && r.json.note?.signed?.reviewerId === 'dr-qa', [rev.status, r.status, r.text.slice(0, 200)]);
 // mode visibility
-s = await newSession(); await ct(s.id, 'patient', 'I have a cough for a week and a fever', 'doctor');
+// consultrules v1.2 (ccac331): serious considerations need a specific feature, so the cough also mentions breathlessness (CR-COUGH-02).
+s = await newSession(); await ct(s.id, 'patient', 'I have a cough for a week and a fever, and I am short of breath', 'doctor');
 const dn = await gc(s.id, 'doctor'), nn = await gc(s.id, 'nurse');
-check('C30', 'doctor mode has >=1 consider item', dn.json.suggestions.some(x => x.kind === 'consider'), ids(dn));
+check('C30', 'doctor mode has >=1 consider item (cough + breathlessness)', dn.json.suggestions.some(x => x.kind === 'consider'), ids(dn));
 check('C30b', 'nurse mode NEVER contains consider items / workup / guideline', !nn.json.suggestions.some(x => x.kind === 'consider' || x.workup || x.guideline) && !JSON.stringify(nn.json).includes('"consider"'), ids(nn));
 check('C30c', 'every item in doctor mode "consider" has mode [doctor] only', dn.json.suggestions.filter(x => x.kind === 'consider').every(x => x.mode.length === 1 && x.mode[0] === 'doctor'));
 r = await ct(s.id, 'patient', 'and a headache', 'nurse');
@@ -138,7 +139,10 @@ r = await note(s.id, { action: 'sign', edits: [{ lineId: d1.lines[0].id, text: '
 r = await note(s.id, { action: 'sign', edits: [{ lineId: d1.lines[0].id, text: '' }] }); check('N06', 'edit with empty text -> 400', r.status === 400, [r.status, r.text]);
 r = await note(s.id, { action: 'sign', edits: Array.from({ length: 101 }, (_, i) => ({ lineId: 'l' + i, text: 'x' })) }); check('N06b', '101 edits -> 400', r.status === 400);
 r = await note(s.id, { action: 'sign', edits: [{ lineId: d1.lines[0].id, text: 'Edited by doctor, tel 081-234-5678' }] });
-check('N07', 'CONSULT-SPEC §6: sign blocked while an `unsupported` line remains unresolved', uns.length === 0 || r.status === 409, [r.status, 'unsupported lines: ' + uns.map(l => l.id).join(',')]);
+// The "Not yet asked" missing:fields line in open_questions is informational and never blocks signing (consult.ts);
+// every other unsupported line not resolved by an edit must block with 409.
+const blocking = uns.filter(l => !(l.id === 'missing:fields' && l.section === 'open_questions') && l.id !== d1.lines[0].id);
+check('N07', 'CONSULT-SPEC §6: sign blocked (409) while a non-informational `unsupported` line remains unresolved, else allowed', blocking.length ? r.status === 409 : r.status === 200, [r.status, 'unsupported lines: ' + uns.map(l => l.id).join(','), 'blocking: ' + blocking.map(l => l.id).join(',')]);
 const signed = r.json?.note;
 if (r.status === 200) {
   check('N08', 'edited line status edited and PII redacted', signed.lines[0].status === 'edited' && !JSON.stringify(signed).includes('081-234-5678'), signed.lines[0]);

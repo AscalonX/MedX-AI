@@ -2,7 +2,8 @@ import { LOCKUP_COLOR, LOCKUP_WHITE, MARK_TILE } from "./logoSvg";
 import { cx } from "./cx";
 
 /**
- * MedX logo (DIRECTION.md section 12). Vector only, no font dependency.
+ * MedX logo (DIRECTION.md section 13, "Echo X"). Vector only, no font dependency. Small sizes and favicons stay
+ * vector; the 3D mark (`FinArt art="mark"`) is only for large marketing moments.
  * `lockup`: tile + wordmark (default). `mark`: tile only. `white` for gradient or dark backgrounds.
  * Source: docs/design/logo/build.py (static, trusted SVG strings in ./logoSvg).
  */

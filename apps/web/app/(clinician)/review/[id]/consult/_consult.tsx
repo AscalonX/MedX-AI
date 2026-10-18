@@ -1,18 +1,23 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ConsultMode, ConsultNote, ConsultNoteLine, ConsultState, ConsultSuggestion, Evidence, ExtractedField, FieldKey, IntakeSession, Lang } from "@medx/shared";
-import { Badge, Button, Card, EvidenceHighlight, FieldValue, Icon, LangMorph, PencilField, RedFlagInterrupt, SegmentedControl, type Mark } from "@/components/ui";
-import { FIELD_LABEL, LANG_NAME, clock, fetchSession, getJson, post } from "../../_lib";
+import { WRITE_ROLES, type ConsultMode, type ConsultNote, type ConsultNoteLine, type ConsultState, type ConsultSuggestion, type Evidence, type ExtractedField, type FieldKey, type IntakeSession, type Lang } from "@medx/shared";
+import { Badge, Button, Card, EvidenceHighlight, FieldValue, Icon, LangMorph, PencilField, RedFlagInterrupt, SegmentedControl, buttonClasses, type Mark } from "@/components/ui";
+import { CaseHeader } from "../../../../_shared/CaseHeader";
+import { notifyCaseChanged } from "../../../../_shared/caseEvents";
+import { useVisiblePolling } from "../../../../_shared/visiblePolling";
+import { FIELD_LABEL, clock, fetchSession, getJson, post, routeMissing } from "../../_lib";
 import { useClinician } from "../../_shell";
 import { tr } from "../../_i18n";
 import { ct, type CKey } from "./_c18n";
 import { considerationsFor, questionsFor } from "./_guard";
 import { buildFixture, type Line } from "./_fixture";
+import { nextToSend, purgeSent, retryDelayMs, retryable, unsaved, type OutLine } from "./_outbox";
 import { useSpeech } from "./_speech";
 
 const REC_LANG: Record<Lang, string> = { en: "en-US", th: "th-TH", it: "it-IT" };
-const PULSE_CSS = "@keyframes cl-pulse{0%{box-shadow:0 0 0 0 rgba(26,95,196,.45)}100%{box-shadow:0 0 0 18px rgba(26,95,196,0)}}.cl-pulse{animation:cl-pulse 1.6s ease-out infinite}";
+// Listening pulse in the ocean token (DIRECTION 5: the one looping motion besides the skeleton). Static under reduced motion.
+const PULSE_CSS = "@keyframes cl-pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--color-ocean) 45%,transparent)}100%{box-shadow:0 0 0 18px transparent}}.cl-pulse{animation:cl-pulse 1.6s ease-out infinite}";
 const SECTIONS: ConsultNoteLine["section"][] = ["presenting_complaint", "history", "medications", "allergies", "red_flags", "considerations", "open_questions"];
 const sectionKey = (s: string) => `section${s[0].toUpperCase()}${s.slice(1)}` as CKey;
 const OVERLAY: { key: FieldKey; re: RegExp }[] = [
@@ -25,12 +30,20 @@ const OVERLAY: { key: FieldKey; re: RegExp }[] = [
 type Sel = { key: string; ev: Evidence[] } | null;
 
 export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
-  const { lang, reviewer, sorted } = useClinician();
+  const { lang, reviewer, sorted, clinicianRole } = useClinician();
   const [data, setData] = useState<{ session: IntakeSession } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [cs, setCs] = useState<ConsultState | null>(null);
+  // Fixture (sample logic) only when this server has no consult route at all. A 5xx, a 503 from the shared store or
+  // a network error keeps the last server state and says so; it never swaps in sample logic for a real case.
   const [fixture, setFixture] = useState(false);
-  const [local, setLocal] = useState<Line[]>([]);
+  const [consultError, setConsultError] = useState<string | null>(null);
+  // Lines spoken or typed here: always POSTed (with clientTurnId), retried until saved, shown as "not saved" until then.
+  const [local, setLocal] = useState<OutLine[]>([]);
+  const outbox = useRef<OutLine[]>([]);
+  const updateLocal = useCallback((fn: (l: OutLine[]) => OutLine[]) => { outbox.current = fn(outbox.current); setLocal(outbox.current); }, []);
+  const retryAt = useRef(0);
+  const flushing = useRef(false);
   const [statusMap, setStatusMap] = useState<Record<string, ConsultSuggestion["status"]>>({});
   const [speaker, setSpeaker] = useState<"patient" | "clinician">("patient");
   const [text, setText] = useState("");
@@ -47,23 +60,49 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
   // ---- data
   const loadSession = useCallback(async () => {
     const mine = ++reqId.current;
+    const started = Date.now();
     try {
       const d = await fetchSession(id);
-      if (mine === reqId.current) { setData({ session: d.session }); setLoadError(null); }
+      if (mine === reqId.current) { setData({ session: d.session }); setLoadError(null); updateLocal((l) => purgeSent(l, started)); }
     } catch (e) { if (mine === reqId.current) setLoadError((e as Error).message); }
-  }, [id]);
+  }, [id, updateLocal]);
   const loadConsult = useCallback(async () => {
     try {
       const r = await getJson<ConsultState>(`/api/sessions/${id}/consult?mode=${mode}`);
-      setCs(r); setFixture(false);
-    } catch { setFixture(true); }
+      setCs(r); setFixture(false); setConsultError(null);
+    } catch (e) {
+      if (routeMissing(e)) setFixture(true);
+      else setConsultError((e as Error).message); // keep the last server state (cs) on screen
+    }
   }, [id, mode]);
-  useEffect(() => {
-    loadSession(); loadConsult();
-    const t = setInterval(() => { loadSession(); loadConsult(); }, 4000);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    return () => { clearInterval(t); reqId.current++; };
-  }, [loadSession, loadConsult]);
+  // Sends unsaved lines in order. A retryable failure (network, 5xx, 429) waits for Retry-After and stops, so a later
+  // line never overtakes an earlier one; a refusal (4xx) is final and shown with the server's reason.
+  const flush = useCallback(async () => {
+    if (flushing.current || Date.now() < retryAt.current || !nextToSend(outbox.current)) return;
+    flushing.current = true;
+    let sent = false;
+    try {
+      for (let line = nextToSend(outbox.current); line; line = nextToSend(outbox.current)) {
+        const cur = line;
+        const set = (patch: Partial<OutLine>) => updateLocal((l) => l.map((x) => (x.clientTurnId === cur.clientTurnId ? { ...x, ...patch } : x)));
+        try {
+          const r = await post<ConsultState>(`/api/sessions/${id}/consult/turns`, { speaker: cur.speaker, text: cur.text, mode, clientTurnId: cur.clientTurnId, inputMode: cur.input });
+          set({ state: "sent", ackAt: Date.now(), error: undefined });
+          sent = true;
+          setCs(r); setFixture(false); setConsultError(null); setWriteError(null); notifyCaseChanged(id);
+        } catch (e) {
+          const msg = (e as Error).message;
+          setWriteError(`${ct("writeFailed", lang)}: ${msg}`);
+          if (retryable(e) && !routeMissing(e)) { retryAt.current = Date.now() + retryDelayMs(e); set({ state: "unsent", error: msg }); break; }
+          set({ state: "refused", error: msg });
+        }
+      }
+    } finally { flushing.current = false; }
+    if (sent) loadSession();
+  }, [id, mode, lang, loadSession, updateLocal]);
+  // Every 4 s while the tab is visible; paused while hidden, at once when it comes back (C-03). Unsaved lines retry here.
+  useVisiblePolling(() => { loadSession(); loadConsult(); void flush(); }, 4000, `${id}:${mode}`);
+  useEffect(() => () => { reqId.current++; }, [id]); // drop in-flight results on leave
 
   const session = data?.session;
   const patientLang: Lang = session?.patientLang ?? "en";
@@ -71,14 +110,18 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
   // ---- transcript: intake/session turns plus lines not yet echoed by the server
   const lines: Line[] = useMemo(() => {
     const base: Line[] = (session?.turns ?? []).map((t) => ({ id: t.id, speaker: t.role === "patient" ? "patient" : "clinician", system: t.role === "assistant", text: t.text, at: t.at }));
-    const unsynced = local.filter((l) => !base.some((b) => b.text === l.text && b.speaker === l.speaker));
+    // Unsaved lines always show, marked; a saved line shows until the record (reloaded) carries it.
+    const unsynced: Line[] = local
+      .filter((l) => l.state !== "sent" || !base.some((b) => b.text === l.text && b.speaker === l.speaker))
+      .map((l) => ({ id: l.id, speaker: l.speaker, text: l.text, at: l.at, input: l.input, ...(l.state !== "sent" ? { pending: l.state, ...(l.error ? { pendingError: l.error } : {}) } : {}) }));
     return [...base, ...unsynced];
   }, [session, local]);
   const turnLang = (l: Line): Lang => session?.turns.find((t) => t.id === l.id)?.lang ?? (l.speaker === "patient" ? patientLang : lang);
 
-  // ---- consult state: server's, or the typed fixture
+  // ---- consult state: the server's (the last one it sent, when it is unavailable), or the typed fixture only when this
+  // server has no consult route. Before the first answer (or when the first read fails) nothing is suggested.
   const fx = useMemo(() => buildFixture(mode, lines, statusMap, id), [mode, lines, statusMap, id]);
-  const state: ConsultState = fixture || !cs ? fx : cs;
+  const state: ConsultState = fixture ? fx : cs ?? { sessionId: id, mode, suggestions: [], note: null, modelCalls: [] };
   const suggestions = state.suggestions;
   // Questions fill the 3 popup slots; considerations live in their own doctor-only panel (see _guard.ts).
   const open = questionsFor(mode, suggestions).filter((s) => s.status === "open").sort((a, b) => rank(a) - rank(b));
@@ -98,15 +141,11 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
     const t = raw.trim();
     if (!t) return;
     const clientTurnId = crypto.randomUUID();
-    setLocal((l) => [...l, { id: `local-${clientTurnId}`, speaker: who, text: t, at: new Date().toISOString(), input }]);
-    if (!fixture) {
-      try {
-        const r = await post<ConsultState>(`/api/sessions/${id}/consult/turns`, { speaker: who, text: t, mode, clientTurnId, inputMode: input });
-        setCs(r); setWriteError(null);
-      } catch (e) { setWriteError(`${ct("writeFailed", lang)}: ${(e as Error).message}`); }
-    }
-    loadSession();
-  }, [id, mode, loadSession, fixture, lang]);
+    // Always sent to the server (patient lines go through redaction and the deterministic red-flag rules there).
+    updateLocal((l) => [...l, { id: `local-${clientTurnId}`, speaker: who, text: t, at: new Date().toISOString(), input, clientTurnId, state: Date.now() < retryAt.current ? "unsent" : "sending" }]);
+    await flush();
+  }, [flush, updateLocal]);
+  const sendAgain = () => { retryAt.current = 0; void flush(); };
   const giveConsent = (on: boolean) => {
     setConsented(on);
     try { if (on) sessionStorage.setItem(`medx.consult.consent.${id}`, "1"); else sessionStorage.removeItem(`medx.consult.consent.${id}`); } catch { /* local state only */ }
@@ -136,9 +175,16 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
 
   // ---- actions
   const mark = async (s: ConsultSuggestion, status: "asked" | "dismissed") => {
+    const before = s.status;
     setStatusMap((m) => ({ ...m, [s.id]: status }));
     setCs((c) => (c ? { ...c, suggestions: c.suggestions.map((x) => (x.id === s.id ? { ...x, status } : x)) } : c));
-    if (!fixture) { try { await post(`/api/sessions/${id}/consult/suggestions/${encodeURIComponent(s.id)}`, { reviewerId: reviewer, status }); } catch (e) { setWriteError(`${ct("writeFailed", lang)}: ${(e as Error).message}`); loadConsult(); } }
+    if (fixture) return; // sample logic only: no consult route on this server, nothing to save
+    try { await post(`/api/sessions/${id}/consult/suggestions/${encodeURIComponent(s.id)}`, { reviewerId: reviewer, status }); } catch (e) {
+      // Not saved: put the card back as it was, so the screen never shows a choice the record does not have.
+      setStatusMap((m) => { const n = { ...m }; delete n[s.id]; return n; });
+      setCs((c) => (c ? { ...c, suggestions: c.suggestions.map((x) => (x.id === s.id ? { ...x, status: before } : x)) } : c));
+      setWriteError(`${ct("writeFailed", lang)}: ${(e as Error).message}`); loadConsult();
+    }
   };
   // Writes never fall back to fixtures: a refused or failed write is shown with the server's reason and nothing is marked signed.
   const noteAction = async (action: "draft" | "sign", edits?: { lineId: string; text: string }[]) => {
@@ -148,6 +194,7 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
     try {
       const r = await post<ConsultState>(`/api/sessions/${id}/consult/note`, { reviewerId: reviewer, mode, action, ...(edits ? { edits } : {}) });
       setCs(r);
+      if (action === "sign") notifyCaseChanged(id);
     } catch (e) {
       setNoteError(`${ct("writeFailed", lang)}: ${(e as Error).message}`);
     } finally { setBusy(false); }
@@ -178,37 +225,58 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
     return [...used, ...active].filter((e) => e.turnId === turnId).map((e) => ({ start: e.start, end: e.end, quote: e.quote, active: active.some((a) => a.turnId === e.turnId && a.start === e.start && a.end === e.end) }));
   };
 
-  // live summary fields (server's; in fixture mode a small keyword overlay from the spoken lines)
+  // live summary fields (server's; in fixture mode a small keyword overlay from the spoken lines, shown as
+  // "needs check": a local line is not verified evidence, so it is never displayed as fact)
   const fields: ExtractedField[] = (session.summary?.fields ?? []).filter((f) => f.required).map((f) => {
     if (!fixture || f.status !== "missing") return f;
     const o = OVERLAY.find((x) => x.key === f.key);
     if (!o) return f;
     for (const l of local.filter((x) => x.speaker === "patient")) {
       const m = o.re.exec(l.text);
-      if (m) return { ...f, status: "supported" as const, confidence: 0.8, value: { en: m[0], th: m[0], it: m[0] }, valueOriginal: m[0], evidence: [{ turnId: l.id, quote: m[0], start: m.index, end: m.index + m[0].length }] };
+      if (m) return { ...f, status: "unsupported" as const, confidence: 0, value: { en: m[0], th: m[0], it: m[0] }, valueOriginal: m[0], evidence: [] };
     }
     return f;
   });
+  const notSaved = unsaved(local);
 
   const body = (
     <div className="flex flex-col gap-4">
       <style>{PULSE_CSS}</style>
       <p aria-live="polite" className="sr-only">{live}</p>
 
-      <Card className="cl-enter flex flex-wrap items-center gap-3">
-        <span className="grid size-11 place-items-center rounded-full bg-primary-gradient text-on-primary"><Icon name="mic" size={20} /></span>
-        <div className="min-w-0">
-          <h1 className="text-title font-extrabold">{ct("title", lang)} <span className="tabular-nums text-ink-soft">{session.code}</span></h1>
-          <p className="text-small text-ink-soft"><Badge tone="ocean">{ct(mode === "nurse" ? "modeNurse" : "modeDoctor", lang)}</Badge> <span lang={patientLang}>{LANG_NAME[patientLang]}</span></p>
+      <CaseHeader
+        id={id}
+        active="consult"
+        mode={mode}
+        lang={lang}
+        session={session}
+        title={ct("title", lang)}
+        badges={
+          <>
+            <Badge tone="ocean" icon={<Icon name="mic" size={12} />}>{ct(mode === "nurse" ? "modeNurse" : "modeDoctor", lang)}</Badge>
+            {fixture && <Badge tone="pencil" icon={<Icon name="triangle-alert" size={12} />}>{ct("fixture", lang)}</Badge>}
+          </>
+        }
+        actions={mode === "nurse" ? (
+          <Link href={`/review/${id}/vitals`} className={buttonClasses({ variant: "primary" })}>{ct("nextVitals", lang)}<Icon name="chevron-right" size={14} /></Link>
+        ) : undefined}
+      >
+        {fixture && <p className="text-micro text-ink-soft">{ct("fixtureHint", lang)}</p>}
+      </CaseHeader>
+
+      {!fixture && consultError && (
+        <p role="alert" className="flex items-start gap-2 rounded-2xl bg-warn-tint px-4 py-2.5 text-small font-semibold text-warn">
+          <Icon name="triangle-alert" size={16} className="mt-0.5 shrink-0" />
+          <span>{ct("serviceDown", lang).replace("{reason}", consultError)}</span>
+        </p>
+      )}
+      {notSaved.length > 0 && (
+        <div role="status" className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-warn/60 bg-warn-tint px-4 py-2.5 text-small font-semibold text-warn">
+          <Icon name="triangle-alert" size={16} className="shrink-0" />
+          <span className="min-w-0 flex-1">{ct("unsavedBanner", lang).replace("{n}", String(notSaved.length))}</span>
+          {notSaved.some((l) => l.state === "unsent") && <Button className="h-8! px-3! text-small!" onClick={sendAgain}>{ct("sendAgain", lang)}</Button>}
         </div>
-        {fixture && <Badge tone="pencil" className="ml-1">{ct("fixture", lang)}</Badge>}
-        {mode === "nurse" && <Link href={`/review/${id}/vitals`} className="ml-auto inline-flex h-10 items-center gap-2 rounded-full bg-primary-gradient px-4 text-small font-semibold text-on-primary">{ct("nextVitals", lang)}<Icon name="chevron-right" size={14} /></Link>}
-        <Link href={`/review/${id}/trace`} title={tr("caseTraceHint", lang)} className="inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean"><Icon name="clock" size={14} />{tr("caseTrace", lang)}</Link>
-        <Link href={`/review/${id}`} className={`${mode === "nurse" ? "" : "ml-auto "}inline-flex h-10 items-center gap-2 rounded-full border border-rule-strong/60 bg-sheet px-4 text-small font-semibold text-ink hover:border-ocean hover:text-ocean`}>
-          <Icon name="chevron-right" size={14} className="rotate-180" />{ct("backToCase", lang)}
-        </Link>
-        {fixture && <p className="basis-full text-micro text-ink-soft">{ct("fixtureHint", lang)}</p>}
-      </Card>
+      )}
 
       <Card className="cl-enter">
         <h2 className="mb-3 text-lead font-bold">{ct("summary", lang)}</h2>
@@ -301,7 +369,7 @@ export function Consult({ id, mode }: { id: string; mode: ConsultMode }) {
           note={note}
           lang={lang}
           busy={busy}
-          blockedReason={fixture ? ct("fixtureNoSign", lang) : pending ? ct("signBlocked", lang) : null}
+          blockedReason={fixture ? ct("fixtureNoSign", lang) : !(WRITE_ROLES.sign as readonly string[]).includes(clinicianRole) ? ct("signDoctorsOnly", lang) : pending ? ct("signBlocked", lang) : notSaved.length ? ct("signUnsaved", lang) : null}
           error={noteError}
           reviewer={reviewer}
           onHover={(ev, key) => setSel(ev ? { key, ev } : null)}
@@ -346,12 +414,16 @@ function Transcript({ lines, turnLang, marksFor, sel, lang }: { lines: Line[]; t
               <Badge tone={l.speaker === "patient" ? "ocean" : "outline"}>{l.system ? tr("question", lang) : ct(l.speaker, lang)}</Badge>
               <span className="tabular-nums">{clock(l.at, lang)}</span>
               {l.input && <Badge tone="outline">{tr(l.input === "voice" ? "tagSpoken" : "tagTyped", lang)}</Badge>}
+              {l.pending && <Badge tone={l.pending === "sending" ? "outline" : "pencil"} icon={l.pending === "sending" ? undefined : <Icon name="triangle-alert" size={12} />}>{ct(l.pending === "sending" ? "lineSending" : l.pending === "refused" ? "lineRefused" : "lineUnsent", lang)}</Badge>}
             </p>
-            {l.speaker === "patient" ? (
+            {l.pending ? (
+              <p lang={turnLang(l)} className="mt-1 text-body italic text-ink-soft">{l.text}</p>
+            ) : l.speaker === "patient" ? (
               <EvidenceHighlight key={hasActive ? `${l.id}:${sel?.key}` : l.id} text={l.text} lang={turnLang(l)} marks={marks} className="mt-1" />
             ) : (
               <p lang={turnLang(l)} className="mt-1 text-body text-ink-soft">{l.text}</p>
             )}
+            {l.pendingError && <p className="mt-0.5 text-micro text-warn">{l.pendingError}</p>}
           </li>
         );
       })}

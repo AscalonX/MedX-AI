@@ -1,7 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { WRITE_ROLES } from '@medx/shared';
 import type { ConsultMode, ConsultNote, ConsultNoteLine, ConsultNoteReq, ConsultRuleFile, ConsultState, ConsultSuggestion, ConsultTurnReq, Evidence, IntakeSession, Localized } from '@medx/shared';
 import redFlags from '@medx/shared/src/redflags.json';
 import investigations from '@medx/shared/src/investigations.json';
+import { requireStaffRole } from './clinicalWrites';
 import { emptyFields, isPresent, QUESTION_PRIORITY } from './config';
 import { loadConsultRules } from './consultRules';
 import { chatJSON, type ModelClient } from './llm';
@@ -9,7 +11,7 @@ import { MEDRULES } from './medrules';
 import { addTurnInLock, PipelineError } from './pipeline';
 import { aliases, CONSULT_SYSTEM, consultPrompt } from './prompts';
 import { checkRedFlags } from './redflags';
-import { redact, redactKeepStaff } from './redact';
+import { redact, redactActor, redactKeepStaff } from './redact';
 import { localized, object, shortString } from './schema';
 import { appendAudit, getConsultRecord, getSession, hasClientTurnId, saveConsultRecord, saveSession, withSessionLock, type ConsultRecord } from './store';
 import { QUESTIONS } from './templates';
@@ -25,7 +27,7 @@ export function consultMode(value: unknown): ConsultMode {
 }
 function reviewer(value: unknown): string {
   if (!shortString(value, 80)) throw new PipelineError('Invalid reviewerId', 'bad_request');
-  return value.trim();
+  return redactActor(value);
 }
 function evidenceFor(s: IntakeSession, evidence: Evidence[]): Evidence[] {
   return evidence.filter(e => {
@@ -212,8 +214,10 @@ export async function addConsultTurn(id: string, req: ConsultTurnReq, options: C
     let s = sessionFor(id); const record = getConsultRecord(id);
     const duplicate = req.clientTurnId && hasClientTurnId(id, req.clientTurnId);
     if (duplicate) return state(s, record, req.mode);
-    if (!['collecting', 'awaiting_review', 'needs_human', 'escalated'].includes(s.status)) throw new PipelineError('Session no longer accepts consult turns', 'bad_request', 409);
-    if (req.speaker === 'patient') s = await addTurnInLock(id, req.text, inputMode, req.clientTurnId);
+    // Intake approval ends the patient's own questions, not the visit: the consult continues on approved sessions.
+    if (!['collecting', 'awaiting_review', 'needs_human', 'escalated', 'approved'].includes(s.status)) throw new PipelineError('Session no longer accepts consult turns', 'bad_request', 409);
+    // Same redaction -> red flags -> extraction path as intake; fromConsult only lifts the approved-intake guard.
+    if (req.speaker === 'patient') s = await addTurnInLock(id, req.text, inputMode, req.clientTurnId, { fromConsult: true });
     else {
       await refresh(s, record, options);
       const turn = { id: randomUUID(), role: 'clinician' as const, lang: s.patientLang, text: redactKeepStaff(req.text), at: new Date().toISOString(), inputMode };
@@ -310,6 +314,7 @@ export async function consultNote(id: string, req: ConsultNoteReq, options: Cons
   if (!['draft', 'sign'].includes(req.action) || (req.edits !== undefined && (!Array.isArray(req.edits) || req.edits.length > 100 || req.edits.some(e => !object(e) || !shortString(e.lineId, 300) || !shortString(e.text, 2000) || Object.keys(e).some(k => !['lineId', 'text'].includes(k)))))) throw new PipelineError('Invalid note request', 'bad_request');
   if (req.action === 'draft' && req.edits?.length) throw new PipelineError('Edits require sign action', 'bad_request');
   if (req.action === 'sign' && req.mode !== 'doctor') throw new PipelineError('Only doctor mode can sign a consult note', 'bad_request', 403);
+  if (req.action === 'sign') requireStaffRole(req.reviewerId, WRITE_ROLES.sign, 'sign a consult note');
   return withSessionLock(id, async () => {
     const s = sessionFor(id); const record = getConsultRecord(id);
     if (req.action === 'sign' && s.summary?.redFlags.some(f => !f.review)) throw new PipelineError('Every red flag requires clinician review before signing', 'bad_request', 409);

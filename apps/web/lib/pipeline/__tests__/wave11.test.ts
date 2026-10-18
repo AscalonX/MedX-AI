@@ -62,12 +62,13 @@ describe('ambient patient and clinician safety boundaries', () => {
     expect(after.summary!.fields.flatMap(f => f.evidence).every(e => after.turns.find(t => t.id === e.turnId)?.role === 'patient')).toBe(true);
     expect(modelSuggestions({ suggestions: [modelItem({ quote: 'warfarin', turn: 'A1' })] }, after)).toEqual([]);
   });
-  it.each(['collecting', 'awaiting_review', 'needs_human', 'escalated'] as const)('accepts consult in %s', async status => {
+  // w20 (M-05): intake approval no longer ends the visit, so the consult continues on approved sessions.
+  it.each(['collecting', 'awaiting_review', 'needs_human', 'escalated', 'approved'] as const)('accepts consult in %s', async status => {
     const s = createSession('en'); s.status = status; saveSession(s);
     await expect(addConsultTurn(s.id, utterance('Please describe the problem', 'clinician'), options)).resolves.toMatchObject({ sessionId: s.id });
     expect(getSession(s.id)!.status).toBe(status);
   });
-  it.each(['approved', 'taken_over'] as const)('rejects new speech in %s', async status => {
+  it.each(['taken_over'] as const)('rejects new speech in %s', async status => {
     const s = createSession('en'); s.status = status; saveSession(s);
     await expect(addConsultTurn(s.id, utterance('Headache'), options)).rejects.toMatchObject({ status: 409 });
     expect(getSession(s.id)!.turns).toEqual([]);

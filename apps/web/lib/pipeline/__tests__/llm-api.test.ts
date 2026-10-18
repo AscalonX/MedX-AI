@@ -99,7 +99,13 @@ const context = (id: string) => ({ params: Promise.resolve({ id }) });
 describe('HTTP contracts and CORS', () => {
   beforeEach(() => vi.stubEnv('MODEL_PROVIDER', 'mock'));
   it('returns health metadata without credentials and permits preflight', async () => {
-    const h = health(new Request('http://localhost/api/health')); expect(await h.json()).toEqual({ provider: 'mock', model: 'deterministic-mock', hardware: '\u2014' }); expect(h.headers.has('Access-Control-Allow-Origin')).toBe(false); expect(OPTIONS(new Request('http://localhost/api/health')).status).toBe(204);
+    // M-02 (w20) extended the body with store/commit/region facts; pin the exact key set so nothing else (credentials) can appear.
+    vi.stubEnv('AMD_API_KEY', 'sk-health-secret-must-not-leak'); vi.stubEnv('AMD_BASE_URL', 'https://secret-host.invalid/v1');
+    const h = health(new Request('http://localhost/api/health')); const text = await h.text(); const body = JSON.parse(text);
+    expect(body).toMatchObject({ status: 'ok', provider: 'mock', model: 'deterministic-mock', hardware: '\u2014', providerConfigured: true, storeOk: true });
+    expect(Object.keys(body).sort()).toEqual(['commit', 'hardware', 'model', 'provider', 'providerConfigured', 'region', 'sessions', 'status', 'store', 'storeOk', 'storeVersion']);
+    expect(text).not.toContain('sk-health-secret-must-not-leak'); expect(text).not.toContain('secret-host.invalid');
+    expect(h.headers.has('Access-Control-Allow-Origin')).toBe(false); expect(OPTIONS(new Request('http://localhost/api/health')).status).toBe(204);
   });
   it('creates, lists, gets, adds turns, reviews and returns metrics', async () => {
     const created = await create(post({ patientLang: 'en' })); expect(created.status).toBe(201); const s = await created.json();

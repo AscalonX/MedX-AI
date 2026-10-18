@@ -57,7 +57,8 @@ export const shellLabels: Record<Lang, ShellLabels> = {
 const langLabel: Record<Lang, string> = { th: "ไทย", it: "IT", en: "EN" };
 
 /**
- * Web app shell (DIRECTION.md 8.2): left sidebar (brand, role switch, nav), top bar (greeting, language pill, avatar).
+ * Web app shell (DIRECTION.md 8.2): left sidebar (brand, role switch, nav), top bar (greeting, language pill, avatar
+ * or the `account` menu).
  * Below 1024px the sidebar becomes a top bar with horizontal nav. No business logic: the page owns role and language.
  */
 export function AppShell({
@@ -70,6 +71,7 @@ export function AppShell({
   lang,
   onLangChange,
   actions,
+  account,
   labels,
   children,
 }: {
@@ -82,6 +84,8 @@ export function AppShell({
   lang: Lang;
   onLangChange?: (l: Lang) => void;
   actions?: ReactNode;
+  /** Replaces the plain avatar at the end of the top bar, e.g. the staff account menu (app/_shared/AccountMenu). */
+  account?: ReactNode;
   /** Override chrome strings (defaults follow `lang`). Role names may be partial. */
   labels?: Partial<Omit<ShellLabels, "roles">> & { roles?: Partial<Record<ShellRole, string>> };
   children: ReactNode;
@@ -102,7 +106,7 @@ export function AppShell({
       >
         {t.skip}
       </a>
-      <aside className="flex flex-col gap-6 border-b border-rule/70 bg-sheet/70 px-4 py-4 lg:sticky lg:top-0 lg:h-[100dvh] lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
+      <aside className="glass flex flex-col gap-6 border-b border-rule/70 px-4 py-4 lg:sticky lg:top-0 lg:h-[100dvh] lg:border-b-0 lg:border-r lg:px-5 lg:py-6">
         <div className="flex items-center gap-2.5">
           <Logo height={34} />
         </div>
@@ -111,6 +115,7 @@ export function AppShell({
             ariaLabel={t.roleGroup}
             size="sm"
             layout="grid2"
+            activation="manual"
             value={role}
             onChange={onRoleChange}
             options={roles.map((r) => ({ value: r, label: t.roles[r] }))}
@@ -124,7 +129,7 @@ export function AppShell({
               aria-current={n.active ? "page" : undefined}
               className={cx(
                 "flex h-11 shrink-0 items-center gap-3 rounded-full px-4 text-body font-semibold transition-colors duration-quick ease-pen focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean",
-                n.active ? "bg-teal-tint text-teal" : "text-ink-soft hover:bg-paper hover:text-ink",
+                n.active ? "bg-teal-tint text-teal shadow-hairline" : "text-ink-soft hover:bg-sheet hover:text-ink",
               )}
             >
               {n.icon}
@@ -152,7 +157,7 @@ export function AppShell({
                 options={(["th", "it", "en"] as Lang[]).map((l) => ({ value: l, label: langLabel[l], lang: l }))}
               />
             )}
-            <Avatar name={userName} size={40} />
+            {account ?? <Avatar name={userName} size={40} />}
           </div>
         </header>
         <main id="main-content" tabIndex={-1} className="min-w-0 flex-1 px-6 pb-8 pt-4 focus:outline-none">{children}</main>

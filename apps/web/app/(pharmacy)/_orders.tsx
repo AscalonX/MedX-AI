@@ -2,10 +2,10 @@
 import Link from "next/link";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import type { DispenseChecklist, IntakeSession, Lang, Localized, MedAlert, MedicationOrder } from "@medx/shared";
-import { Badge, Button, Card, CardHeader, EmptyState, Field, Icon, LangMorph, Pill, SegmentedControl } from "@/components/ui";
+import { Badge, Button, Card, CardHeader, EmptyState, Field, Icon, LangMorph, SegmentedControl, buttonClasses, type IconName } from "@/components/ui";
 import {
-  C, CHECKLIST_KEYS, DICTIONARY_GENERICS, L, PHARMACISTS, STAGES, STAGE_LABEL, U, activeOrders, allergiesOf, alternativeEntries, canCall, clock, hasNka, isAbstained,
-  kindTitle, openHighChecks, orderTitle, ordersOf, overrideOf, sameGeneric, samePerson, stageRows, toDictionaryGeneric, waited, type Stage,
+  C, CHECKLIST_KEYS, DICTIONARY_GENERICS, L, PHARMACISTS, STAGES, STAGE_LABEL, U, activeOrders, allergiesOf, alternativeEntries, blockingOrders, canCall, clock, hasNka, isAbstained, isRecheck,
+  kindTitle, newlyDispensed, openFlags, openHigh, openHighChecks, orderTitle, ordersOf, overrideOf, sameGeneric, samePerson, stageRows, toDictionaryGeneric, waited, type Stage,
 } from "./_lib";
 import { usePharmacy, type Entry } from "./_shell";
 
@@ -147,7 +147,44 @@ const OL = {
   callNote: L("การเรียกจะเปลี่ยนสถานะที่แอปของผู้ป่วยแสดง แต่ไม่รับประกันว่าผู้ป่วยเห็นแล้ว", "La chiamata aggiorna lo stato che l'app del paziente mostra; non garantisce che il paziente l'abbia visto.", "Calling sets the status the patient app shows. It does not guarantee the patient saw it."),
   collectNote: L("ยืนยันตัวผู้ป่วยที่เคาน์เตอร์และแนะนำการใช้ยาก่อนส่งมอบ", "Allo sportello, confermi l'identità del paziente e dia le istruzioni prima della consegna.", "At the counter, confirm the patient's identity and counsel before handing over."),
   collectedTitle: L("ผู้ป่วยรับยาแล้ว", "Farmaci ritirati", "Medicines collected"),
-  newOrderAfter: L("มีใบสั่งยาใหม่หลังรับยาแล้ว ระบบเรียกผู้ป่วยซ้ำไม่ได้ ให้แจ้งผู้ป่วยโดยตรง", "C'è un nuovo ordine dopo il ritiro: il sistema non può richiamare il paziente. Avvisarlo di persona.", "A new order arrived after collection. The system cannot call the patient again: tell the patient in person."),
+  draftsNote: (n: number) => L(
+    `ร่างใบสั่งยา ${n} รายการยังอยู่ที่แพทย์ ไม่ทำให้เรียกผู้ป่วยไม่ได้`,
+    n === 1 ? "1 bozza è ancora dal prescrittore: non blocca la chiamata." : `${n} bozze sono ancora dal prescrittore: non bloccano la chiamata.`,
+    n === 1 ? "1 draft order is still with the prescriber. Drafts do not block the call." : `${n} draft orders are still with the prescriber. Drafts do not block the call.`,
+  ),
+  newCycle: L("รอบรับยาใหม่", "Nuovo ciclo di ritiro", "New pickup cycle"),
+  nothingNew: L("ยังไม่มียาที่จ่ายใหม่ในรอบนี้", "Nessun farmaco appena dispensato in questo ciclo.", "No newly dispensed medicines in this cycle."),
+  newCycleBody: (n: number) => L(
+    `ยารอบก่อนส่งมอบแล้ว การเรียกครั้งนี้รวมยาใหม่ ${n} รายการ`,
+    n === 1 ? "I farmaci precedenti sono stati ritirati. Questa chiamata riguarda 1 nuovo ordine." : `I farmaci precedenti sono stati ritirati. Questa chiamata riguarda ${n} nuovi ordini.`,
+    n === 1 ? "Earlier medicines were collected. This call covers 1 new order." : `Earlier medicines were collected. This call covers ${n} new orders.`,
+  ),
+  // re-check: a new high alert after verification sent the order back to pharmacist 1
+  recheck: L("ต้องตรวจซ้ำ", "Ricontrollo necessario", "Re-check needed"),
+  recheckBody: L(
+    "มีการแจ้งเตือนสูงใหม่หลังจากตรวจสอบใบสั่งยานี้แล้ว ใบสั่งยาจึงกลับมาที่เภสัชกรคนแรก การตรวจสอบเดิมไม่มีผลแล้ว และยังจ่ายยาไม่ได้",
+    "Dopo la verifica è comparso un nuovo avviso alto, quindi l'ordine è tornato al primo farmacista. La verifica precedente non vale più e non si può dispensare.",
+    "A new high alert appeared after this order was verified, so it came back to the first pharmacist. The earlier verification no longer counts and the order cannot be dispensed.",
+  ),
+  recheckAlerts: L("การแจ้งเตือนใหม่", "Nuovi avvisi", "New alerts"),
+  history: L("บันทึกเภสัชกรคนแรกก่อนหน้า", "Registrazioni precedenti del primo farmacista", "Earlier first-pharmacist records"),
+  historyRow: (verb: "verify" | "return", by: string, at: string, sup: string) => L(
+    `${verb === "return" ? "ส่งกลับ" : "ตรวจสอบ"}โดย ${by} เวลา ${at} ไม่มีผลตั้งแต่ ${sup} เพราะมีการแจ้งเตือนสูงใหม่`,
+    `${verb === "return" ? "Restituito" : "Verificato"} da ${by} alle ${at}, superato alle ${sup}: nuovo avviso alto`,
+    `${verb === "return" ? "Returned" : "Verified"} by ${by} at ${at}, superseded at ${sup}: new high alert`,
+  ),
+  // per-order step tracker
+  steps: L("ขั้นตอนของใบสั่งยานี้", "Fasi di questo ordine", "Steps for this order"),
+  stepVerify: L("ตรวจใบสั่งยา", "Verifica", "Verify"),
+  stepDispense: L("จัดยาและตรวจขั้นสุดท้าย", "Preparazione e controllo finale", "Pick and final check"),
+  stepPickup: L("รับยา", "Ritiro", "Pickup"),
+  stepDone: L("เสร็จแล้ว", "fatto", "done"),
+  stepNow: L("ขั้นปัจจุบัน", "in corso", "now"),
+  stepWaiting: L("ยังไม่ถึง", "in attesa", "waiting"),
+  stepReturned: L("ส่งกลับแพทย์", "restituito", "returned"),
+  stepCancelled: L("ยกเลิกแล้ว", "annullato", "cancelled"),
+  // queue
+  matching: (n: number, q: string) => L(`ตรงกับ "${q}" ${n} รายการ`, `${n} corrispondono a "${q}"`, `${n} matching "${q}"`),
 };
 
 /** A refused action: amber "blocked" styling with the server's own words (red stays for urgency). */
@@ -359,7 +396,80 @@ function DispensePanel({ o, session, lang, busy, reviewer, onSwitch, onSubmit }:
   );
 }
 
-function OrderCard({ o, session, lang, busy, run }: { o: MedicationOrder; session: IntakeSession; lang: Lang; busy: boolean; run: Run }) {
+type StepState = "done" | "now" | "waiting" | "returned" | "cancelled";
+const STEP_LOOK: Record<StepState, { box: string; disc: string; word: Localized }> = {
+  done: { box: "bg-teal-tint text-teal", disc: "bg-teal text-on-primary", word: OL.stepDone },
+  now: { box: "bg-ocean-tint text-ocean ring-1 ring-inset ring-ocean/30", disc: "bg-ocean text-on-primary", word: OL.stepNow },
+  waiting: { box: "bg-paper text-graphite", disc: "bg-muted text-graphite", word: OL.stepWaiting },
+  returned: { box: "bg-warn-tint text-warn", disc: "border border-dashed border-warn bg-sheet text-warn", word: OL.stepReturned },
+  cancelled: { box: "bg-muted text-graphite", disc: "bg-sheet text-graphite", word: OL.stepCancelled },
+};
+/** Where one order stands in verify, dispense, pickup: words, number and icon (never colour alone). */
+function OrderSteps({ o, session, lang, collected }: { o: MedicationOrder; session: IntakeSession; lang: Lang; collected: ReadonlySet<string> }) {
+  const p = session.pickup;
+  const handedOver = o.status === "dispensed" && (collected.has(o.id) || p?.status === "collected");
+  const steps: { label: Localized; state: StepState; sub?: string; icon: IconName }[] = [
+    {
+      label: OL.stepVerify, icon: "clipboard-list",
+      state: o.status === "cancelled" ? "cancelled" : o.status === "returned" ? "returned" : o.status === "submitted" ? "now" : o.status === "verified" || o.status === "dispensed" ? "done" : "waiting",
+      sub: (o.status === "verified" || o.status === "dispensed" || o.status === "returned") && o.pharmacist ? o.pharmacist.by : isRecheck(o) ? OL.recheck[lang] : undefined,
+    },
+    { label: OL.stepDispense, icon: "package-check", state: o.status === "dispensed" ? "done" : o.status === "verified" ? "now" : o.status === "cancelled" ? "cancelled" : "waiting", sub: o.dispense?.by },
+    {
+      label: OL.stepPickup, icon: "bell",
+      state: o.status !== "dispensed" ? (o.status === "cancelled" ? "cancelled" : "waiting") : handedOver ? "done" : "now",
+      sub: o.status === "dispensed" && !handedOver && p?.status === "ready" ? `${OL.called[lang]}${p.counter ? `, ${OL.counter(p.counter)[lang]}` : ""}` : undefined,
+    },
+  ];
+  return (
+    <ol aria-label={OL.steps[lang]} className="mt-3 grid grid-cols-1 gap-2 min-[520px]:grid-cols-3">
+      {steps.map((s, i) => {
+        const look = STEP_LOOK[s.state];
+        return (
+          <li key={i} className={`flex min-w-0 items-center gap-2.5 rounded-xl px-3 py-2 ${look.box}`}>
+            <span aria-hidden="true" className={`grid size-7 shrink-0 place-items-center rounded-full text-micro font-bold ${look.disc}`}>
+              {s.state === "done" ? <Icon name="check" size={14} /> : i + 1}
+            </span>
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span className="text-small font-semibold">{s.label[lang]}</span>
+              <span className="truncate text-micro">{look.word[lang]}{s.sub ? `, ${s.sub}` : ""}</span>
+            </span>
+            <Icon name={s.icon} size={16} className="ml-auto shrink-0 opacity-70" />
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** A verified order sent back to pharmacist 1: amber "needs a human check" panel with the new alerts. */
+function RecheckPanel({ o, lang }: { o: MedicationOrder; lang: Lang }) {
+  if (!isRecheck(o) || !o.recheck) return null;
+  const titles = o.recheck.alertIds.map((id) => { const c = o.checks.find((x) => x.id === id); return c ? `${kindTitle(c)[lang]} (${c.ruleId})` : id; });
+  return (
+    <div role="status" className="mt-3 flex flex-col gap-1 rounded-xl border border-dashed border-warn/60 bg-warn-tint px-3 py-2.5 text-small text-ink">
+      <p className="flex items-center gap-2 font-bold text-warn"><Icon name="rotate-ccw" size={16} /><span>{OL.recheck[lang]}<span className="font-normal text-ink-soft">, {clock(o.recheck.at)}</span></span></p>
+      <p>{OL.recheckBody[lang]}</p>
+      {titles.length > 0 && <p><span className="font-semibold">{OL.recheckAlerts[lang]}: </span>{titles.join("; ")}</p>}
+    </div>
+  );
+}
+
+/** Earlier pharmacist-1 records kept when a re-check superseded them (append-only, never edited). */
+function PharmacistHistory({ o, lang }: { o: MedicationOrder; lang: Lang }) {
+  const h = o.pharmacistHistory ?? [];
+  if (!h.length) return null;
+  return (
+    <details className="mt-2 rounded-xl bg-paper px-3 py-2 text-small">
+      <summary className="cursor-pointer font-semibold text-ocean">{OL.history[lang]} ({h.length})</summary>
+      <ul className="mt-1.5 flex flex-col gap-1 text-ink-soft">
+        {h.map((r, i) => <li key={`${r.at}-${i}`}>{OL.historyRow(r.action, r.by, clock(r.at), clock(r.supersededAt))[lang]}</li>)}
+      </ul>
+    </details>
+  );
+}
+
+function OrderCard({ o, session, lang, busy, run, collected }: { o: MedicationOrder; session: IntakeSession; lang: Lang; busy: boolean; run: Run; collected: ReadonlySet<string> }) {
   const { submitOrder, dispense, reviewer, setReviewer } = usePharmacy();
   const [form, setForm] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -371,16 +481,22 @@ function OrderCard({ o, session, lang, busy, run }: { o: MedicationOrder; sessio
   const report = o.status === "returned" ? o.pharmacist?.report : undefined;
   const titleOf = (id: string) => { const c = o.checks.find((x) => x.id === id); return c ? `${kindTitle(c)[lang]} (${c.ruleId})` : id; };
   return (
-    <li id={`order-${o.id}`} className="scroll-mt-4 rounded-2xl border border-rule/70 bg-sheet p-4">
+    <li id={`order-${o.id}`} className="scroll-mt-4 rounded-2xl border border-rule/70 bg-sheet p-4 shadow-hairline">
       <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
-        <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-full bg-ocean-tint text-ocean"><Icon name="pill" /></span>
+        <span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-2xl bg-ocean-tint text-ocean"><Icon name="pill" /></span>
         <div className="min-w-0 flex-1 basis-60">
           <h3 className="text-lead font-bold">{orderTitle(o)}</h3>
           <p className="text-small text-ink-soft">{o.route} · {o.frequency}{o.duration ? ` · ${o.duration}` : ""}{o.drugClass ? ` · ${o.drugClass.replace(/_/g, " ")}` : ""}</p>
           <p className="text-small text-ink-soft">{OL.prescribedBy[lang]} {o.orderedBy}, {clock(o.at)}</p>
         </div>
-        <Badge tone={ST_TONE[o.status]}>{OL.status[o.status][lang]}</Badge>
+        <span className="flex flex-wrap items-center gap-2">
+          {isRecheck(o) && <Badge tone="pencil" icon={<Icon name="rotate-ccw" size={14} />}>{OL.recheck[lang]}</Badge>}
+          <Badge tone={ST_TONE[o.status]}>{OL.status[o.status][lang]}</Badge>
+        </span>
       </div>
+      <OrderSteps o={o} session={session} lang={lang} collected={collected} />
+      <RecheckPanel o={o} lang={lang} />
+      <PharmacistHistory o={o} lang={lang} />
 
       {o.checks.length === 0 ? (
         <p className="mt-3 text-small text-ink-soft">{OL.noAlerts[lang]}</p>
@@ -464,7 +580,7 @@ function OrderCard({ o, session, lang, busy, run }: { o: MedicationOrder; sessio
 }
 
 /** Prescriptions card on the session page: every order with its stage (verify, dispense), above the reconciliation. */
-export function PrescriptionsCard({ session, lang, busy, fixture, run }: { session: IntakeSession; lang: Lang; busy: boolean; fixture: boolean; run: Run }) {
+export function PrescriptionsCard({ session, lang, busy, fixture, run, collected = new Set() }: { session: IntakeSession; lang: Lang; busy: boolean; fixture: boolean; run: Run; collected?: ReadonlySet<string> }) {
   const visible = ordersOf(session).filter((o) => o.status !== "draft");
   if (visible.length === 0) return null;
   const sorted = [...visible].sort((a, b) => ST_RANK[a.status] - ST_RANK[b.status] || Number(openHighChecks(b).length > 0) - Number(openHighChecks(a).length > 0));
@@ -472,20 +588,26 @@ export function PrescriptionsCard({ session, lang, busy, fixture, run }: { sessi
   const summary = (["submitted", "verified", "returned", "dispensed"] as const).filter((st) => count(st) > 0);
   return (
     <Card id="orders" aria-labelledby="h-orders">
-      <CardHeader title={<span id="h-orders">{OL.title[lang]}</span>} action={<span className="flex items-center gap-2">{fixture && <Badge tone="pencil">{OL.fixture[lang]}</Badge>}<span className="text-small text-ink-soft">{visible.length}</span></span>} />
+      <CardHeader
+        title={<span id="h-orders" className="flex items-center gap-2"><Icon name="file-text" className="text-ocean" />{OL.title[lang]}</span>}
+        action={<span className="flex items-center gap-2">{fixture && <Badge tone="pencil">{OL.fixture[lang]}</Badge>}<span className="rounded-full bg-muted px-2.5 py-0.5 text-small font-semibold text-ink-soft tabular-nums">{visible.length}</span></span>}
+      />
       {summary.length > 0 && (
         <p className="-mt-2 mb-3 flex flex-wrap gap-2">{summary.map((st) => <Badge key={st} tone={ST_TONE[st]}>{OL.status[st][lang]}: {count(st)}</Badge>)}</p>
       )}
       <ul className="flex flex-col gap-3">
-        {sorted.map((o) => <OrderCard key={o.id} o={o} session={session} lang={lang} busy={busy} run={run} />)}
+        {sorted.map((o) => <OrderCard key={o.id} o={o} session={session} lang={lang} busy={busy} run={run} collected={collected} />)}
       </ul>
     </Card>
   );
 }
 
 const COUNTERS = ["1", "2", "3"] as const;
-/** Pickup: call the patient once every active order is dispensed, then record collection. */
-export function PickupCard({ session, lang, busy, run }: { session: IntakeSession; lang: Lang; busy: boolean; run: Run }) {
+/**
+ * Pickup: call the patient once nothing waits on the pharmacy (drafts do not block) and at least one order of this
+ * cycle is dispensed, then record collection. `collected` = orders handed over in earlier cycles (from the audit).
+ */
+export function PickupCard({ session, lang, busy, run, collected = new Set() }: { session: IntakeSession; lang: Lang; busy: boolean; run: Run; collected?: ReadonlySet<string> }) {
   const { pickup, now } = usePharmacy();
   const p = session.pickup;
   const [counter, setCounter] = useState<string>(p?.counter && (COUNTERS as readonly string[]).includes(p.counter) ? p.counter : "1");
@@ -493,14 +615,17 @@ export function PickupCard({ session, lang, busy, run }: { session: IntakeSessio
   const active = activeOrders(session);
   if (!active.some((o) => o.status !== "draft") && !p) return null; // nothing has reached the pharmacy yet
   const act = (fn: () => Promise<unknown>) => { setErr(null); return run(fn, setErr); };
-  const open = active.filter((o) => o.status !== "dispensed");
-  const n = (st: MedicationOrder["status"]) => open.filter((o) => o.status === st).length;
+  const blocking = blockingOrders(session);
+  const n = (st: MedicationOrder["status"]) => blocking.filter((o) => o.status === st).length;
   const remaining = [
     n("submitted") ? `${STAGE_LABEL.verify[lang]} ${n("submitted")}` : "",
     n("verified") ? `${STAGE_LABEL.dispense[lang]} ${n("verified")}` : "",
-    n("returned") + n("draft") ? OL.withPrescriber(n("returned") + n("draft"))[lang] : "",
+    n("returned") ? OL.withPrescriber(n("returned"))[lang] : "",
   ].filter(Boolean);
-  const callable = canCall(session);
+  const drafts = active.filter((o) => o.status === "draft").length;
+  const ready = newlyDispensed(session, collected);
+  const newCycle = !p && collected.size > 0 && ready.length > 0;
+  const callable = canCall(session, collected);
   const counters = COUNTERS.map((c) => ({ value: c, label: OL.counter(c)[lang] }));
   const code = (
     <div className="flex flex-col">
@@ -518,7 +643,7 @@ export function PickupCard({ session, lang, busy, run }: { session: IntakeSessio
         <div role="status" className="rounded-2xl border border-teal/30 bg-teal-tint p-4">
           <p className="flex items-center gap-2 text-lead font-bold text-teal"><Icon name="circle-check" />{OL.collectedTitle[lang]}</p>
           <p className="mt-1 text-small text-ink">{OL.collectedBy[lang]} {p.collectedBy}{p.collectedAt ? `, ${clock(p.collectedAt)}` : ""}. {OL.calledBy[lang]} {p.calledBy}, {clock(p.calledAt)}{p.counter ? `, ${OL.counter(p.counter)[lang]}` : ""}.</p>
-          {open.length > 0 && <p className="mt-2 rounded-lg bg-warn-tint px-3 py-2 text-small font-semibold text-warn">{OL.newOrderAfter[lang]}</p>}
+          {drafts > 0 && <p className="mt-2 text-small text-ink-soft">{OL.draftsNote(drafts)[lang]}</p>}
         </div>
       ) : p?.status === "ready" ? (
         <div className="flex flex-col gap-4">
@@ -538,16 +663,24 @@ export function PickupCard({ session, lang, busy, run }: { session: IntakeSessio
         </div>
       ) : (
         <div className="flex flex-col gap-4">
+          {newCycle && (
+            <p className="flex flex-wrap items-center gap-2 text-small text-ink-soft">
+              <Badge tone="ocean" icon={<Icon name="rotate-ccw" size={14} />}>{OL.newCycle[lang]}</Badge>{OL.newCycleBody(ready.length)[lang]}
+            </p>
+          )}
           <div className="flex flex-wrap items-end gap-x-10 gap-y-3 rounded-2xl bg-paper p-4">
             {code}
             <p className="min-w-0 flex-1 basis-56 text-small text-ink-soft">
-              {callable ? OL.dispensedN(active.length)[lang] : <><span className="font-semibold text-ink">{OL.stillToDo[lang]}:</span> {remaining.join(", ")}.</>}
+              {callable ? OL.dispensedN(ready.length)[lang]
+                : remaining.length ? <><span className="font-semibold text-ink">{OL.stillToDo[lang]}:</span> {remaining.join(", ")}.</>
+                : OL.nothingNew[lang]}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <SegmentedControl ariaLabel={OL.counterLabel[lang]} value={counter} onChange={setCounter} options={counters} size="sm" />
             <Button variant="primary" disabled={busy || !callable} aria-describedby="pickup-note" onClick={() => act(() => pickup(session.id, "call", counter))} icon={<Icon name="bell" size={16} />}>{OL.callPatient[lang]}</Button>
           </div>
+          {drafts > 0 && <p className="text-small text-ink-soft">{OL.draftsNote(drafts)[lang]}</p>}
           <p id="pickup-note" className="text-micro text-graphite">{OL.callNote[lang]}</p>
         </div>
       )}
@@ -557,12 +690,19 @@ export function PickupCard({ session, lang, busy, run }: { session: IntakeSessio
 }
 
 // ---------- queue: one list per stage ----------
-const ROW = "flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-rule/70 bg-sheet p-4 transition-[transform,box-shadow] duration-base ease-pen hover:-translate-y-0.5 hover:shadow-sheet-lifted";
-const Disc = ({ icon, tone }: { icon: "pill" | "triangle-alert" | "bell" | "check" | "user"; tone: "signal" | "ocean" | "teal" | "warn" }) => (
+const ROW = "flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border bg-sheet p-4 transition-[transform,box-shadow,background-color,border-color] duration-base ease-pen hover:-translate-y-0.5 hover:shadow-sheet-lifted";
+const Disc = ({ icon, tone }: { icon: IconName; tone: "signal" | "ocean" | "teal" | "warn" }) => (
   <span aria-hidden="true" className={`grid size-11 shrink-0 place-items-center rounded-full ${{ signal: "bg-signal text-on-signal", ocean: "bg-ocean-tint text-ocean", teal: "bg-teal-tint text-teal", warn: "bg-warn-tint text-warn" }[tone]}`}><Icon name={icon} /></span>
 );
-const Row = ({ href, children }: { href: string; children: ReactNode }) => (
-  <li><Link href={href} className={ROW}>{children}<Icon name="chevron-right" className="text-graphite" /></Link></li>
+/** One queue row. `isNew`: arrived since the page loaded (non-urgent rows only), highlighted once for a few seconds. */
+const Row = ({ href, isNew = false, newLabel, children }: { href: string; isNew?: boolean; newLabel?: string; children: ReactNode }) => (
+  <li>
+    <Link href={href} className={`${ROW} ${isNew ? "border-ocean/50 bg-ocean-tint/40 ring-4 ring-ocean-tint" : "border-rule/70"}`}>
+      {children}
+      {isNew && newLabel && <Badge tone="ocean">{newLabel}</Badge>}
+      <Icon name="chevron-right" className="text-graphite max-sm:hidden" />
+    </Link>
+  </li>
 );
 
 /** Work counts per stage (orders for verify/dispense, patients for the pickup stages). */
@@ -571,20 +711,25 @@ export function stageCounts(entries: Entry[], now: number): Record<Stage, number
   return { verify: r.verify.length, dispense: r.dispense.length, call: r.call.length, ready: r.ready.length, collected: r.collected.length };
 }
 
-/** Prescription queue grouped by pharmacy stage, with counts. Opens on the first stage that has work. */
-export function PrescriptionQueue() {
-  const { entries, now, lang, reviewer } = usePharmacy();
-  const [stage, setStage] = useState<Stage | null>(null);
+/**
+ * Prescription queue grouped by pharmacy stage, with counts. Opens on the first stage that has work. `entries` may be
+ * filtered by the patient-code search (`query`); the stage is owned by the page so the hero tiles can open it.
+ */
+export function PrescriptionQueue({ entries, stage, onStage, query = "", onClearQuery }: {
+  entries: Entry[] | null; stage: Stage | null; onStage: (s: Stage) => void; query?: string; onClearQuery?: () => void;
+}) {
+  const { now, lang, reviewer, fresh } = usePharmacy();
   useEffect(() => {
     if (stage !== null || !entries) return;
     const c = stageCounts(entries, now);
-    setStage(STAGES.find((k) => c[k] > 0) ?? "verify");
-  }, [entries, now, stage]);
-  if (!entries) return <div aria-busy="true" className="flex flex-col gap-3 p-5">{[0, 1].map((i) => <span key={i} className="mx-blank !block !h-14 !w-full !rounded-2xl" />)}</div>;
+    onStage(STAGES.find((k) => c[k] > 0) ?? "verify");
+  }, [entries, now, stage, onStage]);
+  if (!entries) return <div aria-busy="true" className="flex flex-col gap-3 p-5">{[0, 1].map((i) => <span key={i} className="mx-skeleton block h-16 w-full rounded-2xl" />)}</div>;
   const rows = stageRows(entries, now);
   const current = stage ?? "verify";
   const fx = (f: boolean) => (f ? ` · ${C.fixtureTag[lang]}` : "");
-  const since = (iso?: string) => <span className="w-16 text-right text-small text-ink-soft">{now && iso ? waited(iso, now) : ""}</span>;
+  const since = (iso?: string) => <span className="w-16 text-right text-small text-ink-soft tabular-nums">{now && iso ? waited(iso, now) : ""}</span>;
+  const newLabel = C.newArrival[lang];
   let list: ReactNode;
   if (current === "verify") {
     list = rows.verify.map(({ session: s, fixture, o }) => {
@@ -592,13 +737,14 @@ export function PrescriptionQueue() {
       const openN = openHighChecks(o).length;
       const mod = o.checks.length - high;
       return (
-        <Row key={`${s.id}-${o.id}`} href={`/pharmacy/${s.id}#order-${o.id}`}>
+        <Row key={`${s.id}-${o.id}`} href={`/pharmacy/${s.id}#order-${o.id}`} isNew={fresh.has(s.id) && high === 0} newLabel={newLabel}>
           <Disc icon={high ? "triangle-alert" : "pill"} tone={high ? "signal" : "ocean"} />
           <span className="min-w-0 flex-1 basis-56">
             <span className="block text-lead font-bold">{orderTitle(o)} <span className="text-small font-medium text-ink-soft">{o.route} · {o.frequency}</span></span>
-            <span className="block text-small text-ink-soft">{s.code} · {o.orderedBy}{fx(fixture)}</span>
+            <span className="block text-small text-ink-soft"><span className="font-semibold tabular-nums text-ink">{s.code}</span> · {o.orderedBy}{fx(fixture)}</span>
           </span>
           <span className="flex flex-wrap items-center gap-2">
+            {isRecheck(o) && <Badge tone="pencil" icon={<Icon name="rotate-ccw" size={14} />}>{OL.recheck[lang]}</Badge>}
             {high > 0 && <Badge tone="signalOutline">{openN > 0 ? OL.highNoOverride(openN)[lang] : OL.highN(high)[lang]}</Badge>}
             {o.overrides.length > 0 && <Badge tone="pencil">{OL.override[lang]}</Badge>}
             {mod > 0 && <Badge tone="outline">{OL.toCheck(mod)[lang]}</Badge>}
@@ -613,11 +759,11 @@ export function PrescriptionQueue() {
     list = rows.dispense.map(({ session: s, fixture, o }) => {
       const mine = samePerson(o.pharmacist?.by, reviewer);
       return (
-        <Row key={`${s.id}-${o.id}`} href={`/pharmacy/${s.id}#order-${o.id}`}>
-          <Disc icon={mine ? "user" : "pill"} tone={mine ? "warn" : "ocean"} />
+        <Row key={`${s.id}-${o.id}`} href={`/pharmacy/${s.id}#order-${o.id}`} isNew={fresh.has(s.id)} newLabel={newLabel}>
+          <Disc icon={mine ? "user" : "package-check"} tone={mine ? "warn" : "ocean"} />
           <span className="min-w-0 flex-1 basis-56">
             <span className="block text-lead font-bold">{orderTitle(o)} <span className="text-small font-medium text-ink-soft">{o.route} · {o.frequency}</span></span>
-            <span className="block text-small text-ink-soft">{s.code} · {OL.verifiedBy[lang]} {o.pharmacist?.by}{o.pharmacist ? `, ${clock(o.pharmacist.at)}` : ""}{fx(fixture)}</span>
+            <span className="block text-small text-ink-soft"><span className="font-semibold tabular-nums text-ink">{s.code}</span> · {OL.verifiedBy[lang]} {o.pharmacist?.by}{o.pharmacist ? `, ${clock(o.pharmacist.at)}` : ""}{fx(fixture)}</span>
           </span>
           <span className="flex flex-wrap items-center gap-2">
             {mine ? <Badge tone="pencil" icon={<Icon name="user" size={14} />}>{OL.needsSecond[lang]}</Badge> : <Badge tone="outline">{OL.readyToPick[lang]}</Badge>}
@@ -630,11 +776,11 @@ export function PrescriptionQueue() {
     const pick = current === "call" ? rows.call : current === "ready" ? rows.ready : rows.collected;
     list = pick.map(({ session: s, fixture }) => {
       const p = s.pickup;
-      const dispensed = activeOrders(s);
+      const dispensed = newlyDispensed(s);
       const lastDispense = dispensed.map((o) => o.dispense?.at ?? "").sort().at(-1);
       return (
-        <Row key={s.id} href={`/pharmacy/${s.id}#pickup`}>
-          <Disc icon={current === "collected" ? "check" : "bell"} tone={current === "collected" ? "teal" : "ocean"} />
+        <Row key={s.id} href={`/pharmacy/${s.id}#pickup`} isNew={fresh.has(s.id)} newLabel={newLabel}>
+          <Disc icon={current === "collected" ? "check" : current === "call" ? "megaphone" : "bell"} tone={current === "collected" ? "teal" : "ocean"} />
           <span className="min-w-0 flex-1 basis-56">
             <span className="block text-title font-extrabold tabular-nums">{s.code}</span>
             <span className="block text-small text-ink-soft">
@@ -654,14 +800,32 @@ export function PrescriptionQueue() {
       );
     });
   }
-  const empty = (current === "verify" ? rows.verify : current === "dispense" ? rows.dispense : rows[current]).length === 0;
+  const shown = (current === "verify" ? rows.verify : current === "dispense" ? rows.dispense : rows[current]).length;
+  const q = query.trim();
+  // Fin only on a calm screen: never beside a high alert, a red flag or a re-check (DIRECTION section 11).
+  const calm = !rows.verify.some((r) => r.o.checks.some((c) => c.severity === "high")) && entries.every((e) => openHigh(e.session).length + openFlags(e.session).length === 0);
   return (
     <div className="flex flex-col gap-3 p-4 pt-1">
-      <div role="group" aria-label={OL.stages[lang]} className="flex flex-wrap gap-2">
-        {STAGES.map((k) => <Pill key={k} active={current === k} count={rows[k].length} onClick={() => setStage(k)}>{STAGE_LABEL[k][lang]}</Pill>)}
+      <div role="group" aria-label={OL.stages[lang]} className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        {STAGES.map((k) => (
+          <button
+            key={k} type="button" aria-pressed={current === k} onClick={() => onStage(k)}
+            className={`inline-flex h-9 shrink-0 items-center gap-2 rounded-full px-4 text-small font-semibold transition-[background-color,color] duration-quick ease-pen focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ocean ${current === k ? "bg-ink text-sheet" : "bg-sheet text-ink-soft ring-1 ring-inset ring-rule hover:text-ink"}`}
+          >
+            {STAGE_LABEL[k][lang]}
+            <span className={`rounded-full px-1.5 text-micro tabular-nums ${current === k ? "bg-white/20" : "bg-muted"}`}>{rows[k].length}</span>
+          </button>
+        ))}
       </div>
       <p className="text-small text-ink-soft">{OL.stageHint[current][lang]}</p>
-      {empty ? <EmptyState icon={<Icon name="inbox" />} title={OL.stageEmpty[current][lang]} body={OL.stageEmptyBody[lang]} /> : <ul className="flex flex-col gap-3">{list}</ul>}
+      {q && shown > 0 && <p role="status" className="text-small font-semibold text-ocean">{OL.matching(shown, q)[lang]}</p>}
+      {shown === 0 ? (
+        q ? (
+          <EmptyState icon={<Icon name="search" />} title={C.noCodeMatch(q)[lang]} body={C.noCodeMatchBody[lang]} action={onClearQuery ? <button type="button" onClick={onClearQuery} className={buttonClasses({ size: "sm" })}>{C.clearSearch[lang]}</button> : undefined} />
+        ) : (
+          <EmptyState mascot={calm ? "happy" : undefined} icon={<Icon name="inbox" />} title={OL.stageEmpty[current][lang]} body={OL.stageEmptyBody[lang]} />
+        )
+      ) : <ul className="flex flex-col gap-3">{list}</ul>}
     </div>
   );
 }

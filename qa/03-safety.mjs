@@ -46,7 +46,9 @@ const leaks = t => ['Somchai', 'Jaidee', '081-234-5678', '234 5678', '0812345678
 let g = await getS(s.id); let list = await req('GET', '/api/sessions'); let met = await req('GET', '/api/metrics');
 check('S10', 'PII (EN) absent from turn response', leaks(r.text).length === 0, [leaks(r.text), r.json?.turns?.[0]?.text]);
 check('S10b', 'PII (EN) absent from GET session+audit', leaks(JSON.stringify(g)).length === 0, leaks(JSON.stringify(g)));
-check('S10c', 'PII (EN) absent from list + metrics', leaks(list.text + met.text).length === 0, leaks(list.text + met.text));
+// This session's list row + metrics (the global list also holds demo cases that name synthetic STAFF, e.g. Dr. Somchai Chaiyo).
+const row = JSON.stringify((list.json || []).find(x => x.id === s.id) || {});
+check('S10c', 'PII (EN) absent from list row + metrics', row.length > 2 && leaks(row + met.text).length === 0, leaks(row + met.text));
 s = await newSession('th'); r = await turn(s.id, 'ผมชื่อสมชาย ใจดี โทร 0812345678 เลขบัตร 1234567890123 อีเมล somchai@example.com ปวดหัวตั้งแต่เมื่อวาน');
 g = await getS(s.id);
 const lt = t => ['สมชาย', 'ใจดี', '0812345678', '1234567890123', 'somchai@'].filter(x => t.includes(x));
@@ -90,9 +92,11 @@ check('S19b', 'acknowledge after false_alarm replaces review but flag still pres
 s = await newSession('en'); await turn(s.id, 'Headache since yesterday 7/10, I am 45, no allergies, no medicines, not pregnant'); await turn(s.id, 'crushing chest pain and sweating now');
 g = await getS(s.id);
 r = await req('POST', `/api/sessions/${s.id}/review`, { reviewerId: 'dr', actions: g.session.summary.fields.filter(f => f.value).map(f => ({ fieldKey: f.key, action: 'approve' })) });
-check('S20', 'approving all fields on an escalated session does not set status approved', r.json?.status === 'escalated', [r.status, r.json?.status]);
-// review audit grows
-g = await getS(s.id); check('S20b', 'audit contains red_flag + review entries', g.audit.some(a => a.type === 'red_flag') && g.audit.some(a => a.type === 'review'), g.audit.map(a => a.type));
+// Server refuses approval while a red flag is unreviewed (409, atomic); the session stays escalated.
+const auditBefore = g.audit.length;
+g = await getS(s.id);
+check('S20', 'approving all fields on an escalated session with an unreviewed red flag -> 409, status stays escalated', r.status === 409 && g.session.status === 'escalated', [r.status, g.session.status]);
+check('S20b', 'audit keeps the red_flag entry and the refused approval wrote nothing', g.audit.some(a => a.type === 'red_flag') && g.audit.length === auditBefore && !g.audit.some(a => a.type === 'review'), g.audit.map(a => a.type));
 // Pharmacy: high alert gating
 s = await newSession('en');
 r = await turn(s.id, 'I am allergic to penicillin. I take Augmentin 625 mg twice a day. I have a sore throat since yesterday 6/10, I am 30.');

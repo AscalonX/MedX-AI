@@ -1,5 +1,8 @@
 node_modules/
 .next/
+.next-*/
+.data/
+*.tsbuildinfo
 .expo/
 dist/
 .env
@@ -9,3 +12,4 @@ dist/
 .DS_Store
 eval/runs/
 .vercel
+.env*.local

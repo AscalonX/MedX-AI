@@ -189,7 +189,7 @@ describe('pharmacy review endpoint', () => {
   });
   it('seeds three live pharmacy cases idempotently', async () => {
     vi.stubEnv('DEMO_SEED', '1'); const first = await seedDemo(); const again = await seedDemo();
-    expect(first.created).toBe(11); expect(again.created).toBe(0);
+    expect(first.created).toBe(14); expect(again.created).toBe(0);
     const ids = ['MED-01', 'MED-05', 'MED-03']; const kinds = ['allergy_conflict', 'max_dose_risk', 'interaction'];
     ids.forEach((id, i) => { const event = getAudit().find(e => e.payload.demoCaseId === id)!; const s = getSession(event.sessionId)!; expect(s.pharmacyStatus).toBe('pending'); expect(s.summary?.medAlerts?.some(a => a.kind === kinds[i])).toBe(true); });
   });

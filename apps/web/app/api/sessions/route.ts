@@ -1,11 +1,13 @@
 import type { Lang } from '@medx/shared';
-import { createSession, listSessions, PipelineError } from '../../../lib/pipeline/pipeline';
+import { listSessionItems } from '../../../lib/pipeline/journey';
+import { createSession, PipelineError } from '../../../lib/pipeline/pipeline';
 import { ensureDemoSeed } from '../../../lib/pipeline/seed';
 import { body, handle, keys } from '../_http';
 export { OPTIONS } from '../_http';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export function GET(request: Request) { return handle(async () => { await ensureDemoSeed(); return listSessions(); }, 200, request); }
+/** Queue rows carry `stage` (shared journeyStage with the consult record). */
+export function GET(request: Request) { return handle(async () => { await ensureDemoSeed(); return listSessionItems(); }, 200, request); }
 export function POST(request: Request) {
   return handle(async () => {
     await ensureDemoSeed();

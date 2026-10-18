@@ -1,11 +1,10 @@
-import { color, duration, easing, gradient, radius, space } from "@medx/shared";
+import { color, gradient, radius, space } from "@medx/shared";
 import * as Haptics from "expo-haptics";
 import * as Speech from "expo-speech";
 import { LOCALE } from "@/voice";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { AccessibilityInfo, Alert, Platform, Pressable, useWindowDimensions, View } from "react-native";
-import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from "react-native-reanimated";
+import { AccessibilityInfo, Alert, Platform, Pressable, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Alert as AlertIcon } from "@/components/icons";
 import { Page, Pill, T } from "@/components/ui";
@@ -23,22 +22,17 @@ function splitFirst(m: string, thai: boolean): [string, string] {
 export default function RedFlag() {
   const { lang, session, speak, reset, offline } = useStore();
   const s = STR[lang];
-  const reduced = useReducedMotion();
-  const { height } = useWindowDimensions();
-  const y = useSharedValue(reduced ? 0 : height);
   const [atDesk, setAtDesk] = useState(false);
   const hit = session?.summary?.redFlags.find((r) => r.severity === "emergency") ?? session?.summary?.redFlags[0];
   const message = hit?.patientMessage[lang] ?? "";
 
   useEffect(() => {
     if (!session) { router.replace("/"); return; }
-    y.value = withTiming(0, { duration: reduced ? 0 : duration.interrupt, easing: Easing.bezier(...easing.interrupt) });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error).catch(() => {}); // one haptic, no repeat
     AccessibilityInfo.announceForAccessibility(message);
     if (speak) Speech.speak(message, { language: LOCALE[lang], rate: 0.9 }); // calm, once
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const slide = useAnimatedStyle(() => ({ transform: [{ translateY: y.value }] }));
   if (!session) return null;
   // Staff-only (demo): long-press the code for 2 s. The patient has no path out of this screen.
   const endIntake = () => {
@@ -49,9 +43,11 @@ export default function RedFlag() {
   const [head, rest] = splitFirst(message, lang === "th");
 
   return (
-    <Animated.View style={[{ flex: 1 }, slide]} accessibilityRole="alert" accessible={false}>
+    // Urgent: on screen at once and completely still (wave 20 rule: no motion delays or softens a red-flag interrupt).
+    // No entering animation, no slide, no Fin, no press scale; the instruction is readable in the very first frame.
+    <View style={{ flex: 1 }} accessibilityRole="alert" accessible={false}>
       <LinearGradient colors={[gradient.signal.from, gradient.signal.to]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
-        <Page bg="transparent" tabs={false}>
+        <Page bg="transparent" tabs={false} enter={false}>
           <View style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: color.sheet, alignItems: "center", justifyContent: "center", marginBottom: space[5] }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
             <AlertIcon color={color.signal} size={26} />
           </View>
@@ -67,9 +63,9 @@ export default function RedFlag() {
           <T lang={lang} tone="onSignal" style={{ marginTop: space[5] }}>{atDesk ? s.atDeskDone : s.rfShow}</T>
           {offline && <T lang={lang} token="small" tone="onSignal" style={{ marginTop: space[3], opacity: 0.9 }}>{s.offlineRed}</T>}
           <View style={{ flexGrow: 1, minHeight: space[8] }} />
-          {!atDesk && <Pill lang={lang} variant="white" tone="signal" label={s.atDesk} onPress={() => setAtDesk(true)} />}
+          {!atDesk && <Pill lang={lang} variant="white" tone="signal" label={s.atDesk} onPress={() => setAtDesk(true)} still />}
         </Page>
       </LinearGradient>
-    </Animated.View>
+    </View>
   );
 }
