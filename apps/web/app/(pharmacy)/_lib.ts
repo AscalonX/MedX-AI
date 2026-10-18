@@ -427,6 +427,18 @@ const AUDIT_TEXT: Record<AuditType, (p: P, lang: Lang, ctx?: AuditCtx) => string
     return join(lang, [L("ผู้ป่วยรับยาแล้ว", "Farmaci ritirati dal paziente", "Patient collected the medicines")[lang], n > 0 && count(n, ["order", "orders"], ["ordine", "ordini"], "รายการยา")[lang]]);
   },
   takeover: (_p, lang) => L("แพทย์/พยาบาลรับช่วงต่อการรับข้อมูล", "Un clinico ha preso in carico l'accesso", "Clinician took over the intake")[lang],
+  med_photo_suggested: (p, lang) => {
+    const n = arr(p.items).length;
+    return p.outcome === "suggested" && n > 0
+      ? L(`โมเดลเสนอยาจากรูปถ่ายกล่องยา ${n} รายการ รอเภสัชกรตรวจสอบ`, `Il modello ha suggerito ${n} farmaci dalla foto della confezione, in attesa del farmacista`, `Model suggested ${n} medicine${n === 1 ? "" : "s"} from a pack photo, awaiting the pharmacist`)[lang]
+      : L("อ่านรูปถ่ายกล่องยาไม่สำเร็จ ต้องให้บุคลากรตรวจ", "Foto della confezione non leggibile dal modello: serve revisione umana", "Pack photo not read by the model: needs human review")[lang];
+  },
+  med_photo_decision: (p, lang) => {
+    const drug = isStr(p.name) ? ` (${p.name})` : "";
+    return p.action === "confirm"
+      ? L(`เภสัชกรยืนยันยาจากรูปถ่ายเข้ารายการยา${drug}`, `Il farmacista ha confermato il farmaco dalla foto${drug}`, `Pharmacist confirmed a medicine from the photo${drug}`)[lang]
+      : L(`เภสัชกรทิ้งยาที่เสนอจากรูปถ่าย${drug}`, `Il farmacista ha scartato il suggerimento dalla foto${drug}`, `Pharmacist discarded a photo suggestion${drug}`)[lang];
+  },
 };
 
 /**

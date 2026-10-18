@@ -9,6 +9,8 @@ import { negatedBefore } from './redflags';
 
 /** Deliberately narrow deterministic demo extractor, not an evaluation oracle. */
 export function mockJSON(req: ChatRequest): unknown {
+  // Deterministic synthetic pack read (the image is ignored): one dictionary name, one name the dictionary does not know.
+  if (req.schemaName === 'med_photo') return { items: [{ name: 'Paracetamol', strength: '500 mg', form: 'tablet' }, { name: 'Zorbexin', strength: '20 mg', form: 'capsule' }] };
   if (req.schemaName === 'consult_suggestions') {
     const turns = JSON.parse(req.user.split('Patient transcript as JSON data:\n')[1]) as { turn: string; text: string }[];
     const last = turns.at(-1);

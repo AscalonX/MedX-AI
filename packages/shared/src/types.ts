@@ -46,6 +46,8 @@ export interface IntakeSession {
   /** Doctor orders (medications + investigations). */
   orders?: { medications: MedicationOrder[]; investigations: InvestigationOrder[] };
   pharmacyReviewerId?: string;
+  /** Medicine-pack photo suggestions awaiting the pharmacist. Not part of the medicine list until confirmed. */
+  medPhoto?: MedPhotoSuggestion[];
   /** Medicine pickup: set when a pharmacist calls the patient after every active medication order is dispensed. */
   pickup?: PickupState;
   createdAt: string;
@@ -191,14 +193,18 @@ export type AuditType =
   | "order_recheck"
   | "pickup_called"
   | "pickup_collected"
-  | "takeover";
+  | "takeover"
+  /** Pharmacist photographed a medicine pack; the model's SUGGESTED entries (names only, never the image). */
+  | "med_photo_suggested"
+  /** Pharmacist confirmed or discarded one photo suggestion. */
+  | "med_photo_decision";
 
 /** Every AuditType at runtime (ops filters, audit viewers, tests). Must list exactly the union above. */
 export const AUDIT_TYPES = [
   "session_created", "turn_added", "pii_redacted", "red_flag", "summary_generated", "abstained", "review", "red_flag_review",
   "pharmacy_review", "consult_turn", "consult_suggestion", "consult_note_signed", "vitals_recorded", "triage_confirmed",
   "order_drafted", "order_submitted", "order_pharmacy_action", "order_cancelled", "order_dispensed", "order_recheck",
-  "pickup_called", "pickup_collected", "takeover",
+  "pickup_called", "pickup_collected", "takeover", "med_photo_suggested", "med_photo_decision",
 ] as const satisfies readonly AuditType[];
 type SameMembers<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
 /** Compile-time check: fails to type-check when AUDIT_TYPES misses a member of AuditType (extra members fail `satisfies` above). */
@@ -286,6 +292,21 @@ export interface MedicationEntry {
   status: MedStatus;
   /** Set by the pharmacist; `previous` keeps the struck-through value across reloads. */
   review?: { reviewerId: string; at: string; previous?: { generic: string | null; dose: string | null; frequency: string | null } };
+}
+
+/** A medicine read from a pack photo by a vision model. A suggestion only: never checked, ordered or alerted on until confirmed. */
+export interface MedPhotoSuggestion {
+  id: string;
+  name: string;
+  strength: string | null;
+  form: string | null;
+  /** Dictionary generic when the name matched medrules.json; null = "unverified". */
+  generic: string | null;
+  status: "unverified" | "matched" | "confirmed" | "discarded";
+  suggestedAt: string;
+  decidedBy?: string;
+  /** MedicationEntry created on confirm. */
+  medId?: string;
 }
 
 export interface AllergyEntry {
