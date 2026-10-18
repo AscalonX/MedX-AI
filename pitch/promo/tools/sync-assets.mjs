@@ -36,6 +36,8 @@ const FILES = {
     ['LANDING', 'patient-voice.webp'], ['LANDING', 'nurse-case.webp'], ['LANDING', 'consult.webp'],
     ['LANDING', 'pharmacy-verify.webp'], ['LANDING', 'pharmacy-dispense.webp'], ['LANDING', 'patient-pickup.webp'],
     ['LANDING', 'trace.webp'], ['LANDING', 'hero-consult.webp'],
+    // fix round 4+: the 3x phone captures shown whole (S06/S07/S17 intake, S13 pickup); frozen copies in ui-verified/
+    ['LANDING', 'patient-intake.webp'], ['LANDING', 'patient-pickup-phone.webp'],
     ['SHOTS', 'case.png'], ['SHOTS', 'consult-full.png'], ['SHOTS', 'pverify.png'],
     ['SHOTS', 'pverify-full.png'], ['SHOTS', 'pdisp.png'], ['SHOTS', 'pdisp-full.png'],
   ],

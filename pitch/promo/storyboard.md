@@ -3,6 +3,26 @@
 Final storyboard, version final-1, 18 Oct 2026. Fix round 1 changes are listed under `revisions` in storyboard.json (S04 holds to 12.4, S05 runs 12.4-14.0; end card is one centred column).
 
 **Fix round 2 (18 Oct 2026)** changes the timing below in a few places; `revisions` (round fix-2) in storyboard.json is the full list. In short: S04 is an exposure bloom from 7.85 and runs 0.5 s earlier (logo 9.5, arc lifts at 11.6); S05 runs 11.8-14.1 with all six nodes and FLIPs into the docked rail; every hold has a continuous camera (2-4% push plus parallax); S10 is a macro on the Note signed stamp, S12 a low-angle checklist, S14 a lateral track; four plates are CSS recreations; S16 ends in an exposure-lift dissolve and S17 hands over to the end card through a radial colour bloom from the QR; the end card builds lockup, tagline, pill and keeps light moving (QR static).
+**Fix round 4 (18 Oct 2026)**, full list under `revisions` (round fix-4) in storyboard.json:
+- **S03** bars share one visible 0-100% track: 49.1% fills just under half and stops at the 50% gridline. The source line is now 26 px.
+- **Bloom (7.85-8.5)** is a brand-tinted light. No grey frame.
+- **Lockup** holds untouched 9.98-12.0, then exits cleanly. The arc-to-rail match cut is retired; the S05 rail draws itself.
+- **One headline system:** 72 px at three anchors. Every line is measured readable for at least 1.2 s (`tools/readcheck.mjs`).
+- **No in-place cross-fades:**
+  - S10 changes from draft to signed note through a masked wipe;
+  - S11 and S15 swap their headlines with a masked push;
+  - S07 to S08 is a punch-in cut;
+  - S08 to S09 and S09 to S10 are pushes.
+- **New shots:** S07 is a split screen (patient phone, nurse fields). S08 is an over-the-shoulder laptop.
+- **Phone screens:** S06, S07 and S17 show the real 3x intake capture; S13 shows the real 3x pickup screen.
+- **Fin** is not in S17. It enters only on the end card (54.5), on a soft light disc.
+
+**Fix round 6 (18 Oct 2026)**, full list under `revisions` (round fix-6) in storyboard.json. Shot timing, beats and copy are unchanged; only the framing of S10-S12 changes, so 23-36 s no longer repeats "headline plus one flat card":
+- **S10** is a slow macro push onto the "Note signed" stamp: from 26.45 the card grows around the stamp until it fills about 70% of the frame width at 27.4, with a shallow depth of field. "Drafted from their words." leaves at 26.97 to make room.
+- **S11** is a tilted plate seen from low and to the side (yaw 18 deg, slowly orbiting to 8 deg).
+- **S12** opens on the two pharmacist rings in the foreground with the checklist out of focus behind them. Focus racks to the checklist at 32.72 while the rings drift into the left column, and racks back to them at 34.6.
+- **S09** is unchanged.
+
 The machine-readable source of truth is `storyboard.json` in this folder. This page is the readable version for review.
 
 **Format:** 60.0 s, 1920x1080, 60 fps (30 fps only if 60 cannot render), H.264 yuv420p, AAC 48 kHz. 120 BPM: 1 beat = 0.5 s, 1 bar = 2.0 s, 30 bars. Every cut lands on the beat grid. No voice-over, so it works muted.
@@ -77,14 +97,14 @@ The machine-readable source of truth is `storyboard.json` in this folder. This p
 | 18.0-21.0 | S07 Nurse | **Every field points back to their words.** | Patient's words panel threaded to the "From patient's words" chips |
 | 21.0-23.0 | S08 Nurse | **Triage suggested. The nurse confirms.** | Suggestion card, then "Triage confirmed by Nurse A. Rossi" |
 | 23.0-25.5 | S09 Doctor | **Considerations for the doctor.** small: Not a diagnosis. The doctor decides. | Real Considerations card, "Keep in note" press |
-| 25.5-28.0 | S10 | **Drafted from their words. / Signed by a clinician.** | Amber draft banner, then the teal "Note signed" stamp |
-| 28.0-32.0 | S11 Pharmacist 1 | **A rule check flags the allergy. / Options go back to the prescriber.** small: Not a prescription. The prescriber decides. | **The only red in the film:** the app's own High allergy alert (amoxicillin vs penicillin). Then clarithromycin is ticked and "Return with report" pressed |
-| 32.0-36.0 | S12 Pharmacist 2 | **A second pharmacist. Six final checks. / Never the same person.** | LC and NW rings lock into a seal; six checks tick on the beat; "6 of 6 confirmed" |
+| 25.5-28.0 | S10 | **Drafted from their words. / Signed by a clinician.** | Amber draft banner, then the teal "Note signed" stamp; slow macro push onto the stamp (card about 70% of the frame by 27.4) |
+| 28.0-32.0 | S11 Pharmacist 1 | **A rule check flags the allergy. / Options go back to the prescriber.** small: Not a prescription. The prescriber decides. | **The only red in the film:** the app's own High allergy alert (amoxicillin vs penicillin). Then clarithromycin is ticked and "Return with report" pressed. Tilted plate from a low side angle |
+| 32.0-36.0 | S12 Pharmacist 2 | **A second pharmacist. Six final checks. / Never the same person.** | LC and NW rings lock into a seal in the foreground, the checklist out of focus behind; rack focus to the checklist; six checks tick on the beat; "6 of 6 confirmed" |
 | 36.0-39.0 | S13 Pickup | ยาของคุณพร้อมแล้ว (Your medicine is ready.) / **Ready at counter 2.** | Pickup card on a phone; the Thai line forms from particles; the rail completes |
 | 39.0-42.0 | S14 Trace | **Red-flag rules run before any model.** tag: Every step in the audit log | Real Case trace graph; a light gate holds the pulse until the rule check passes |
 | 42.0-46.0 | S15 Trust | **No quote? It shows "Needs check." / MedX prepares. People decide.** | Ink band, the three state chips (ocean / amber / teal) and the append-only ledger |
 | 46.0-50.0 | S16 Callback | the same Thai line, then **This time, every word arrived.** | The line starts to scatter, then locks; a thread runs to the real allergy card "penicillin · Reaction: rash · From patient's words" |
-| 50.0-54.0 | S17 CTA | **Try the live demo.** medx.areazeroai.com, QR "Scan to try" | Devices float on mist; Fin points at the QR. No store badges |
+| 50.0-54.0 | S17 CTA | **Try the live demo.** medx.areazeroai.com, QR "Scan to try" | Browser plate and intake phone float on mist; Send is tapped at 51.0. No Fin here (fix round 4). No store badges |
 | 54.0-60.0 | S18 End card | MedX / **Every word, understood.** / Try the live demo / URL / QR / *Research prototype · Synthetic data · Not a medical device* | Brand gradient. Fully static from 57.5 so the QR scans. No fade to black |
 
 The QR code is on screen from 51.5 to 60.0 s (8.5 s).
@@ -112,7 +132,7 @@ The QR code is on screen from 51.5 to 60.0 s (8.5 s).
 **S04 Reveal (8.0-12.0)**
 - Fin: `fin3d-listening` at up to 460 px.
 - Logo: inline the SVG lockup. Its two arc paths are separate elements, so Fin's arcs can tween into them.
-- Hold the lockup 10.6-12.3 with a 2% push; light sweep at 11.4. At 12.3 the push into the X lets the outer sound arc lift off and straighten into the S05 rail (match cut, fix round 1).
+- Fix round 4: hold the complete lockup 9.98-12.0 (2.0 s) with a 4% push and a light sweep at 10.9. Exit cleanly at 12.0: lift, soften and fade over 0.16 s. The arc-to-rail match cut is retired.
 
 **S05 Rail (12.0-14.0)**
 - Nodes pop on 8th notes.
@@ -137,16 +157,23 @@ The QR code is on screen from 51.5 to 60.0 s (8.5 s).
 
 **S10 Note (25.5-28.0)**
 - Amber first, then the teal signed stamp at 26.5.
+- Fix round 6: macro push onto the stamp. From 26.45 the note rig scales 1 to 1.62 around the stamp (0.95 s), so the card fills about 70% of the frame width by 27.4 (left edge x 580, top y 206). It then creeps 3% to the cut. The empty right end of the teal boxes runs off the frame; every text line stays inside.
+- Depth of field: the card title (1.2 px) and the lines below the stamp row (1.8 px) soften; the bokeh behind moves less than the card.
+- "Drafted from their words." leaves 26.97-27.15 (readable 1.23 s); "Signed by a clinician." stays to the cut, 40 px clear of the card.
 - Hard cut on the 28.0 bar line, with no flourish.
 
 **S11 Pharmacist 1 (28.0-32.0)**
 - Stage at 85% with an ink tint; Fin absent.
+- Fix round 6: the card is a tilted plate seen from low and to the side (yaw 18 deg, camera 7 deg below, roll -1.6 deg). It orbits slowly toward the front and is still turned 8 deg at 31.75. It sits 80 px right of centre.
 - One red rim pulse at 28.6, gone by 29.4, never flashing.
 - Options plate, the clarithromycin tick at 30.6, "Return with report" at 31.3, then the "Returned to prescriber: 1" chip in the warn style.
 
 **S12 Pharmacist 2 (32.0-36.0)**
 - The `pdisp-full` Stage 2 crop shows all six rows at one scale, with the patient code blurred.
-- Seal at 32.5.
+- Fix round 6: the LC and NW rings open in the foreground (1.4x, sharp) over the checklist, which is out of focus (blur 9 px).
+  - 32.72: focus racks to the checklist (0.3 s) while the rings drift down-left into the left column (0.78 s), clear of every row before its tick.
+  - 34.6: focus racks back to the rings ("Never the same person").
+- Seal at 32.3-32.5.
 - Ticks at 33.00 / 33.25 / 33.50 / 33.75 / 34.00 / 34.25.
 - Caption is the app's own rule text: "A second pharmacist must dispense".
 
@@ -170,8 +197,8 @@ The QR code is on screen from 51.5 to 60.0 s (8.5 s).
 - A thread runs to the real allergy card from `pverify-full`.
 
 **S17 CTA (50.0-54.0)**
-- Devices: the hero-consult browser and the intake phone. No patient-home capture here, because it contains Fin.
-- `fin3d-pointing` points right, so it sits left of the QR.
+- Devices: the Live summary browser plate and the intake phone (real 3x capture), side by side. No patient-home capture here, because it contains Fin.
+- Fix round 4: no Fin in S17. `fin3d-pointing` appears only on the end card (54.5), left of the QR, on a soft light disc.
 - The URL types on from 50.9. The QR appears at 51.5.
 
 **S18 End card (54.0-60.0)**
@@ -210,7 +237,7 @@ Mix target: -14 LUFS integrated, true peak at or below -1 dBTP. The alert sits 3
 ## 5. Brand and claim rules (QA checklist)
 
 - **Red** only in S11. That means the app's alert card and one rim pulse. No red in the stat, the trace legend, the Rule-out cards or the rail.
-- **Fin** in S04, S17 and S18, and inside the S13 pickup UI still (the app's own calm pickup card, non-alert). Never in S11, S14 or S15, and never next to alert content. Use only the `fin3d-*` family.
+- **Fin** in S04 and S18, and inside the S13 pickup UI still (the app's own calm pickup card, non-alert). Since fix round 4, Fin is not in S17: it never shares a frame with clinical UI. It is never in S11, S14 or S15 and never next to alert content. Use only the `fin3d-*` family.
 - **Claim line** is on screen 55.6-60.0 s. The statistic is verbatim from README "Why", with its source on screen.
 - **Verbs** are limited to prepares, points back, flags, suggests and checks. Never diagnoses, prescribes, decides urgency or "AI doctor". No Gemma / AMD claims.
 - **CTA** is "Try the live demo" plus medx.areazeroai.com plus a locally generated QR. No store badges.

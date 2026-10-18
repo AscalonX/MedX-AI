@@ -2,7 +2,7 @@
  * Contract: window.__duration = 60, window.__fps, async window.__ready(), window.__seek(t).
  * __seek(t) is pure: it seeks ONE paused GSAP master timeline to t and then runs a list of
  * procedural renderers that are functions of t only (seeded PRNG, no Date.now, no CSS
- * transitions, no real-time animation). Times below are absolute seconds (storyboard.json, fix round 1).
+ * transitions, no real-time animation). Times below are absolute seconds (storyboard.json, fix round 4).
  */
 (function () {
   'use strict';
@@ -12,7 +12,7 @@
   window.__fps = FPS;
   window.__posterTime = 59.6; // end card after the light sweep and Fin's breathing have settled
   // shot changes and exposure events: the renderer forces an encoder keyframe on each (no smeared first frames)
-  window.__keyframes = [7.75, 7.85, 8.2, 11.8, 14.1, 17.96, 21.0, 22.8, 25.4, 26.33, 28.0, 32.0, 35.96, 38.85, 42.0, 45.9, 49.5, 49.95, 53.45, 54.0];
+  window.__keyframes = [7.75, 7.85, 8.24, 12.0, 14.0, 17.96, 20.8, 22.64, 25.0, 26.15, 28.0, 32.0, 35.96, 38.85, 42.0, 45.9, 49.5, 49.95, 53.45, 54.0];
   window.__assetWarnings = [];
 
   const $ = (s, r = document) => r.querySelector(s);
@@ -297,18 +297,20 @@
 
   // S14 trace geometry (card-local, CSS recreation of the Case trace graph)
   const TR = (() => {
-    const cx = [130, 353.3, 576.7, 800, 1023.3, 1246.7, 1470];
-    const nodes = [[cx[0], 150], [cx[1], 150], [cx[2], 150], [cx[3], 90], [cx[3], 210], [cx[4], 150], [cx[5], 150], [cx[6], 150]];
-    const R = (i) => nodes[i][0] + 80, L = (i) => nodes[i][0] - 80, Y = (i) => nodes[i][1];
+    const K = 1.1, M = 150 * K, HW = 80 * K;
+    const cx = [130, 353.3, 576.7, 800, 1023.3, 1246.7, 1470].map((v) => v * K);
+    const nodes = [[cx[0], M], [cx[1], M], [cx[2], M], [cx[3], 90 * K], [cx[3], 210 * K], [cx[4], M], [cx[5], M], [cx[6], M]];
+    const R = (i) => nodes[i][0] + HW, L = (i) => nodes[i][0] - HW, Y = (i) => nodes[i][1];
+    const a = 34 * K, c = 30 * K;
     const con = {
-      c12: `M${R(0)} 150 L${L(1)} 150`, c23: `M${R(1)} 150 L${L(2)} 150`,
-      c34: `M${R(2)} 150 C ${R(2) + 34} 150, ${L(3) - 30} ${Y(3)}, ${L(3)} ${Y(3)}`,
-      c35: `M${R(2)} 150 C ${R(2) + 34} 150, ${L(4) - 30} ${Y(4)}, ${L(4)} ${Y(4)}`,
-      c46: `M${R(3)} ${Y(3)} C ${R(3) + 30} ${Y(3)}, ${L(5) - 34} 150, ${L(5)} 150`,
-      c56: `M${R(4)} ${Y(4)} C ${R(4) + 30} ${Y(4)}, ${L(5) - 34} 150, ${L(5)} 150`,
-      c67: `M${R(5)} 150 L${L(6)} 150`, c78: `M${R(6)} 150 L${L(7)} 150`,
+      c12: `M${R(0)} ${M} L${L(1)} ${M}`, c23: `M${R(1)} ${M} L${L(2)} ${M}`,
+      c34: `M${R(2)} ${M} C ${R(2) + a} ${M}, ${L(3) - c} ${Y(3)}, ${L(3)} ${Y(3)}`,
+      c35: `M${R(2)} ${M} C ${R(2) + a} ${M}, ${L(4) - c} ${Y(4)}, ${L(4)} ${Y(4)}`,
+      c46: `M${R(3)} ${Y(3)} C ${R(3) + c} ${Y(3)}, ${L(5) - a} ${M}, ${L(5)} ${M}`,
+      c56: `M${R(4)} ${Y(4)} C ${R(4) + c} ${Y(4)}, ${L(5) - a} ${M}, ${L(5)} ${M}`,
+      c67: `M${R(5)} ${M} L${L(6)} ${M}`, c78: `M${R(6)} ${M} L${L(7)} ${M}`,
     };
-    return { nodes, con, gateX: R(2) + 15, gateLen: 11 };
+    return { nodes, con, gateX: R(2) + 16.5, gateLen: 12 };
   })();
   const NODE_T = [39.0, 39.25, 39.5, 40.62, 40.75, 41.0, 41.25, 41.5];
   const PULSES = [ // [pulse, connector, from, to, t0, t1]  from/to: 0..1 of length or 'gate'
@@ -359,15 +361,37 @@
     // transitions that sit above every scene (below the rail)
     const streak = el('div'); streak.id = 'streak';
     Object.assign(streak.style, { position: 'absolute', left: '0', top: '470px', width: '900px', height: '140px', borderRadius: '70px', background: 'linear-gradient(90deg, rgba(10,128,119,0), rgba(10,128,119,.55) 30%, rgba(255,255,255,.95) 55%, rgba(26,95,196,.5) 75%, rgba(26,95,196,0))', filter: 'blur(18px)', opacity: 0, visibility: 'hidden' });
-    $('#stage').insertBefore(streak, $('#matchArc'));
+    $('#stage').insertBefore(streak, $('#vig'));
 
     // micro-tag variant for S01
     const mt1 = el('div', 'microtag on-ink'); mt1.id = 'mt1'; mt1.textContent = 'Synthetic example';
     $('#stage').insertBefore(mt1, $('#microtag'));
 
-    // Italian listening bars
+    // Italian listening bars: the app's 7 level bars (apps/mobile mic.tsx BARS)
     const bars = $('#itBars');
-    for (let i = 0; i < 18; i++) bars.appendChild(document.createElement('i'));
+    for (let i = 0; i < 7; i++) bars.appendChild(document.createElement('i'));
+    // tab bars of the two recreated phones (labels from apps/mobile i18n; x positions measured on the 3x capture)
+    const TABI = {
+      home: '<path d="M3.5 11L12 4l8.5 7M6 9.5V20h12V9.5"/>', visit: '<path d="M6 3.5h8l4 4V20.5H6zM9 12h6M9 16h6"/>',
+      help: '<circle cx="12" cy="12" r="9"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2.9-1.2 1.8"/><circle cx="12" cy="16.8" r=".9" fill="currentColor" stroke="none"/>',
+      globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+    };
+    for (const bar of $$('.ap-tabs')) {
+      const labels = bar.dataset.tabs.split('|');
+      [['home', '', 45], ['visit', 'on', 120], ['help', '', 270], ['globe', 'dis', 345]].forEach(([ic, cls, x], i) => {
+        const d = el('div', 'ap-tab ' + cls, `<svg viewBox="0 0 24 24">${TABI[ic]}</svg>`);
+        const sp = el('span'); sp.textContent = labels[i]; d.appendChild(sp);
+        d.style.left = x + 'px'; bar.appendChild(d);
+      });
+      bar.appendChild(el('div', 'ap-plus', '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>'));
+    }
+    // S03 gridlines on the shared 0-100% scale (inner track x 606-1770)
+    const grid = $('#s3grid');
+    [0, 25, 50, 75, 100].forEach((p) => {
+      const x = 606 + 1164 * p / 100;
+      for (const seg of ['a', 'b']) { const g = el('div', `gl ${seg}${p === 50 ? ' mid' : ''}`); g.style.left = x + 'px'; grid.appendChild(g); }
+      const l = el('div', 'gl-l'); l.style.left = x + 'px'; l.textContent = p + '%'; grid.appendChild(l);
+    });
 
     // S11 alert recreation
     const al = A.copy.alert;
@@ -387,9 +411,6 @@
     const body2 = (code) => [`กรุณาไปที่ช่องรับยาหมายเลข 2 และแสดงรหัส ${code}`, `Vada allo sportello 2 della farmacia e mostri il codice ${code}.`];
     const [gth] = body2(A.data.pickupCode);
     $('#ghostTh').textContent = `${gth}          ${gth}`; // one ghost line only (the Italian one is retired)
-    const pk = A.copy.pickup;
-    $('#pkEyebrow').textContent = pk.eyebrow; $('#pkCounter').textContent = pk.counter;
-    $('#pkNo').textContent = pk.counterNo; $('#pkBody').textContent = pk.body(A.data.pickupCode);
     const c13 = document.createElement('canvas'); c13.id = 'dust13'; c13.width = 1920; c13.height = 1080;
     Object.assign(c13.style, { position: 'absolute', left: '0', top: '0', visibility: 'hidden' });
     $('#s13cam').appendChild(c13);
@@ -502,14 +523,16 @@
   }
 
   /* ------------------------------------------------------------------ the film */
+  // headline reveal (fix round 4 readability): every headline is fully in within about 0.6 s of its first word
+  const head = (e, t, o = {}) => wordsIn(e, t, Object.assign({ stagger: 0.035, dur: 0.42 }, o));
   function buildTimeline() {
     const st = (id) => $(id);
     const G = {}; // geometry computed from layout
 
     /* ---------- backgrounds ---------- */
     vis('#bgInk', 0, 7.75);                               // black breath from 7.75; the light point opens at 7.85
-    vis('#bgMist', 7.95, 42.0);                            // the mist plate exposes linearly under the bloom (procedural #bloom)
-    tw('#bgMist', { opacity: 0 }, { opacity: 1 }, 7.95, 0.43, 'none');
+    // the mist plate is cut on only under the bloom's opaque white (8.24), so it never fades in grey over black
+    vis('#bgMist', 8.24, 42.0);
     vis('#bgMist', 49.45, 54.15);                          // under the S16 luminance-ramp dissolve
     vis('#vig', 8.0, 28.0); vis('#vig', 32.0, 42.0); vis('#vig', 49.95, 54.15);
     vis('#bgDip', 28.0, 32.0);                             // S11 safety dip: deep ink grade, key light on the card
@@ -547,9 +570,9 @@
 
     /* ---------- S02 (3.0-4.5) ---------- */
     vis('#s02', 3.0, 4.5);
-    // headline sits outside the push-through camera: legible 3.15-4.45, never scaled out of frame
-    wordsIn(st('#s02h'), 3.0, { y: 0, scale: 1.06, blur: 6, stagger: 0.04, dur: 0.3, free: true });
-    tw('#s02h', { opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(6px)' }, 4.42, 0.08, 'power2.in');
+    // headline (low anchor) sits outside the push-through camera; fully in by 3.22, legible to 4.46 (1.24 s)
+    wordsIn(st('#s02h'), 2.98, { y: 0, scale: 1.04, blur: 6, stagger: 0.015, dur: 0.18, free: true });
+    tw('#s02h', { opacity: 1, filter: 'blur(0px)' }, { opacity: 0, filter: 'blur(6px)' }, 4.46, 0.04, 'power2.in');
     tw('#s02line', { clipPath: 'inset(0% 75.5% 0% 0%)' }, { clipPath: 'inset(0% 44% 0% 0%)' }, 3.1, 0.7, 'power2.inOut');
     tw('#s02line', { clipPath: 'inset(0% 44% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)' }, 3.82, 0.001, 'none');
     // the snap on the 4.0 beat: the line splits at the node and both ends recoil, leaving a clear gap
@@ -560,27 +583,27 @@
     tw('#thChip', { opacity: 0, x: -30 }, { opacity: 1, x: 0 }, 3.0, 0.5, 'power3.out');
     tw('#s02far', { opacity: 0 }, { opacity: 1 }, 3.0, 0.4, 'power2.out');
 
-    /* ---------- S03 stat (4.5-7.75) ---------- */
+    /* ---------- S03 stat (4.5-7.75): true scale on one 0-100% track ---------- */
     vis('#s03', 4.5, 7.75);
-    // the push is anchored on the type grid (x 144), so the headline's left edge never drifts
+    // the push is anchored on the type grid (x 144), so the headline's left edge never drifts; both bars scale together
     tw('#s03 .cam', { scale: 0.95, opacity: 0.55, transformOrigin: '144px 540px' }, { scale: 1, opacity: 1 }, 4.42, 0.4, 'expo.out');
-    tw('#s03 .cam', { scale: 1 }, { scale: 1.03 }, 4.85, 2.9, 'none');
-    tw('#s03h', { clipPath: 'inset(-25% 100% -35% 0%)' }, { clipPath: 'inset(-25% 0% -35% 0%)' }, 4.4, 0.42, 'power3.out');
+    tw('#s03 .cam', { scale: 1 }, { scale: 1.025 }, 4.85, 2.9, 'none');
+    tw('#s03h', { clipPath: 'inset(-25% 100% -45% 0%)' }, { clipPath: 'inset(-25% -2% -45% 0%)' }, 4.4, 0.42, 'power3.out');
     tw('#s03cap', { opacity: 0, y: 10 }, { opacity: 1, y: 0 }, 4.6, 0.4, 'power2.out');
-    tw('#s03bars .fill', { scaleY: 0 }, { scaleY: 1 }, 4.8, 0.8, 'expo.out');
-    tw('#s03bars .capsule', { opacity: 0, y: 30 }, { opacity: 1, y: 0, stagger: 0.08 }, 4.4, 0.5, 'power3.out');
-    tw('.baseline-glow', { scaleX: 0, transformOrigin: '0% 50%' }, { scaleX: 1 }, 4.4, 0.6, 'power3.out');
-    tw('#s03nums', { opacity: 0 }, { opacity: 1 }, 4.75, 0.15, 'none');
-    tw('#barABloom', { opacity: 0, scale: 0.5 }, { opacity: 0.9, scale: 1.4 }, 5.6, 0.25, 'power2.out');
-    tw('#barABloom', { opacity: 0.9, scale: 1.4 }, { opacity: 0.35, scale: 1.1 }, 5.85, 0.8, 'power2.out');
-    tw('#labA, #labB', { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.06 }, 5.6, 0.4, 'power2.out');
+    tw('#s03chart .track', { opacity: 0, y: 24 }, { opacity: 1, y: 0, stagger: 0.08 }, 4.45, 0.5, 'power3.out');
+    tw('#s3grid', { opacity: 0 }, { opacity: 1 }, 4.55, 0.5, 'power1.out');
+    tw('#labA, #labB', { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.06 }, 4.6, 0.4, 'power2.out');
+    tw('#fillA, #fillB', { scaleX: 0 }, { scaleX: 1 }, 4.8, 0.8, 'expo.out');   // the counters use the same curve
+    tw('#numA, #numB', { opacity: 0 }, { opacity: 1 }, 4.75, 0.15, 'none');
+    tw('#barABloom', { opacity: 0, scale: 0.5 }, { opacity: 0.85, scale: 1.3 }, 5.6, 0.25, 'power2.out');
+    tw('#barABloom', { opacity: 0.85, scale: 1.3 }, { opacity: 0.3, scale: 1.05 }, 5.85, 0.8, 'power2.out');
     tw('#s03src', { opacity: 0 }, { opacity: 1 }, 4.5, 0.3, 'power1.out');
-    tw('#s03bars, #s03nums', { x: 0 }, { x: -12 }, 4.5, 3.25, 'none');
+    tw('#s03chart', { x: 0 }, { x: -10 }, 4.5, 3.25, 'none');
 
-    /* ---------- S04 reveal (7.85-11.95) ---------- */
-    // 7.85-8.6: exposure bloom (procedural #bloom): a light point grows with a very wide falloff to ~95% warm
-    // white by 8.35, then settles to the mist plate by 8.6 while Fin resolves out of it
-    vis('#s04', 8.2, 11.95);
+    /* ---------- S04 reveal (8.2-12.16) ---------- */
+    // 7.85-8.5: brand-tinted light bloom (procedural #bloom): a white point with a mint, teal and ocean fringe opens
+    // out to full white by 8.24, the mist plate is cut on under it, then the white lifts off the mist by 8.5
+    vis('#s04', 8.2, 12.16);
     tw('#finL', { opacity: 0 }, { opacity: 1 }, 8.22, 0.28, 'power1.out');
     tw('#finL', { scale: 0.96, filter: 'blur(20px)', y: 12 }, { scale: 1, filter: 'blur(0px)', y: 0 }, 8.22, 0.6, 'power2.out');
     tw('#finL', { filter: 'blur(0px)' }, { filter: 'none' }, 8.83, 0.001, 'none');
@@ -590,42 +613,40 @@
     tw('#finL', { x: 0, y: 0, scale: 1 }, { x: -400, y: -80, scale: 0.69 }, 9.0, 0.62, 'power3.inOut');
     tw('#finHalo', { x: 0, y: 0, scale: 1 }, { x: -400, y: -40, scale: 0.62 }, 9.0, 0.62, 'power3.inOut');
     tw('#finShadow', { opacity: 1 }, { opacity: 0 }, 9.0, 0.35, 'power2.out');
-    tw('#lkTile', { scale: 0.55, opacity: 0, transformOrigin: '50% 50%' }, { scale: 1, opacity: 1 }, 9.5, 0.55, 'back.out(1.6)');
-    tw('#lkMedRect', { attr: { width: 0 } }, { attr: { width: 2300 } }, 9.5, 0.6, 'power3.out');
+    tw('#lkTile', { scale: 0.55, opacity: 0, transformOrigin: '50% 50%' }, { scale: 1, opacity: 1 }, 9.5, 0.5, 'back.out(1.6)');
+    tw('#lkMedRect', { attr: { width: 0 } }, { attr: { width: 2300 } }, 9.5, 0.45, 'power3.out');
     $$('.lkX').forEach((p) => { p.style.strokeDasharray = '25.5 60'; });
-    tw('.lkX', { strokeDashoffset: 25.5, opacity: 0 }, { strokeDashoffset: 0, opacity: 1, stagger: 0.1 }, 9.5, 0.35, 'power2.out');
+    tw('.lkX', { strokeDashoffset: 25.5, opacity: 0 }, { strokeDashoffset: 0, opacity: 1, stagger: 0.06 }, 9.5, 0.3, 'power2.out');
     tw('.lkA', { opacity: 0 }, { opacity: 1 }, 9.6, 0.001, 'none');
     tw('#logoFlash', { opacity: 0, scale: 0.5 }, { opacity: 0.7, scale: 1.1 }, 9.55, 0.2, 'power2.out');
     tw('#logoFlash', { opacity: 0.7, scale: 1.1 }, { opacity: 0, scale: 1.5 }, 9.75, 0.6, 'power2.out');
-    wordsIn(st('#s04tag'), 9.8, { stagger: 0.06, dur: 0.5 });
+    // tagline lands with the logo: the full lockup is complete at 9.98 and holds, untouched, until 12.0 (2.0 s)
+    wordsIn(st('#s04tag'), 9.5, { stagger: 0.05, dur: 0.38 });
     // continuous 4% push from the logo landing to the end of the shot; one specular sweep at 10.9
     G.xC = [1431.46, 474.67];
-    tw('#s04', { scale: 1, transformOrigin: `${G.xC[0]}px ${G.xC[1]}px` }, { scale: 1.04 }, 9.5, 2.45, 'none');
+    tw('#s04', { scale: 1, transformOrigin: `${G.xC[0]}px ${G.xC[1]}px` }, { scale: 1.04 }, 9.5, 2.66, 'none');
     sweep('#lockSweep', 10.9, 0.8, '-150%', '560%');
     sweep('#finSweep', 10.95, 0.8, '-150%', '560%');
-    // 11.6: the outer sound arc lifts clear of the wordmark (procedural #matchArc), thins to the rail's weight and
-    // straightens into the rail by 12.0; the lockup holds at full opacity until the arc has cleared it
-    tw('#lkA2', { opacity: 1 }, { opacity: 0 }, 11.599, 0.001, 'none');
-    tw('#s04cam', { opacity: 1 }, { opacity: 0 }, 11.74, 0.13, 'power1.in');
+    // clean exit on the 12.0 downbeat: the whole lockup lifts, softens and clears in 0.16 s (the arc match cut is retired)
+    tw('#s04cam', { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', transformOrigin: '960px 470px' }, { opacity: 0, y: -30, scale: 0.97, filter: 'blur(5px)' }, 12.0, 0.16, 'power2.in');
 
-    /* ---------- S05 rail (11.74-14.1) ---------- */
-    vis('#s05', 11.74, 14.1, 0.08, 0);
-    tw('.br-fill', { scaleX: 0 }, { scaleX: 1 }, 12.039, 0.001, 'none'); // the straightened arc lands exactly on it
-    wordsIn(st('#s05h'), 11.82, { stagger: 0.04, dur: 0.45 });
-    $$('.br-node').forEach((n, i) => pop(n, 12.0 + i * 0.125, 0.6, 0.4, 'back.out(1.6)'));
-    $$('.br-label').forEach((n, i) => tw(n, { opacity: 0, y: 10 }, { opacity: 1, y: 0 }, 12.06 + i * 0.125, 0.4, 'power2.out'));
-    // fully legible about 12.45-13.85, then it clears for S06
-    tw('#s05h', { opacity: 1, y: 0 }, { opacity: 0, y: -16 }, 13.84, 0.18, 'power2.in');
-    drift('#s05h', 11.8, 14.0, { s: [1, 1.03] });
-    drift('#bigRail', 11.8, 13.6, { x: [-14, 0] });       // the rail drifts until the FLIP takes over (offset 0 at 13.6)
+    /* ---------- S05 rail (12.04-14.14) ---------- */
+    vis('#s05', 12.04, 14.14);
+    tw('.br-fill', { scaleX: 0 }, { scaleX: 1 }, 12.06, 0.62, 'power2.inOut');   // the rail draws left to right under the pops
+    head(st('#s05h'), 12.12, { stagger: 0.03, dur: 0.38 });                    // fully in 12.68, legible to 13.98
+    $$('.br-node').forEach((n, i) => pop(n, 12.1 + i * 0.12, 0.6, 0.36, 'back.out(1.6)'));
+    $$('.br-label').forEach((n, i) => tw(n, { opacity: 0, y: 10 }, { opacity: 1, y: 0 }, 12.16 + i * 0.12, 0.36, 'power2.out'));
+    tw('#s05h', { opacity: 1, y: 0 }, { opacity: 0, y: -26 }, 13.96, 0.12, 'power2.in');   // gone by 14.08, before the phones rise
+    drift('#s05h', 12.04, 14.12, { s: [1, 1.025] });
+    drift('#bigRail', 12.04, 13.6, { x: [-14, 0] });       // the rail drifts until the FLIP takes over (offset 0 at 13.6)
     // 13.6-14.1: FLIP the same rail into its docked place (y 1004, 1040 px wide); the docked #rail takes over at 14.1
-    const FL = 13.6, FD = 0.5, FE = 'power2.inOut';
+    const FL = 13.6, FD = 0.5, FE = 'power2.inOut', DY = 1004 - 600, DYL = 1022 - 662;
     $$('.br-node').forEach((n, i) => {
-      tw(n, { x: 0, y: 0, scale: 1 }, { x: (440 + 208 * i) - (210 + 300 * i), y: 344, scale: 28 / 88 }, FL, FD, FE);
+      tw(n, { x: 0, y: 0, scale: 1 }, { x: (440 + 208 * i) - (210 + 300 * i), y: DY, scale: 28 / 88 }, FL, FD, FE);
       tw($('svg', n), { opacity: 1 }, { opacity: 0 }, FL + 0.05, 0.3, 'power1.inOut');
     });
-    $$('.br-label').forEach((n, i) => tw(n, { x: 0, y: 0, scale: 1 }, { x: (440 + 208 * i) - (210 + 300 * i), y: 300, scale: 16 / 24 }, FL, FD, FE));
-    tw('.br-line', { x: 0, y: 0, scaleX: 1 }, { x: 230, y: 344, scaleX: 1040 / 1500 }, FL, FD, FE);
+    $$('.br-label').forEach((n, i) => tw(n, { x: 0, y: 0, scale: 1 }, { x: (440 + 208 * i) - (210 + 300 * i), y: DYL, scale: 16 / 24 }, FL, FD, FE));
+    tw('.br-line', { x: 0, y: 0, scaleX: 1 }, { x: 230, y: DY, scaleX: 1040 / 1500 }, FL, FD, FE);
     tw('.br-base', { opacity: 0 }, { opacity: 1 }, FL + 0.1, 0.35, 'power1.inOut');
     tw('.br-fill', { opacity: 1 }, { opacity: 0 }, FL + 0.1, 0.35, 'power1.inOut');
 
@@ -642,15 +663,15 @@
     tw('#railPulse', { x: 0, opacity: 0 }, { x: 1040, opacity: 1 }, 38.0, 0.6, 'power1.inOut');
     tw('#railPulse', { opacity: 1 }, { opacity: 0 }, 38.55, 0.2, 'power1.out');
 
-    /* ---------- S06 patient (13.86-17.96): the phones rise in behind the docking rail ---------- */
-    vis('#s06', 13.86, 17.96);
+    /* ---------- S06 patient (14.0-17.96): three full phone screens rise in behind the docking rail ---------- */
+    vis('#s06', 14.0, 17.96);
     const phs = [['#phC', -4, 0], ['#phL', 15, -230], ['#phR', -15, -230]];
     phs.forEach(([id, ry, z], i) => {
-      tw(id, { z: -600, rotationY: ry * 1.8, y: 60, opacity: 0 }, { z, rotationY: ry, y: 0, opacity: 1 }, 13.9 + i * 0.05, 0.9, 'expo.out');
+      tw(id, { z: -600, rotationY: ry * 1.8, y: 60, opacity: 0 }, { z, rotationY: ry, y: 0, opacity: 1 }, 14.04 + i * 0.05, 0.9, 'expo.out');
     });
-    tw('#shL, #shC, #shR', { opacity: 0, scaleX: 0.6 }, { opacity: 1, scaleX: 1 }, 14.2, 0.6, 'power2.out');
-    wordsIn(st('#s06h1'), 14.06);
-    wordsIn(st('#s06h2'), 15.7);
+    tw('#shL, #shC, #shR', { opacity: 0, scaleX: 0.6 }, { opacity: 1, scaleX: 1 }, 14.3, 0.6, 'power2.out');
+    head(st('#s06h1'), 14.12);                 // fully in 14.65
+    head(st('#s06h2'), 15.3, { y: 24 });       // fully in 15.83, legible to 17.7
     tw('.lang-chips .lchip', { opacity: 0, y: 20 }, { opacity: 1, y: 0, stagger: 0.08 }, 14.15, 0.5, 'power3.out');
     const lit = (chip, halo, t) => {
       tw(chip, { backgroundColor: 'rgba(255,255,255,.72)', color: '#45566A', borderColor: '#E3E9EF', scale: 1 },
@@ -670,166 +691,204 @@
     tw('#thSend', { scale: 1 }, { scale: 0.96 }, 17.0, 0.08, 'power2.out');
     tw('#thSend', { scale: 0.96 }, { scale: 1 }, 17.08, 0.25, 'back.out(2)');
     tw('#sendRipple', { scale: 0, opacity: 0.9 }, { scale: 9, opacity: 0 }, 17.0, 0.55, 'power2.out');
-    // camera: the device layer pushes 3.5% and drifts right, the type layer drifts onto the x 144 grid
-    drift('#s06phones', 13.9, 17.96, { x: [-12, 12], s: [1, 1.04] });
-    drift('#s06 .lang-chips', 13.9, 17.96, { x: [-12, 12], s: [1, 1.04] });
-    drift('#s06copy', 13.9, 17.7, { x: [6, 0] });
+    // camera: the device layer pushes 3% and drifts right, the type layer drifts onto the x 144 grid
+    drift('#s06phones', 14.0, 17.96, { x: [-10, 10], s: [1, 1.03] });
+    drift('#s06 .lang-chips', 14.0, 17.96, { x: [-10, 10], s: [1, 1.03] });
+    drift('#s06copy', 14.0, 17.7, { x: [6, 0] });
     // whip exit, finished (and the streak gone) by 17.96
     tw('#s06cam', { x: 0, filter: 'blur(0px)' }, { x: -480, filter: 'blur(12px)' }, 17.7, 0.26, 'power2.in');
     vis('#streak', 17.62, 17.96);
     tw('#streak', { x: 1900 }, { x: -900 }, 17.62, 0.34, 'power2.inOut');
     tw('#streak', { opacity: 0 }, { opacity: 1 }, 17.62, 0.12, 'power1.out');
     tw('#streak', { opacity: 1 }, { opacity: 0 }, 17.78, 0.17, 'power1.in');
-    FLOATS.push([st('#phC'), 6, 6, 0, 13.9, 17.96], [st('#phL'), 6, 6, 2.1, 13.9, 17.96], [st('#phR'), 6, 6, 4.2, 13.9, 17.96]);
+    FLOATS.push([st('#phC'), 6, 6, 0, 14.0, 17.96], [st('#phL'), 6, 6, 2.1, 14.0, 17.96], [st('#phR'), 6, 6, 4.2, 14.0, 17.96]);
 
-    /* ---------- S07 nurse evidence (17.9-21): slow dolly along the evidence thread ---------- */
-    vis('#s07', 17.9, 21.0);
-    // no blur on the camera: the cards and the headline arrive sharp (the anchor), only the laptop racks into focus
-    tw('#s07cam', { x: 480 }, { x: 0 }, 17.9, 0.4, 'power2.out');
-    tw('#s07cam', { scale: 1, transformOrigin: '1000px 560px' }, { scale: 1.07 }, 18.0, 2.85, 'none');
-    tw('#lap7', { x: -200, opacity: 0, rotationY: -20, filter: 'blur(10px)', transformPerspective: 1800 }, { x: 0, opacity: 1, rotationY: -10, filter: 'blur(0px)' }, 17.95, 0.6, 'expo.out');
-    tw('#lap7', { filter: 'blur(0px)' }, { filter: 'none' }, 18.56, 0.001, 'none');
-    tw('#lap7', { x: 0 }, { x: -24 }, 18.55, 2.05, 'none');                 // far layer: slow
-    tw('#s07group', { x: 60 }, { x: -60 }, 17.9, 2.7, 'none');              // card layer
-    tw('#s07h', { x: 24 }, { x: -24 }, 17.9, 2.7, 'none');                  // type layer
-    tw('#cardWords, #cardCC, #cardAge', { scale: 0.86, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1, stagger: 0.08 }, 17.95, 0.6, 'expo.out');
-    wordsIn(st('#s07h'), 18.0);
-    // evidence threads: they leave the Patient's-words card at the phrase's row and end beside the chip
-    const words = stageRect(st('#cardWords'));
-    const sore = stageRect(st('#hlSore')), soreChip = stageRect(st('#glowSore'));
-    const ageB = stageRect(st('#hlAgeB')), ageChip = stageRect(st('#glowAge'));
+    /* ---------- S07 nurse (17.9-20.8): split screen, the patient's own phone | the nurse's fields ---------- */
+    vis('#s07', 17.9, 20.8);
+    tw('#s07cam', { x: 480 }, { x: 0 }, 17.9, 0.4, 'power2.out');           // lands out of the whip
+    // one continuous push toward the nurse pane, which becomes the push-in that hands over to the S08 laptop
+    tw('#s07cam', { scale: 1, transformOrigin: '1440px 470px' }, { scale: 1.035 }, 18.0, 2.55, 'none');
+    tw('#s07cam', { scale: 1.035 }, { scale: 1.6 }, 20.55, 0.25, 'power2.in');
+        tw('#paneL', { opacity: 0, x: -60 }, { opacity: 1, x: 0 }, 17.92, 0.5, 'power3.out');
+    tw('#paneR', { opacity: 0, x: 60 }, { opacity: 1, x: 0 }, 17.92, 0.5, 'power3.out');
+    tw('#paneDiv', { scaleY: 0 }, { scaleY: 1 }, 18.0, 0.5, 'power3.out');
+    tw('#tagPat, #tagNur', { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.08 }, 18.1, 0.35, 'power2.out');
+    tw('#ph7', { y: 60, opacity: 0 }, { y: 0, opacity: 1 }, 17.95, 0.55, 'expo.out');
+    tw('#sh7', { opacity: 0, scaleX: 0.6 }, { opacity: 1, scaleX: 1 }, 18.1, 0.5, 'power2.out');
+    tw('#lap7', { opacity: 0, filter: 'blur(10px)' }, { opacity: 1, filter: 'blur(0px)' }, 17.98, 0.6, 'expo.out');
+    tw('#lap7', { filter: 'blur(0px)' }, { filter: 'none' }, 18.6, 0.001, 'none');
+    tw('#cardCC, #cardAge', { scale: 0.9, y: 30, opacity: 0 }, { scale: 1, y: 0, opacity: 1, stagger: 0.08 }, 18.0, 0.55, 'expo.out');
+    head(st('#s07h'), 18.0);                                                 // fully in 18.63
+    // evidence threads cross the split: from the highlighted phrase on the phone to the start of the nurse's field
+    const ccR = stageRect(st('#cardCC')), agR = stageRect(st('#cardAge'));
+    const s1r = stageRect(st('#hlSore1')), a1r = stageRect(st('#hlAge1'));
+    const g1 = stageRect(st('#glowSore')), g2 = stageRect(st('#glowAge'));
     const th = (pathEl, a, b) => {
-      pathEl.setAttribute('d', `M${a[0]} ${a[1]} C ${a[0] - 130} ${a[1]}, ${b[0] + 140} ${b[1]}, ${b[0]} ${b[1]}`);
+      pathEl.setAttribute('d', `M${a[0]} ${a[1]} C ${a[0] + 170} ${a[1]}, ${b[0] - 170} ${b[1]}, ${b[0]} ${b[1]}`);
       const len = pathEl.getTotalLength(); pathEl.style.strokeDasharray = `${len} ${len + 10}`; return len;
     };
-    const s1 = [words.x, sore.cy], s2 = [words.x, ageB.cy];
-    const l1 = th(st('#th1'), s1, [soreChip.x + soreChip.w + 10, soreChip.cy]);
-    const l2 = th(st('#th2'), s2, [ageChip.x + ageChip.w + 10, ageChip.cy]);
-    st('#th1a').setAttribute('cx', s1[0]); st('#th1a').setAttribute('cy', s1[1]);
-    st('#th2a').setAttribute('cx', s2[0]); st('#th2a').setAttribute('cy', s2[1]);
-    tw('#hlSore', { scaleX: 0 }, { scaleX: 1 }, 18.8, 0.3, 'power2.inOut');
+    const p1 = [s1r.x + s1r.w + 6, s1r.cy], p2 = [a1r.x + a1r.w + 6, a1r.cy];
+    const l1 = th(st('#th1'), p1, [ccR.x - 10, g1.cy]);
+    const l2 = th(st('#th2'), p2, [agR.x - 10, g2.cy]);
+    st('#th1a').setAttribute('cx', p1[0]); st('#th1a').setAttribute('cy', p1[1]);
+    st('#th2a').setAttribute('cx', p2[0]); st('#th2a').setAttribute('cy', p2[1]);
+    tw('#hlSore1', { scaleX: 0 }, { scaleX: 1 }, 18.8, 0.2, 'power2.in');
+    tw('#hlSore2', { scaleX: 0 }, { scaleX: 1 }, 18.98, 0.12, 'power2.out');
     tw('#th1a', { opacity: 0 }, { opacity: 1 }, 18.9, 0.1, 'none');
-    tw('#th1', { strokeDashoffset: l1 }, { strokeDashoffset: 0 }, 18.9, 0.4, 'power2.inOut');
-    spec('#cardWords', 19.0);
-    tw('#glowSore', { opacity: 0 }, { opacity: 1 }, 19.25, 0.15, 'power2.out');
-    tw('#glowSore', { opacity: 1 }, { opacity: 0.55 }, 19.4, 0.5, 'power2.inOut');
-    spec('#cardCC, #cardAge', 19.5, 0.07);
-    tw('#hlAgeA', { scaleX: 0 }, { scaleX: 1 }, 19.6, 0.15, 'power2.in');
-    tw('#hlAgeB', { scaleX: 0 }, { scaleX: 1 }, 19.75, 0.2, 'power2.out');
-    tw('#th2a', { opacity: 0 }, { opacity: 1 }, 19.8, 0.1, 'none');
-    tw('#th2', { strokeDashoffset: l2 }, { strokeDashoffset: 0 }, 19.8, 0.4, 'power2.inOut');
-    tw('#glowAge', { opacity: 0 }, { opacity: 1 }, 20.15, 0.15, 'power2.out');
-    tw('#glowAge', { opacity: 1 }, { opacity: 0.55 }, 20.3, 0.4, 'power2.inOut');
-    tw('#s07group, #lap7, #s07h', { y: 0 }, { y: -200 }, 20.6, 0.32, 'power3.in');
-    tw('#s07cam', { opacity: 1 }, { opacity: 0 }, 20.62, 0.22, 'power2.in');
+    tw('#th1', { strokeDashoffset: l1 }, { strokeDashoffset: 0 }, 18.92, 0.4, 'power2.inOut');
+    tw('#glowSore', { opacity: 0 }, { opacity: 1 }, 19.28, 0.15, 'power2.out');
+    tw('#glowSore', { opacity: 1 }, { opacity: 0.55 }, 19.43, 0.5, 'power2.inOut');
+    spec('#cardCC', 19.3);
+    tw('#hlAge1', { scaleX: 0 }, { scaleX: 1 }, 19.6, 0.15, 'power2.in');
+    tw('#hlAge2', { scaleX: 0 }, { scaleX: 1 }, 19.74, 0.15, 'power2.out');
+    tw('#th2a', { opacity: 0 }, { opacity: 1 }, 19.72, 0.1, 'none');
+    tw('#th2', { strokeDashoffset: l2 }, { strokeDashoffset: 0 }, 19.75, 0.4, 'power2.inOut');
+    tw('#glowAge', { opacity: 0 }, { opacity: 1 }, 20.12, 0.15, 'power2.out');
+    tw('#glowAge', { opacity: 1 }, { opacity: 0.55 }, 20.27, 0.4, 'power2.inOut');
+    spec('#cardAge', 20.1);
 
-    /* ---------- S08 triage (21-23): suggestion, then a top-down mask wipe to the confirmed block ---------- */
-    vis('#s08', 20.78, 22.86);
-    tw('#triCard', { y: 320, opacity: 0, rotationX: 10, rotationY: -8, transformPerspective: 1600 }, { y: 0, opacity: 1, rotationX: 0, rotationY: -6 }, 20.8, 0.5, 'power3.out');
-    tw('#triCard', { rotationY: -6 }, { rotationY: -2 }, 21.3, 1.4, 'none');
-    wordsIn(st('#s08h'), 20.85);
+    /* ---------- S08 triage (20.75-22.82): over the shoulder on the nurse's laptop ---------- */
+    vis('#s08', 20.8, 22.95);
+    // the S07 push-in lands on the laptop (scale settles), then the camera dollies slowly around the screen
+    tw('#rig8', { scale: 1.14, transformOrigin: '1300px 520px' }, { scale: 1 }, 20.8, 0.55, 'power3.out');   // punch-in cut lands and settles
+    tw('#lap8', { rotationY: 22, transformPerspective: 2200, transformOrigin: '0% 50%' }, { rotationY: 15 }, 20.8, 0.6, 'power3.out');
+    tw('#lap8', { rotationY: 15 }, { rotationY: 10 }, 21.35, 1.47, 'none');
+    head(st('#s08h'), 20.82);                                                // fully in 21.38, legible to 22.6
     const full = st('#triCard').offsetHeight, confH = st('#confBox').offsetHeight + 14;
     tw('#triCard', { height: full - confH }, { height: full }, 22.0, 0.17, 'power2.out');
     tw('#confBox', { clipPath: 'inset(0% 0% 100% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)' }, 22.0, 0.17, 'power2.out');
     tw('#triCheck', { scale: 0.6, opacity: 0 }, { scale: 1.08, opacity: 1 }, 22.05, 0.16, 'power2.out');
     tw('#triCheck', { scale: 1.08, boxShadow: '0 0 0 0px rgba(10,128,119,.45)' }, { scale: 1, boxShadow: '0 0 0 18px rgba(10,128,119,0)' }, 22.21, 0.4, 'power2.out');
-    drift('#triCard', 20.8, 22.86, { x: [-10, 12], s: [1, 1.04] });
-    drift('#s08h', 20.8, 22.86, { x: [6, 0] });
-    // out before S09 comes in (no full-frame wipe)
-    tw('#triCard, #s08h', { opacity: 1, y: 0 }, { opacity: 0, y: -24 }, 22.7, 0.14, 'power2.in');
+    spec('#triCard', 22.1);
+    drift('#rig8', 20.8, 22.95, { x: [10, -10] });
+    drift('#s08h', 20.8, 22.95, { x: [6, 0] });
+    // push exit: the frame moves left as S09 pushes in from the right (no cross-fade in place)
+    tw('#s08cam', { x: 0 }, { x: -1920 }, 22.64, 0.36, 'power3.inOut');
 
-    /* ---------- S09 doctor (22.8-25.42): push onto "Keep in note", inside the safe area ---------- */
-    vis('#s09', 22.8, 25.42, 0, 0.14);
-    tw('#consCard', { rotationX: 12, y: 90, scale: 0.92, opacity: 0, transformPerspective: 1400 }, { rotationX: 0, y: 0, scale: 1, opacity: 1 }, 22.8, 0.6, 'expo.out');
-    tw('#cbPlate9', { x: 70, opacity: 0 }, { x: 0, opacity: 0.6 }, 22.8, 0.8, 'power2.out');
-    wordsIn(st('#s09h'), 22.88);
+    /* ---------- S09 doctor (22.75-25.4): centred, push onto "Keep in note" ---------- */
+    vis('#s09', 22.64, 25.4);
+    tw('#s09cam', { x: 1920 }, { x: 0 }, 22.64, 0.36, 'power3.inOut');
+    tw('#consCard', { rotationX: 10, y: 50, scale: 0.95, transformPerspective: 1400 }, { rotationX: 0, y: 0, scale: 1 }, 22.7, 0.7, 'expo.out');
+    tw('#cbPlate9', { x: 70, opacity: 0.5 }, { x: 0, opacity: 0.5 }, 22.6, 0.8, 'power2.out');
+    head(st('#s09h'), 22.85);                                                // fully in 23.38
+    head(st('#s09s'), 23.2, { stagger: 0.03, dur: 0.38, y: 24 });             // fully in 23.73, legible to 25.0
     tw('#ulNotDx', { scaleX: 0 }, { scaleX: 1 }, 23.9, 0.4, 'power2.inOut');
-    wordsIn(st('#s09s'), 23.6, { stagger: 0.045, y: 24 });
     const cardR = stageRect(st('#consCard')), keep = stageRect(st('#pressKeep'));
     G.keepLocal = [keep.cx - cardR.x, keep.cy - cardR.y];
-    // 1.15x and 30 px left: the card's right edge stays at or inside x 1800, and the headline stays to the cut
-    tw('#consCard', { scale: 1, x: 0, transformOrigin: `${G.keepLocal[0]}px ${G.keepLocal[1]}px` }, { scale: 1.15, x: -30 }, 24.35, 0.42, 'power2.inOut');
-    tw('#cbPlate9', { opacity: 0.6 }, { opacity: 0.3 }, 24.3, 0.4, 'power2.in');
+    tw('#consCard', { scale: 1, transformOrigin: `${G.keepLocal[0]}px ${G.keepLocal[1]}px` }, { scale: 1.12 }, 24.35, 0.42, 'power2.inOut');
+    tw('#cbPlate9', { opacity: 0.5 }, { opacity: 0.3 }, 24.3, 0.4, 'power2.in');
     spec('#consCard', 24.5);
     tw('#pressKeep', { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1 }, 24.8, 0.12, 'power2.out');
     tw('#pressKeep', { opacity: 1 }, { opacity: 0 }, 25.0, 0.4, 'power2.in');
     tw('#pressKeep .ripple', { scale: 0, opacity: 0.9 }, { scale: 6, opacity: 0 }, 24.8, 0.5, 'power2.out');
-    drift('#consCard', 22.8, 25.42, { x: [-14, 6], s: [1, 1.04] });
-    drift('#cbPlate9', 22.8, 25.42, { x: [6, -18] });
-    drift('#s09copy', 22.8, 25.42, { x: [6, 0] });
+    drift('#consCard', 22.78, 25.4, { x: [-8, 8], s: [1, 1.025] });
+    drift('#cbPlate9', 22.8, 25.4, { x: [10, -16] });
+    drift('#s09h, #s09s', 22.8, 25.0, { s: [1, 1.015] });
+    // push transition: S09 leaves to the left while S10 enters from the right, frame against frame
+    tw('#s09cam', { x: 0 }, { x: -1920 }, 25.0, 0.4, 'power3.inOut');
 
-    /* ---------- S10 note (25.4-28): draft, then a macro on the "Note signed" stamp that pulls back ---------- */
-    vis('#s10', 25.4, 28.0, 0.14, 0);
-    tw('#draftCard', { rotationX: 10, y: 40, opacity: 0, transformPerspective: 1400 }, { rotationX: 0, y: 0, opacity: 1 }, 25.45, 0.5, 'expo.out');
-    wordsIn(st('#s10h1'), 25.5);
-    spec('#draftCard', 25.85);
-    textOut(st('#s10h1'), 26.25, 0.22);
-    tw('#draftCard', { y: 0, opacity: 1, scale: 1 }, { y: -40, opacity: 0, scale: 0.97 }, 26.25, 0.2, 'power2.in');
-    drift('#draftCard', 25.4, 26.45, { x: [-10, 10], s: [1, 1.04] });
-    // macro: the stamp sits at (1240, 560) at 1.85-1.95x, then the camera pulls back to the whole signed note
-    const scR = stageRect(st('#signedCard')), spR = stageRect(st('#stamp'));
-    const sl = [spR.cx - scR.x, spR.cy - scR.y], MT = [1240 - spR.cx, 560 - spR.cy];
-    tw('#signedCard', { opacity: 0 }, { opacity: 1 }, 26.33, 0.12, 'power1.out');
-    tw('#signedCard', { scale: 1.85, x: MT[0], y: MT[1], transformOrigin: `${sl[0]}px ${sl[1]}px` }, { scale: 1.95 }, 26.33, 0.62, 'none');
-    tw('#signedCard', { scale: 1.95, x: MT[0], y: MT[1] }, { scale: 1, x: 0, y: 0 }, 26.95, 0.7, 'power3.inOut');
+    /* ---------- S10 note (25.0-28.0): one card; the signed note replaces the draft through a masked wipe ---------- */
+    vis('#s10', 25.0, 28.0);
+    tw('#s10cam', { x: 1920 }, { x: 0 }, 25.0, 0.4, 'power3.inOut');
+    head(st('#s10h1'), 25.22);                                               // fully in 25.75, leaves at 26.97 (macro push)
+    spec('#draftCard', 25.6);
+    const sH = st('#signedCard').offsetHeight;
+    // 26.15-26.43: top-to-bottom wipe with a teal light edge; the draft is fully covered, never seen through the note
+    tw('#signedCard', { clipPath: `inset(-80px -80px ${sH + 80}px -80px)` }, { clipPath: 'inset(-80px -80px -120px -80px)' }, 26.15, 0.28, 'power2.inOut');
+    tw('#wipeEdge', { y: 0 }, { y: sH }, 26.15, 0.28, 'power2.inOut');
+    tw('#wipeEdge', { opacity: 0 }, { opacity: 1 }, 26.15, 0.04, 'none');
+    tw('#wipeEdge', { opacity: 1 }, { opacity: 0 }, 26.4, 0.12, 'power1.out');
+    tw('#draftCard', { autoAlpha: 1 }, { autoAlpha: 0 }, 26.44, 0.001, 'none');
+    head(st('#s10h2'), 26.2);                                                // fully in 26.73, legible to 27.95
     const stampEls = $$('#stamp svg circle, #stamp svg path');
     stampEls.forEach((p) => { const L = p.getTotalLength(); p.style.strokeDasharray = `${L} ${L + 4}`; p._L = L; });
     tw('#stamp', { scale: 1.5, opacity: 0 }, { scale: 1, opacity: 1 }, 26.5, 0.3, 'back.out(1.8)');
     stampEls.forEach((p, i) => tw(p, { strokeDashoffset: p._L }, { strokeDashoffset: 0 }, 26.58 + i * 0.12, 0.3, 'power2.out'));
     tw('#stamp', { boxShadow: '0 0 0 0px rgba(10,128,119,.45)' }, { boxShadow: '0 0 0 22px rgba(10,128,119,0)' }, 26.8, 0.5, 'power2.out');
-    spec('#signedCard', 26.5);
-    wordsIn(st('#s10h2'), 26.5, { stagger: 0.05, dur: 0.45 });
-    drift('#signedCard', 27.6, 28.0, { s: [1, 1.012] });
-    drift('#s10copy', 25.4, 28.0, { x: [6, 0] });
+    spec('#signedCard', 26.6);
+    // camera (fix round 6): a slow MACRO PUSH onto the "Note signed" stamp. The rig turns toward the lens while the
+    // draft is on screen; from 26.45, as the stamp lands, it pushes in around the stamp so the signed card fills about
+    // 70% of the frame width by 27.4 (left edge x 580, top y 206, scale 1.62; the empty right end of its two teal boxes
+    // runs off the frame edge, every text line stays inside), then keeps creeping 3% to the hard cut at 28.0.
+    // "Drafted from their words." leaves 26.97-27.15 (readable 25.75-26.97), so the card never touches a headline:
+    // "Signed by a clinician." ends at x 541 and keeps a 40 px gap to the card.
+    const spR = stageRect(st('#stamp')), sgR = stageRect(st('#signedCard'));
+    const MS = 1.62, M_L = 580, M_T = 206;
+    const mtx = M_L - (spR.cx + (sgR.x - spR.cx) * MS), mty = M_T - (spR.cy + (sgR.y - spR.cy) * MS);
+    G.macro10 = { scale: MS, x: mtx, y: mty, card: [sgR.x, sgR.y, sgR.w, sgR.h], stamp: [spR.cx, spR.cy] };
+    tw('#noteRig', { rotationY: -7, transformPerspective: 1800, transformOrigin: `${spR.cx}px ${spR.cy}px` }, { rotationY: -1.5 }, 25.0, 3.0, 'none');
+    tw('#noteRig', { scale: 1, x: 0, y: 0 }, { scale: MS, x: mtx, y: mty }, 26.45, 0.95, 'power2.inOut');
+    tw('#noteRig', { scale: MS }, { scale: MS * 1.03 }, 27.4, 0.6, 'none');
+    // macro depth of field: the focal plane is the stamp row; the card title and the lines below it soften
+    tw('#signedCard .nc-title', { filter: 'blur(0px)' }, { filter: 'blur(1.2px)' }, 26.95, 0.45, 'power1.inOut');
+    tw('#signedCard .nc-label, #signedCard > .nc-line', { filter: 'blur(0px)' }, { filter: 'blur(1.8px)' }, 26.95, 0.45, 'power1.inOut');
+    // the laptop bokeh behind moves less than the card (parallax) and opens up
+    tw('#bokeh10', { scale: 1, x: 0, y: 0 }, { scale: 1.3, x: -120, y: 30 }, 26.45, 1.55, 'power1.inOut');
+    tw('#s10h1', { opacity: 1, y: 0 }, { opacity: 0, y: -30 }, 26.97, 0.18, 'none');   // leaves as the card arrives (readable 25.75-26.97)
+    drift('#s10h1, #s10h2', 25.0, 28.0, { x: [6, 0] });
 
     /* ---------- S11 pharmacist 1: the only red (28-32) ---------- */
     vis('#s11', 28.0, 31.95);
-    const hA = st('#plateA').offsetHeight, hB = st('#plateB').offsetHeight, PAD = 76, CY = 560;
+    const hA = st('#plateA').offsetHeight, hB = st('#plateB').offsetHeight, PAD = 76, CY = 640;
     const topA = CY - (hA + PAD) / 2, topB = CY - (hB + PAD) / 2;
     gsap.set('#card11', { height: hA + PAD, top: topA });
     tw('#card11', { scale: 0.9, y: 40, opacity: 0 }, { scale: 1, y: 0, opacity: 1 }, 27.95, 0.38, 'power4.out');
-    wordsIn(st('#s11h1'), 28.04, { stagger: 0.05 });
+    // fix round 6: a tilted plate seen from low and to the side (yaw 18 deg, camera below, 1.6 deg roll); the camera
+    // orbits slowly toward the front through the whole shot and is still turned 8 deg when the options go back (31.75)
+    tw('#card11', { rotationY: 18, rotationX: 7, rotationZ: -1.6, transformPerspective: 1500 }, { rotationY: 8, rotationX: 3, rotationZ: -0.5 }, 27.95, 3.97, 'sine.inOut');
+    head(st('#s11h1'), 28.04, { stagger: 0.03, dur: 0.4 });                  // fully in 28.59, legible to 29.85
     tw('#rimRed', { opacity: 0 }, { opacity: 1 }, 28.6, 0.25, 'power2.out');
     tw('#rimRed', { opacity: 1 }, { opacity: 0 }, 28.85, 0.55, 'power2.in');
-    textOut(st('#s11h1'), 29.95);
+    // masked push inside one slot: the first line rises out as the second rises in (never two lines on top of each other)
+    tw('#s11h1', { y: 0 }, { y: -110 }, 29.85, 0.32, 'power3.inOut');
+    tw('#s11h2', { y: 110 }, { y: 0 }, 29.85, 0.32, 'power3.inOut');
+    tw('#s11h1', { autoAlpha: 1 }, { autoAlpha: 0 }, 30.18, 0.001, 'none');         // in by 30.17, legible to 31.75
+    tw('#s11s', { opacity: 0, y: 14 }, { opacity: 1, y: 0 }, 30.14, 0.3, 'power2.out');   // after the headline push; legible 30.44-31.75
     // the plates scroll inside a window with a 40 px feathered top and bottom edge
     tw('#win11', { '--fe': '0px' }, { '--fe': '40px' }, 29.68, 0.12, 'none');
     tw('#plateA', { y: 0, opacity: 1 }, { y: -(hA + PAD), opacity: 0 }, 29.8, 0.5, 'power2.inOut');
     tw('#plateB', { y: hA + PAD }, { y: 0 }, 29.8, 0.5, 'power2.inOut');
+    tw('#plateB', { autoAlpha: 0 }, { autoAlpha: 1 }, 29.79, 0.001, 'none');      // hidden while parked below the window (still fully clipped at 29.79)
     tw('#card11', { height: hA + PAD, top: topA }, { height: hB + PAD, top: topB }, 29.8, 0.5, 'power2.inOut');
     tw('#win11', { '--fe': '40px' }, { '--fe': '0px' }, 30.3, 0.12, 'none');
-    wordsIn(st('#s11h2'), 30.3, { stagger: 0.05 });
     tw('#clarFill', { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1 }, 30.6, 0.16, 'back.out(2)');
     tw('#clarRing', { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1 }, 30.6, 0.18, 'power2.out');
     tw('#clarRing', { opacity: 1 }, { opacity: 0 }, 30.8, 0.4, 'power2.in');
-    wordsIn(st('#s11s'), 30.45, { stagger: 0.045, y: 24 });
     tw('#pressReturn', { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1 }, 31.0, 0.12, 'power2.out');
     tw('#pressReturn', { opacity: 1 }, { opacity: 0 }, 31.15, 0.3, 'power2.in');
     tw('#pressReturn .ripple', { scale: 0, opacity: 0.9 }, { scale: 6, opacity: 0 }, 31.0, 0.45, 'power2.out');
-    gsap.set('#returnedChip', { top: topB + hB + PAD + 28 });
-    tw('#returnedChip', { scale: 0.6, opacity: 0, transformOrigin: '0% 50%' }, { scale: 1, opacity: 1 }, 31.2, 0.3, 'back.out(1.8)');
-    drift('#card11', 27.95, 31.92, { x: [-12, 12], s: [1, 1.04] });
-    drift('#returnedChip', 31.2, 31.92, { x: [0, 5] });
+    tw('#returnedChip', { scale: 0.6, opacity: 0, transformOrigin: '100% 50%' }, { scale: 1, opacity: 1 }, 31.2, 0.3, 'back.out(1.8)');
+    drift('#card11', 27.95, 31.92, { x: [-12, 12], s: [1, 1.035] });
     drift('#s11copy', 28.0, 31.92, { x: [6, 0] });
     // clean exit before S12 (no overlap)
-    tw('#card11, #returnedChip', { y: 0, opacity: 1 }, { y: -40, opacity: 0 }, 31.75, 0.17, 'power2.in');
+    tw('#card11', { y: 0, opacity: 1 }, { y: -40, opacity: 0 }, 31.75, 0.17, 'power2.in');
     tw('#s11copy', { opacity: 1, y: 0 }, { opacity: 0, y: -30 }, 31.75, 0.17, 'power2.in');
 
-    /* ---------- S12 pharmacist 2 (32-36): low-angle checklist that levels out as the ticks land ---------- */
-    vis('#s12', 32.0, 35.98, 0, 0.12);
+    /* ---------- S12 pharmacist 2 (32-36): foreground rings, rack focus to the low-angle checklist ---------- */
+    // fix round 6: the two pharmacist rings open the shot in the FOREGROUND, big (1.4x) and sharp, overlapping the
+    // checklist, which sits out of focus behind them (blur 9 px). At 32.72 focus racks to the checklist while the rings
+    // drift down-left into the left column (foreground parallax, 0.78 s), clear of every row before its tick
+    // (row 1 at 33.0 is above them; rows 2-6 tick after they have left). At 34.6 focus racks back to the rings.
+    vis('#s12', 32.0, 35.96, 0, 0.1);
     tw('#checkCard', { y: 60, opacity: 0 }, { y: 0, opacity: 1 }, 31.94, 0.55, 'expo.out');
     tw('#checkCard', { rotationX: 16, transformPerspective: 1300, transformOrigin: '50% 100%' }, { rotationX: 12 }, 31.94, 1.06, 'power2.out');
     tw('#checkCard', { rotationX: 12 }, { rotationX: 6 }, 33.0, 1.3, 'none');
     tw('#checkCard', { rotationX: 6 }, { rotationX: 0 }, 34.3, 1.2, 'power2.inOut');
-    tw('#checkCard', { filter: 'blur(5px)' }, { filter: 'blur(0px)' }, 32.85, 0.22, 'power2.inOut');
-    tw('#checkCard', { filter: 'blur(0px)' }, { filter: 'none' }, 33.08, 0.001, 'none');
+    tw('#checkCard', { filter: 'blur(9px)' }, { filter: 'blur(0px)' }, 32.72, 0.3, 'power2.inOut');
+    tw('#checkCard', { filter: 'blur(0px)' }, { filter: 'none' }, 33.03, 0.001, 'none');
+    const SEAL_O = [173, 106];                                               // ring centre, seal-local
+    const sealN = stageRect(st('#seal'));
+    const FG12 = { s: 1.4, x: 1000 - (sealN.x + SEAL_O[0]), y: 600 - (sealN.y + SEAL_O[1]) };   // ring centre at (1000, 600)
+    G.fg12 = FG12;
+    tw('#seal', { x: FG12.x, y: FG12.y, scale: FG12.s, transformOrigin: `${SEAL_O[0]}px ${SEAL_O[1]}px` }, { x: 0, y: 0, scale: 1 }, 32.72, 0.78, 'power2.inOut');
     tw('#avLC', { x: -80, opacity: 0 }, { x: 0, opacity: 1 }, 31.98, 0.32, 'power3.out');
     tw('#avNW', { x: 80, opacity: 0 }, { x: 0, opacity: 1 }, 31.98, 0.32, 'power3.out');
-    tw('#sealRing', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1 }, 32.35, 0.4, 'back.out(1.8)');
-    tw('#avLCl, #avNWl', { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.08 }, 32.42, 0.35, 'power2.out');
-    tw('#sealCap', { opacity: 0, y: 10 }, { opacity: 1, y: 0 }, 32.55, 0.35, 'power2.out');
-    tw('#seal', { filter: 'blur(0px)', opacity: 1 }, { filter: 'blur(3px)', opacity: 0.55 }, 32.85, 0.22, 'power2.inOut');
-    wordsIn(st('#s12h1'), 32.0);
+    tw('#sealRing', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1 }, 32.3, 0.4, 'back.out(1.8)');
+    tw('#avLCl, #avNWl', { opacity: 0, y: 10 }, { opacity: 1, y: 0, stagger: 0.06 }, 32.34, 0.3, 'power2.out');
+    tw('#sealCap', { opacity: 0, y: 10 }, { opacity: 1, y: 0 }, 32.42, 0.3, 'power2.out');
+    tw('#seal', { filter: 'blur(0px)', opacity: 1 }, { filter: 'blur(5px)', opacity: 0.6 }, 32.72, 0.3, 'power2.inOut');
+    head(st('#s12h1'), 32.0);                                                // fully in 32.6
+    head(st('#s12h2'), 32.62, { y: 24, dur: 0.4 });                          // with the seal; fully in 33.13, legible to 35.7
     for (let k = 0; k < 6; k++) {
       const t = 33.0 + k * 0.25, row = '#ck' + (k + 1);
       tw(`${row} .ck-fill`, { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1 }, t, 0.16, 'back.out(2)');
@@ -838,8 +897,7 @@
     }
     spec('#checkCard', 34.3);
     pop('#sixChip', 34.5, 0.7, 0.35, 'back.out(1.8)');
-    wordsIn(st('#s12h2'), 34.6);
-    tw('#seal', { filter: 'blur(3px)', opacity: 0.55 }, { filter: 'blur(0px)', opacity: 1 }, 34.6, 0.3, 'power2.inOut'); // rack back: never the same person
+    tw('#seal', { filter: 'blur(5px)', opacity: 0.6 }, { filter: 'blur(0px)', opacity: 1 }, 34.6, 0.3, 'power2.inOut'); // rack back: never the same person
     tw('#seal', { filter: 'blur(0px)' }, { filter: 'none' }, 34.92, 0.001, 'none');
     drift('#checkCard', 31.94, 35.7, { x: [-12, 12], s: [1, 1.045] });
     drift('#sixChip', 34.5, 35.7, { x: [-3, 3] });
@@ -848,47 +906,49 @@
     const c6 = stageRect($('#ck6 .ck-box'));
     tw('#s12', { scale: 1, transformOrigin: `${c6.cx}px ${c6.cy}px` }, { scale: 2.6 }, 35.7, 0.3, 'power3.in');
 
-    /* ---------- S13 pickup (36-39): an 8-degree orbit of the phone; its counter number is the one "2" that pops ---------- */
-    vis('#s13', 35.95, 38.95, 0.1, 0.1);
+    /* ---------- S13 pickup (36-39): the real pickup screen; its counter number glows on the chime ---------- */
+    vis('#s13', 35.96, 38.95, 0.1, 0.1);
     tw('#rays13', { opacity: 0 }, { opacity: 0.5 }, 36.0, 1.2, 'power1.out');
-    tw('#ph13', { y: 70, rotation: -3, opacity: 0 }, { y: 0, rotation: 0, opacity: 1 }, 35.96, 0.6, 'back.out(1.4)');
-    tw('#ph13', { rotationY: -8 }, { rotationY: 0 }, 35.96, 2.45, 'sine.out');
+    tw('#ph13', { y: 70, rotation: 3, opacity: 0 }, { y: 0, rotation: 0, opacity: 1 }, 35.96, 0.6, 'back.out(1.4)');
+    tw('#ph13', { rotationY: 8 }, { rotationY: 0 }, 35.96, 2.45, 'sine.out');
     tw('#sh13', { opacity: 0, scaleX: 0.6 }, { opacity: 1, scaleX: 1 }, 36.1, 0.5, 'power2.out');
     tw('#ghostTh', { opacity: 0 }, { opacity: 1 }, 36.1, 0.8, 'power1.out');
-    tw('#thai13', { clipPath: 'inset(-40% 100% -40% 0%)', filter: 'blur(6px)' }, { clipPath: 'inset(-40% 0% -40% 0%)', filter: 'blur(0px)' }, 36.25, 0.6, 'power1.inOut');
-    tw('#pkNo', { scale: 1, textShadow: '0 0 0px rgba(10,128,119,0)' }, { scale: 1.45, textShadow: '0 0 22px rgba(10,128,119,.55)' }, 36.6, 0.16, 'power2.out');
-    tw('#pkNo', { scale: 1.45, textShadow: '0 0 22px rgba(10,128,119,.55)' }, { scale: 1, textShadow: '0 0 0px rgba(10,128,119,0)' }, 36.76, 0.45, 'power2.inOut');
+    tw('#thai13', { clipPath: 'inset(-40% 100% -40% 0%)', filter: 'blur(6px)' }, { clipPath: 'inset(-40% -2% -40% 0%)', filter: 'blur(0px)' }, 36.25, 0.6, 'power1.inOut');
+    tw('#pkGlow', { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1 }, 36.6, 0.18, 'power2.out');
+    tw('#pkGlow', { opacity: 1 }, { opacity: 0.35 }, 36.85, 0.6, 'power2.inOut');
     spec('#ph13', 36.6);
-    tw('#gloss13', { y: 12, opacity: 0 }, { y: 0, opacity: 1 }, 36.7, 0.45, 'power2.out');
-    wordsIn(st('#s13h'), 36.85);
-    drift('#orbit13', 35.96, 38.45, { x: [-10, 10], s: [1, 1.04] });
+    tw('#gloss13', { y: 12, opacity: 0 }, { y: 0, opacity: 1 }, 36.6, 0.45, 'power2.out');
+    head(st('#s13h'), 36.62);                                                // fully in 37.15, legible to 38.5
+    drift('#orbit13', 35.96, 38.45, { x: [10, -10], s: [1, 1.035] });
     drift('#s13copy', 35.96, 38.5, { x: [8, 0] });
-    tw('#ph13', { x: 0, y: 0, scale: 1, opacity: 1 }, { x: -220, y: 40, scale: 0.2, opacity: 0 }, 38.45, 0.45, 'power3.in');
+    // the phone flies down into the rail's Pickup node as the rail completes
+    tw('#ph13', { x: 0, y: 0, scale: 1, opacity: 1 }, { x: 1480 - 1380, y: 1004 - 520, scale: 0.05, opacity: 0 }, 38.45, 0.45, 'power3.in');
     tw('#sh13, #s13copy, #ghostTh, #rays13', { opacity: 1 }, { opacity: 0 }, 38.5, 0.3, 'power2.in');
-    FLOATS.push([st('#ph13'), 5, 5, 1, 36.6, 38.6]);
+    FLOATS.push([st('#ph13'), 5, 5, 1, 36.6, 38.45]);
 
-    /* ---------- S14 trace (38.85-42): a lateral camera track along the graph, hard cut at 42.0 ---------- */
+    /* ---------- S14 trace (38.85-42): the whole graph in frame, a slow push with the pulse; hard cut at 42.0 ---------- */
     vis('#s14', 38.85, 42.0, 0.15, 0);
-    tw('#traceCard', { opacity: 0 }, { opacity: 1 }, 38.85, 0.4, 'power2.out');
-    wordsIn(st('#s14h'), 38.95);
+    tw('#traceCard', { opacity: 0, y: 30 }, { opacity: 1, y: 0 }, 38.85, 0.45, 'power2.out');
+    head(st('#s14h'), 38.95);
     tw('#trSum', { opacity: 0, y: 10 }, { opacity: 1, y: 0 }, 39.1, 0.4, 'power2.out');
     NODE_T.forEach((t, i) => tw(`#tn${i + 1} > .t-lit:not(.t-ring)`, { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1 }, t, 0.22, 'power2.out'));
     tw('#tn3 .t-ring', { opacity: 0.9, scale: 1 }, { opacity: 0, scale: 1.14 }, 39.75, 0.35, 'power2.out');
     tw('#tn3 .t-ring', { opacity: 0.9, scale: 1 }, { opacity: 0, scale: 1.14 }, 40.12, 0.35, 'power2.out');
-    tw('#tGate .g-scan', { y: 0, opacity: 0 }, { y: 192, opacity: 1 }, 39.75, 0.7, 'power1.inOut');
+    tw('#tGate .g-scan', { y: 0, opacity: 0 }, { y: 214, opacity: 1 }, 39.75, 0.7, 'power1.inOut');
     tw('#tGate .g-scan', { opacity: 1 }, { opacity: 0 }, 40.4, 0.1, 'none');
     tw('#tGate .g-pass', { opacity: 0 }, { opacity: 1 }, 40.45, 0.2, 'power2.out');
     spec('#traceCard', 40.5);
     tw('#auditTag', { y: 30, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1 }, 40.95, 0.4, 'back.out(1.7)');
-    // 1.32 -> 1.27x, tracking from the patient turn (left) to the order checks (right) with the pulse
-    drift('#traceCard', 38.85, 42.0, { x: [165, -185], s: [1.32, 1.27] });
+    drift('#traceCard', 38.85, 42.0, { x: [12, -12], s: [1, 1.025] });   // max width 1804 px: always inside the frame
     drift('#s14h', 38.85, 42.0, { s: [1, 1.02] });
 
     /* ---------- S15 trust band (42-46) ---------- */
     vis('#s15', 42.0, 46.35, 0, 0.35);
-    wordsIn(st('#s15h1'), 41.97, { stagger: 0.04, dur: 0.45 });
-    textOut(st('#s15h1'), 43.55, 0.25);
-    wordsIn(st('#s15h2'), 43.65, { stagger: 0.05, dur: 0.45 }); // fully legible about 44.25-46.05
+    head(st('#s15h1'), 41.97, { stagger: 0.03, dur: 0.35 });                  // fully in 42.44, legible to 43.75
+    // masked push inside one slot (no cross-fade): the first headline rises out, the second rises in
+    tw('#s15h1', { y: 0 }, { y: -190 }, 43.75, 0.34, 'power3.inOut');
+    tw('#s15h2', { y: 190 }, { y: 0 }, 43.75, 0.34, 'power3.inOut');
+    tw('#s15h1', { autoAlpha: 1 }, { autoAlpha: 0 }, 44.1, 0.001, 'none');         // in by 44.09, legible to 45.85
     tw('#chips15 .state-chip', { z: -420, rotationY: -28, rotationX: 10, opacity: 0 }, { z: 0, rotationY: -14, rotationX: 4, opacity: 1, stagger: 0.12 }, 42.1, 0.7, 'expo.out');
     tw('#ledger', { y: 40, opacity: 0 }, { y: 0, opacity: 1 }, 42.6, 0.6, 'power3.out');
     const rowsEl = $$('#ledgerRows .l-row');
@@ -901,14 +961,13 @@
     tw('#chips15, #ledger', { filter: 'blur(0px)' }, { filter: 'blur(6px)' }, 45.7, 0.4, 'power2.in');
     tw('#chips15', { opacity: 1 }, { opacity: 0 }, 45.7, 0.4, 'power2.in');
     tw('#ledger', { opacity: 1 }, { opacity: 0 }, 45.75, 0.4, 'power2.in');
-    tw('#s15copy', { opacity: 1 }, { opacity: 0 }, 46.02, 0.3, 'power2.in');
+    tw('#s15slot', { opacity: 1 }, { opacity: 0 }, 45.85, 0.27, 'power2.in'); // gone before the S16 line forms (46.2)
     drift('#chips15', 42.0, 46.1, { x: [-14, 14], s: [1, 1.03] });
     drift('#ledger', 42.6, 46.1, { x: [-10, 10], s: [1, 1.03] });
-    drift('#s15copy', 42.0, 46.3, { x: [6, 0] });
+    drift('#s15slot', 42.0, 46.12, { x: [6, 0] });
 
     /* ---------- S16 callback (45.9-49.95): Thai line high, payoff low, then a 0.45 s luminance-ramp dissolve ---------- */
     vis('#s16', 45.9, 49.95, 0.4, 0.28);
-    // luminance-ramp dissolve: the dark plate exposes up (brightness) and then lets go into the mist plate
     tw('#s16', { filter: 'brightness(1)' }, { filter: 'brightness(3.4)' }, 49.47, 0.46, 'power2.in');
     const rev2 = [['#t2c1', 46.2, 0.45], ['#t2c2', 46.67, 0.40], ['#t2c3', 47.07, 0.40]];
     for (const [id, t, d] of rev2) {
@@ -932,25 +991,26 @@
     tw('#allergyCard', { y: 0, opacity: 0.55, filter: 'blur(3px)', scale: 1 }, { y: -10, opacity: 1, filter: 'blur(0px)', scale: 1.03 }, 47.85, 0.4, 'power3.out');
     tw('#allergyCard', { filter: 'blur(0px)' }, { filter: 'none' }, 48.27, 0.001, 'none');
     tw('#allergyCard', { scale: 1.03 }, { scale: 1.1 }, 48.3, 1.65, 'power1.in'); // carries the move through the dissolve
-    wordsIn(st('#s16h'), 47.6, { stagger: 0.07 });
+    head(st('#s16h'), 47.5, { stagger: 0.04, dur: 0.45 });                    // fully in 48.11, legible to 49.47
     tw('#s16cam', { scale: 1, transformOrigin: '960px 560px' }, { scale: 1.04 }, 46.0, 3.95, 'none');
 
-    /* ---------- S17 CTA (49.92-54) ---------- */
+    /* ---------- S17 CTA (49.92-54): devices, URL and QR; no Fin next to the clinical UI ---------- */
     vis('#s17', 49.92, 54.0, 0.1, 0);
-    tw('#card17', { z: -520, rotationY: 30, opacity: 0, x: -60 }, { z: 0, rotationY: 12, opacity: 1, x: 0 }, 49.95, 0.8, 'expo.out');
-    tw('#ph17', { z: -420, rotationY: 26, opacity: 0, x: 40 }, { z: 60, rotationY: 10, opacity: 1, x: 0 }, 50.1, 0.8, 'expo.out');
-    tw('#sh17', { opacity: 0, scaleX: 0.6 }, { opacity: 1, scaleX: 1 }, 50.4, 0.5, 'power2.out');
-    wordsIn(st('#s17h'), 49.98);
+    tw('#card17', { z: -480, rotationY: 22, opacity: 0, x: -40 }, { z: 0, rotationY: 8, opacity: 1, x: 0 }, 49.95, 0.8, 'expo.out');
+    tw('#ph17', { z: -400, rotationY: 20, opacity: 0, x: 40 }, { z: 40, rotationY: 6, opacity: 1, x: 0 }, 50.1, 0.8, 'expo.out');
+    head(st('#s17h'), 49.98, { dur: 0.45 });                                 // fully in 50.54
     vis('#url', 50.85, null);
-    vis('#finP', 51.0, null);
-    tw('#finP', { y: 60, scale: 0.9 }, { y: 0, scale: 1 }, 51.0, 0.5, 'back.out(1.7)');
+    // 51.0: Send is tapped on the phone (the score's 51.0 pop)
+    tw('#pressSend17', { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1 }, 51.0, 0.12, 'power2.out');
+    tw('#pressSend17', { opacity: 1 }, { opacity: 0 }, 51.2, 0.35, 'power2.in');
+    tw('#pressSend17 .ripple', { scale: 0, opacity: 0.9 }, { scale: 7, opacity: 0 }, 51.0, 0.5, 'power2.out');
     vis('#qrCard', 51.5, null);
     tw('#qrCard', { scale: 0.9 }, { scale: 1 }, 51.5, 0.5, 'expo.out');
     sweep('#qrGlint', 51.6, 0.7, '-200%', '500%');
     vis('#qrCap', 51.75, null, 0.4);
     spec('#card17, #ph17', 52.6, 0.08);
-    drift('#dev17', 49.95, 53.85, { x: [-12, 12], s: [1, 1.04] });
-    drift('#s17h', 49.95, 53.85, { x: [8, 0] });
+    drift('#dev17', 49.95, 53.85, { x: [-10, 10], s: [1, 1.03] });
+    drift('#s17h', 49.95, 53.85, { s: [1, 1.015] });
     tw('#dev17', { filter: 'blur(0px)' }, { filter: 'blur(4px)' }, 53.0, 0.4, 'power1.inOut');
     tw('#dev17', { x: 0, opacity: 1 }, { x: -520, opacity: 0 }, 53.45, 0.4, 'power2.in');
     textOut(st('#s17h'), 53.5, 0.35);
@@ -960,30 +1020,39 @@
     const urlScale = 0.909, gap = 28, pillW = pill.offsetWidth, urlW = url.offsetWidth * urlScale;
     const rowL = 960 - (pillW + gap + urlW) / 2, PILL_T = 459;
     pill.style.left = rowL + 'px';
-    const urlMid = 410 + url.offsetHeight / 2;
-    const finSz = 280, finK = finSz / 340, fp = A.brand.finPointing, tip = fp.tip, visL = fp.vis[0];
+    const URL0 = [url.offsetLeft, url.offsetTop], QR0 = [st('#qrCard').offsetLeft, st('#qrCard').offsetTop], CAP0 = st('#qrCap').offsetTop;
+    const urlH = url.offsetHeight, urlMid = URL0[1] + urlH / 2;
+    const finSz = 280, fp = A.brand.finPointing, tip = fp.tip, visL = fp.vis[0];
     const QR = { size: 300, top: 585 }, TIP_GAP = 50;
     const groupW = (tip[0] - visL) * finSz + TIP_GAP + QR.size;   // Fin's visible left edge to the QR's right edge
     const finL = 960 - groupW / 2 - visL * finSz;
     QR.cx = finL + tip[0] * finSz + TIP_GAP + QR.size / 2; QR.cy = QR.top + QR.size / 2;
     const finT = QR.cy - tip[1] * finSz;
-    G.qr = QR; G.qrStart = [1460 + 160, 560 + 160];
+    Object.assign(st('#finP').style, { left: finL.toFixed(1) + 'px', top: finT.toFixed(1) + 'px' }); // Fin's end-card place
+    G.qr = QR; G.qrStart = [QR0[0] + 160, QR0[1] + 160];
     const gl = (sel, to, from) => tw(sel, from, to, 53.6, 1.0, 'power3.inOut');
-    gl('#url', { x: rowL + pillW + gap - 860, y: (PILL_T + 35) - urlMid, scale: urlScale }, { x: 0, y: 0, scale: 1 });
+    const urlTo = { x: rowL + pillW + gap - URL0[0], y: (PILL_T + 35) - urlMid };
+    gl('#url', { x: urlTo.x, y: urlTo.y, scale: urlScale }, { x: 0, y: 0, scale: 1 });
     tw('#url', { color: '#0F1E2E' }, { color: '#FFFFFF' }, 53.7, 0.45, 'power1.inOut');
-    gl('#finP', { x: (finL + finSz / 2) - (1100 + 170), y: (finT + finSz) - (600 + 340), scale: finK }, { x: 0, y: 0, scale: 1 });
-    gl('#qrCard', { x: QR.cx - (1460 + 160), y: QR.cy - (560 + 160), scale: QR.size / 320 }, { x: 0, y: 0, scale: 1 });
-    gl('#qrCap', { x: QR.cx - (1460 + 160), y: (QR.cy + QR.size / 2 + 16) - 896 }, { x: 0, y: 0 });
+    // crisp type on the static card: once landed, the scaled URL becomes real 40 px type in exactly the same place
+    const fs0 = parseFloat(getComputedStyle(url).fontSize), fs1 = +(fs0 * urlScale).toFixed(2);
+    tw('#url', { scale: urlScale, fontSize: fs0 + 'px', y: urlTo.y }, { scale: 1, fontSize: fs1 + 'px', y: urlTo.y + (urlH - urlH * urlScale) / 2 }, 54.62, 0.001, 'none');
+    gl('#qrCard', { x: QR.cx - (QR0[0] + 160), y: QR.cy - (QR0[1] + 160), scale: QR.size / 320 }, { x: 0, y: 0, scale: 1 });
+    gl('#qrCap', { x: QR.cx - (QR0[0] + 160), y: (QR.cy + QR.size / 2 + 16) - CAP0 }, { x: 0, y: 0 });
     tw('#qrCap', { color: '#45566A' }, { color: 'rgba(255,255,255,.85)' }, 53.7, 0.45, 'power1.inOut');
-    FLOATS.push([st('#finP'), 3, 2.4, 0, 51.5, 59.5, 1.5]);
 
-    /* ---------- S18 end card (54-60): lockup, then tagline, then pill; QR pixel-static, the light keeps moving ---------- */
+    /* ---------- S18 end card (54-60): lockup, tagline, pill, then Fin on its light disc; QR pixel-static ---------- */
     vis('#s18', 53.95, null);
     tw('#lockW', { scale: 1.06, filter: 'blur(6px)', opacity: 0 }, { scale: 1, filter: 'blur(0px)', opacity: 1 }, 54.0, 0.6, 'expo.out');
     tw('#lockW', { filter: 'blur(0px)' }, { filter: 'none' }, 54.62, 0.001, 'none');
     wordsIn(st('#s18tag'), 54.3, { stagger: 0.06, dur: 0.5 });
     vis('#ctaPill', 54.5, null);
     tw('#ctaPill', { scale: 0.9, transformOrigin: '50% 50%' }, { scale: 1 }, 54.5, 0.45, 'back.out(1.6)');
+    // Fin's only CTA moment: the clean brand card, beside the QR, on a soft light disc (never next to clinical UI)
+    vis('#finP', 54.5, null, 0.2);
+    tw('#finP', { y: 40, scale: 0.86 }, { y: 0, scale: 1 }, 54.5, 0.55, 'back.out(1.7)');
+    tw('#finDisc', { scale: 0.7, opacity: 0, transformOrigin: '50% 50%' }, { scale: 1, opacity: 1 }, 54.45, 0.5, 'power3.out');
+    FLOATS.push([st('#finP'), 3, 2.4, 0, 55.1, 59.5, 1.5]);
     tw('#claim', { opacity: 0 }, { opacity: 1 }, 55.0, 0.5, 'power1.out');
     sweep('#endSweep', 55.5, 0.8, '-150%', '560%');
     tw('#gradSweep', { x: -1200 }, { x: 2600 }, 55.5, 4.0, 'none');
@@ -1013,8 +1082,8 @@
     // end card: Fin breathes 2% (never the QR) until 59.5
     const finP = $('#finP');
     proc((t) => {
-      const env = Math.min(prog(t, 55.0, 55.6), 1 - prog(t, 58.9, 59.5));
-      finP.style.scale = env > 0 ? (1 + 0.02 * env * Math.sin(TAU * (t - 55.0) / 3.2)).toFixed(5) : '';
+      const env = Math.min(prog(t, 55.1, 55.7), 1 - prog(t, 58.9, 59.5));
+      finP.style.scale = env > 0 ? (1 + 0.02 * env * Math.sin(TAU * (t - 55.1) / 3.2)).toFixed(5) : '';
     });
     proc((t) => {
       for (const [e, ax, ay, sp, ph, fr] of BLOBS) {
@@ -1039,20 +1108,22 @@
       rail.classList.toggle('dark', t >= 28 && t < 32);
     });
 
-    /* 7.85-8.6 exposure bloom. Two ringless radials: a light point that opens at 7.85 and grows, and a frame-wide
-     * exposure whose alpha ramps on its own sine.inOut curve (7.88-8.36) to ~96% warm white, so the mean luma rises
-     * over ~25 frames instead of jumping when a radius passes the frame size; it settles to the mist plate by 8.6. */
+    /* 7.85-8.5 light bloom (fix round 4): a clean, bright, brand-tinted light. Over the black breath a white point
+     * opens with a mint (#E1F4F1), teal (#2BB3A6) and ocean (#1A5FC4) fringe, never a grey alpha veil: every ring
+     * is a saturated brand hue or opaque white. Its white core passes the frame corners by 8.24, the mist plate is
+     * cut on underneath (hidden), and the white lifts off the near-white mist by 8.5, so no frame reads muddy. */
     const bloom = $('#bloom');
     proc((t) => {
-      if (t < 7.85 || t >= 8.6) { bloom.style.visibility = 'hidden'; return; }
-      const pp = E('power2.out')(prog(t, 7.85, 8.25)), Rp = lerp(46, 760, pp), Ap = 0.92 * (1 - prog(t, 8.12, 8.34));
-      const pw = E('sine.inOut')(prog(t, 7.88, 8.36)), Rw = lerp(1300, 2300, pw);
-      const Aw = t < 8.35 ? 0.96 * pw : 0.96 * (1 - E('power2.out')(prog(t, 8.35, 8.6)));
-      const c = (k) => `rgba(255,251,245,${Math.max(0, k).toFixed(4)})`;
-      const at = (R, f) => `${(R * f).toFixed(1)}px`;
-      const point = `radial-gradient(circle at 960px 540px, ${c(Ap)} 0px, ${c(Ap * 0.62)} ${at(Rp, 0.18)}, ${c(Ap * 0.24)} ${at(Rp, 0.48)}, ${c(Ap * 0.06)} ${at(Rp, 0.78)}, ${c(0)} ${at(Rp, 1)})`;
-      const wide = `radial-gradient(circle at 960px 540px, ${c(Aw)} 0px, ${c(Aw * 0.9)} ${at(Rw, 0.22)}, ${c(Aw * 0.72)} ${at(Rw, 0.45)}, ${c(Aw * 0.46)} ${at(Rw, 0.7)}, ${c(Aw * 0.26)} ${at(Rw, 1)})`;
-      bloom.style.background = `${point}, ${wide}`;
+      if (t < 7.85 || t >= 8.5) { bloom.style.visibility = 'hidden'; return; }
+      const C = '960px 540px';
+      if (t < 8.24) {
+        const p = prog(t, 7.85, 8.24), R = lerp(36, 4200, E('power2.in')(p) * 0.92 + p * 0.08);
+        const k = (f) => `${(R * f).toFixed(1)}px`;
+        bloom.style.background = `radial-gradient(circle at ${C}, #FFFFFF 0px, #FFFFFF ${k(0.26)}, #E1F4F1 ${k(0.4)}, rgba(43,179,166,.92) ${k(0.56)}, rgba(26,95,196,.62) ${k(0.76)}, rgba(26,95,196,.22) ${k(0.9)}, rgba(26,95,196,0) ${k(1)})`;
+      } else {
+        const a = 1 - E('power2.out')(prog(t, 8.24, 8.5));
+        bloom.style.background = `rgba(255,255,255,${a.toFixed(4)})`;
+      }
       bloom.style.visibility = 'visible';
     });
     /* 53.45-54.15 end-card plate: a soft radial colour bloom out of the QR (900 px feather, no hard edge) */
@@ -1159,7 +1230,7 @@
     const nA = $('#numA'), nB = $('#numB');
     proc((t) => {
       if (t < 4.4 || t > 7.8) return;
-      const q = E('expo.out')(prog(t, 4.8, 5.6));
+      const q = E('expo.out')(prog(t, 4.8, 5.6));   // the same curve as the fills, so number and bar always agree
       nA.textContent = (Math.round(491 * q) / 10).toFixed(1) + '%';
       nB.textContent = (Math.round(295 * q) / 10).toFixed(1) + '%';
     });
@@ -1203,37 +1274,13 @@
       });
     });
 
-    /* S04 -> S05 match cut: the outer arc of the X stays on screen and straightens into the rail line */
-    const ma = $('#matchArc'), maLine = $('#maLine');
-    // 11.6-11.76: the arc lifts 100 px straight up, clear of the lockup's box (top y 381), thinning to the rail's 4 px;
-    // the lockup fades under it (11.74-11.87); 11.84-12.04: it straightens and drops onto the rail line (y 660,
-    // x 210-1710) without crossing any visible type. No push into the X.
-    proc((t) => {
-      const on = t >= 11.6 && t < 12.04;
-      ma.style.visibility = on ? 'visible' : 'hidden';
-      if (!on) return;
-      const S = 1 + 0.04 * prog(t, 9.5, 11.95);           // the #s04 push (origin = the X centre)
-      const qa = E('power2.out')(prog(t, 11.6, 11.76));
-      const qb = E('power3.inOut')(prog(t, 11.84, 12.04));
-      const pts = [];
-      for (let i = 0; i <= 48; i++) {
-        const u = i / 48, ang = lerp(LOGO.a0[1], LOGO.a1[1], u) * D2R;
-        const ax = LOGO.cx + LOGO.r[1] * S * Math.cos(ang) + 12 * qa, ay = LOGO.cy + LOGO.r[1] * S * Math.sin(ang) - 100 * qa;
-        pts.push(`${lerp(ax, lerp(210, 1710, u), qb).toFixed(2)},${lerp(ay, 660, qb).toFixed(2)}`);
-      }
-      maLine.setAttribute('points', pts.join(' '));
-      maLine.setAttribute('stroke-width', lerp(LOGO.w * S, 4, qa).toFixed(2));
-    });
-
     /* S06 Italian listening bars */
-    const bars = $$('#itBars i');
+    const bars = $$('#itBars i'), BW = [0.5, 0.8, 1, 0.7, 0.9, 0.6, 0.4];
     proc((t) => {
       if (t < 13.8 || t > 18.1) return;
-      const env = Math.max(0.12, Math.min(prog(t, 14.85, 15.15), 1 - prog(t, 16.3, 16.8)));
-      bars.forEach((b, i) => {
-        const h = 8 + 36 * env * Math.abs(0.6 * Math.sin(t * 6.3 + i * 0.9) + 0.4 * Math.sin(t * 11.7 + i * 2.1));
-        b.style.height = h.toFixed(1) + 'px';
-      });
+      const env = Math.max(0.15, Math.min(prog(t, 14.85, 15.15), 1 - prog(t, 16.6, 17.1)));
+      const lv = env * (0.55 + 0.45 * Math.abs(Math.sin(t * 7.1) * 0.6 + Math.sin(t * 12.3 + 1.1) * 0.4));
+      bars.forEach((b, i) => { b.style.height = (4 + lv * 24 * BW[i]).toFixed(1) + 'px'; });
     });
 
     /* rail: current node glows on every bar line */

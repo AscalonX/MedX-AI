@@ -20,13 +20,24 @@
  */
 window.ASSETS = {
   ui: {
-    patientIntake: {
-      src: 'assets/ui/patient-voice.webp', verified: 'assets/ui-verified/patient-voice.webp', native: [720, 900],
-      // question card + transcript box + "Synthetic example" + "Check this example before you send it."
-      // (stops in the white gap above the next line, so no half line shows)
-      crop: { screen: [0, 22, 720, 853] },
-      hot: { line1: [97, 324, 562, 362], line2: [97, 374, 554, 411], confirm: [77, 817, 612, 846] },
-      cardEdge: [36, 683], // main white card, left/right edge (continued below the crop in CSS)
+    // Fix round 4: the refreshed 3x phone captures (apps/web/public/landing, 390 x 844 CSS px at 3x), shown whole as
+    // the phone screen (S06 centre, S07 patient pane, S17). Boxes measured with tools/measure.py on 18 Oct 2026.
+    patientPhone: {
+      src: 'assets/ui/patient-intake.webp', verified: 'assets/ui-verified/patient-intake.webp', native: [1170, 2532],
+      crop: { full: [0, 0, 1170, 2532] },
+      hot: {
+        line1: [154, 728, 884, 794], line2: [154, 809, 1008, 878],               // transcript lines 1-2 (S06 check)
+        sore1: [400, 728, 884, 794], sore2: [157, 809, 292, 878],               // "sore throat for two" / "days"
+        age1: [729, 971, 929, 1044], age2: [157, 1052, 370, 1121],              // "24 year" / "old man"
+        confirm: [112, 1440, 1060, 1506],                                       // "Check this example before you send it."
+        send: [60, 1737, 1110, 1881],                                           // Send pill
+      },
+    },
+    pickupPhone: {
+      src: 'assets/ui/patient-pickup-phone.webp', verified: 'assets/ui-verified/patient-pickup-phone.webp', native: [1170, 2532],
+      crop: { full: [0, 0, 1170, 2532] },
+      hot: { counterNo: [112, 836, 232, 984] },                                 // the counter number "2"
+      notes: "Contains the app's own calm pickup card with Fin; no alert or clinical content on this screen.",
     },
     nurseCase: {
       src: 'assets/ui/case.png', verified: 'assets/ui-verified/case.png', native: [1280, 720],
@@ -50,6 +61,10 @@ window.ASSETS = {
         confirmed: [62, 304, 938, 662],   // inside the teal-bordered box: check + title + Level / Confirmed by / At
       },
       hot: { check: [89, 324, 157, 393] },
+      // 18 Oct 2026 (render r5): the refreshed landing nurse-case.webp is 828x622 (2x of a 414 CSS px bento crop). That
+      // is a different layout: the confirmed title wraps to two lines and the confirmed box is clipped at the bottom
+      // edge (y 324-622, no bottom border), so `confirmed` (Level / Confirmed by / At) cannot be cropped from it. The
+      // loader therefore renders the frozen 1000x752 copy (same app copy) and prints a warning; this is intended.
     },
     consultFull: {
       src: 'assets/ui/consult-full.png', verified: 'assets/ui-verified/consult-full.png', native: [1280, 1648],
@@ -61,11 +76,6 @@ window.ASSETS = {
       hot: { notDiagnosis: [1006, 1204, 1083, 1207], keepInNote: [865, 1379, 988, 1414] },
       notes: 'Never show x > 830 for y 440-1100 (red Rule-out cards).',
     },
-    patientPickup: {
-      src: 'assets/ui/patient-pickup.webp', verified: 'assets/ui-verified/patient-pickup.webp', native: [720, 554],
-      crop: { codeCard: [0, 0, 720, 350] }, // the whole "Your code" card with its own corners and shadow
-      notes: 'Below the code card the phone shows a CSS recreation of the counter card (exact app copy), because this still cuts the counter number.',
-    },
   },
   // Fix round 2: these four plates were 1x stills shown at 9-13 px body text. They are now token-based CSS
   // recreations with the exact app copy (index.html): S10 draft + signed note (consult _c18n.ts draftNote,
@@ -73,6 +83,21 @@ window.ASSETS = {
   // suggestHint, fromTable, returnOrder), S16 allergy entry, S17 Live summary (_c18n.ts summary + hero-consult values).
   // Kept here, NOT loaded, so a later 2x refresh can bring a still back by moving its entry into `ui`.
   retired: {
+    // fix round 4: replaced by patientPhone (3x full screen)
+    patientIntake: {
+      src: 'assets/ui/patient-voice.webp', verified: 'assets/ui-verified/patient-voice.webp', native: [720, 900],
+      // question card + transcript box + "Synthetic example" + "Check this example before you send it."
+      // (stops in the white gap above the next line, so no half line shows)
+      crop: { screen: [0, 22, 720, 853] },
+      hot: { line1: [97, 324, 562, 362], line2: [97, 374, 554, 411], confirm: [77, 817, 612, 846] },
+      cardEdge: [36, 683], // main white card, left/right edge (continued below the crop in CSS)
+    },
+    // fix round 4: replaced by pickupPhone (3x full screen)
+    patientPickup: {
+      src: 'assets/ui/patient-pickup.webp', verified: 'assets/ui-verified/patient-pickup.webp', native: [720, 554],
+      crop: { codeCard: [0, 0, 720, 350] }, // the whole "Your code" card with its own corners and shadow
+      notes: 'Below the code card the phone shows a CSS recreation of the counter card (exact app copy), because this still cuts the counter number.',
+    },
     note: {
       src: 'assets/ui/consult.webp', verified: 'assets/ui-verified/consult.webp', native: [1000, 650],
       crop: { signed: [20, 22, 980, 230] }, // title, read-only strip, Note signed banner, Presenting complaint

@@ -135,3 +135,137 @@ Nothing was written to `C:\Users\User\medx-tools\promo`. All my test renders ran
 4. Regenerate the score with a lower ceiling (`--ceiling -2.8`) to clear the true-peak miss.
 5. Render with `node pitch/promo/rerender.mjs --crf 20`, then re-measure with `ffmpeg … ebur128=peak=true`.
 6. Run the critic on that cut. If it passes, copy `out/medx-promo.mp4` and the poster over the files in `apps/web/public/media/`.
+
+---
+
+## Final fix round (18 Oct 2026, 09:00): render r6 integrated
+
+### STATUS
+done.
+- The final cut (render r6, after fix round 6) replaces the r3 film and poster in `apps/web/public/media/`.
+- `pitch/promo/` is updated to the source that rendered it.
+- Both critics passed the final round, with 0 high findings.
+- Nothing is committed or pushed.
+
+### SUMMARY
+- **Fix round 6** changed only the framing of S10-S12. Shot timing, cut points, beats and copy are unchanged, so 23-36 s no longer repeats "headline plus one flat card":
+  - **S10:** a slow macro push onto the "Note signed" stamp.
+  - **S11:** a tilted plate seen from low and to the side.
+  - **S12:** the pharmacist rings start in the foreground, and the focus racks to the checklist and back.
+- **Earlier rounds since r3:**
+  - **fix-4:** honest S03 bars on one 0-100% track, one headline system, no in-place cross-fades, Fin removed from S17, and the 3x phone captures.
+  - **r5:** the asset sync of the w20-video "Final cut" stills, and the true-peak fix.
+- **Published.** `apps/web/public/media/medx-promo.mp4` and `medx-promo-poster.jpg` are byte-identical to the workspace output (same SHA-256). The landing paths are unchanged (`site.ts` `PROMO_PATH`, `PROMO_POSTER_PATH`).
+- **Source.** `pitch/promo/` has 60 files and 3.3 MB.
+  - The composition (`index.html`, `styles.css`, `timeline.js`, `assets.js`, `storyboard.json`/`.md`) is byte-identical to the workspace.
+  - `render.mjs`, `preview.html`, `audio/make_score.py` and `setup-vendor.mjs` did not change in the workspace since r3, so the repo copies stay as they were. Their only difference from the workspace is path handling.
+  - New in the repo: the two frozen 3x stills and the two fix-round-4 probes (`tools/readcheck.mjs`, `tools/edgecheck.mjs`). The probes carry the same path-only patch: the package lookup uses `MEDX_TOOLS` or `pitch/promo`, and they create `out/` if it is missing.
+  - `tools/sync-assets.mjs` now also copies `patient-intake.webp` and `patient-pickup-phone.webp`, with a fallback to the frozen copies.
+  - The README documents the published-cut recipe: `--max-mb 20`, then the -0.2 dB audio remux.
+
+### FILES CHANGED
+- `apps/web/public/media/medx-promo.mp4`: replaced (r3, 24.35 MB, by r6, 19.56 MB).
+- `apps/web/public/media/medx-promo-poster.jpg`: replaced.
+- `pitch/promo/`:
+  - copied from the workspace, byte-identical: `index.html`, `styles.css`, `timeline.js`, `assets.js`, `storyboard.json`, `storyboard.md`;
+  - new frozen stills: `assets/ui-verified/patient-intake.webp`, `assets/ui-verified/patient-pickup-phone.webp`;
+  - new tools: `tools/readcheck.mjs`, `tools/edgecheck.mjs`;
+  - edited: `tools/sync-assets.mjs` (two stills added) and `README.md` (r6 facts, the published-cut recipe, the loaded stills, fix rounds, tools).
+- `docs/reports/w20-promo.md`: this section appended. The sections above are unchanged.
+
+Outside the repo, I wrote only check renders, in `C:\Users\User\medx-tools\promo\out\integ-check*` and in the session scratchpad. I did not edit any workspace source.
+
+### TESTS RUN + RESULTS
+**The copied MP4, measured by me with ffmpeg 7.1:**
+
+| Check | Result |
+|---|---|
+| Size | **19,560,577 bytes (19.56 MB)**. SHA-256 `1ac67310128044c57888181f2c9630c511119d639785dbdfaecd377280a4e4d8`, same as `out/medx-promo.mp4` |
+| Container | duration **00:01:00.00**, 2608 kb/s overall |
+| Video | H.264 High, yuv420p, tv range, BT.709, progressive, **1920x1080, 60 fps**, 2330 kb/s |
+| Audio | AAC-LC, 48 kHz, stereo, 264 kb/s |
+| Decode check | `ffmpeg -v error -xerror -i medx-promo.mp4 -map 0:v:0 -map 0:a:0 -f null -` exited 0 with no error output. The full decode gave **3600 video frames** (60.00 s) and the audio decoded to 60.01 s |
+| Loudness (`ebur128=peak=true`) | **-14.3 LUFS** integrated (target -14), LRA 6.2 LU, true peak **-1.6 dBTP** (target at or below -1.0: **met**; r3 missed at -0.9) |
+| QR | OpenCV decoded `https://medx.areazeroai.com` from the repo poster and from the MP4 frame at 58.5 s |
+| Poster | 1920x1080, 367,282 bytes, SHA-256 `d46d933a1ada8ebc165c02b941cabfbe636755c6b3dfdf6f90785f5d13075738`. Byte-identical to the r5 poster, as expected: fix round 6 did not touch the end card. I looked at it: the lockup, the tagline, "Try the live demo", the URL, the QR, "Scan to try", Fin on the end card only, and the claim line "Research prototype · Synthetic data · Not a medical device". No store badges |
+
+**From the render pipeline's own record** (`out/verify-final.json`, `out/render-report.json`, render r6):
+- **Stream structure:** 3600 samples in one stts entry, 41 sync samples (20 forced IDRs on shot changes), faststart (`ftyp`, `moov`, `free`, `mdat`).
+- **A/V sync:** the cross-correlation lag against the score is 0.0 ms at 6-10 s, 26-30 s and 48-52 s. The impact onset is at 8.0 s in both the MP4 and the score. The 7.80-7.95 s silence measures -240 dBFS.
+- **Frame QC:** 3600 frames checked, 0 candidates.
+- **Determinism:** 3 frames bit-exact, 1 within raster noise (max 1/255).
+- **Hard cut:** the biggest change in 27.8-28.2 s is at 28.0 s (frame 1680), the S10-to-S11 cut.
+
+**Is the workspace source the one that rendered this MP4?**
+- The workspace's `index.html`, `styles.css` and `timeline.js` were last modified at 08:52:48, after the render (08:50).
+- My frames rendered from the current source are md5-identical to the `out/r6-src-new` snapshot. They differ from the `out/r6-src-old` snapshot at 25.6 s and 26.2 s, in a region of about x 912-1797, y 290-693.
+- In that region, the MP4's decoded frames differ from the current source by a mean of 5.7 and 6.2 per channel. They differ from the other snapshot by 17.3 and 22.8.
+- So the copied source is the version that rendered the film.
+
+**Re-render from the repo copy.** I ran this in a scratchpad copy of `pitch/promo`, with `MEDX_REPO` set to this checkout and `MEDX_TOOLS` set to `C:\Users\User\medx-tools`.
+- **The command:** `node rerender.mjs --frames-only --times` with 24 times (each shot, plus 26.4 / 27.4 / 27.9 / 28.7 / 30.7 / 32.5 / 33.1 / 35.2 for fix round 6).
+  - It exited 0.
+  - The vendor step copied 13 files.
+  - The asset sync copied 20 files and regenerated the QR.
+  - The only warning was the expected `nurse-case` asset warning.
+- **Against the same 24 times rendered in the workspace:**
+  - 20 frames were bit-identical. The other 4 differed by at most 10, 5, 3 and 6 /255, with means of 0.0012-0.0150.
+  - Those 4 are run-to-run GPU raster noise, not a source difference:
+    - two workspace runs also differ by max 10/255 at 15.5 s;
+    - a second run of the repo copy at 19.5, 22.4 and 27.4 s was bit-identical to two further workspace runs.
+- **Published-cut recipe:** re-running the documented remux on the r6 plain encode reproduced the published MP4 **byte for byte** (MD5 `4ca208da2b54b01366b0f0edabd67857`). The video stream MD5 is `014f147e…62be7` and the audio packet MD5 is `07f61841…96e2`.
+- **Score:** `audio/score.wav` SHA-256 starts `235b9ed50e612dcb`, the same score as r3. `make_score.py` is unchanged.
+- **Static checks:** `node --check` passes on `tools/sync-assets.mjs`, `tools/readcheck.mjs` and `tools/edgecheck.mjs`. `node pitch/promo/tools/sync-assets.mjs --dry-run`, run in the repo, resolves both 3x stills from `apps/web/public/landing` and writes nothing.
+
+**Critic verdicts, final round.** These are counts only, as the workflow passed them to me; I did not see the finding texts.
+
+| Round | Render reviewed | Critic A | Critic B |
+|---|---|---|---|
+| final (after fix round 6) | r6, the published file | **pass**, high 0, medium 1 | **pass**, high 0, medium 0 |
+
+Rounds 1 and 2 failed (16 and 7 findings, see above). The verdicts for the rounds in between were not passed to me.
+
+### EVIDENCE
+- **Published:**
+  - `apps/web/public/media/medx-promo.mp4` (19,560,577 bytes);
+  - `apps/web/public/media/medx-promo-poster.jpg` (367,282 bytes).
+- **Render r6 timing:** 620.8 s in total on the i5-13420H + RTX 4050.
+  - Capture took 179 s at 49.8 ms/frame.
+  - The CRF 18 stream was 39.95 MB, so the renderer re-encoded it 2-pass at 2308 kbit/s to 19.56 MB (256 s).
+  - The high-bitrate master (78.41 MB, CRF 14, AAC 320k) stays outside the repo at `C:\Users\User\medx-tools\promo\out\medx-promo-master.mp4`.
+- **Review material, outside the repo:**
+  - `C:\Users\User\medx-tools\promo\out\contact-final.jpg` (60 thumbnails from the MP4);
+  - `out\frames-final\` (20 stills);
+  - `out\r6-evidence\` (S10-S12 stills and `sheet-23-36.jpg`);
+  - `out\verify-final.json`, `out\render-r6.log`.
+- **My check renders:** `C:\Users\User\medx-tools\promo\out\integ-check\`, `integ-check2\`, `integ-check3\` and `integ-check4\`.
+
+### ASSUMPTIONS
+- The two critic verdicts `[{pass:true,high:0,medium:1},{pass:true,high:0,medium:0}]` refer to this r6 file.
+- **Size figure.** The workflow's render summary quoted 19.57 MB. That is the r5 file (19,568,214 bytes). The r6 file I published measures 19,560,577 bytes (19.56 MB), and the report uses that number.
+- **True-peak target.** The -1.0 dBTP target is met by remuxing the audio at -0.2 dB. The score itself was not changed: the score WAV is the same as in r3, and the plain encode still measures -0.9 dBTP.
+- **Frozen stills.** Committing the two 3x stills (178 KB together) to `assets/ui-verified/` follows the r3 integration's practice. It keeps a re-render reproducible if the landing stills change.
+
+### RISKS
+1. **One open medium finding** from critic A. I do not know what it says.
+2. **S08 shows an older triage-card layout.** `nurse-case.webp` on the landing is a different layout (828x622, its confirmed box is clipped). S08 therefore renders the frozen 1000x752 copy, which has the same app copy, and every render prints one expected warning.
+3. **The published cut takes two steps.** The plain `rerender.mjs` output is at -0.9 dBTP, so the remux in `pitch/promo/README.md` must follow. Re-measure after any change: the AAC overshoot does not change steadily with gain.
+4. **Count-up frames.** Frames around 5 s still show intermediate values before the sourced 49.1% / 29.5%.
+5. **Repo size.** A 19.56 MB binary in git, with no LFS. That is under both the 25 MB cap and GitHub's 50 MB warning.
+6. **Still open from earlier rounds:**
+   - a native-speaker check of the Thai line (synthetic case MED-01) and its gloss;
+   - medx.areazeroai.com must be live when the film is published.
+
+### OPEN QUESTIONS / CONTRACT CHANGE REQUESTS
+- No contract change requested (`packages/shared` untouched).
+- What is critic A's medium finding, and should it be fixed before submission?
+- A descriptive `/media/medx-promo.en.vtt` is still not added, because the film has no voice-over. Does the landing owner want one?
+
+### NEXT ACTION
+1. The orchestrator reviews the diff and commits these paths:
+   - `apps/web/public/media/medx-promo.mp4`
+   - `apps/web/public/media/medx-promo-poster.jpg`
+   - `pitch/promo/**`
+   - `docs/reports/w20-promo.md`
+2. Rebuild the landing, and check the promo plays with sound on the deployed site.
+3. If critic A's medium finding needs a fix: re-render with `node pitch/promo/rerender.mjs --max-mb 20`, apply the remux, re-measure with `ebur128=peak=true`, then copy the film and poster over the files in `apps/web/public/media/`.

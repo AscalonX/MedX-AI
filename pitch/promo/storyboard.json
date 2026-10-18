@@ -88,7 +88,7 @@
   "grid": {
     "bpm": 120,
     "beatSec": 0.5,
-    "barSec": 2.0,
+    "barSec": 2,
     "bars": 30,
     "rule": "Every shot boundary is on the 0.5 s beat grid. Major hits (8.0 reveal, 12.0 groove, 28.0 safety dip, 32.0 groove return, 36.0 chorus, 42.0 breakdown, 50.0 final chorus, 54.0 end impact) are on 2.0 s bar lines. Frame for time t = round(t * 60)."
   },
@@ -113,9 +113,9 @@
       "native": "724x905",
       "crop": {
         "screen": [
-          0.0,
+          0,
           0.075,
-          1.0,
+          1,
           0.965
         ]
       },
@@ -138,10 +138,10 @@
           0.82
         ],
         "plate": [
-          0.0,
-          0.0,
-          1.0,
-          1.0
+          0,
+          0,
+          1,
+          1
         ]
       },
       "blur": {
@@ -153,9 +153,9 @@
       "native": "759x570",
       "crop": {
         "suggestion": [
-          0.0,
-          0.0,
-          1.0,
+          0,
+          0,
+          1,
           0.27
         ],
         "confirmed": [
@@ -197,9 +197,9 @@
       "native": "731x548",
       "crop": {
         "noteTop": [
-          0.0,
-          0.0,
-          1.0,
+          0,
+          0,
+          1,
           0.56
         ]
       },
@@ -223,9 +223,9 @@
       "native": "750x563",
       "crop": {
         "options": [
-          0.0,
-          0.0,
-          1.0,
+          0,
+          0,
+          1,
           0.73
         ]
       },
@@ -295,10 +295,10 @@
       "native": "700x525",
       "crop": {
         "card": [
-          0.0,
-          0.0,
-          1.0,
-          1.0
+          0,
+          0,
+          1,
+          1
         ]
       },
       "notes": "Pickup code B-042 stays: it is the patient's own synthetic pickup code and part of the message."
@@ -308,14 +308,14 @@
       "native": "1145x275",
       "crop": {
         "graph": [
-          0.0,
+          0,
           0.36,
-          1.0,
-          1.0
+          1,
+          1
         ],
         "summary": [
-          0.0,
-          0.0,
+          0,
+          0,
           0.255,
           0.125
         ]
@@ -329,10 +329,10 @@
       "native": "1121x356",
       "crop": {
         "full": [
-          0.0,
-          0.0,
-          1.0,
-          1.0
+          0,
+          0,
+          1,
+          1
         ]
       }
     },
@@ -506,15 +506,15 @@
     {
       "id": "S01",
       "name": "Cold open: the sentence",
-      "start": 0.0,
-      "end": 3.0,
+      "start": 0,
+      "end": 3,
       "onScreenText": "แพ้เพนิซิลลิน กินแล้วผื่นขึ้นตามตัว  |  gloss: “Allergic to penicillin. It gave me a rash all over.”  |  micro: Synthetic example",
       "visual": "Ink stage, vignette, 3% grain, one soft teal key light upper-left. Centre: a thin voice waveform (2 px primary-gradient line with a 16 px glow) at y 470. The Thai line (data.thaiLine) in Noto Sans Thai 600, 88 px, white, line-height 1.45, centred at y 560. English gloss below in Plus Jakarta Sans 500, 30 px, white at 62%. No UI, no logo, no Fin.",
       "motion": "0.00-0.40 fade up from black with a soft bloom. 0.25-1.45 Thai glyphs reveal left to right (mask plus blur 8 to 0) in sync with the three waveform peaks at 0.5, 1.0, 1.5. 1.30 gloss fades in (y 12 to 0). 1.60 rack focus: the first clause 'แพ้เพนิซิลลิน' stays razor sharp while the rest softens to 3 px (what matters most). 2.20-3.00 every glyph breaks into ~450 particles sampled from the text alpha (canvas), drifting right and up with curl noise, fading to 35%; the gloss blurs out. Camera push 1.00 to 1.05 across the shot.",
       "transitionOut": "Particle carry-over: the drifting particles become the dust field of S02 (no cut).",
       "audioCues": [
         {
-          "t": 0.0,
+          "t": 0,
           "cue": "room tone (pink noise, LP 800 Hz, -38 dB) and a Bm(add9) pad fading in"
         },
         {
@@ -522,7 +522,7 @@
           "cue": "felt piano B3"
         },
         {
-          "t": 1.0,
+          "t": 1,
           "cue": "felt piano D4"
         },
         {
@@ -530,7 +530,7 @@
           "cue": "felt piano F#4"
         },
         {
-          "t": 2.0,
+          "t": 2,
           "cue": "felt piano E4, left hanging (unresolved)"
         },
         {
@@ -542,7 +542,7 @@
     {
       "id": "S02",
       "name": "Some words can't get lost",
-      "start": 3.0,
+      "start": 3,
       "end": 4.5,
       "onScreenText": "Some words can't get lost.",
       "visual": "Same ink stage, with the S01 particles as a slow dust field. Near layer, left: a frosted glass chip 'ไทย' with a tiny waveform. Far layer, right, defocused 6 px, ruleStrong #7D8C9E at 55%: the clinic's question in Italian, 'Che cosa la porta qui oggi?' (data.i18n.q1.it). A dashed light line reaches from the Thai chip toward the Italian line. Headline centre-low: Plus Jakarta Sans 800, 96 px, white, tracking -0.03em.",
@@ -550,11 +550,11 @@
       "transitionOut": "Zoom-through into black (0.25 s); the stat rises out of depth.",
       "audioCues": [
         {
-          "t": 3.0,
+          "t": 3,
           "cue": "pad continues, E4 still hanging; faint sub swell"
         },
         {
-          "t": 4.0,
+          "t": 4,
           "cue": "line-break snap (filtered click plus low thump)"
         }
       ]
@@ -563,7 +563,7 @@
       "id": "S03",
       "name": "The sourced problem",
       "start": 4.5,
-      "end": 8.0,
+      "end": 8,
       "onScreenText": "Language gaps cause harm.  /  49.1%  vs  29.5%  (Limited English | English speakers)  /  caption: Adverse events that involved physical harm  /  source (small, bottom-left, 4.7-7.75 s): Divi et al., Int J Qual Health Care 2007 · six US hospitals",
       "visual": "Ink stage. Headline top-left (x 160, y 200), Plus Jakarta Sans 800, 72 px, white. Two tall glass capsule bars stand on a thin glowing baseline. Left bar fills white to mist #EEF3F6 with a soft glow, 49.1% in Jakarta 800 200 px tabular figures, white. Right bar fills ruleStrong #7D8C9E, 29.5% in 128 px, same colour. Labels 28 px under each bar; caption 30 px white at 80% under the numbers. Source line 20 px, white at 70%, anchored at x 96, baseline y 1036. No red, no brand teal on the bars.",
       "motion": "4.55 headline mask-in from the left (clip-path, 0.45 s power3.out). 4.80-5.60 bars grow (scaleY, expo.out) while both numbers count up from 0.0 (snap 0.1, tabular, so nothing jitters). 5.60 glow bloom on top of the 49.1% bar. 5.70 labels, 5.90 caption. Slow parallax (bars x -12 px, text x +8 px) and push 1.00 to 1.03. 7.75 hard cut to black for a 0.25 s breath.",
@@ -578,7 +578,7 @@
           "cue": "16 rising-pitch counter ticks through 5.6 (30 ms sine blips around 2 kHz)"
         },
         {
-          "t": 6.0,
+          "t": 6,
           "cue": "riser (filtered noise plus pitched saw glide) to 7.75"
         },
         {
@@ -598,7 +598,7 @@
       "transitionOut": "The camera pushes into the X of the wordmark (scale 1 to 8, 0.5 s power3.in, from 11.5). The X's gradient becomes the journey rail of S05 (match-zoom).",
       "audioCues": [
         {
-          "t": 8.0,
+          "t": 8,
           "cue": "IMPACT: sub drop 60 to 40 Hz, noise burst, D(add9) bloom (pad plus piano D-F#-A-E)"
         },
         {
@@ -606,7 +606,7 @@
           "cue": "Fin bubble pop (sine 300 to 600 Hz, 80 ms)"
         },
         {
-          "t": 9.0,
+          "t": 9,
           "cue": "soft arc ping"
         },
         {
@@ -614,11 +614,11 @@
           "cue": "soft arc ping"
         },
         {
-          "t": 10.0,
+          "t": 10,
           "cue": "logo hit: FM bell 880 Hz plus air whoosh"
         },
         {
-          "t": 11.0,
+          "t": 11,
           "cue": "shimmer swell under the light sweep"
         },
         {
@@ -638,7 +638,7 @@
       "transitionOut": "Match-zoom: the Patient node expands into S06's centre phone while the rail shrinks into the docked progress rail at the bottom (globalStyle.rail).",
       "audioCues": [
         {
-          "t": 12.0,
+          "t": 12,
           "cue": "GROOVE STARTS: kick 1 and 3, clap 2 and 4, 16th plucked arp, sub bass on roots; chord D"
         },
         {
@@ -658,7 +658,7 @@
       "transitionOut": "The Send ripple becomes a teal light streak whip-panning right to left (0.3 s, 40 px motion blur) into S07; rail node moves Patient to Nurse.",
       "audioCues": [
         {
-          "t": 14.0,
+          "t": 14,
           "cue": "chord A/C#"
         },
         {
@@ -666,7 +666,7 @@
           "cue": "language chime 1 (glass pluck)"
         },
         {
-          "t": 15.0,
+          "t": 15,
           "cue": "language chime 2 (FM bell) plus read-aloud ping"
         },
         {
@@ -674,11 +674,11 @@
           "cue": "language chime 3 (marimba-like)"
         },
         {
-          "t": 16.0,
+          "t": 16,
           "cue": "chord Bm; highlighter swish"
         },
         {
-          "t": 17.0,
+          "t": 17,
           "cue": "send pop plus upward airy whoosh"
         },
         {
@@ -691,14 +691,14 @@
       "id": "S07",
       "name": "Nurse: every field points back",
       "start": 17.96,
-      "end": 21.0,
+      "end": 21,
       "onScreenText": "Every field points back to their words.",
       "visual": "Background: generic laptop at rotateY -10deg showing ui.nurseCase 'plate', blurred 6 px (B-012 unreadable). Foreground, sharp, two floating glass cards: ui.nurseCase 'patientWords' (Patient's words panel with dotted-underlined phrases) on the right and 'summaryRows' (Chief complaint 'sore throat · From patient's words', Age '24 years · From patient's words · Patient wrote: I'm a 24 year old', Sex) on the left, each <= 1.4x. Curved ocean #1A5CBF SVG evidence threads link the cards. Headline top, Jakarta 800 64 px ink. Micro-tag on.",
       "motion": "Laptop glides in from the left (0.6 s expo.out). 18.20 cards float in from z -200 (stagger 0.1). 18.40 headline. 18.80 'sore throat for two days' gets the highlighter sweep and a thread draws (bezier, 0.4 s) to the 'sore throat · From patient's words' chip, which pulses an ocean glow. 19.60 same for '24 year old man' to the '24 years' chip. Push-in 1.00 to 1.06.",
       "transitionOut": "Card-stack swap: the cards slide up and out while the triage card rises from below (0.35 s power3.inOut).",
       "audioCues": [
         {
-          "t": 18.0,
+          "t": 18,
           "cue": "chord G"
         },
         {
@@ -714,15 +714,15 @@
     {
       "id": "S08",
       "name": "Nurse: triage suggested, nurse confirms",
-      "start": 21.0,
-      "end": 23.0,
+      "start": 21,
+      "end": 23,
       "onScreenText": "Triage suggested. The nurse confirms.",
       "visual": "ui.triage as one large floating sheet card on mist: crop 'suggestion' (pill 'Suggestion for nurse confirmation', 'Suggested triage level 2', scale note), then crop 'confirmed' composited directly beneath ('Triage confirmed by Nurse Anna Rossi', Level 3, Confirmed by, At 03:07). Headline left, Jakarta 800 64 px. Micro-tag on.",
       "motion": "21.00 card rises (0.4 s). 21.20 headline. 22.00 downward mask-wipe reveals the confirmed block; the teal check circle pops on the clap (scale 0.6 to 1.08 to 1, back.out). Slight camera tilt.",
       "transitionOut": "Diagonal light-sweep wipe (teal to ocean to white band, 0.35 s) into S09; rail node moves Nurse to Doctor.",
       "audioCues": [
         {
-          "t": 22.0,
+          "t": 22,
           "cue": "chord D change; confirm pop (880 + 1320 Hz, 80 ms) and major-third chime on the clap"
         }
       ]
@@ -730,7 +730,7 @@
     {
       "id": "S09",
       "name": "Doctor: considerations, not a diagnosis",
-      "start": 23.0,
+      "start": 23,
       "end": 25.5,
       "onScreenText": "Considerations for the doctor.  /  small: Not a diagnosis. The doctor decides.",
       "visual": "Hero card: ui.consultFull 'considerations' (teal card: 'Considerations · For clinician judgement. Not a diagnosis.', 'Consider · Rule', 'Peritonsillar abscess', 'From MedX rule list, for clinician judgement. Not a diagnosis.', 'Why: Severe one-sided pain, trismus, uvula deviation.', 'Patient said: \"sore throat\"', 'Keep in note', 'Not relevant'), <= 1.4x. Behind it, ui.consultFull 'transcriptPlate' blurred 12 px at 60% (never the red Rule-out column). Headline left, Jakarta 800 64 px; small line Jakarta 600 32 px inkSoft. Micro-tag on.",
@@ -738,7 +738,7 @@
       "transitionOut": "The press launches a small teal pill along a motion path down into S10's note (0.3 s).",
       "audioCues": [
         {
-          "t": 24.0,
+          "t": 24,
           "cue": "chord Bm; piano counter-melody enters (D-E-F#-A)"
         },
         {
@@ -755,14 +755,14 @@
       "id": "S10",
       "name": "Draft note, signed by a clinician",
       "start": 25.5,
-      "end": 28.0,
+      "end": 28,
       "onScreenText": "Drafted from their words.  /  Signed by a clinician.",
       "visual": "Floating glass panel: ui.note 'noteTop' ('Draft visit note', amber pill 'Draft for clinician review. Not a diagnosis.', teal 'Note signed · Dr. Marco Bianchi, 03:07'). Amber (draft) and teal (signed) stay visually distinct. Soft laptop bokeh behind. Headline left, Jakarta 800 64 px. Micro-tag on.",
       "motion": "25.50 panel enters in 3D (rotateX 10deg to 0, y 40 to 0, 0.5 s expo.out), amber banner visible first. 25.70 line 1. 26.50 'Note signed' card masks in with a check-stroke draw and a teal stamp ring (scale 1.3 to 1, 0.35 s back.out). 26.60 line 2. 27.20 light sweep. 27.60 frame starts to cool.",
       "transitionOut": "Clean hard cut on the 28.0 bar line into the dimmer, cooler S11 frame. No flourish (this signals the safety moment).",
       "audioCues": [
         {
-          "t": 26.0,
+          "t": 26,
           "cue": "chord G"
         },
         {
@@ -773,20 +773,21 @@
           "t": 27.5,
           "cue": "low-pass filter starts closing"
         }
-      ]
+      ],
+      "cameraFix6": "Macro push onto the Note signed stamp: 26.45-27.4 scale 1 -> 1.62 around the stamp, card about 70% of the frame width by 27.4, then a 3% creep to the 28.0 cut; shallow depth of field on the title and lower lines; 'Drafted from their words.' leaves at 26.97."
     },
     {
       "id": "S11",
       "name": "Pharmacist 1: the catch (only red in the film)",
-      "start": 28.0,
-      "end": 32.0,
+      "start": 28,
+      "end": 32,
       "onScreenText": "A rule check flags the allergy.  /  Options go back to the prescriber.  /  small: Not a prescription. The prescriber decides.",
       "visual": "Dimmed stage (85% brightness, ink tint); Fin absent; rail lit at Pharmacist 1 and dimmed. Generic browser window. Plate A: ui.pharmacyVerify1 'alertRow' ('amoxicillin 500 mg · oral · three times daily · 5 days · penicillin · Prescribed by Dr. Marco Bianchi', stepper '1 Verify now · 2 Pick and final check · 3 Pickup', 'High · Allergy conflict · MR-ALLERGY-PEN · This medicine may conflict with an allergy the patient reported.'). Plate B: ui.pharmacyVerify2 'options' ('Options for prescriber review (optional, up to 5)', clarithromycin and doxycycline 'from the table', 'Return with report'). After the press, a CSS chip in the app's warn style: 'Returned to prescriber: 1'. The ONLY red: the app's own alert card plus one soft signal #BE1B2B rim glow at 25%. Headline Jakarta 800 60 px white-on-ink pill or ink on the dimmed mist (contrast >= 7:1). Micro-tag on.",
       "motion": "28.00 camera snaps to the alert row (0.3 s, fast ease-out). 28.30 line 1. 28.60 single red rim-light pulse, gone by 29.4 (once, never flashing). Hold to 29.8. 29.80 dolly down / crossfade to Plate B (0.5 s power2.inOut). 30.30 line 2. 30.60 check overlay ticks 'clarithromycin' (app checkbox style). 31.00 small line. 31.30 'Return with report' press with ripple. 31.60 'Returned to prescriber: 1' chip pops.",
       "transitionOut": "Swipe-up: the returned card slides up and out (0.3 s) to reveal S12 on the 32.0 bar line; rail moves to Pharmacist 2.",
       "audioCues": [
         {
-          "t": 28.0,
+          "t": 28,
           "cue": "SAFETY DIP: drums and arp out, pad low-passed 2 kHz to 400 Hz; chord Bm"
         },
         {
@@ -794,7 +795,7 @@
           "cue": "one calm two-tone alert (B2 + F#3 triangle, 0.6 s, 3 dB under groove level, never a siren)"
         },
         {
-          "t": 30.0,
+          "t": 30,
           "cue": "chord Gmaj7; hats creep back; filter reopens to 32.0"
         },
         {
@@ -805,20 +806,21 @@
           "t": 31.3,
           "cue": "button tick plus soft send whoosh"
         }
-      ]
+      ],
+      "cameraFix6": "Tilted plate from a low side angle: yaw 18 -> 8 deg, pitch 7 -> 3 deg, roll -1.6 -> -0.5 deg, 27.95-31.92 sine.inOut; card 80 px right of centre."
     },
     {
       "id": "S12",
       "name": "Pharmacist 2: two people, six checks",
-      "start": 32.0,
-      "end": 36.0,
+      "start": 32,
+      "end": 36,
       "onScreenText": "A second pharmacist. Six final checks.  /  Never the same person.  /  small caption under the seal: A second pharmacist must dispense",
       "visual": "Warm, normal light returns. Left third: dual-key seal: two avatar rings with initials on the primary gradient, 'LC · Verified' (Pharmacist Laura Conti) and 'NW · Final check' (Pharmacist Nattaya Wong), synthetic personas from the demo. Caption below in Jakarta 600 22 px inkSoft: 'A second pharmacist must dispense' (app rule text, (pharmacy)/_lib.ts). Inset glass badge: ui.pdispStepper 'stepper' ('Verify · done, Pharmacist Laura Conti' leading to '2 Pick and final check · now'). Right: ui.pdispFull 'stage2' ('Stage 2: pick and final check (second pharmacist) · Verified by Pharmacist Laura Conti', six rows: Right patient, Right drug, Right dose, Right route, Allergies re-checked, Labelled), patient code blurred. Tick overlays and a '6 of 6 confirmed' chip drawn in the app's checkbox style. Micro-tag on.",
       "motion": "32.00 plate rises (0.4 s). 32.20 avatars slide toward each other. 32.30 line 1. 32.50 the rings interlock into a seal (teal glow). Six ticks on 8th notes at 33.00, 33.25, 33.50, 33.75, 34.00, 34.25 (each box fills teal and its check draws in 0.12 s). 34.50 '6 of 6 confirmed' chip. 34.60 line 2. 35.30 light sweep. Slow push-in.",
       "transitionOut": "Match-cut: the sixth check mark scales up and morphs into the big '2' on the pickup card in S13.",
       "audioCues": [
         {
-          "t": 32.0,
+          "t": 32,
           "cue": "GROOVE RETURNS (full drums); chord G"
         },
         {
@@ -826,31 +828,32 @@
           "cue": "seal click (wood tick plus 1320 Hz)"
         },
         {
-          "t": 33.0,
+          "t": 33,
           "cue": "six rising pentatonic plucks D5 E5 F#5 A5 B5 D6 at 33.00-34.25"
         },
         {
-          "t": 34.0,
+          "t": 34,
           "cue": "chord A"
         },
         {
           "t": 34.5,
           "cue": "small confirm chord"
         }
-      ]
+      ],
+      "cameraFix6": "Foreground rings (1.4x, sharp) over the out-of-focus checklist (blur 9 px); 32.72 rack focus to the checklist while the rings drift down-left into the left column (0.78 s); 34.6 rack back to the rings."
     },
     {
       "id": "S13",
       "name": "Pickup, in the patient's language",
-      "start": 36.0,
-      "end": 39.0,
+      "start": 36,
+      "end": 39,
       "onScreenText": "ยาของคุณพร้อมแล้ว  (gloss: Your medicine is ready.)  /  Ready at counter 2.",
       "visual": "One generic phone centre-left on paper #F5F8FA; its screen shows ui.patientPickup ('Pharmacy · Counter 2 · Please go to pharmacy counter 2 and show code B-015.'). Right of the phone: data.i18n.pickupReadyTitle.th in Noto Sans Thai 700, 88 px, ink; gloss (pickupReadyTitle.en) Jakarta 500 30 px inkSoft; line 'Ready at counter 2.' Jakarta 800 56 px. Ghost type behind at 10%: pickupReadyBody2.th and pickupReadyBody2.it. Background glow brightens teal to ocean with gentle light rays. Rail: Pickup lights and the whole rail glows complete. Micro-tag on.",
       "motion": "36.00 phone springs in (y 60 to 0, rotateZ -3deg to 0). 36.30-37.10 the Thai line forms glyph by glyph as particles converge (the reverse of S01's scatter, a preview of the payoff). 36.60 a duplicate of the card's big '2' scale-pops 1.15 to 1 with a glow. 37.20 gloss. 37.40 'Ready at counter 2.' 38.00 a light pulse travels the whole rail. Slow push-in to 39.0.",
       "transitionOut": "Pull-back and rise: the phone shrinks into node 1 ('Human · Patient turn') of the trace graph (scale-morph, 0.4 s).",
       "audioCues": [
         {
-          "t": 36.0,
+          "t": 36,
           "cue": "CHORUS LIFT: widest pad, brightest arp; chord D"
         },
         {
@@ -858,7 +861,7 @@
           "cue": "counter chime (two-tone FM bell D6 to A5, 1.2 s decay)"
         },
         {
-          "t": 38.0,
+          "t": 38,
           "cue": "chord A/C#; rail-complete shimmer"
         }
       ]
@@ -866,15 +869,15 @@
     {
       "id": "S14",
       "name": "Every step traced: rules before any model",
-      "start": 39.0,
-      "end": 42.0,
+      "start": 39,
+      "end": 42,
       "onScreenText": "Red-flag rules run before any model.  /  tag at chain end: Every step in the audit log",
       "visual": "Clean mist canvas, wide. ui.trace 'graph' (1 Human Patient turn, 2 Rule Redact personal data, 3 Rule Red-flag rules, 4 Model red-flag screen, 5 Model extraction, 6 Rule Verify against patient words, 7 System Next question, 8 Rule Order checks) with ui.trace 'summary' above ('8 steps · 4 rule checks · 2 model calls'). The legend never shows. Light gate: a vertical light plane (2 px white core, 40 px teal glow) stands between node 3 and model nodes 4/5. Headline top, Jakarta 800 64 px, 'before any model.' in the gradient. Glass tag 'Every step in the audit log' lands at the end of the chain. Rail gone (journey complete). Micro-tag on. No Fin.",
       "motion": "Nodes light on 8ths: 1 at 39.00, 2 at 39.25, 3 at 39.50, while a light pulse travels the connectors (stroke-dashoffset). 39.20 headline. 39.75-40.50 the pulse waits at the gate; the gate scans top to bottom and turns from ocean to teal (pass); ring highlight on node 3. 40.50 the pulse passes into nodes 4 and 5 (40.50, 40.75), then 6 at 41.00, 7 at 41.25, 8 at 41.50. 41.50 audit tag lands. Camera trucks right with the pulse.",
       "transitionOut": "Lights down: the graph recedes and dims to the ink safety band (0.4 s, from 41.6).",
       "audioCues": [
         {
-          "t": 39.0,
+          "t": 39,
           "cue": "drums thin to kick plus shaker; ascending pentatonic node blips on each node"
         },
         {
@@ -882,7 +885,7 @@
           "cue": "gate scan (filtered noise sweep up) to 40.5"
         },
         {
-          "t": 40.0,
+          "t": 40,
           "cue": "chord Bm"
         },
         {
@@ -890,7 +893,7 @@
           "cue": "gate pass chime"
         },
         {
-          "t": 41.0,
+          "t": 41,
           "cue": "short filter riser to 42.0"
         }
       ]
@@ -898,15 +901,15 @@
     {
       "id": "S15",
       "name": "Trust band: no quote, no fact; people decide",
-      "start": 42.0,
-      "end": 46.0,
+      "start": 42,
+      "end": 46,
       "onScreenText": "No quote? It shows “Needs check.”  /  MedX prepares. People decide.",
       "visual": "Ink safety band (gradient ink #0F1E2E to inkRaised #173A63 at 160deg, faint teal/ocean radials). Left: headline Jakarta 800 80 px white; 'People decide.' in a light gradient (white to tealTint #E1F4F1). Right: three app state chips stacked in 3D at a slight rotation, in exact UI styling: 'From patient's words' (oceanTint bg, ocean text, quote icon), 'Needs check' (warnTint bg, warn text, dashed outline), 'Approved' (tealTint bg, teal text, check icon). Behind them, an append-only ledger: slim rows sliding upward (CSS recreation, real labels only: 'Patient turn', 'Red-flag rules', 'Verify against patient words', 'Triage confirmed by nurse', 'Note signed', 'Returned to prescriber', 'Final check: second pharmacist'), ending on a lock icon with 'Append-only audit log'. No red, no Fin.",
       "motion": "42.25 line 1 word reveal. 42.50-43.00 chips float in from depth (stagger 0.15); the 'Needs check' dashed border animates its dash offset. 44.00 line 1 exits (scale 0.96 plus blur), line 2 reveals at 44.10. 44.00-45.50 ledger rows scroll up, one per 0.25 s; the lock tag lands at 45.25. 45.50-46.00 light warms (teal glow grows, exposure lifts slightly).",
       "transitionOut": "Ledger rows and chips dissolve into dust that drifts to centre, setting up the particle text of S16; the stage stays on ink, now warmer.",
       "audioCues": [
         {
-          "t": 42.0,
+          "t": 42,
           "cue": "BREAKDOWN: kick out, warm pad plus sparse piano; chord G; 60 bpm heartbeat sub pulse"
         },
         {
@@ -914,11 +917,11 @@
           "cue": "soft tick on line 1"
         },
         {
-          "t": 44.0,
+          "t": 44,
           "cue": "chord Bm; soft tick on line 2; ledger ticks very soft (-24 dB) per row"
         },
         {
-          "t": 45.0,
+          "t": 45,
           "cue": "chord A(sus4); swell to 46.0"
         }
       ]
@@ -926,7 +929,7 @@
     {
       "id": "S16",
       "name": "Callback: this time it holds",
-      "start": 46.0,
+      "start": 46,
       "end": 49.95,
       "onScreenText": "แพ้เพนิซิลลิน กินแล้วผื่นขึ้นตามตัว  →  card: penicillin · Reaction: rash · From patient's words  /  This time, every word arrived.",
       "visual": "The opening ink space, warmer: a gentle teal-to-ocean glow over a faint mist horizon. data.thaiLine reappears at exactly S01's size and position with the same waveform. Below it, the real allergy card ui.pverifyFull 'allergyCard' ('penicillin', 'Reaction: rash', chip 'From patient's words') as a floating sheet card with an ocean glow, <= 1.4x (fallbackCss if soft). Line Jakarta 800 64 px white. Micro-tag on.",
@@ -934,7 +937,7 @@
       "transitionOut": "Light bloom: the glow behind the card blooms to fill the frame (white-hot centre, 0.3 s from 49.7), resolving into the bright mist CTA stage at 50.0.",
       "audioCues": [
         {
-          "t": 46.0,
+          "t": 46,
           "cue": "no drums; chord G; warm pad"
         },
         {
@@ -942,7 +945,7 @@
           "cue": "hook motif returns on felt piano: B3"
         },
         {
-          "t": 47.0,
+          "t": 47,
           "cue": "D4"
         },
         {
@@ -950,7 +953,7 @@
           "cue": "F#4"
         },
         {
-          "t": 48.0,
+          "t": 48,
           "cue": "E4 over D major (the question again)"
         },
         {
@@ -958,7 +961,7 @@
           "cue": "resolves to D4: the musical 'understood'"
         },
         {
-          "t": 49.0,
+          "t": 49,
           "cue": "riser to 49.875, then a tiny silence gap to 50.0"
         }
       ]
@@ -967,14 +970,14 @@
       "id": "S17",
       "name": "CTA: try the live demo",
       "start": 49.95,
-      "end": 54.0,
+      "end": 54,
       "onScreenText": "Try the live demo.  /  medx.areazeroai.com  /  QR caption: Scan to try",
       "visual": "Bright mist stage with teal/ocean radials. Left third: floating devices with reflections: a browser window (ui.heroConsult) and a phone (ui.patientIntake 'screen'). No patient-home capture here (it contains Fin and would show two Fins). Centre-right text block (left-aligned at x 820): headline Jakarta 800 96 px ink, 'live demo.' in the gradient; URL Jakarta 600 44 px ink below. QR card at x 1460-1780, y 560-880: white, 28 px radius, ink modules, 4-module quiet zone, >= 300 px. 'Scan to try' 20 px inkSoft under the QR. Fin (brand.finPointing, <= 380 px tall) stands left of the QR, finger aimed at it, >= 120 px clear of the URL and never inside the quiet zone. No store badges. Micro-tag on.",
       "motion": "50.00 devices burst in from depth (expo.out 0.8 s). 50.25 headline word reveal. 50.90-51.70 URL types on. 51.00 Fin pops in (y 60 to 0, back.out) and idles with a 4 px bob. 51.50 QR card scales 0.9 to 1 with a light glint. 52.60 light sweep across the devices. 53.00 devices defocus 4 px so the eye goes to the CTA.",
       "transitionOut": "One continuous move from 53.5: the devices drift out to the frame edges while the brand gradient rises from the bottom (0.5 s), turning mist into S18's gradient. The QR card, URL and Fin carry over as shared elements; the QR never leaves the screen.",
       "audioCues": [
         {
-          "t": 50.0,
+          "t": 50,
           "cue": "FINAL CHORUS (brightest voicing); chord D"
         },
         {
@@ -982,7 +985,7 @@
           "cue": "soft typing ticks under the URL to 51.7"
         },
         {
-          "t": 51.0,
+          "t": 51,
           "cue": "Fin pop"
         },
         {
@@ -990,7 +993,7 @@
           "cue": "QR glint shimmer"
         },
         {
-          "t": 52.0,
+          "t": 52,
           "cue": "chord A/C#"
         },
         {
@@ -1006,23 +1009,23 @@
     {
       "id": "S18",
       "name": "End card",
-      "start": 54.0,
-      "end": 60.0,
+      "start": 54,
+      "end": 60,
       "onScreenText": "MedX (white lockup)  /  Every word, understood.  /  [Try the live demo]  /  medx.areazeroai.com  /  QR: Scan to try  /  small: Research prototype · Synthetic data · Not a medical device",
       "visual": "Full 135deg gradient #0A8077 to #1A5FC4, soft vignette, caustics <= 6%. One centred column: logo.lockupWhite 420 px wide, top edge at y 160; tagline centred at y 300, Jakarta 800 60 px white; CTA row centred at y 420: white pill Try the live demo (ocean text, Jakarta 700 30 px) plus the URL in white Jakarta 600 40 px; QR card 300 px centred at x 960, y 510-810, Scan to try under it; Fin (brand.finPointing, 280 px) left of the QR, pointing at its centre. Claim line centred, baseline about y 1030, Jakarta 500 24 px, white at 90%. One light sweep across the lockup at 55.5; fully static from 57.5.",
       "motion": "54.00 lockup lands (scale 1.06 to 1, blur 6 to 0, 0.6 s expo.out) as the gradient finishes rising. 54.00-54.80 shared elements (pill, URL, QR, Fin) glide to their end-card positions. 54.30 one light sweep across the lockup. 54.80 tagline. 55.60 claim line fades in and stays. Fin bobs 4 px until 57.5. From 57.50 to 60.00 everything is fully static, so the QR scans and the last frame is a clean thumbnail.",
       "transitionOut": "None. Hold to 60.0; frame 3600 is the end card. No fade to black.",
       "audioCues": [
         {
-          "t": 54.0,
+          "t": 54,
           "cue": "final impact with D(add9) chord plus lockup whoosh-in; groove stops"
         },
         {
-          "t": 56.0,
+          "t": 56,
           "cue": "last bell on the bar line"
         },
         {
-          "t": 56.0,
+          "t": 56,
           "cue": "ring-out decays to -60 dB by 59.8"
         },
         {
@@ -1164,62 +1167,62 @@
     "structure": [
       {
         "section": "Intro / problem",
-        "from": 0.0,
-        "to": 8.0,
+        "from": 0,
+        "to": 8,
         "content": "Room tone, B-minor pad, piano motif hanging on E4, glyph scatter, snap, count ticks, riser, 0.25 s silence"
       },
       {
         "section": "Reveal",
-        "from": 8.0,
-        "to": 12.0,
+        "from": 8,
+        "to": 12,
         "content": "Impact plus D(add9) bloom, Fin pop, logo bell, shimmer; no drums yet"
       },
       {
         "section": "Journey groove",
-        "from": 12.0,
-        "to": 28.0,
+        "from": 12,
+        "to": 28,
         "content": "Kick 1 and 3, clap 2 and 4, 16th plucked arp, sub bass; I-V-vi-IV loop; piano counter-melody from 24.0"
       },
       {
         "section": "Safety dip",
-        "from": 28.0,
-        "to": 32.0,
+        "from": 28,
+        "to": 32,
         "content": "Drums and arp out, pad low-passed 2 kHz to 400 Hz, one calm alert, filter reopens from 30.0"
       },
       {
         "section": "Groove return and chorus",
-        "from": 32.0,
-        "to": 39.0,
+        "from": 32,
+        "to": 39,
         "content": "Full drums at 32.0, six pentatonic check plucks, chorus lift at 36.0, counter chime"
       },
       {
         "section": "Trace",
-        "from": 39.0,
-        "to": 42.0,
+        "from": 39,
+        "to": 42,
         "content": "Kick plus shaker, node blips, gate scan, riser"
       },
       {
         "section": "Breakdown / trust",
-        "from": 42.0,
-        "to": 46.0,
+        "from": 42,
+        "to": 46,
         "content": "No kick, warm pad, sparse piano, 60 bpm heartbeat"
       },
       {
         "section": "Callback",
-        "from": 46.0,
-        "to": 50.0,
+        "from": 46,
+        "to": 50,
         "content": "Motif returns and resolves E4 to D4 at 48.0-48.5; riser; gap"
       },
       {
         "section": "Final chorus",
-        "from": 50.0,
-        "to": 54.0,
+        "from": 50,
+        "to": 54,
         "content": "Brightest groove, D to A/C#"
       },
       {
         "section": "Outro",
-        "from": 54.0,
-        "to": 60.0,
+        "from": 54,
+        "to": 60,
         "content": "Final impact, groove stops, last bell 56.0, ring-out to -60 dB by 59.8, silent last frame"
       }
     ],
@@ -1237,7 +1240,7 @@
     "mix": "-14 LUFS integrated (two-pass loudnorm), true peak <= -1.0 dBTP, alert tone 3 dB under the groove, no voice-over; the picture tells the story when muted.",
     "cues": [
       {
-        "t": 0.0,
+        "t": 0,
         "event": "room tone and Bm(add9) pad fade in"
       },
       {
@@ -1245,7 +1248,7 @@
         "event": "motif B3"
       },
       {
-        "t": 1.0,
+        "t": 1,
         "event": "motif D4"
       },
       {
@@ -1253,7 +1256,7 @@
         "event": "motif F#4"
       },
       {
-        "t": 2.0,
+        "t": 2,
         "event": "motif E4 hangs unresolved"
       },
       {
@@ -1261,7 +1264,7 @@
         "event": "glyph scatter SFX"
       },
       {
-        "t": 4.0,
+        "t": 4,
         "event": "line-break snap"
       },
       {
@@ -1273,7 +1276,7 @@
         "event": "count-up tick roll to 5.6"
       },
       {
-        "t": 6.0,
+        "t": 6,
         "event": "riser to 7.75"
       },
       {
@@ -1281,7 +1284,7 @@
         "event": "total silence"
       },
       {
-        "t": 8.0,
+        "t": 8,
         "event": "IMPACT plus D(add9) bloom (reveal)"
       },
       {
@@ -1293,7 +1296,7 @@
         "event": "shimmer under light sweep"
       },
       {
-        "t": 12.0,
+        "t": 12,
         "event": "groove starts"
       },
       {
@@ -1301,15 +1304,15 @@
         "event": "language chimes 14.5 / 15.0 / 15.5"
       },
       {
-        "t": 17.0,
+        "t": 17,
         "event": "send pop"
       },
       {
-        "t": 22.0,
+        "t": 22,
         "event": "triage confirm pop on the clap"
       },
       {
-        "t": 24.0,
+        "t": 24,
         "event": "piano counter-melody enters"
       },
       {
@@ -1321,7 +1324,7 @@
         "event": "low-pass starts closing"
       },
       {
-        "t": 28.0,
+        "t": 28,
         "event": "SAFETY DIP"
       },
       {
@@ -1329,19 +1332,19 @@
         "event": "single calm alert tone"
       },
       {
-        "t": 30.0,
+        "t": 30,
         "event": "filter reopens, hats return"
       },
       {
-        "t": 32.0,
+        "t": 32,
         "event": "full drums return"
       },
       {
-        "t": 33.0,
+        "t": 33,
         "event": "six check plucks to 34.25"
       },
       {
-        "t": 36.0,
+        "t": 36,
         "event": "CHORUS LIFT"
       },
       {
@@ -1349,7 +1352,7 @@
         "event": "counter chime"
       },
       {
-        "t": 39.0,
+        "t": 39,
         "event": "thin to kick plus shaker, node blips"
       },
       {
@@ -1357,7 +1360,7 @@
         "event": "gate pass chime"
       },
       {
-        "t": 42.0,
+        "t": 42,
         "event": "BREAKDOWN with heartbeat"
       },
       {
@@ -1373,15 +1376,15 @@
         "event": "gap before final chorus"
       },
       {
-        "t": 50.0,
+        "t": 50,
         "event": "FINAL CHORUS"
       },
       {
-        "t": 54.0,
+        "t": 54,
         "event": "final impact, groove stops"
       },
       {
-        "t": 56.0,
+        "t": 56,
         "event": "last bell"
       },
       {
@@ -1392,7 +1395,7 @@
   },
   "sfx": [
     {
-      "t": 0.0,
+      "t": 0,
       "type": "roomtone",
       "note": "pink noise LP 800 Hz, -38 dB, fades by 3.0"
     },
@@ -1402,7 +1405,7 @@
       "note": "granular noise plus HP sweep plus reverse shimmer, 0.8 s"
     },
     {
-      "t": 4.0,
+      "t": 4,
       "type": "snap",
       "note": "filtered click plus 70 Hz thump"
     },
@@ -1416,12 +1419,12 @@
       "note": "16 ticks to 5.6, pitch rising 1.8 to 2.6 kHz"
     },
     {
-      "t": 6.0,
+      "t": 6,
       "type": "riser",
       "note": "to 7.75"
     },
     {
-      "t": 8.0,
+      "t": 8,
       "type": "impact",
       "note": "sub drop 60 to 40 Hz plus noise burst"
     },
@@ -1435,7 +1438,7 @@
       "type": "arcPing"
     },
     {
-      "t": 9.0,
+      "t": 9,
       "type": "arcPing"
     },
     {
@@ -1453,7 +1456,7 @@
       "note": "band-passed noise 300 to 6000 Hz, 0.5 s (the arc lifts clear of the lockup and straightens into the rail)"
     },
     {
-      "t": 12.0,
+      "t": 12,
       "type": "nodeBlip",
       "note": "x6 every 0.125 s to 12.625"
     },
@@ -1463,7 +1466,7 @@
       "note": "glass pluck"
     },
     {
-      "t": 15.0,
+      "t": 15,
       "type": "langChime",
       "note": "FM bell, plus read-aloud ping"
     },
@@ -1473,11 +1476,11 @@
       "note": "mallet"
     },
     {
-      "t": 16.0,
+      "t": 16,
       "type": "highlightSwish"
     },
     {
-      "t": 17.0,
+      "t": 17,
       "type": "sendPop",
       "note": "plus airy upward whoosh"
     },
@@ -1495,7 +1498,7 @@
       "type": "linkChirp"
     },
     {
-      "t": 22.0,
+      "t": 22,
       "type": "confirmPop",
       "note": "880 + 1320 Hz, 80 ms"
     },
@@ -1523,7 +1526,7 @@
       "note": "2.4 kHz, 30 ms"
     },
     {
-      "t": 31.0,
+      "t": 31,
       "type": "uiTick",
       "note": "plus soft send whoosh (Return with report; chip at 31.2)"
     },
@@ -1533,7 +1536,7 @@
       "note": "wood tick plus 1320 Hz"
     },
     {
-      "t": 33.0,
+      "t": 33,
       "type": "checkPluck",
       "note": "D5"
     },
@@ -1553,7 +1556,7 @@
       "note": "A5"
     },
     {
-      "t": 34.0,
+      "t": 34,
       "type": "checkPluck",
       "note": "B5"
     },
@@ -1572,11 +1575,11 @@
       "note": "FM bell D6 to A5, 1.2 s decay"
     },
     {
-      "t": 38.0,
+      "t": 38,
       "type": "railShimmer"
     },
     {
-      "t": 39.0,
+      "t": 39,
       "type": "nodeBlip",
       "note": "per node: 39.0, 39.25, 39.5, 40.5, 40.75, 41.0, 41.25, 41.5, ascending pentatonic"
     },
@@ -1590,7 +1593,7 @@
       "type": "gatePass"
     },
     {
-      "t": 41.0,
+      "t": 41,
       "type": "riser",
       "note": "short, to 42.0"
     },
@@ -1599,7 +1602,7 @@
       "type": "softTick"
     },
     {
-      "t": 44.0,
+      "t": 44,
       "type": "softTick",
       "note": "then ledger ticks every 0.25 s to 45.5 at -24 dB"
     },
@@ -1609,7 +1612,7 @@
       "note": "reverse shimmer as the glyphs lock back"
     },
     {
-      "t": 49.0,
+      "t": 49,
       "type": "riser",
       "note": "to 49.875"
     },
@@ -1619,7 +1622,7 @@
       "note": "to 51.7"
     },
     {
-      "t": 51.0,
+      "t": 51,
       "type": "bubblePop",
       "note": "Fin entrance"
     },
@@ -1636,12 +1639,12 @@
       "type": "whoosh"
     },
     {
-      "t": 54.0,
+      "t": 54,
       "type": "impact",
       "note": "final, plus lockup whoosh-in"
     },
     {
-      "t": 56.0,
+      "t": 56,
       "type": "bell",
       "note": "last bell"
     }
@@ -1747,6 +1750,34 @@
         "S16 to S17: a 0.46 s exposure-lift dissolve (no iris); S17 to S18: a soft radial colour bloom from the QR; end card builds lockup 54.0, tagline 54.3, pill 54.5, claim 55.0; Fin + QR centred as a group; light sweep 55.5-59.5 and a 2% Fin breathing loop; QR pixel-static.",
         "Readability: S06 second line at 15.7, S15 first line out at 43.55, second line legible about 44.25-46.05.",
         "Score cues moved with the picture: bubblePop 8.3, arcPing 8.75/9.0, logoBell 9.5 (and the A chord), shimmer 10.9, whoosh 11.6, nodeBlip 12.0."
+      ]
+    },
+    {
+      "round": "fix-4",
+      "date": "2026-10-18",
+      "changes": [
+        "Honesty: S03 bars share ONE visible 0-100% track (inner 1164 px = 100%; 49.1% fills 571.5 px, just under the 50% gridline; 29.5% fills 343.4 px) with 0/25/50/75/100% gridlines; numbers sit in their own column, never on the track; source line 26 px at 88% white.",
+        "Brand: Fin is no longer in S17 (no Fin beside the Live summary or the intake phone); Fin enters only on the clean end card at 54.5 on a soft light disc. The score's 51.0 pop now lands on a Send tap on the S17 phone. Claim line 26 px pure white; the URL lands as real 40 px type (no residual scale).",
+        "No in-place cross-fades: S10 draft to signed is a top-to-bottom masked wipe with a teal light edge; S11 and S15 headline pairs swap with a masked push inside one feathered slot; S07 to S08 is a punch-in hard cut (20.8); S08 to S09 and S09 to S10 are frame-against-frame pushes (22.64, 25.0); S12 to S13 is strictly sequential.",
+        "Held UI text stays inside the frame: S10 is no longer a 1.9x macro (a 5% push onto the stamp, card always in frame); S14 trace is laid out 10% larger natively and never cropped (gentle push, max width 1804 px); S17 phone no longer covers the Live summary.",
+        "Descenders: word reveal masks padded to 0.16em top / 0.34em bottom, and gradient words get a padded background box, so g, y, p, q are never clipped (the S05 \"pharmacy\" cut was the background-clip:text box).",
+        "S04 bloom 7.85-8.5 is a brand-tinted light (white core with a mint, teal and ocean fringe over the black breath); the mist plate is cut on only under opaque white at 8.24, so no grey frame. Mean luma 5, 26, 80, 178, 253, then 235 on the mist.",
+        "Brand reveal: logo lands 9.5, tagline lands with it; full lockup complete 9.98 and held untouched to 12.0 (2.0 s); clean 0.16 s exit (lift, soften, fade); the arc-to-rail match cut is retired; the S05 rail draws itself left to right under the node pops (12.1-12.7).",
+        "Readability: every headline and secondary line measured fully readable >= 1.2 s at 60 Hz (tools/readcheck.mjs; shortest S02 1.23 s, S10 second line 1.27 s, S08 1.38 s).",
+        "Variety 14-32 s: S07 split screen (patient phone | nurse fields, threads cross the divider), S08 over-the-shoulder laptop with the case page blurred behind the triage card, S09 centred composition, S10 single card with masked wipe, S11 dark dip, S12 low angle.",
+        "Device screens: S06 centre, S07 and S17 phones show the real 3x intake capture (patient-intake.webp); S13 shows the real 3x pickup screen (patient-pickup-phone.webp, counter number glows on the 36.6 chime); the Thai and Italian S06 phones are full-layout recreations on the app grid (question card, answer card, pills, tab bar, exact i18n copy).",
+        "Headline system: one 72 px headline size at three anchors (left x 144 / top 168; centred top 104; centred low 772); secondary lines 44 px and 32 px; the lockup tagline (64 px) belongs to the lockup."
+      ]
+    },
+    {
+      "round": "fix-6",
+      "date": "2026-10-18",
+      "changes": [
+        "Variety 23-36 s (review issue 9, second half): S10, S11 and S12 get new framing; every shot keeps its timing, cut points, beats and copy. S09 is unchanged (centred card, push onto 'Keep in note').",
+        "S10 Note: slow macro push onto the 'Note signed' stamp. 25.0-26.45 medium framing as before; from 26.45 (stamp lands 26.5) the note rig pushes in around the stamp (power2.inOut, 0.95 s) to scale 1.62, so the signed card fills about 70% of the frame width by 27.4 (left edge x 580, top y 206, about 670 px tall; the empty right end of its two teal boxes runs off the frame, every text line stays inside); then it creeps 3% more to the 28.0 hard cut. Macro depth of field: the card title softens 1.2 px and the lines below the stamp row 1.8 px. The laptop bokeh behind moves less than the card (parallax). 'Drafted from their words.' leaves 26.97-27.15 (readable 25.75-26.98, 1.23 s) so the card never touches a headline; 'Signed by a clinician.' stays to the cut (1.27 s).",
+        "S11 Pharmacist 1: the alert/options card is a tilted plate seen from low and to the side (yaw 18 deg, camera below 7 deg, roll -1.6 deg, perspective 1500), orbiting slowly toward the front through the shot (sine.inOut 27.95-31.92) and still turned 8 deg when the options go back. The card sits 80 px right of centre so the magnified near edge stays clear of the frame edge. The red stays the app's own alert card plus the single 28.6 rim pulse.",
+        "S12 Pharmacist 2: foreground rings, rack focus. The LC and NW rings open the shot in the foreground at 1.4x, sharp, overlapping the low-angle checklist, which sits out of focus behind them (blur 9 px). At 32.72 focus racks to the checklist (0.3 s) while the rings drift down-left into the left column (foreground parallax, 0.78 s), clear of every row before its tick (33.00-34.25); at 34.6 focus racks back to the rings ('Never the same person'). The seal is laid out larger (avatars 140 px, labels 25 px, caption 26 px).",
+        "Checks: readcheck all 28 lines >= 1.2 s; edgecheck shows no text crossing the frame edge in a hold (only the existing transition frames); the S11 Options plate is hidden (autoAlpha) while it is parked below its clipping window."
       ]
     }
   ]
