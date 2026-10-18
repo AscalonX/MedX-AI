@@ -49,6 +49,25 @@ npx vite-node ../../eval/run.ts -- --rescore ../../eval/runs/<ts>             # 
 - Every run also does M5 fault injection (6 scenarios × 3 languages) with injected clients. Each patient turn is fed through `runTurn`; after an escalation, the remaining turns are still fed to prove that no model calls follow.
 - Arms (a) and (b) of M11 are computed directly with `checkRedFlags(turns, undefined, ruleFile)` on the redacted patient turns. Arm (c) is read from the pipeline's `source: "model"` hits. Until the pipeline makes `red_flags` model calls, it is reported as "not run: screen not implemented".
 
+### Live AMD runs (wave 20)
+```
+cd apps/web && set -a && . ./.env.development.local && set +a && unset MODEL_PROVIDER
+export LLM_TIMEOUT_MS=38000                               # extract timeout; pipeline default is 25000, turn cap stays 40000
+npx vite-node ../../eval/run.ts -- --split dev  --no-holdout
+npx vite-node ../../eval/run.ts -- --split test --no-holdout
+# re-run only cases that failed for provider reasons, merge into an earlier run:
+npx vite-node ../../eval/run.ts -- --ids EN-01,IT-08 --no-holdout --base ../../eval/runs/<ts>
+```
+Live calls go through one serial lane (the key allows ~20 req/min and about one request in flight; 429s are retried after Retry-After and counted as `rateLimitRetries` in `config.json`, not scored as provider errors). The red-flag screen goes first in each turn.
+
+**Holdout only, with and without the second screen (DeepSeek)** — `--split none` runs no intake cases, only the 18 holdout cases:
+```
+cd apps/web && set -a && . ./.env.development.local && set +a && unset MODEL_PROVIDER
+AMD_MODEL_SCREEN2= npx vite-node ../../eval/run.ts -- --split none                          # rules + Gemma screen
+AMD_MODEL_SCREEN2=DeepSeek-V4.1-Flash npx vite-node ../../eval/run.ts -- --split none        # rules + Gemma + DeepSeek screen
+```
+`--split none` still rewrites `eval/REPORT.md`; copy the holdout table from `eval/runs/<ts>/metrics.json` (`M11.holdout`) into the report. The blind holdout has been run several times on 18 Oct, so it is no longer a strict single-shot test.
+
 ## Outputs
 ```
 eval/runs/<ISO-timestamp>/
